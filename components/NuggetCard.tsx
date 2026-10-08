@@ -1,58 +1,55 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Nugget } from "@/lib/nuggets";
+import ContentImage from "@/components/ContentImage";
 
-function isValidImageSrc(src?: string): src is string {
-  if (!src) return false;
-  return src.startsWith("/") || src.startsWith("http://") || src.startsWith("https://");
-}
-
-export default function NuggetCard({ nugget }: { nugget: Nugget }) {
-  const hasValidImage = isValidImageSrc(nugget.image);
-
+export default function NuggetCard({
+  nugget,
+}: {
+  nugget: Nugget;
+}) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden hover:border-amber-300/50 transition group">
-      <div className="relative h-40 w-full bg-gray-800">
-        {hasValidImage ? (
-          <Image
-            src={nugget.image}
-            alt={nugget.title}
-            fill
-            className="object-cover"
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full w-full text-gray-600 text-xs">
-            No image
-          </div>
-        )}
-        <span className="absolute top-2 left-2 text-[10px] font-semibold tracking-wide px-2 py-1 rounded bg-amber-300 text-black">
-          {nugget.tag}
-        </span>
-        {nugget.isGold && (
-          <span className="absolute top-2 right-2 text-[10px] font-semibold tracking-wide px-2 py-1 rounded bg-black/70 text-amber-300 border border-amber-300">
-            GOLD
+    <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-gray-800 bg-neutral-950 text-white transition hover:border-amber-300/50">
+      <Link
+        href={`/nugget/${nugget.slug}`}
+        aria-label={`Open ${nugget.title}`}
+        className="relative block h-44 shrink-0 bg-gray-900"
+      >
+        <ContentImage src={nugget.image} alt={nugget.title} />
+
+        <div className="absolute inset-x-2 top-2 flex items-start justify-between gap-2">
+          <span className="min-w-0 break-words rounded bg-amber-300 px-2 py-1 text-xs font-semibold text-black">
+            {nugget.tag}
           </span>
-        )}
-      </div>
 
-      <div className="p-4">
-        <h3 className="text-white font-serif font-semibold leading-snug mb-2 group-hover:text-amber-300 transition">
-          {nugget.title}
-        </h3>
-        <p className="text-gray-500 text-xs mb-3">{nugget.scriptureRef}</p>
+          {nugget.isGold && (
+            <span className="shrink-0 rounded border border-amber-300 bg-black/80 px-2 py-1 text-xs text-amber-300">
+              GOLD
+            </span>
+          )}
+        </div>
+      </Link>
 
-        <div className="flex items-center justify-between">
+      <div className="flex flex-1 flex-col p-4">
+        <h3 className="break-words font-serif text-lg leading-snug">
           <Link
             href={`/nugget/${nugget.slug}`}
-            className="flex items-center gap-1.5 text-amber-300 text-sm font-medium hover:text-amber-400"
+            className="hover:text-amber-300"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-            Listen &amp; Read
+            {nugget.title}
           </Link>
-        </div>
+        </h3>
+
+        <p className="mt-2 text-xs text-gray-400">
+          {nugget.scriptureRef}
+        </p>
+
+        <Link
+          href={`/nugget/${nugget.slug}/reader`}
+          className="mt-auto inline-block pt-4 text-sm font-medium text-amber-300 hover:underline"
+        >
+          Read wisdom →
+        </Link>
       </div>
-    </div>
+    </article>
   );
 }

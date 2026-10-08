@@ -1,18 +1,13 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Navbar from "@/components/navbar";
+import Footer from "@/components/Footer";
 import NuggetCard from "@/components/NuggetCard";
-import { getNuggetsByTopic, topics } from "@/lib/nuggets";
-
-// TODO: replace with real subtopic data once available (e.g. per-topic segments from lib/nuggets)
-const placeholderSubtopics = [
-  "Operational Delegation",
-  "Sovereign Statecraft",
-  "Executive Stewardship",
-  "Conflict Resolution",
-  "Interpersonal Ethics",
-  "Visionary Architecture",
-];
+import {
+  getNuggetsByTopic,
+  slugify,
+  topics,
+} from "@/lib/nuggets";
 
 export default async function TopicDetailPage({
   params,
@@ -20,104 +15,72 @@ export default async function TopicDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const topic = topics.find((item) => slugify(item) === slug);
 
-  const topic = topics.find(
-    (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-") === slug
-  );
   if (!topic) notFound();
 
-  const topicNuggets = getNuggetsByTopic(topic);
-  const featured = topicNuggets[0];
+  const items = getNuggetsByTopic(topic);
+  const tags = [...new Set(items.map((nugget) => nugget.tag))];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-10">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-amber-500">
-            Core Wisdom Pathway
-          </p>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-bold text-zinc-100">{topic}</h1>
-          <p className="mt-1 text-sm text-zinc-500 max-w-xl">
-            Timeless blueprint frameworks for building scalable delegation systems to Solomon&apos;s sovereign statecraft.
-          </p>
-        </div>
+    <div className="flex min-h-screen flex-col bg-black text-white">
+      <Navbar />
 
-        <button className="w-full sm:w-auto bg-amber-500 text-black text-sm font-medium px-5 py-2.5 rounded-md hover:bg-amber-400 transition whitespace-nowrap">
-          Follow Topic
-        </button>
-      </div>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
+        <Link
+          href="/library?tab=Topics+Index"
+          className="text-sm text-amber-300"
+        >
+          ← All topics
+        </Link>
 
-      {/* Main + sidebar layout */}
-      <div className="mt-8 sm:mt-10 grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
-        {/* Main column */}
-        <div className="lg:col-span-2 space-y-10">
-          {featured && (
-            <section>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-                Featured {topic.split(" ")[0]} Wisdom
-              </h2>
-              <Link
-                href={`/nugget/${featured.slug}`}
-                className="group block overflow-hidden rounded-xl border border-zinc-800"
-              >
-                <div className="relative h-52 sm:h-64 w-full">
-                  <Image
-                    src={featured.image}
-                    alt={featured.title}
-                    fill
-                    className="object-cover transition duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-400">
-                      {featured.tag}
-                    </p>
-                    <h3 className="mt-1 text-base sm:text-lg font-bold text-white">
-                      {featured.title}
-                    </h3>
-                  </div>
-                </div>
-              </Link>
-            </section>
-          )}
+        <p className="mt-6 text-xs uppercase text-amber-300">
+          Core Wisdom Pathway
+        </p>
 
-          <section>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-              All {topic.split(" ")[0]} Nuggets
-            </h2>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {topicNuggets.map((n) => (
-                <NuggetCard key={n.slug} nugget={n} />
-              ))}
-            </div>
+        <h1 className="mt-2 font-serif text-3xl sm:text-4xl">
+          {topic}
+        </h1>
+
+        <p className="mt-3 text-sm text-gray-400">
+          {items.length} nuggets in the sample library.
+        </p>
+
+        <div className="mt-8 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_250px]">
+          <section className="min-w-0">
+            {items.length > 0 ? (
+              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {items.map((nugget) => (
+                  <NuggetCard key={nugget.slug} nugget={nugget} />
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-xl border border-gray-800 p-6 text-gray-400">
+                No nuggets have been added to this topic yet.
+              </p>
+            )}
           </section>
-        </div>
 
-        {/* Sidebar */}
-        <aside className="lg:col-span-1">
-          <div className="rounded-xl border border-zinc-800 p-5 sm:p-6 lg:sticky lg:top-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 mb-4">
-              Subtopics &amp; Segments
-            </h2>
-            <ul className="space-y-1">
-              {placeholderSubtopics.map((label, i) => (
-                <li key={label}>
-                  <button
-                    className={`w-full text-left text-sm px-3 py-2 rounded-md transition ${
-                      i === 0
-                        ? "bg-amber-500/10 text-amber-400"
-                        : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
-                    }`}
+          <aside className="h-fit rounded-xl border border-gray-800 p-5">
+            <h2 className="font-semibold">Explore segments</h2>
+
+            <ul className="mt-4 space-y-4">
+              {tags.map((tag) => (
+                <li key={tag}>
+                  <Link
+                    href={`/library?topic=${encodeURIComponent(topic)}&tag=${encodeURIComponent(tag)}`}
+                    className="text-sm text-amber-300 hover:underline"
                   >
-                    {label}
-                  </button>
+                    {tag}
+                  </Link>
                 </li>
               ))}
             </ul>
-          </div>
-        </aside>
-      </div>
+          </aside>
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }

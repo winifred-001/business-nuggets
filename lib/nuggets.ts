@@ -1,23 +1,16 @@
-export type Nugget = {
-  slug: string;
-  number: number;
-  title: string;
-  topic: string;
-  tag: string;
-  scriptureRef: string;
-  scriptureText: string;
-  image: string;
-  keyPrinciple: string;
-  marketplaceApplication: string;
-  practicalActionPlan: string[];
-  duration: string;
-  isGold?: boolean;
-};
+import type {
+  BibleSection,
+  Collection,
+  Nugget,
+} from "../types/nugget";
 
+export type { Nugget } from "../types/nugget";
 
-
+// This is the single shared list of nuggets.
+// Dates and challenge assignments are sample values.
 export const nuggets: Nugget[] = [
   {
+    id: "nugget-14",
     slug: "law-of-just-balances",
     number: 14,
     title: "The Law of Just Balances in Corporate Negotiation",
@@ -37,9 +30,15 @@ export const nuggets: Nugget[] = [
       "Train negotiation leads on transparent pricing frameworks.",
     ],
     duration: "06:42",
+    isGold: false,
+    book: "Proverbs",
+    bibleSection: "Wisdom Literature",
+    challenges: ["Negotiation & Contracts"],
+    publishedAt: "2026-09-01",
   },
 
   {
+    id: "nugget-15",
     slug: "hazard-of-swift-assent",
     number: 15,
     title: "The Hazard of Swift Assent in Partnerships",
@@ -58,9 +57,15 @@ export const nuggets: Nugget[] = [
       "Require a second signatory on any guarantee.",
     ],
     duration: "05:10",
+    isGold: false,
+    book: "Proverbs",
+    bibleSection: "Wisdom Literature",
+    challenges: ["Strategic Decisions"],
+    publishedAt: "2026-09-02",
   },
 
   {
+    id: "nugget-16",
     slug: "integrity-premium",
     number: 16,
     title: "The Integrity Premium: Upholding Product Standards",
@@ -79,9 +84,15 @@ export const nuggets: Nugget[] = [
       "Audit output quarterly against that floor.",
     ],
     duration: "07:20",
+    isGold: true,
+    book: "Leviticus",
+    bibleSection: "The Pentateuch",
+    challenges: ["Negotiation & Contracts"],
+    publishedAt: "2026-09-03",
   },
 
   {
+    id: "nugget-17",
     slug: "solomon-audit",
     number: 17,
     title: "The Solomon Audit: Evaluating Partnerships",
@@ -100,13 +111,20 @@ export const nuggets: Nugget[] = [
       "Weight commitment signals over stated intent.",
     ],
     duration: "08:05",
+    isGold: false,
+    book: "1 Kings",
+    bibleSection: "History & Leadership",
+    challenges: ["Strategic Decisions"],
+    publishedAt: "2026-09-04",
   },
 
   {
+    id: "nugget-2",
     slug: "josephs-seven-year-reserve",
     number: 2,
-    title: "The Joseph Storage Blueprint: Seven Years of Strategic Reserves",
-    topic: "Stewardship & Planning",
+    title:
+      "The Joseph Storage Blueprint: Seven Years of Strategic Reserves",
+    topic: "Money & Stewardship",
     tag: "Strategic Planning",
     scriptureRef: "Genesis 41:34-36",
     scriptureText:
@@ -115,16 +133,22 @@ export const nuggets: Nugget[] = [
     keyPrinciple:
       "Faced with a macroeconomic projection of absolute volatility—seven years of extreme harvest followed by seven years of total collapse—Joseph does not panic. He proposes a rigorous national capital preservation program. He mandates a 20% flat tax on the harvest surplus during the bounty years to build a strategic physical reserve.",
     marketplaceApplication:
-      "When your enterprise is swimming in heavy liquidity, do not raise your burn rate proportionally. The temptation during \"market abundance\" is to hire aggressively and acquire unnecessary space. True stewards build a dedicated liquidity vault. Keep your capital reserves in high-grade assets to absorb dry cycles without defaulting on vendor trust or resorting to panic debt.",
+      'When your enterprise is swimming in heavy liquidity, do not raise your burn rate proportionally. The temptation during "market abundance" is to hire aggressively and acquire unnecessary space. True stewards build a dedicated liquidity vault. Keep your capital reserves in high-grade assets to absorb dry cycles without defaulting on vendor trust or resorting to panic debt.',
     practicalActionPlan: [
-      "Establish an \"Abundance Vault\"—a separate account holding 6 months of absolute operational overhead.",
+      'Establish an "Abundance Vault"—a separate account holding 6 months of absolute operational overhead.',
       "During profitable quarters, automatically route 15% of EBITDA directly into this reserve.",
       "Avoid scaling fixed costs until the reserve targets are fully actualized.",
     ],
     duration: "08:24",
+    isGold: false,
+    book: "Genesis",
+    bibleSection: "The Pentateuch",
+    challenges: ["Money & Cashflow"],
+    publishedAt: "2026-09-05",
   },
 
   {
+    id: "nugget-18",
     slug: "delegation-infrastructure",
     number: 18,
     title: "Delegation Infrastructure & Sovereign Accountability",
@@ -143,9 +167,15 @@ export const nuggets: Nugget[] = [
       "Appoint tier leads with clear authority limits.",
     ],
     duration: "06:55",
+    isGold: false,
+    book: "Exodus",
+    bibleSection: "The Pentateuch",
+    challenges: ["Managing People"],
+    publishedAt: "2026-09-06",
   },
 
   {
+    id: "nugget-19",
     slug: "nehemiahs-architectural-integrity",
     number: 19,
     title: "Nehemiah's Architectural Integrity",
@@ -164,9 +194,15 @@ export const nuggets: Nugget[] = [
       "Address opposition directly instead of ignoring it.",
     ],
     duration: "05:47",
+    isGold: false,
+    book: "Nehemiah",
+    bibleSection: "History & Leadership",
+    challenges: ["Starting a Business", "Managing People"],
+    publishedAt: "2026-09-07",
   },
 
   {
+    id: "nugget-20",
     slug: "negotiation-integrity-genesis-23",
     number: 20,
     title: "Negotiation Integrity: Genesis 23 Land Purchase",
@@ -185,22 +221,241 @@ export const nuggets: Nugget[] = [
       "Document the rationale so it isn't repeated as a norm.",
     ],
     duration: "04:58",
-    
+    isGold: false,
+    book: "Genesis",
+    bibleSection: "The Pentateuch",
+    challenges: ["Negotiation & Contracts"],
+    publishedAt: "2026-09-08",
+  },
+
+  // This title existed in the other nugget list.
+  // Its full article text has not been supplied yet.
+  {
+    id: "nugget-21",
+    slug: "masters-return-asset-allocation",
+    number: 21,
+    title: "The Master's Return: Asset Allocation Under Pressure",
+    topic: "Money & Stewardship",
+    tag: "Stewardship",
+    scriptureRef: "Matthew 25:9",
+    scriptureText: "",
+    image: "/images/nuggetCard.png",
+    keyPrinciple: "",
+    marketplaceApplication: "",
+    practicalActionPlan: [],
+    duration: "00:00",
+    isGold: false,
+    book: "Matthew",
+    bibleSection: "New Testament",
+    challenges: ["Money & Cashflow"],
+    publishedAt: "2026-09-09",
   },
 ];
 
+// Create the topic list from the articles.
 export const topics = [
-  "Leadership & Governance",
-  "Money & Stewardship",
-  "Strategy & Planning",
-  "Integrity & Character",
+  ...new Set(nuggets.map((nugget) => nugget.topic)),
 ];
 
-export function getNuggetBySlug(slug: string) {
-  return nuggets.find((n) => n.slug === slug);
+// Create the challenge list from the articles.
+export const challenges = [
+  ...new Set(nuggets.flatMap((nugget) => nugget.challenges)),
+];
+
+// Create the Bible-book list from the articles.
+export const books = [...new Set(nuggets.map((n) => n.book))].sort(
+  (a, b) => a.localeCompare(b, "en", { numeric: true }),
+);
+
+export const bibleSections: BibleSection[] = [
+  "The Pentateuch",
+  "History & Leadership",
+  "Wisdom Literature",
+  "The Prophets",
+  "New Testament",
+];
+
+// Turn a name into a name suitable for a page address.
+// Example: "Money & Stewardship" becomes "money-stewardship".
+export function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
+// These connect older article addresses to the current articles.
+const aliases: Record<string, string> = {
+  "hazard-of-swift-ascent": "hazard-of-swift-assent",
+  "hazard-of-early-suretyship": "hazard-of-swift-assent",
+  "integrity-premium-product-standards": "integrity-premium",
+  "solomon-audit-costly-decisions": "solomon-audit",
+  "joseph-storage-infrastructure": "josephs-seven-year-reserve",
+  "joseph-storage-blueprint": "josephs-seven-year-reserve",
+  "delegation-infrastructure-architecture":
+    "delegation-infrastructure",
+  "law-of-just-balances-corporate-negotiation":
+    "law-of-just-balances",
+};
+
+// Find one article using its slug, ID, or number.
+export function getNuggetBySlug(value: string) {
+  const slug = aliases[value] ?? value;
+
+  return nuggets.find(
+    (nugget) =>
+      nugget.slug === slug ||
+      nugget.id === value ||
+      String(nugget.number) === value,
+  );
+}
+
+// Find all articles belonging to a topic.
 export function getNuggetsByTopic(topic: string) {
-  return nuggets.filter((n) => n.topic === topic);
+  return nuggets.filter((nugget) => nugget.topic === topic);
 }
 
+// Find articles using a list of their slugs.
+export function getNuggetsBySlugs(slugs: string[]) {
+  return slugs.flatMap((slug) => {
+    const nugget = getNuggetBySlug(slug);
+    return nugget ? [nugget] : [];
+  });
+}
+
+// Sample collections group articles from the same shared list.
+export const collections: Collection[] = [
+  {
+    slug: "starting-your-business-gods-way",
+    title: "Starting Your Business God's Way",
+    description:
+      "A sample pathway through planning, delegation, integrity, and building under pressure.",
+    nuggetSlugs: [
+      "josephs-seven-year-reserve",
+      "delegation-infrastructure",
+      "law-of-just-balances",
+      "nehemiahs-architectural-integrity",
+    ],
+  },
+  {
+    slug: "capital-stewardship-debt",
+    title: "Capital Stewardship & Debt",
+    description:
+      "Sample teachings on reserves and careful commitments.",
+    nuggetSlugs: [
+      "josephs-seven-year-reserve",
+      "hazard-of-swift-assent",
+    ],
+  },
+  {
+    slug: "integrity-as-a-premium-brand",
+    title: "Integrity As A Premium Brand",
+    description:
+      "A sample pathway through transparency, standards, and fair negotiation.",
+    nuggetSlugs: [
+      "law-of-just-balances",
+      "integrity-premium",
+      "negotiation-integrity-genesis-23",
+    ],
+  },
+];
+
+export function getCollectionBySlug(slug: string) {
+  return collections.find((collection) => collection.slug === slug);
+}
+
+// Convert a duration into seconds.
+// Example: "06:42" becomes 402.
+export function durationSeconds(duration: string) {
+  const [minutes, seconds] = duration.split(":").map(Number);
+  return minutes * 60 + seconds;
+}
+
+// The choices someone can use to search or filter.
+export type CatalogFilters = {
+  query?: string;
+  topics?: string[];
+  sections?: string[];
+  challenge?: string;
+  book?: string;
+  tag?: string;
+  sort?: string;
+};
+
+// Make searches ignore capital letters and punctuation.
+function normalize(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+// Search, filter, and arrange articles.
+// This leaves the original shared list unchanged.
+export function filterNuggets(
+  filters: CatalogFilters = {},
+  source: Nugget[] = nuggets,
+) {
+  const words = normalize(filters.query ?? "")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const results = source.filter((nugget) => {
+    const searchableText = normalize(
+      [
+        nugget.title,
+        nugget.topic,
+        nugget.tag,
+        nugget.scriptureRef,
+        nugget.scriptureText,
+        nugget.keyPrinciple,
+        nugget.marketplaceApplication,
+        ...nugget.practicalActionPlan,
+        ...nugget.challenges,
+      ].join(" "),
+    );
+
+    const matchesSearch = words.every((word) =>
+      searchableText.includes(word),
+    );
+
+    const matchesTopic =
+      !filters.topics?.length ||
+      filters.topics.includes(nugget.topic);
+
+    const matchesSection =
+      !filters.sections?.length ||
+      filters.sections.includes(nugget.bibleSection);
+
+    const matchesChallenge =
+      !filters.challenge ||
+      nugget.challenges.includes(filters.challenge);
+
+    const matchesBook =
+      !filters.book || nugget.book === filters.book;
+
+    const matchesTag =
+      !filters.tag || nugget.tag === filters.tag;
+
+    return (
+      matchesSearch &&
+      matchesTopic &&
+      matchesSection &&
+      matchesChallenge &&
+      matchesBook &&
+      matchesTag
+    );
+  });
+
+  return results.sort((first, second) => {
+    if (filters.sort === "az") {
+      return first.title.localeCompare(second.title);
+    }
+
+    if (filters.sort === "oldest") {
+      return first.publishedAt.localeCompare(second.publishedAt);
+    }
+
+    return second.publishedAt.localeCompare(first.publishedAt);
+  });
+}

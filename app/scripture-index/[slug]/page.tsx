@@ -1,163 +1,109 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import Navbar from "@/components/navbar";
+import Footer from "@/components/Footer";
+import NuggetCard from "@/components/NuggetCard";
+import { books, nuggets, slugify } from "@/lib/nuggets";
 
-// TODO: replace with real data from lib (e.g. getScriptureBook(slug), getVersesByBook(slug))
-const book = {
-  title: "The Book of Proverbs",
-  description:
-    "Solomonic core wisdom dedicated to character cultivation, market ethics, and tactical operational intelligence.",
-  nuggetCount: 128,
-};
+export default async function ScriptureIndexDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const book = books.find((item) => slugify(item) === slug);
 
-const featured = [
-  {
-    reference: "Proverbs 11:1",
-    title: "The Law of Just Balances in Corporate Negotiation",
-    tag: "Integrity",
-    duration: "6 Min Listen",
-    slug: "law-of-just-balances-corporate-negotiation",
-    image: "/images/proverbs-11-1.jpg",
-  },
-  {
-    reference: "Proverbs 22:7",
-    title: "Sovereign Capital & Lender Bondage Control",
-    tag: "Finance",
-    duration: "9 Min Listen",
-    slug: "sovereign-capital-lender-bondage-control",
-    image: "/images/proverbs-22-7.jpg",
-  },
-];
+  if (!book) notFound();
 
-const verses = [
-  {
-    reference: "Proverbs 11:1",
-    title: "The Law of Just Balances in Corporate Negotiation",
-    duration: "6 Min",
-    slug: "law-of-just-balances-corporate-negotiation",
-  },
-  {
-    reference: "Proverbs 6:1-5",
-    title: "The Hazard of Swift Assent in Partnerships",
-    duration: "5 Min",
-    slug: "hazard-of-swift-assent-partnerships",
-  },
-  {
-    reference: "Proverbs 22:7",
-    title: "Sovereign Capital: The Borrower as Slave to the Lender",
-    duration: "9 Min",
-    slug: "sovereign-capital-borrower-slave-lender",
-  },
-  {
-    reference: "Proverbs 13:22",
-    title: "Generational Wealth Transfer and Enterprise Legacy",
-    duration: "7 Min",
-    slug: "generational-wealth-transfer-enterprise-legacy",
-  },
-];
-
-const relatedBooks = ["Ecclesiastes", "Psalms", "Exodus", "Genesis", "Deuteronomy"];
-
-export default function ScriptureIndexDetailPage({ params }: { params: { slug: string } }) {
-  // TODO: look up the real book by params.slug and notFound() if missing
+  const items = nuggets
+    .filter((nugget) => nugget.book === book)
+    .sort((a, b) =>
+      a.scriptureRef.localeCompare(b.scriptureRef, undefined, {
+        numeric: true,
+      }),
+    );
 
   return (
-    <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 sm:py-10">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-amber-500">
-            Scripture Index Detailed
-          </p>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-bold text-zinc-100">{book.title}</h1>
-          <p className="mt-2 text-sm text-zinc-500 max-w-xl leading-relaxed">
-            {book.description}
-          </p>
-        </div>
+    <div className="flex min-h-screen flex-col bg-black text-white">
+      <Navbar />
 
-        <div className="border border-zinc-800 rounded-md px-4 py-3 text-center w-full sm:w-auto shrink-0">
-          <p className="text-xl font-bold text-zinc-100">{book.nuggetCount}</p>
-          <p className="text-[10px] uppercase tracking-wide text-zinc-500">Associated Nuggets</p>
-        </div>
-      </div>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
+        <Link
+          href="/library?tab=Scripture+Matrix"
+          className="text-sm text-amber-300"
+        >
+          ← Scripture Index
+        </Link>
 
-      {/* Featured Solomon Wisdom */}
-      <section className="mt-8 sm:mt-10">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Featured Solomon Wisdom
+        <h1 className="mt-6 font-serif text-3xl sm:text-4xl">
+          The Book of {book}
+        </h1>
+
+        <p className="mt-3 text-sm text-gray-400">
+          {items.length} associated nuggets in the sample library.
+        </p>
+
+        <h2 className="mt-8 font-serif text-2xl">
+          Featured wisdom
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {featured.map((item) => (
-            <Link
-              key={item.slug}
-              href={`/nuggets/${item.slug}`}
-              className="flex gap-3 bg-neutral-950 border border-zinc-800 rounded-lg p-3 hover:border-zinc-600 transition"
-            >
-              <div
-                className="w-16 h-16 sm:w-20 sm:h-20 rounded bg-cover bg-center shrink-0"
-                style={{ backgroundImage: `url('${item.image}')` }}
-              />
-              <div className="min-w-0">
-                <p className="text-amber-400 text-[10px] uppercase tracking-wide mb-1">
-                  {item.reference} &middot; {item.tag}
-                </p>
-                <h3 className="text-zinc-100 text-sm font-semibold leading-snug">
-                  {item.title}
-                </h3>
-                <p className="text-zinc-500 text-xs mt-1">{item.duration}</p>
-              </div>
-            </Link>
+
+        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {items.slice(0, 3).map((nugget) => (
+            <NuggetCard key={nugget.slug} nugget={nugget} />
           ))}
         </div>
-      </section>
 
-      {/* Full Scripture Listing */}
-      <section className="mt-8 sm:mt-10">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            Full Scripture Listing
-          </h2>
-          <span className="text-xs text-zinc-500 hidden sm:inline">Sort by: Verse Order</span>
-        </div>
+        <h2 className="mt-10 font-serif text-2xl">
+          Full Scripture Listing
+        </h2>
 
-        <div className="divide-y divide-zinc-800 border border-zinc-800 rounded-lg overflow-hidden">
-          {verses.map((verse) => (
-            <div
-              key={verse.slug}
-              className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-4"
+        <ul className="mt-5 divide-y divide-gray-800 rounded-xl border border-gray-800">
+          {items.map((nugget) => (
+            <li
+              key={nugget.slug}
+              className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center"
             >
-              <span className="text-amber-400 text-xs font-medium w-28 shrink-0">
-                {verse.reference}
+              <span className="text-sm text-amber-300 sm:w-32 sm:shrink-0">
+                {nugget.scriptureRef}
               </span>
-              <p className="text-zinc-200 text-sm flex-1 min-w-0">{verse.title}</p>
-              <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
-                <span className="text-zinc-500 text-xs">{verse.duration}</span>
-                <Link
-                  href={`/nuggets/${verse.slug}`}
-                  className="text-amber-400 text-xs font-medium hover:underline"
-                >
-                  Access
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      {/* Related Wisdom Books */}
-      <section className="mt-8 sm:mt-10">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Related Wisdom Books
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {relatedBooks.map((name) => (
-            <span
-              key={name}
-              className="text-xs px-3 py-1.5 rounded-full border border-zinc-800 text-zinc-400 hover:border-zinc-600 transition cursor-pointer"
-            >
-              {name}
-            </span>
+              <Link
+                href={`/nugget/${nugget.slug}`}
+                className="min-w-0 flex-1 break-words hover:text-amber-300"
+              >
+                {nugget.title}
+              </Link>
+
+              <Link
+                href={`/nugget/${nugget.slug}/reader`}
+                className="text-sm text-amber-300"
+              >
+                Read →
+              </Link>
+            </li>
           ))}
+        </ul>
+
+        <h2 className="mt-10 font-serif text-2xl">
+          Explore other books
+        </h2>
+
+        <div className="mt-4 flex flex-wrap gap-3">
+          {books
+            .filter((item) => item !== book)
+            .map((item) => (
+              <Link
+                key={item}
+                href={`/scripture-index/${slugify(item)}`}
+                className="rounded-full border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:border-amber-300"
+              >
+                {item}
+              </Link>
+            ))}
         </div>
-      </section>
+      </main>
+
+      <Footer />
     </div>
   );
 }

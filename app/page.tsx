@@ -1,199 +1,198 @@
-import Navbar from "../components/navbar";
-import Footer from "../components/Footer";
-import { Compass, ArrowRight, Images } from "lucide-react";
- 
-const topics = [
-  { title: "Leadership & Governance", count: "42 NUGGETS", img: "/images/visiting-homepage2.png" },
-  { title: "Money & Stewardship", count: "38 NUGGETS", img: "/images/visiting-homepage3.png" },
-  { title: "Strategy & Planning", count: "29 NUGGETS", img: "/images/visiting-homepage4.png" },
-  { title: "Perseverance Under Pressure", count: "31 NUGGETS", img: "/images/visiting-homepage5.png" },
-  { title: "Vision & Innovation", count: "50 NUGGETS", img: "/images/visiting-homepage6.png" },
-  { title: "Team Building & Culture", count: "25 NUGGETS", img: "/images/visiting-homepage7.png" },
-];
- 
-const wisdomTags = [
-  "Starting a Business",
-  "Money & Cashflow Problems",
-  "Managing Difficult People",
-  "Strategic Decision Making",
-  "Scaling & Growth Pressures",
-  "Leadership Burnout",
-];
- 
-const musicalTracks = [
-  {
-    reference: "Genesis 41",
-    title: "Joseph's Seven-Year Reserve Blueprint",
-    artist: "David O. & London Symphony",
-    time: "12:45",
-    Images:"/images/playlist-details1.png",
-  },
-  {
-    reference: "Nehemiah 3",
-    title: "The Architectural Mind: Building with Nehemiah",
-    artist: "Amina Vance & BNB Sound",
-    time: "15:10",
-    Images:"/images/playlist-details3.png",
-  },
-];
- 
+import Link from "next/link";
+import Navbar from "@/components/navbar";
+import Footer from "@/components/Footer";
+import NuggetCard from "@/components/NuggetCard";
+import ContentImage from "@/components/ContentImage";
+import {
+  challenges,
+  filterNuggets,
+  getNuggetBySlug,
+  nuggets,
+  slugify,
+  topics,
+} from "@/lib/nuggets";
+
 export default function Home() {
+  const featured = getNuggetBySlug("law-of-just-balances");
+  const latest = filterNuggets().slice(0, 3);
+
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="flex min-h-screen flex-col bg-black text-white">
       <Navbar />
- 
+
       <main className="flex-1">
-        {/* Hero */}
-        <section
-          className="relative min-h-[450px] bg-cover bg-[position:center_15%] py-16 sm:py-24 px-4 sm:px-6 text-center"
-          style={{ backgroundImage: "url('/images/visiting-homepage.png')" }}
-        >
-          <div className="absolute inset-0 bg-black/70" />
-          <div className="relative max-w-3xl mx-auto mt-12">
-            <p className="text-amber-300 text-xs tracking-widest uppercase mb-3">
+        <section className="relative overflow-hidden px-4 py-16 sm:px-6 sm:py-24">
+          <ContentImage
+            src="/images/visiting-homepage.png"
+            alt="Business wisdom library"
+            sizes="100vw"
+          />
+
+          <div className="absolute inset-0 bg-black/75" />
+
+          <div className="relative mx-auto max-w-3xl text-center">
+            <p className="text-xs uppercase tracking-widest text-amber-300">
               Timeless Biblical Wisdom for Today&apos;s Marketplace
             </p>
-            <h1 className="text-white text-3xl sm:text-4xl md:text-5xl font-serif font-semibold mb-6 leading-tight">
+
+            <h1 className="mt-4 font-serif text-3xl leading-tight sm:text-5xl">
               Command Your Business with Absolute Clarity
             </h1>
- 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xl mx-auto">
+
+            <form
+              action="/search"
+              method="get"
+              className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row"
+            >
+              <label htmlFor="home-search" className="sr-only">
+                Search the library
+              </label>
+
               <input
-                type="text"
-                placeholder="Search by scripture, business challenge, or book..."
-                className="w-full bg-neutral-900 border border-gray-700 rounded-md px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                id="home-search"
+                name="q"
+                type="search"
+                placeholder="Scripture, title, or business challenge"
+                className="min-w-0 flex-1 rounded-md border border-gray-700 bg-neutral-900 px-4 py-3"
               />
-              <button className="w-full sm:w-auto bg-amber-300 text-black font-medium px-6 py-2 rounded-md hover:bg-amber-400 transition whitespace-nowrap">
+
+              <button
+                type="submit"
+                className="rounded-md bg-amber-300 px-5 py-3 font-medium text-black"
+              >
                 Start Discovering
               </button>
-            </div>
+            </form>
           </div>
         </section>
- 
-        {/* Today's Business Nugget */}
-        <section className=" max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16 ">
-          <h2 className="text-white text-xl font-serif font-semibold mb-6">Today&apos;s Business Nugget</h2>
- 
-          <div className=" flex flex-col sm:flex-row bg-neutral-950 h-auto border border-amber-900/40 rounded-xl overflow-hidden md:flex">
-            <div
-              className="w-full h-48 bg-cover bg-center sm:h-auto sm:w-[40%] "
-              style={{ backgroundImage: "url('/images/visiting-homepage1.png')" }}
-            />
-            <div className="p-5 sm:p-6 md:w-1/2 flex flex-col justify-center">
-              <p className="text-amber-300 text-xs tracking-wide uppercase mb-2">
-                Integrity &amp; Character &middot; 6 Min Listen
-              </p>
-              <h3 className="text-white text-lg font-semibold mb-3">
-                The Law of Just Balances in Corporate Negotiation
-              </h3>
-              <p className="text-gray-400 text-sm italic mb-6">
-                &ldquo;A false balance is an abomination to the Lord, but a just weight is His delight.&rdquo; &mdash; Proverbs 11:1
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button className="bg-amber-300 text-black text-sm font-medium px-4 py-2 rounded-md hover:bg-amber-400 transition">
-                  Listen Audio (Musical)
-                </button>
-                <button className="border border-gray-700 text-gray-300 text-sm px-4 py-2 rounded-md hover:border-gray-500 transition">
-                  Read Commentary
-                </button>
-              </div>  
-            </div>
-          </div>
-        </section>
- 
-        {/* I Need Wisdom About */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16">
-          <h2 className="text-white text-xl font-serif font-semibold mb-6">I Need Wisdom About...</h2>
-          <div className="flex flex-wrap  gap-3">
-            {wisdomTags.map((tag, i) => (
-              <span
-                key={tag}
-                className={`text-12 px-4 py-2 rounded-full border ${
-                  i === 0
-                    ? "bg-amber-300 text-black border-amber-300"
-                    : "text-gray-300 border-gray-700 hover:border-gray-500"
-                }`}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </section>
- 
-        {/* Browse by Core Topic */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16">
-          <h2 className="text-white text-xl font-serif font-semibold mb-6">Browse by Core Topic</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {topics.map((topic) => (
-              <div
-                key={topic.title}
-                className="relative h-40 rounded-lg overflow-hidden bg-cover bg-center flex items-end p-4"
-                style={{ backgroundImage: `url('${topic.img}')` }}
-              >
-                <div className="absolute inset-0 bg-black/50" />
-                <div className="absolute top-3 left-3 w-7 h-7 rounded-full border border-amber-300/40 flex items-center justify-center">
-                  <Compass size={13} className="text-amber-300" />
-                </div>
-                <span className="absolute top-3 right-3 text-[10px] bg-black/60 text-amber-300 px-2 py-1 rounded">
-                  {topic.count}
-                </span>
-                <p className="relative text-white font-medium">{topic.title}</p>
-              </div>
-            ))}
-          </div>
-        </section>
- 
-        {/* Featured Wisdom Musicals */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16">
-          <h2 className="text-white text-xl font-serif font-semibold mb-1">Featured Wisdom Musicals</h2>
-          <p className="text-gray-400 text-sm mb-6">
-            Immersive audio teachings layered over professional cinematic soundtracks and ambient orchestration.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {musicalTracks.map((track) => (
-              <div
-                key={track.title}
-                className="flex items-center gap-3 sm:gap-4 bg-neutral-950 border border-gray-800 rounded-lg p-3"
-              >
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-neutral-800 shrink-0 overflow-hidden">
-                  <img src={track.Images} 
-                  alt={track.title} 
-                  className="w-full h-full object-cover" />
+
+        <div className="mx-auto max-w-6xl space-y-12 px-4 py-12 sm:px-6 sm:py-16">
+          {featured && (
+            <section>
+              <h2 className="font-serif text-2xl">
+                Featured Business Nugget
+              </h2>
+
+              <div className="mt-6 grid overflow-hidden rounded-xl border border-gray-800 bg-neutral-950 md:grid-cols-2">
+                <div className="relative min-h-56">
+                  <ContentImage
+                    src={featured.image}
+                    alt={featured.title}
+                    sizes="(min-width: 768px) 50vw, 100vw"
+                  />
                 </div>
 
-                <div className="flex-1 min-w-0 flex flex-col gap-1">
-                  <p className="text-amber-300 text-xs truncate">{track.reference}</p>
-                  <p className="text-white text-sm font-medium truncate">{track.title}</p>
-                  <p className="text-gray-500 text-xs truncate">{track.artist}</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-gray-500 text-xs hidden sm:inline">{track.time}</span>
-                  <button className="w-8 h-8 rounded-full bg-amber-300 text-black flex items-center justify-center">
-                    <ArrowRight size={16} />
-                  </button>
+                <div className="p-6">
+                  <p className="text-xs text-amber-300">
+                    {featured.topic} · {featured.scriptureRef}
+                  </p>
+
+                  <h3 className="mt-3 font-serif text-2xl">
+                    {featured.title}
+                  </h3>
+
+                  <p className="mt-4 font-serif italic text-gray-400">
+                    “{featured.scriptureText}”
+                  </p>
+
+                  <Link
+                    href={`/nugget/${featured.slug}/reader`}
+                    className="mt-6 inline-block rounded bg-amber-300 px-5 py-3 text-sm font-medium text-black"
+                  >
+                    Read Commentary
+                  </Link>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
- 
-        {/* Latest Biblical Nuggets */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16">
-          <h2 className="text-white text-xl font-serif font-semibold mb-6">Latest Biblical Nuggets</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            {["/images/saved-nugget1.png", "/images/saved-nugget2.png", "/images/saved-nugget3.png", "/images/saved-nugget4.png"].map(
-              (img, i) => (
-                <div
-                  key={i}
-                  className="h-28 sm:h-32 rounded-lg bg-cover bg-center"
-                  style={{ backgroundImage: `url('${img}')` }}
-                />
-              )
+            </section>
+          )}
+
+          <section>
+            <h2 className="font-serif text-2xl">
+              I Need Wisdom About…
+            </h2>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              {challenges.map((challenge) => (
+                <Link
+                  key={challenge}
+                  href={`/library?challenge=${encodeURIComponent(challenge)}`}
+                  className="rounded-full border border-gray-700 px-4 py-2 text-sm hover:border-amber-300"
+                >
+                  {challenge}
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="font-serif text-2xl">
+              Browse by Core Topic
+            </h2>
+
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {topics.map((topic) => (
+                <Link
+                  key={topic}
+                  href={`/topics/${slugify(topic)}`}
+                  className="rounded-xl border border-gray-800 bg-neutral-950 p-5 hover:border-amber-300"
+                >
+                  <h3 className="font-serif text-xl">{topic}</h3>
+
+                  <p className="mt-3 text-xs text-amber-300">
+                    {nuggets.filter((nugget) => nugget.topic === topic).length}
+                    {" "}nuggets →
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="font-serif text-2xl">
+              Featured Wisdom Musicals
+            </h2>
+
+            <div className="mt-5 rounded-xl border border-gray-800 bg-neutral-950 p-5">
+              <p className="text-sm text-gray-400">
+                Audio teachings are coming soon. Explore the written
+                nuggets in the meantime.
+              </p>
+
+              <Link
+                href="/library"
+                className="mt-4 inline-block text-sm text-amber-300"
+              >
+                Browse the library →
+              </Link>
+            </div>
+          </section>
+
+          <section>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-serif text-2xl">
+                Latest Biblical Nuggets
+              </h2>
+
+              <Link href="/library" className="text-sm text-amber-300">
+                Browse all →
+              </Link>
+            </div>
+
+            {latest.length > 0 ? (
+              <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {latest.map((nugget) => (
+                  <NuggetCard key={nugget.slug} nugget={nugget} />
+                ))}
+              </div>
+            ) : (
+              <p className="mt-5 rounded-xl border border-gray-800 p-6 text-gray-400">
+                No nuggets have been added yet.
+              </p>
             )}
-          </div>
-        </section>
+          </section>
+        </div>
       </main>
- 
+
       <Footer />
     </div>
   );
