@@ -1,18 +1,52 @@
 "use client";
-
+import {useState} from "react";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
+import{Eye, EyeOff } from "lucide-react";
 export default function LoginPage() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const[password, setPassword] = useState("");
+  const [error, setError] = useState("");
+const [loading, setLoading] = useState(false);
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    // TODO: real auth, then navigate only on success
+  setError("");
+  setLoading(true);
+
+  try {
+    const response = await fetch("http://localhost:3001/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.message || "Login failed");
+      return;
+    }
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
     router.push("/home");
+  } catch {
+    setError("Could not connect to the server");
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <div className="min-h-screen bg-black flex flex-col">
@@ -55,6 +89,8 @@ export default function LoginPage() {
               <input
                 id="email"
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. solomon@kingdomventures.com"
                 className="w-full h-11 sm:h-12 bg-black border border-gray-700 rounded-md px-3 sm:px-4 text-sm sm:text-base text-white placeholder-gray-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
               />
@@ -62,20 +98,34 @@ export default function LoginPage() {
 
             {/* Password */}
             <div>
-              <label
-                htmlFor="password"
-                className="block text-gray-300 text-xs sm:text-sm mb-1.5"
-              >
-                Password
-              </label>
+  <label
+    htmlFor="password"
+    className="block text-gray-300 text-xs sm:text-sm mb-1.5"
+  >
+    Password
+  </label>
 
-              <input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                className="w-full h-11 sm:h-12 bg-black border border-gray-700 rounded-md px-3 sm:px-4 text-sm sm:text-base text-white placeholder-gray-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
-              />
-            </div>
+  <div className="relative">
+    <input
+      id="password"
+      type={showPassword ? "text" : "password"}
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      placeholder="Enter your password"
+      required
+      className="w-full h-11 sm:h-12 bg-black border border-gray-700 rounded-md px-3 sm:px-4 pr-11 text-sm sm:text-base text-white placeholder-gray-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
+    />
+
+    <button
+      type="button"
+      onClick={() => setShowPassword((prev) => !prev)}
+      aria-label={showPassword ? "Hide password" : "Show password"}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-amber-300"
+    >
+      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+    </button>
+  </div>
+</div>
 
             {/* Remember / Forgot */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs sm:text-sm pt-1">
@@ -94,13 +144,20 @@ export default function LoginPage() {
                 Forgot Password?
               </Link>
             </div>
+            
+            {error && (
+            <p className="text-red-400 text-sm text-center">
+             {error}
+            </p>
+            )}
 
             {/* Sign In Button */}
             <button
               type="submit"
+              disabled={loading}
               className="w-full h-11 sm:h-12 bg-amber-300 text-black text-sm sm:text-base font-medium rounded-md hover:bg-amber-400 active:bg-amber-500 transition mt-2"
             >
-              Sign In
+             {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 

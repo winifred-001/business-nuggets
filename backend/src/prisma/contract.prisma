@@ -1,0 +1,27 @@
+// use prisma-8
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    TimestamptzString @default(now())
+  updatedAt    temporal.updatedAtString()
+
+  savedNuggets SavedNugget[]
+}
+
+model SavedNugget {
+  id        Int      @id @default(autoincrement())
+  nuggetId  String
+  userId    Int
+  createdAt TimestamptzString @default(now())
+
+  user User @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@unique([userId, nuggetId])
+}

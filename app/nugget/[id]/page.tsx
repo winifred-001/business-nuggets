@@ -1,3 +1,4 @@
+import SaveNuggetButton from "@/components/SaveNuggetsButton";
 import ContentImage from "@/components/ContentImage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -87,6 +88,8 @@ export default async function NuggetDetailPage({
               Read Wisdom
             </Link>
 
+            <SaveNuggetButton nuggetId={nugget.id} />
+
             <Link
               href={`/library?topic=${encodeURIComponent(nugget.topic)}`}
               className="mt-4 block text-sm text-amber-300"
@@ -101,9 +104,6 @@ export default async function NuggetDetailPage({
               Explore {nugget.book}
             </Link>
 
-            <p className="mt-5 text-xs text-gray-400">
-              Audio playback and personal saving are coming soon.
-            </p>
           </aside>
         </div>
       </main>

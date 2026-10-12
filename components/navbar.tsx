@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X, UserCircle } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, X, UserCircle, LogOut } from "lucide-react";
 
 const publicPages = [
   "/",
@@ -42,15 +42,34 @@ export default function Navbar({
   showAuthLinks?: boolean;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
 
-  const displayAuthLinks =
-    showAuthLinks ?? publicPages.includes(pathname);
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [openFor, setOpenFor] = useState<string | null>(null);
+
   const menuButton = useRef<HTMLButtonElement>(null);
 
   const open = openFor === pathname;
   const close = () => setOpenFor(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    setIsLoggedIn(!!token);
+  }, [pathname]);
+
+  const displayAuthLinks =
+    showAuthLinks ?? (publicPages.includes(pathname) && !isLoggedIn);
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    setIsLoggedIn(false);
+    close();
+
+    router.push("/login");
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -108,7 +127,7 @@ export default function Navbar({
         </nav>
 
         <div className="flex shrink-0 items-center gap-3">
-          {displayAuthLinks && (
+          {!isLoggedIn && displayAuthLinks && (
             <>
               <Link
                 href="/login"
@@ -128,15 +147,26 @@ export default function Navbar({
             </>
           )}
 
-          {!displayAuthLinks && (
-            <Link
-              href="/library/account"
-              onClick={close}
-              aria-label="Account settings"
-              className="block text-gray-200 hover:text-amber-300"
-            >
-              <UserCircle size={26} />
-            </Link>
+          {isLoggedIn && (
+            <>
+              <Link
+                href="/library/account"
+                onClick={close}
+                aria-label="Account settings"
+                className="block text-gray-200 hover:text-amber-300"
+              >
+                <UserCircle size={26} />
+              </Link>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                aria-label="Logout"
+                className="hidden text-gray-300 hover:text-amber-300 sm:block"
+              >
+                <LogOut size={22} />
+              </button>
+            </>
           )}
 
           <button
@@ -164,8 +194,8 @@ export default function Navbar({
           {[
             ...links,
             ...libraryViews,
-            ...workspace,
-            ...(displayAuthLinks
+            ...(isLoggedIn ? workspace : []),
+            ...(!isLoggedIn
               ? [
                   { href: "/login", label: "Login" },
                   { href: "/register", label: "Sign Up" },
@@ -181,6 +211,16 @@ export default function Navbar({
               {link.label}
             </Link>
           ))}
+
+          {isLoggedIn && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded px-3 py-3 text-left text-sm text-red-400 hover:bg-gray-900"
+            >
+              Logout
+            </button>
+          )}
         </nav>
       )}
     </header>
