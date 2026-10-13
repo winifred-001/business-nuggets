@@ -9,6 +9,10 @@ model User {
   updatedAt    temporal.updatedAtString()
 
   savedNuggets SavedNugget[]
+  playlists    Playlist[]
+  notes Note[]
+  history History[]
+  followedTopics FollowedTopic[]
 }
 
 model SavedNugget {
@@ -24,4 +28,78 @@ model SavedNugget {
   )
 
   @@unique([userId, nuggetId])
+}
+
+model Playlist {
+  id        Int      @id @default(autoincrement())
+  name      String
+  userId    Int
+  createdAt TimestamptzString @default(now())
+
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items PlaylistItem[]
+
+  @@unique([userId, name])
+}
+
+model PlaylistItem {
+  id         Int      @id @default(autoincrement())
+  playlistId Int
+  nuggetId   String
+  createdAt  TimestamptzString @default(now())
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistId, nuggetId])
+}
+
+model Note {
+  id        Int      @id @default(autoincrement())
+  title     String?
+  content   String
+  nuggetId  String?
+  userId    Int
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  user User @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@index([userId])
+}
+
+model History {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  nuggetId    String
+  progress    Int      @default(0)
+  lastOpenedAt TimestamptzString @default(now())
+
+  user User @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@unique([userId, nuggetId])
+  @@index([userId])
+}
+
+model FollowedTopic {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  topic     String
+  createdAt TimestamptzString @default(now())
+
+  user User @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@unique([userId, topic])
+  @@index([userId])
 }

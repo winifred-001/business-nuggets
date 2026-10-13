@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import { getNuggetBySlug } from "@/lib/nuggets";
+import TrackNuggetHistory from "@/components/TrackNuggetHistory";
 
 export default async function NuggetDetailPage({
   params,
@@ -18,6 +19,8 @@ export default async function NuggetDetailPage({
 
   return (
     <div className="flex min-h-screen flex-col bg-black text-white">
+       {/* Automatically track this nugget in the user's history */}
+      <TrackNuggetHistory nuggetId={nugget.id} />
       <Navbar />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">

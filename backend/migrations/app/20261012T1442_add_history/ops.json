@@ -1,0 +1,164 @@
+[
+  {
+    "id": "table.History",
+    "label": "Create table \"History\"",
+    "summary": "Creates table \"History\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "History"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"History\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"History\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"History\"",
+        "sql": "CREATE TABLE \"public\".\"History\" (\n  \"id\" SERIAL NOT NULL,\n  \"lastOpenedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"nuggetId\" text NOT NULL,\n  \"progress\" int4 DEFAULT 0 NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"History\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"History\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.History.History_userId_nuggetId_key",
+    "label": "Add unique constraint on \"History\" (userId, nuggetId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "History_userId_nuggetId_key",
+        "table": "History"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"History_userId_nuggetId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "History_userId_nuggetId_key",
+          "public",
+          "\"public\".\"History\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"History_userId_nuggetId_key\"",
+        "sql": "ALTER TABLE \"public\".\"History\" ADD CONSTRAINT \"History_userId_nuggetId_key\" UNIQUE (\"userId\", \"nuggetId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"History_userId_nuggetId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "History_userId_nuggetId_key",
+          "public",
+          "\"public\".\"History\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.History.History_userId_idx_a489d58a",
+    "label": "Create index \"History_userId_idx_a489d58a\" on \"History\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "History_userId_idx_a489d58a",
+        "table": "History"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"History_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"History_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"History_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"History_userId_idx_a489d58a\" ON \"public\".\"History\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"History_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"History_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.History.History_userId_fkey",
+    "label": "Add foreign key \"History_userId_fkey\" on \"History\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "History_userId_fkey",
+        "table": "History"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"History_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "History_userId_fkey",
+          "public",
+          "\"public\".\"History\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"History_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"History\"\nADD CONSTRAINT \"History_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"History_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "History_userId_fkey",
+          "public",
+          "\"public\".\"History\""
+        ]
+      }
+    ]
+  }
+]

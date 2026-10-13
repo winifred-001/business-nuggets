@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
+import ReaderProgressTracker from "@/components/ReaderProgressTracker";
+
 import { getNuggetBySlug } from "@/lib/nuggets";
 
 export default async function ReaderViewPage({
@@ -10,39 +13,57 @@ export default async function ReaderViewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
   const nugget = getNuggetBySlug(id);
 
-  if (!nugget) notFound();
+  if (!nugget) {
+    notFound();
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-gray-900">
+      {/* Tracks real reading progress */}
+      <ReaderProgressTracker nuggetId={nugget.id} />
+
       <Navbar />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
         <article>
+          {/* Breadcrumb */}
           <nav
             aria-label="Reader breadcrumb"
             className="mb-6 flex flex-wrap gap-2 text-sm text-gray-600"
           >
-            <Link href="/library">Wisdom Archive</Link>
+            <Link
+              href="/library"
+              className="hover:text-amber-700"
+            >
+              Wisdom Archive
+            </Link>
 
             <span>/</span>
 
             <Link
-              href={`/library?topic=${encodeURIComponent(nugget.topic)}`}
+              href={`/library?topic=${encodeURIComponent(
+                nugget.topic
+              )}`}
+              className="hover:text-amber-700"
             >
               {nugget.topic}
             </Link>
           </nav>
 
+          {/* Nugget information */}
           <p className="text-xs text-amber-800">
-            Nugget #{nugget.number} · {nugget.scriptureRef}
+            Nugget #{nugget.number} ·{" "}
+            {nugget.scriptureRef}
           </p>
 
           <h1 className="mt-3 break-words font-serif text-3xl leading-tight sm:text-4xl">
             {nugget.title}
           </h1>
 
+          {/* Scripture */}
           {nugget.scriptureText && (
             <blockquote className="my-8 border-l-4 border-amber-400 bg-amber-50 p-5 font-serif text-lg italic">
               “{nugget.scriptureText}”
@@ -53,8 +74,11 @@ export default async function ReaderViewPage({
             </blockquote>
           )}
 
+          {/* Key Principle */}
           <section className="mt-8">
-            <h2 className="font-serif text-2xl">Key Principle</h2>
+            <h2 className="font-serif text-2xl">
+              Key Principle
+            </h2>
 
             <p className="mt-3 leading-8 text-gray-700">
               {nugget.keyPrinciple ||
@@ -62,6 +86,7 @@ export default async function ReaderViewPage({
             </p>
           </section>
 
+          {/* Marketplace Application */}
           {nugget.marketplaceApplication && (
             <section className="mt-8">
               <h2 className="font-serif text-2xl">
@@ -74,6 +99,7 @@ export default async function ReaderViewPage({
             </section>
           )}
 
+          {/* Practical Action Plan */}
           {nugget.practicalActionPlan.length > 0 && (
             <section className="mt-8">
               <h2 className="font-serif text-2xl">
@@ -81,16 +107,21 @@ export default async function ReaderViewPage({
               </h2>
 
               <ol className="mt-4 list-decimal space-y-3 pl-5 leading-8 text-gray-700">
-                {nugget.practicalActionPlan.map((action) => (
-                  <li key={action}>{action}</li>
-                ))}
+                {nugget.practicalActionPlan.map(
+                  (action) => (
+                    <li key={action}>
+                      {action}
+                    </li>
+                  )
+                )}
               </ol>
             </section>
           )}
 
+          {/* Back button */}
           <Link
             href={`/nugget/${nugget.slug}`}
-            className="mt-10 inline-block rounded bg-amber-300 px-5 py-3 text-sm font-medium text-black"
+            className="mt-10 inline-block rounded bg-amber-300 px-5 py-3 text-sm font-medium text-black transition hover:bg-amber-400"
           >
             Back to nugget
           </Link>
