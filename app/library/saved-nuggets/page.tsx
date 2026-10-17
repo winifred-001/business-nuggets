@@ -11,9 +11,11 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { API_URL } from "@/lib/api";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
-import { nuggets } from "@/lib/nuggets";
+import { getPublishedNuggets } from "@/lib/nuggets-api";
+import type { Nugget } from "@/types/nugget";
 
 type SavedNuggetRecord = {
   id: number;
@@ -42,46 +44,47 @@ export default function SavedNuggetsPage() {
   const [folderMenuFor, setFolderMenuFor] = useState<string | null>(null);
   const [addingToFolder, setAddingToFolder] = useState(false);
   const [folderMessage, setFolderMessage] = useState("");
+  const [apiNuggets, setApiNuggets] = useState<Nugget[]>([]);
 
   useEffect(() => {
     loadSavedNuggets();
     loadPlaylists();
   }, []);
 
-  async function loadSavedNuggets() {
-    const token = localStorage.getItem("token");
+ async function loadSavedNuggets() {
+  const token = localStorage.getItem("token");
 
-    if (!token) {
-      setError("Please log in to view your saved nuggets.");
-      setLoading(false);
+  if (!token) {
+    setError("Please log in to view your saved nuggets.");
+    setLoading(false);
+    return;
+  }
+
+  try {
+    const [response, publishedNuggets] = await Promise.all([
+      fetch(`${API_URL}/saved-nuggets`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+      getPublishedNuggets(),
+    ]);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.message || "Unable to load saved nuggets.");
       return;
     }
 
-    try {
-      const response = await fetch(
-        "http://localhost:3001/saved-nuggets",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || "Unable to load saved nuggets.");
-        return;
-      }
-
-      setSavedRecords(Array.isArray(data) ? data : []);
-    } catch {
-      setError("Could not connect to the server.");
-    } finally {
-      setLoading(false);
-    }
+    setSavedRecords(Array.isArray(data) ? data : []);
+    setApiNuggets(publishedNuggets);
+  } catch {
+    setError("Could not connect to the server.");
+  } finally {
+    setLoading(false);
   }
-
+}
   async function removeSavedNugget(nuggetId: string) {
     const token = localStorage.getItem("token");
 
@@ -89,7 +92,7 @@ export default function SavedNuggetsPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3001/saved-nuggets/${nuggetId}`,
+        `${API_URL}/saved-nuggets/${nuggetId}`,
         {
           method: "DELETE",
           headers: {
@@ -123,7 +126,7 @@ export default function SavedNuggetsPage() {
 
   try {
     const response = await fetch(
-      `http://localhost:3001/playlists/${playlistId}/items`,
+      `${API_URL}/playlists/${playlistId}/items`,
       {
         method: "POST",
         headers: {
@@ -163,7 +166,7 @@ export default function SavedNuggetsPage() {
   if (!token) return;
 
   try {
-    const response = await fetch("http://localhost:3001/playlists", {
+    const response = await fetch(`${API_URL}/playlists`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -187,7 +190,7 @@ async function createFolder() {
   setCreatingFolder(true);
 
   try {
-    const response = await fetch("http://localhost:3001/playlists", {
+    const response = await fetch(`${API_URL}/playlists`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -215,10 +218,10 @@ async function createFolder() {
       savedRecords.map((record) => record.nuggetId)
     );
 
-    return nuggets.filter((nugget) =>
+    return apiNuggets.filter((nugget) =>
       savedIds.has(nugget.id)
     );
-  }, [savedRecords]);
+  }, [savedRecords, apiNuggets]);
 
   const visibleNuggets = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();

@@ -1,0 +1,125 @@
+[
+  {
+    "id": "table.Nugget",
+    "label": "Create table \"Nugget\"",
+    "summary": "Creates table \"Nugget\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Nugget"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Nugget\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Nugget\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Nugget\"",
+        "sql": "CREATE TABLE \"public\".\"Nugget\" (\n  \"audioUrl\" text,\n  \"bibleSection\" text NOT NULL,\n  \"book\" text NOT NULL,\n  \"challenges\" text[] NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"duration\" text NOT NULL,\n  \"featured\" bool DEFAULT false NOT NULL,\n  \"id\" text NOT NULL,\n  \"image\" text NOT NULL,\n  \"isGold\" bool DEFAULT false NOT NULL,\n  \"keyPrinciple\" text NOT NULL,\n  \"marketplaceApplication\" text NOT NULL,\n  \"number\" int4 NOT NULL,\n  \"practicalActionPlan\" text[] NOT NULL,\n  \"publishedAt\" timestamptz,\n  \"scriptureRef\" text NOT NULL,\n  \"scriptureText\" text NOT NULL,\n  \"slug\" text NOT NULL,\n  \"status\" text DEFAULT 'draft' NOT NULL,\n  \"tag\" text NOT NULL,\n  \"title\" text NOT NULL,\n  \"topic\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"Nugget_challenges_elem_not_null_8c29d25c\" CHECK (array_position(\"challenges\", NULL) IS NULL),\n  CONSTRAINT \"Nugget_practicalActionPlan_elem_not_null_d53b649f\" CHECK (array_position(\"practicalActionPlan\", NULL) IS NULL)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Nugget\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Nugget\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Nugget.Nugget_slug_key",
+    "label": "Add unique constraint on \"Nugget\" (slug)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Nugget_slug_key",
+        "table": "Nugget"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Nugget_slug_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Nugget_slug_key",
+          "public",
+          "\"public\".\"Nugget\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Nugget_slug_key\"",
+        "sql": "ALTER TABLE \"public\".\"Nugget\" ADD CONSTRAINT \"Nugget_slug_key\" UNIQUE (\"slug\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Nugget_slug_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Nugget_slug_key",
+          "public",
+          "\"public\".\"Nugget\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Nugget.Nugget_number_key",
+    "label": "Add unique constraint on \"Nugget\" (number)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Nugget_number_key",
+        "table": "Nugget"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Nugget_number_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Nugget_number_key",
+          "public",
+          "\"public\".\"Nugget\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Nugget_number_key\"",
+        "sql": "ALTER TABLE \"public\".\"Nugget\" ADD CONSTRAINT \"Nugget_number_key\" UNIQUE (\"number\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Nugget_number_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Nugget_number_key",
+          "public",
+          "\"public\".\"Nugget\""
+        ]
+      }
+    ]
+  }
+]

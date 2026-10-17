@@ -1,4 +1,6 @@
 "use client";
+
+import { API_URL } from "@/lib/api";
 import {useState} from "react";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
@@ -19,7 +21,7 @@ const [loading, setLoading] = useState(false);
   setLoading(true);
 
   try {
-    const response = await fetch("http://localhost:3001/auth/login", {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -39,6 +41,9 @@ const [loading, setLoading] = useState(false);
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
+    window.dispatchEvent(
+    new Event("auth-change"),
+    );
 
     router.push("/home");
   } catch {

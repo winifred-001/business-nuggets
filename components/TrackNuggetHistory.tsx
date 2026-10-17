@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { API_URL } from "@/lib/api";
 
 type Props = {
   nuggetId: string;
@@ -14,7 +15,7 @@ export default function TrackNuggetHistory({ nuggetId }: Props) {
       if (!token) return;
 
       try {
-        await fetch("http://localhost:3001/history", {
+        await fetch(`${API_URL}/history`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

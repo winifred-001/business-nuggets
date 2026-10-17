@@ -1,22 +1,37 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Circle,
+  Clock3,
+} from "lucide-react";
+
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
-import NuggetCard from "@/components/NuggetCard";
+
 import {
-  bibleSections,
-  books,
-  challenges,
   collections,
   filterNuggets,
-  getNuggetsBySlugs,
-  nuggets,
   slugify,
-  topics,
 } from "@/lib/nuggets";
+import { getPublishedNuggets } from "@/lib/nuggets-api";
+
+import type { Nugget } from "@/types/nugget";
 
 const tabs = [
   "All Nuggets",
@@ -26,518 +41,1559 @@ const tabs = [
   "Collections",
 ];
 
+const topicImages: Record<string, string> = {
+  "Leadership & Governance":
+    "/images/visiting-homepage2.png",
+
+  "Leadership & Teams":
+    "/images/visiting-homepage2.png",
+
+  "Money & Stewardship":
+    "/images/visiting-homepage3.png",
+
+  "Strategy & Planning":
+    "/images/visiting-homepage4.png",
+
+  "Entrepreneurship & Innovation":
+    "/images/visiting-homepage5.png",
+
+  "Integrity & Character":
+    "/images/visiting-homepage6.png",
+
+  "People & Teams":
+    "/images/visiting-homepage7.png",
+};
+
+const fallbackTopicImages = [
+  "/images/visiting-homepage2.png",
+  "/images/visiting-homepage3.png",
+  "/images/visiting-homepage4.png",
+  "/images/visiting-homepage5.png",
+  "/images/visiting-homepage6.png",
+  "/images/visiting-homepage7.png",
+];
+
+const topicDescriptions: Record<string, string> = {
+  "Leadership & Governance":
+    "Delegation, accountability and organizational vision.",
+
+  "Leadership & Teams":
+    "Leadership, delegation and healthy team structures.",
+
+  "Money & Stewardship":
+    "Capital reserves, debt and responsible resource allocation.",
+
+  "Strategy & Planning":
+    "Long-term thinking, risk and decisions under pressure.",
+
+  "Entrepreneurship & Innovation":
+    "Foundations for building and creating with purpose.",
+
+  "Integrity & Character":
+    "Honest transactions, ethical standards and trust.",
+
+  "People & Teams":
+    "Relationships, collaboration and conflict resolution.",
+};
+
+const challengeDescriptions: Record<
+  string,
+  {
+    subtitle: string;
+    kicker?: string;
+  }
+> = {
+  "Starting a Business": {
+    kicker: "FOUNDATION PATHWAY",
+    subtitle:
+      "Foundation, stewardship and launching with wisdom.",
+  },
+
+  "Money & Cashflow Problems": {
+    kicker: "CURATED BLUEPRINT",
+    subtitle:
+      "Reserves, debt, diversification and financial stewardship.",
+  },
+
+  "Managing Difficult People": {
+    kicker: "PEOPLE PATHWAY",
+    subtitle:
+      "Accountability, dialogue, delegation and relationships.",
+  },
+
+  "Strategic Decision Making": {
+    kicker: "STRATEGY PATHWAY",
+    subtitle:
+      "Risk, counsel, planning and wise decision-making.",
+  },
+
+  "Scaling & Growth Pressures": {
+    kicker: "LEADERSHIP PATHWAY",
+    subtitle:
+      "Structure, delegation, sustainable growth and scale.",
+  },
+
+  "Leadership Burnout": {
+    kicker: "LEADERSHIP PATHWAY",
+    subtitle:
+      "Rest, resilience, delegation and longevity.",
+  },
+};
+
+const collectionImages: Record<string, string> = {
+  "starting-your-business-gods-way":
+    "/images/collection-main.png",
+
+  "capital-stewardship-debt":
+    "/images/saved-nugget1.png",
+
+  "integrity-as-a-premium-brand":
+    "/images/saved-nugget2.png",
+};
+
 function LibraryContent() {
   const params = useSearchParams();
   const router = useRouter();
 
-  const tab = tabs.includes(params.get("tab") ?? "")
-    ? params.get("tab")!
-    : tabs[0];
+  const [apiNuggets, setApiNuggets] = useState<
+    Nugget[]
+  >([]);
 
-  const selectedTopics = params.getAll("topic");
-  const selectedSections = params.getAll("section");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const requestedSort = params.get("sort") ?? "newest";
+  const [bookQuery, setBookQuery] =
+    useState("");
 
-  const sort = ["newest", "oldest", "az"].includes(requestedSort)
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadNuggets() {
+      try {
+        setLoading(true);
+
+        const data =
+          await getPublishedNuggets();
+
+        if (!mounted) return;
+
+        setApiNuggets(data);
+        setError("");
+      } catch (err) {
+        console.error(
+          "Failed to load Nuggets:",
+          err,
+        );
+
+        if (!mounted) return;
+
+        setError(
+          "Could not load the Wisdom Archive. Make sure the backend is running.",
+        );
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadNuggets();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const requestedTab =
+    params.get("tab") ?? "";
+
+  const activeTab = tabs.includes(
+    requestedTab,
+  )
+    ? requestedTab
+    : "All Nuggets";
+
+  const selectedTopics =
+    params.getAll("topic");
+
+  const selectedSections =
+    params.getAll("section");
+
+  const selectedChallenge =
+    params.get("challenge") ?? "";
+
+  const selectedBook =
+    params.get("book") ?? "";
+
+  const requestedSort =
+    params.get("sort") ?? "newest";
+
+  const sort = [
+    "newest",
+    "oldest",
+    "az",
+  ].includes(requestedSort)
     ? requestedSort
     : "newest";
 
-  // Find the nuggets matching the current choices.
-  const filtered = filterNuggets({
-    query: params.get("q") ?? "",
-    topics: selectedTopics,
-    sections: selectedSections,
-    challenge: params.get("challenge") ?? "",
-    book: params.get("book") ?? "",
-    tag: params.get("tag") ?? "",
-    sort,
-  });
+  const requestedPage = Number(
+    params.get("page") ?? "1",
+  );
 
-  // Keep choices in the page address so refreshing preserves them.
-  function update(
+  const currentPage =
+    Number.isFinite(requestedPage) &&
+    requestedPage > 0
+      ? requestedPage
+      : 1;
+
+  function pushParams(
+    next: URLSearchParams,
+  ) {
+    const query = next.toString();
+
+    router.push(
+      `/library${query ? `?${query}` : ""}`,
+      { scroll: false },
+    );
+  }
+
+  function updateParam(
     key: string,
     value: string,
     multiple = false,
   ) {
-    const next = new URLSearchParams(params.toString());
+    const next = new URLSearchParams(
+      params.toString(),
+    );
 
     if (multiple) {
-      const values = next.getAll(key);
+      const current =
+        next.getAll(key);
 
       next.delete(key);
 
-      const updatedValues = values.includes(value)
-        ? values.filter((item) => item !== value)
-        : [...values, value];
+      const updated = current.includes(value)
+        ? current.filter(
+            (item) => item !== value,
+          )
+        : [...current, value];
 
-      updatedValues.forEach((item) => next.append(key, item));
+      updated.forEach((item) =>
+        next.append(key, item),
+      );
     } else if (value) {
       next.set(key, value);
     } else {
       next.delete(key);
     }
 
-    router.push(
-      `/library${next.size ? `?${next}` : ""}`,
-      { scroll: false },
-    );
+    if (key !== "page") {
+      next.delete("page");
+    }
+
+    pushParams(next);
   }
 
-  const resetHref = `/library?tab=${encodeURIComponent(tab)}`;
+  function changeTab(tab: string) {
+    const next = new URLSearchParams(
+      params.toString(),
+    );
 
-  // Each index tab groups the matching articles differently.
-  const groups =
-    tab === "Topics Index"
-      ? topics.map((label) => ({
-          label,
-          members: filtered.filter((n) => n.topic === label),
-          href: `/topics/${slugify(label)}`,
-        }))
-      : tab === "Challenges"
-        ? challenges.map((label) => ({
-            label,
-            members: filtered.filter((n) =>
-              n.challenges.includes(label),
+    if (tab === "All Nuggets") {
+      next.delete("tab");
+    } else {
+      next.set("tab", tab);
+    }
+
+    next.delete("page");
+
+    pushParams(next);
+  }
+
+  const topics = useMemo(() => {
+    return [
+      ...new Set(
+        apiNuggets
+          .map((nugget) => nugget.topic)
+          .filter(Boolean),
+      ),
+    ];
+  }, [apiNuggets]);
+
+  const bibleSections = useMemo(() => {
+    return [
+      ...new Set(
+        apiNuggets
+          .map(
+            (nugget) =>
+              nugget.bibleSection,
+          )
+          .filter(Boolean),
+      ),
+    ];
+  }, [apiNuggets]);
+
+  const challenges = useMemo(() => {
+    return [
+      ...new Set(
+        apiNuggets.flatMap(
+          (nugget) =>
+            nugget.challenges ?? [],
+        ),
+      ),
+    ];
+  }, [apiNuggets]);
+
+  const filteredNuggets = useMemo(() => {
+    return filterNuggets(
+      {
+        topics: selectedTopics,
+        sections: selectedSections,
+        challenge: selectedChallenge,
+        book: selectedBook,
+        sort,
+      },
+      apiNuggets,
+    );
+  }, [
+    apiNuggets,
+    selectedTopics,
+    selectedSections,
+    selectedChallenge,
+    selectedBook,
+    sort,
+  ]);
+
+  const ITEMS_PER_PAGE = 6;
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(
+      filteredNuggets.length /
+        ITEMS_PER_PAGE,
+    ),
+  );
+
+  const safePage = Math.min(
+    currentPage,
+    totalPages,
+  );
+
+  const paginatedNuggets =
+    filteredNuggets.slice(
+      (safePage - 1) *
+        ITEMS_PER_PAGE,
+      safePage * ITEMS_PER_PAGE,
+    );
+
+  const topicCards = useMemo(() => {
+    return topics.map(
+      (topic, index) => ({
+        title: topic,
+
+        description:
+          topicDescriptions[topic] ??
+          `Explore published biblical business wisdom on ${topic}.`,
+
+        count: apiNuggets.filter(
+          (nugget) =>
+            nugget.topic === topic,
+        ).length,
+
+        image:
+          topicImages[topic] ??
+          fallbackTopicImages[
+            index %
+              fallbackTopicImages.length
+          ],
+      }),
+    );
+  }, [topics, apiNuggets]);
+
+  const challengeCards =
+    useMemo(() => {
+      return challenges.map(
+        (challenge) => {
+          const members =
+            apiNuggets.filter(
+              (nugget) =>
+                nugget.challenges?.includes(
+                  challenge,
+                ),
+            );
+
+          const copy =
+            challengeDescriptions[
+              challenge
+            ];
+
+          return {
+            title: challenge,
+
+            count: members.length,
+
+            kicker:
+              copy?.kicker ??
+              "CURATED PATHWAY",
+
+            subtitle:
+              copy?.subtitle ??
+              `Explore biblical wisdom related to ${challenge}.`,
+
+            firstNugget:
+              members[0] ?? null,
+          };
+        },
+      );
+    }, [challenges, apiNuggets]);
+
+  const scriptureGroups =
+    useMemo(() => {
+      return bibleSections.map(
+        (section) => {
+          const sectionNuggets =
+            apiNuggets.filter(
+              (nugget) =>
+                nugget.bibleSection ===
+                section,
+            );
+
+          const books = [
+            ...new Set(
+              sectionNuggets
+                .map(
+                  (nugget) =>
+                    nugget.book,
+                )
+                .filter(Boolean),
             ),
-            href: `/library?challenge=${encodeURIComponent(label)}`,
-          }))
-        : tab === "Scripture Matrix"
-          ? books.map((label) => ({
-              label,
-              members: filtered.filter((n) => n.book === label),
-              href: `/scripture-index/${slugify(label)}`,
-            }))
-          : [];
+          ].map((book) => {
+            const count =
+              sectionNuggets.filter(
+                (nugget) =>
+                  nugget.book === book,
+              ).length;
+
+            return {
+              title: book,
+              count,
+              description: `${count} published ${
+                count === 1
+                  ? "Nugget"
+                  : "Nuggets"
+              } from ${book}.`,
+            };
+          });
+
+          return {
+            title: section,
+            books,
+          };
+        },
+      );
+    }, [
+      apiNuggets,
+      bibleSections,
+    ]);
+
+  const normalizedBookQuery =
+    bookQuery.trim().toLowerCase();
+
+  const filteredScriptureGroups =
+    scriptureGroups
+      .map((group) => ({
+        ...group,
+
+        books: group.books.filter(
+          (book) =>
+            `${book.title} ${book.description}`
+              .toLowerCase()
+              .includes(
+                normalizedBookQuery,
+              ),
+        ),
+      }))
+      .filter(
+        (group) =>
+          group.books.length > 0,
+      );
+
+  const proverbsCount =
+    apiNuggets.filter(
+      (nugget) =>
+        nugget.book.toLowerCase() ===
+        "proverbs",
+    ).length;
+
+  const collectionCards =
+    useMemo(() => {
+      return collections.map(
+        (collection) => {
+          const members =
+            collection.nuggetSlugs
+              .map((slug) =>
+                apiNuggets.find(
+                  (nugget) =>
+                    nugget.slug === slug,
+                ),
+              )
+              .filter(
+                (
+                  nugget,
+                ): nugget is Nugget =>
+                  Boolean(nugget),
+              );
+
+          return {
+            ...collection,
+
+            members,
+
+            image:
+              collectionImages[
+                collection.slug
+              ] ??
+              members[0]?.image ??
+              "/images/collection-main.png",
+          };
+        },
+      );
+    }, [apiNuggets]);
+
+  const resultContext =
+    selectedTopics.length === 1
+      ? `inside ${selectedTopics[0]}`
+      : selectedChallenge
+        ? `for ${selectedChallenge}`
+        : selectedBook
+          ? `from ${selectedBook}`
+          : "across the Wisdom Archive";
 
   return (
-    <>
-      {/* Library tabs */}
-      <div
-        className="mb-8 flex gap-5 overflow-x-auto border-b border-gray-800"
-        role="tablist"
-        aria-label="Library views"
-      >
-        {tabs.map((item) => (
-          <button
-            key={item}
-            type="button"
-            role="tab"
-            id={`tab-${slugify(item)}`}
-            aria-selected={tab === item}
-            aria-controls="library-panel"
-            onClick={() => update("tab", item)}
-            onKeyDown={(event) => {
-              if (
-                !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
-                  event.key,
-                )
-              ) {
-                return;
-              }
+    <main>
+      {/* PAGE HEADER */}
+      <section className="border-b border-white/[0.06]">
+        <div className="mx-auto max-w-[1280px] px-5 pt-14 sm:px-8 lg:px-10 lg:pt-16">
+          <h1 className="font-serif text-[40px] leading-tight text-[#FAF9F6]">
+            The Wisdom Archive
+          </h1>
 
-              event.preventDefault();
+          <p className="mt-4 max-w-[650px] text-[14px] leading-6 text-white/50">
+            Discover premium biblical
+            business strategies. Filter by
+            topic, challenge, or scripture
+            index.
+          </p>
 
-              const current = tabs.indexOf(item);
-
-              const next =
-                event.key === "Home"
-                  ? 0
-                  : event.key === "End"
-                    ? tabs.length - 1
-                    : (
-                        current +
-                        (event.key === "ArrowRight" ? 1 : -1) +
-                        tabs.length
-                      ) % tabs.length;
-
-              update("tab", tabs[next]);
-
-              document
-                .getElementById(`tab-${slugify(tabs[next])}`)
-                ?.focus();
-            }}
-            className={`shrink-0 border-b-2 pb-3 text-sm ${
-              tab === item
-                ? "border-amber-300 text-amber-300"
-                : "border-transparent text-gray-400 hover:text-white"
-            }`}
-          >
-            {item}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid min-w-0 gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
-        {/* Filters */}
-        <aside className="min-w-0">
-          <details
-            open
-            className="rounded-xl border border-gray-800 bg-neutral-950 p-4"
-          >
-            <summary className="cursor-pointer font-semibold text-amber-300">
-              Filter the library
-            </summary>
-
-            <div className="mt-5 space-y-6">
-              {/* Keyword search */}
-              <form
-                key={params.get("q")}
-                onSubmit={(event) => {
-                  event.preventDefault();
-
-                  const form = new FormData(event.currentTarget);
-
-                  update("q", String(form.get("q") ?? ""));
-                }}
-              >
-                <label
-                  htmlFor="library-query"
-                  className="mb-2 block text-xs uppercase text-gray-400"
-                >
-                  Keyword
-                </label>
-
-                <input
-                  id="library-query"
-                  name="q"
-                  type="search"
-                  defaultValue={params.get("q") ?? ""}
-                  placeholder="Title, scripture, or challenge"
-                  className="w-full rounded border border-gray-700 bg-black px-3 py-2 text-sm"
-                />
-
-                <button
-                  type="submit"
-                  className="mt-2 w-full rounded bg-amber-300 py-2 text-sm font-medium text-black"
-                >
-                  Search library
-                </button>
-              </form>
-
-              {/* Topic filters */}
-              <fieldset>
-                <legend className="mb-3 text-xs uppercase text-gray-400">
-                  Business topics
-                </legend>
-
-                <div className="space-y-3">
-                  {topics.map((topic) => (
-                    <label
-                      key={topic}
-                      className="flex items-start gap-2 text-sm"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedTopics.includes(topic)}
-                        onChange={() => update("topic", topic, true)}
-                        className="mt-1 accent-amber-300"
-                      />
-
-                      <span>
-                        {topic}{" "}
-                        <span className="text-gray-500">
-                          (
-                          {
-                            nuggets.filter((n) => n.topic === topic)
-                              .length
-                          }
-                          )
-                        </span>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-
-              {/* Bible-section filters */}
-              <fieldset>
-                <legend className="mb-3 text-xs uppercase text-gray-400">
-                  Bible section
-                </legend>
-
-                <div className="space-y-3">
-                  {bibleSections.map((section) => (
-                    <label
-                      key={section}
-                      className="flex items-start gap-2 text-sm"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedSections.includes(section)}
-                        onChange={() =>
-                          update("section", section, true)
-                        }
-                        className="mt-1 accent-amber-300"
-                      />
-
-                      <span>{section}</span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-
-              {/* Challenge filter */}
-              <label className="block text-xs uppercase text-gray-400">
-                Challenge
-
-                <select
-                  aria-label="Challenge filter"
-                  value={params.get("challenge") ?? ""}
-                  onChange={(event) =>
-                    update("challenge", event.target.value)
-                  }
-                  className="mt-2 w-full rounded border border-gray-700 bg-black p-2 text-sm normal-case text-white"
-                >
-                  <option value="">All challenges</option>
-
-                  {challenges.map((challenge) => (
-                    <option key={challenge} value={challenge}>
-                      {challenge}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              {(params.has("book") || params.has("tag")) && (
-                <p className="break-words text-xs text-gray-400">
-                  Also filtered by:{" "}
-                  {[params.get("book"), params.get("tag")]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </p>
-              )}
-
-              <Link
-                href={resetHref}
-                scroll={false}
-                className="inline-block text-sm text-amber-300 hover:underline"
-              >
-                Clear filters
-              </Link>
-            </div>
-          </details>
-        </aside>
-
-        {/* Results */}
-        <section
-          id="library-panel"
-          role="tabpanel"
-          aria-labelledby={`tab-${slugify(tab)}`}
-          className="min-w-0"
-        >
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <p role="status" className="text-sm text-gray-400">
-              {filtered.length} matching nugget
-              {filtered.length === 1 ? "" : "s"}
-            </p>
-
-            <label className="flex items-center gap-2 text-sm text-gray-400">
-              Sort by
-
-              <select
-                aria-label="Sort nuggets"
-                value={sort}
-                onChange={(event) =>
-                  update("sort", event.target.value)
+          <div className="mt-9 flex gap-8 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() =>
+                  changeTab(tab)
                 }
-                className="rounded border border-gray-700 bg-neutral-950 px-3 py-2 text-white"
+                className={`relative shrink-0 pb-4 text-[13px] transition ${
+                  activeTab === tab
+                    ? "font-medium text-[#C8A35A]"
+                    : "text-white/50 hover:text-white"
+                }`}
               >
-                <option value="newest">Most Recent</option>
-                <option value="oldest">Oldest First</option>
-                <option value="az">A–Z</option>
-              </select>
-            </label>
-          </div>
+                {tab}
 
-          {filtered.length === 0 ? (
-            <EmptyState
-              href={resetHref}
-              label="Clear filters"
-            />
-          ) : tab === "All Nuggets" ? (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {filtered.map((nugget) => (
-                <NuggetCard
-                  key={nugget.slug}
-                  nugget={nugget}
+                {activeTab === tab && (
+                  <span className="absolute bottom-0 left-0 h-[2px] w-full bg-[#C8A35A]" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {loading && (
+        <StatusPanel>
+          Loading the Wisdom Archive...
+        </StatusPanel>
+      )}
+
+      {!loading && error && (
+        <StatusPanel>
+          {error}
+        </StatusPanel>
+      )}
+
+      {!loading &&
+        !error &&
+        activeTab ===
+          "All Nuggets" && (
+          <section className="mx-auto max-w-[1280px] px-5 py-10 sm:px-8 lg:px-10">
+            <div className="grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)]">
+              {/* FILTERS */}
+              <aside>
+                <FilterGroup
+                  title="Business Topics"
+                  items={topics.map(
+                    (topic) => ({
+                      label: topic,
+
+                      count:
+                        apiNuggets.filter(
+                          (nugget) =>
+                            nugget.topic ===
+                            topic,
+                        ).length,
+                    }),
+                  )}
+                  selected={
+                    selectedTopics
+                  }
+                  onToggle={(topic) =>
+                    updateParam(
+                      "topic",
+                      topic,
+                      true,
+                    )
+                  }
                 />
-              ))}
-            </div>
-          ) : tab === "Collections" ? (
-            <div className="grid gap-5 sm:grid-cols-2">
-              {collections
-                .filter((collection) =>
-                  getNuggetsBySlugs(collection.nuggetSlugs).some(
-                    (nugget) =>
-                      filtered.some(
-                        (match) => match.slug === nugget.slug,
-                      ),
-                  ),
-                )
-                .map((collection) => (
-                  <article
-                    key={collection.slug}
-                    className="rounded-xl border border-gray-800 bg-neutral-950 p-5"
+
+                <div className="mt-8">
+                  <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-white">
+                    Bible Section
+                  </h2>
+
+                  <div className="mt-4 space-y-3">
+                    {bibleSections.map(
+                      (section) => {
+                        const selected =
+                          selectedSections.includes(
+                            section,
+                          );
+
+                        return (
+                          <label
+                            key={section}
+                            className="flex cursor-pointer items-start gap-2 text-[13px] leading-5 text-white/60"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={
+                                selected
+                              }
+                              onChange={() =>
+                                updateParam(
+                                  "section",
+                                  section,
+                                  true,
+                                )
+                              }
+                              className="sr-only"
+                            />
+
+                            <CheckBox
+                              selected={
+                                selected
+                              }
+                            />
+
+                            <span>
+                              {section}
+                            </span>
+                          </label>
+                        );
+                      },
+                    )}
+                  </div>
+                </div>
+
+                {(selectedTopics.length >
+                  0 ||
+                  selectedSections.length >
+                    0 ||
+                  selectedChallenge ||
+                  selectedBook) && (
+                  <Link
+                    href="/library"
+                    className="mt-7 inline-block text-[13px] font-medium text-[#C8A35A] hover:text-[#E0C48A]"
                   >
-                    <h2 className="font-serif text-xl">
-                      <Link
-                        href={`/collection/${collection.slug}`}
-                        className="hover:text-amber-300"
-                      >
-                        {collection.title}
-                      </Link>
+                    Clear filters
+                  </Link>
+                )}
+              </aside>
+
+              {/* RESULTS */}
+              <div className="min-w-0">
+                <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                  <p className="text-[13px] text-white/50">
+                    Showing{" "}
+                    <span className="text-white">
+                      {
+                        filteredNuggets.length
+                      }{" "}
+                      {filteredNuggets.length ===
+                      1
+                        ? "Nugget"
+                        : "Nuggets"}
+                    </span>{" "}
+                    {resultContext}
+                  </p>
+
+                  <label className="flex items-center gap-3 text-[13px] text-white/50">
+                    Sort by:
+
+                    <select
+                      value={sort}
+                      onChange={(event) =>
+                        updateParam(
+                          "sort",
+                          event.target
+                            .value,
+                        )
+                      }
+                      className="rounded-md border border-white/10 bg-[#111111] px-3 py-2.5 text-[13px] text-white outline-none"
+                    >
+                      <option value="newest">
+                        Most Recent
+                      </option>
+
+                      <option value="oldest">
+                        Oldest
+                      </option>
+
+                      <option value="az">
+                        A–Z
+                      </option>
+                    </select>
+                  </label>
+                </div>
+
+                {paginatedNuggets.length >
+                0 ? (
+                  <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                    {paginatedNuggets.map(
+                      (nugget) => (
+                        <NuggetCard
+                          key={
+                            nugget.slug
+                          }
+                          nugget={
+                            nugget
+                          }
+                        />
+                      ),
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-white/10 bg-[#111111] px-6 py-12 text-center">
+                    <h2 className="font-serif text-[28px]">
+                      No Nuggets found
                     </h2>
 
-                    <p className="mt-3 text-sm text-gray-400">
-                      {collection.description}
-                    </p>
-
-                    <p className="mt-3 text-xs text-amber-300">
-                      {
-                        getNuggetsBySlugs(
-                          collection.nuggetSlugs,
-                        ).filter((nugget) =>
-                          filtered.some(
-                            (match) => match.slug === nugget.slug,
-                          ),
-                        ).length
-                      }{" "}
-                      matching nuggets
+                    <p className="mt-3 text-[14px] text-white/50">
+                      Try another filter or
+                      clear your current
+                      selections.
                     </p>
 
                     <Link
-                      href={`/collection/${collection.slug}`}
-                      className="mt-4 inline-block text-sm text-amber-300"
+                      href="/library"
+                      className="mt-6 inline-flex rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
                     >
-                      Open collection →
+                      Clear filters
                     </Link>
-                  </article>
-                ))}
+                  </div>
+                )}
 
-              {!collections.some((collection) =>
-                getNuggetsBySlugs(collection.nuggetSlugs).some(
-                  (nugget) =>
-                    filtered.some(
-                      (match) => match.slug === nugget.slug,
-                    ),
+                {totalPages > 1 && (
+                  <div className="mt-8 flex justify-end gap-2">
+                    <PageButton
+                      disabled={
+                        safePage === 1
+                      }
+                      onClick={() =>
+                        updateParam(
+                          "page",
+                          String(
+                            Math.max(
+                              1,
+                              safePage -
+                                1,
+                            ),
+                          ),
+                        )
+                      }
+                    >
+                      <ChevronLeft
+                        size={15}
+                      />
+                    </PageButton>
+
+                    {Array.from(
+                      {
+                        length:
+                          totalPages,
+                      },
+                      (_, index) =>
+                        index + 1,
+                    ).map(
+                      (number) => (
+                        <button
+                          key={
+                            number
+                          }
+                          type="button"
+                          onClick={() =>
+                            updateParam(
+                              "page",
+                              String(
+                                number,
+                              ),
+                            )
+                          }
+                          className={`flex h-9 w-9 items-center justify-center rounded-md border text-[13px] ${
+                            safePage ===
+                            number
+                              ? "border-[#C8A35A] bg-[#C8A35A] font-semibold text-[#080808]"
+                              : "border-white/10 text-white/50"
+                          }`}
+                        >
+                          {number}
+                        </button>
+                      ),
+                    )}
+
+                    <PageButton
+                      disabled={
+                        safePage ===
+                        totalPages
+                      }
+                      onClick={() =>
+                        updateParam(
+                          "page",
+                          String(
+                            Math.min(
+                              totalPages,
+                              safePage +
+                                1,
+                            ),
+                          ),
+                        )
+                      }
+                    >
+                      <ChevronRight
+                        size={15}
+                      />
+                    </PageButton>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+      {/* TOPICS INDEX */}
+      {!loading &&
+        !error &&
+        activeTab ===
+          "Topics Index" && (
+          <ArchivePanel>
+            <BackLabel />
+
+            <h2 className="mt-5 font-serif text-[28px] leading-tight">
+              Browse by Core Topic
+            </h2>
+
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-white/50">
+              Choose a topic to explore its
+              published teachings and
+              scripture foundations.
+            </p>
+
+            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {topicCards.map(
+                (topic) => (
+                  <Link
+                    key={
+                      topic.title
+                    }
+                  href={`/topics/${slugify(
+                  topic.title,
+                  )}`}
+                    className="group relative min-h-[245px] overflow-hidden rounded-xl border border-white/10"
+                  >
+                    <Image
+                      src={
+                        topic.image
+                      }
+                      alt={
+                        topic.title
+                      }
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                    />
+
+                    <div className="absolute inset-0 bg-black/40" />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/15" />
+
+                    <div className="absolute inset-0 flex flex-col p-5">
+                      <div className="flex items-center justify-between text-[#C8A35A]">
+                        <span className="text-xl">
+                          ◎
+                        </span>
+
+                        <span className="text-[13px] font-medium">
+                          {
+                            topic.count
+                          }{" "}
+                          {topic.count ===
+                          1
+                            ? "Nugget"
+                            : "Nuggets"}
+                        </span>
+                      </div>
+
+                      <div className="mt-auto">
+                        <h3 className="font-serif text-[20px] leading-tight">
+                          {
+                            topic.title
+                          }
+                        </h3>
+
+                        <p className="mt-2 text-[13px] leading-5 text-white/55">
+                          {
+                            topic.description
+                          }
+                        </p>
+
+                        <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#C8A35A]">
+                          Explore topic
+
+                          <ArrowRight
+                            size={
+                              13
+                            }
+                          />
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
                 ),
-              ) && (
-                <EmptyState
-                  title="No matching collections"
-                  href={resetHref}
-                  label="Clear filters"
-                />
               )}
             </div>
-          ) : (
-            <div className="space-y-6">
-              {groups
-                .filter((group) => group.members.length > 0)
-                .map((group) => (
-                  <section
-                    key={group.label}
-                    className="rounded-xl border border-gray-800 bg-neutral-950 p-4 sm:p-5"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h2 className="font-serif text-xl">
-                        {group.label}
-                      </h2>
+          </ArchivePanel>
+        )}
 
-                      <Link
-                        href={group.href}
-                        className="text-sm text-amber-300"
+      {/* CHALLENGES */}
+      {!loading &&
+        !error &&
+        activeTab ===
+          "Challenges" && (
+          <ArchivePanel>
+            <BackLabel />
+
+            <h2 className="mt-5 font-serif text-[28px] leading-tight">
+              I Need Wisdom About...
+            </h2>
+
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-white/50">
+              Start with the challenge in
+              front of you. Find a curated
+              path from reflection to
+              practical application.
+            </p>
+
+            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {challengeCards.map(
+                (item, index) => (
+                  <Link
+                    key={
+                      item.title
+                    }
+                    href={`/challenges/${slugify(
+                   item.title,
+                   )}`}
+                    className={`min-h-[220px] rounded-xl border bg-[#111111] p-6 transition hover:border-[#C8A35A]/50 ${
+                      index === 1
+                        ? "border-[#C8A35A]/70"
+                        : "border-white/10"
+                    }`}
+                  >
+                    <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                      {
+                        item.count
+                      }{" "}
+                      {item.count ===
+                      1
+                        ? "NUGGET"
+                        : "NUGGETS"}{" "}
+                      ·{" "}
+                      {
+                        item.kicker
+                      }
+                    </p>
+
+                    <h3 className="mt-4 font-serif text-[20px] leading-tight">
+                      {
+                        item.title
+                      }
+                    </h3>
+
+                    <p className="mt-3 text-[13px] leading-5 text-white/55">
+                      {
+                        item.subtitle
+                      }
+                    </p>
+
+                    {item.firstNugget && (
+                      <p className="mt-4 text-[13px] leading-5 text-white/40">
+                        Begin with:{" "}
+                        {
+                          item
+                            .firstNugget
+                            .title
+                        }
+                      </p>
+                    )}
+
+                    <span className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#C8A35A]">
+                      Explore pathway
+
+                      <ArrowRight
+                        size={13}
+                      />
+                    </span>
+                  </Link>
+                ),
+              )}
+            </div>
+          </ArchivePanel>
+        )}
+
+      {/* SCRIPTURE MATRIX */}
+      {!loading &&
+        !error &&
+        activeTab ===
+          "Scripture Matrix" && (
+          <ArchivePanel>
+            <BackLabel />
+
+            <h2 className="mt-5 font-serif text-[28px] leading-tight">
+              Scripture Index
+            </h2>
+
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-white/50">
+              Read the business teaching
+              alongside its biblical
+              foundation. Browse by Bible
+              section, then book.
+            </p>
+
+            <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
+              <div className="space-y-5">
+                {filteredScriptureGroups.length >
+                0 ? (
+                  filteredScriptureGroups.map(
+                    (group) => (
+                      <section
+                        key={
+                          group.title
+                        }
+                        className="rounded-xl border border-white/10 bg-[#111111] p-5"
                       >
-                        Explore {group.members.length} nuggets →
-                      </Link>
+                        <h3 className="font-serif text-[20px]">
+                          {
+                            group.title
+                          }
+                        </h3>
+
+                        <div className="mt-4 space-y-3">
+                          {group.books.map(
+                            (
+                              book,
+                            ) => (
+                              <Link
+                                key={
+                                  book.title
+                                }
+                                href={`/scripture-index/${slugify(
+                                  book.title,
+                                )}`}
+                                className="group flex items-center justify-between gap-5 rounded-lg border border-white/[0.08] bg-[#0B0B0B] px-5 py-4 transition hover:border-[#C8A35A]/45"
+                              >
+                                <div className="min-w-0">
+                                  <h4 className="font-serif text-[16px]">
+                                    {
+                                      book.title
+                                    }
+                                  </h4>
+
+                                  <p className="mt-1 text-[13px] leading-5 text-white/45">
+                                    {
+                                      book.description
+                                    }
+                                  </p>
+                                </div>
+
+                                <span className="shrink-0 text-[13px] font-medium text-[#C8A35A]">
+                                  Browse
+                                  book →
+                                </span>
+                              </Link>
+                            ),
+                          )}
+                        </div>
+                      </section>
+                    ),
+                  )
+                ) : (
+                  <div className="rounded-xl border border-white/10 bg-[#111111] p-8 text-center">
+                    <p className="text-[14px] text-white/50">
+                      No books match
+                      “{bookQuery}”.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <aside className="self-start lg:sticky lg:top-24">
+                <h3 className="text-[13px] font-semibold">
+                  Find a book
+                </h3>
+
+                <label
+                  htmlFor="book-search"
+                  className="sr-only"
+                >
+                  Search scripture books
+                </label>
+
+                <input
+                  id="book-search"
+                  type="search"
+                  value={bookQuery}
+                  onChange={(event) =>
+                    setBookQuery(
+                      event.target.value,
+                    )
+                  }
+                  placeholder="Search scripture books..."
+                  className="mt-3 h-11 w-full rounded-lg border border-white/10 bg-[#181818] px-4 text-[13px] text-[#FAF9F6] outline-none placeholder:text-white/30 focus:border-[#C8A35A]/60"
+                />
+
+                <Link
+                  href="/scripture-index/proverbs"
+                  className="mt-5 block rounded-lg border border-[#C8A35A]/25 bg-[#C8A35A]/15 p-5 transition hover:border-[#C8A35A]/50"
+                >
+                  <p className="text-[13px] font-semibold text-[#C8A35A]">
+                    Begin with Proverbs
+                  </p>
+
+                  <p className="mt-3 text-[13px] leading-5 text-white/55">
+                    {proverbsCount}{" "}
+                    published{" "}
+                    {proverbsCount ===
+                    1
+                      ? "Nugget"
+                      : "Nuggets"}{" "}
+                    currently connect
+                    Proverbs with
+                    marketplace wisdom.
+                  </p>
+                </Link>
+
+                <div className="mt-4 rounded-lg border border-[#C8A35A]/20 bg-[#C8A35A]/10 p-5">
+                  <p className="text-[13px] font-semibold text-[#C8A35A]">
+                    Read in context
+                  </p>
+
+                  <p className="mt-3 text-[13px] leading-5 text-white/55">
+                    Business commentary
+                    is an application,
+                    not a replacement for
+                    reading the passage in
+                    its full biblical
+                    setting.
+                  </p>
+                </div>
+              </aside>
+            </div>
+          </ArchivePanel>
+        )}
+
+      {/* COLLECTIONS */}
+      {!loading &&
+        !error &&
+        activeTab ===
+          "Collections" && (
+          <ArchivePanel>
+            <BackLabel />
+
+            <h2 className="mt-5 font-serif text-[28px] leading-tight">
+              Curated Learning Pathways
+            </h2>
+
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-white/50">
+              Ordered teachings for
+              sustained study. Continue a
+              pathway or discover a new
+              collection.
+            </p>
+
+            {collectionCards.length >
+              0 && (
+              <>
+                <div className="mt-8 overflow-hidden rounded-xl border border-[#C8A35A]/65 bg-[#111111] p-5">
+                  <div className="grid gap-6 md:grid-cols-[240px_1fr]">
+                    <div className="relative min-h-[200px] overflow-hidden rounded-lg">
+                      <Image
+                        src={
+                          collectionCards[0]
+                            .image
+                        }
+                        alt={
+                          collectionCards[0]
+                            .title
+                        }
+                        fill
+                        sizes="240px"
+                        className="object-cover"
+                      />
                     </div>
 
-                    <ul className="mt-4 divide-y divide-gray-800">
-                      {group.members.map((nugget) => (
-                        <li
-                          key={nugget.slug}
-                          className="py-3"
-                        >
-                          <Link
-                            href={`/nugget/${nugget.slug}`}
-                            className="block hover:text-amber-300"
-                          >
-                            {nugget.title}
-                          </Link>
+                    <div className="flex flex-col justify-center">
+                      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                        Featured Pathway
+                      </p>
 
-                          <p className="mt-1 text-xs text-gray-400">
-                            {nugget.scriptureRef}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                ))}
-            </div>
-          )}
-        </section>
-      </div>
-    </>
-  );
-}
+                      <h3 className="mt-3 font-serif text-[24px] leading-tight">
+                        {
+                          collectionCards[0]
+                            .title
+                        }
+                      </h3>
 
-// Show this when the filters have no matching articles.
-function EmptyState({
-  title = "No nuggets found",
-  description = "Try another keyword or clear your filters.",
-  href = "/library",
-  label = "Browse the library",
-}: {
-  title?: string;
-  description?: string;
-  href?: string;
-  label?: string;
-}) {
-  return (
-    <div className="rounded-xl border border-gray-700 p-6 text-center sm:p-10">
-      <h2 className="font-serif text-xl">{title}</h2>
+                      <p className="mt-3 max-w-xl text-[14px] leading-6 text-white/50">
+                        {
+                          collectionCards[0]
+                            .description
+                        }
+                      </p>
 
-      <p className="mt-2 text-sm text-gray-400">
-        {description}
-      </p>
+                      <p className="mt-5 text-[13px] text-white/55">
+                        {
+                          collectionCards[0]
+                            .members
+                            .length
+                        }{" "}
+                        published{" "}
+                        {collectionCards[0]
+                          .members
+                          .length === 1
+                          ? "Nugget"
+                          : "Nuggets"}{" "}
+                        currently available
+                      </p>
 
-      <Link
-        href={href}
-        className="mt-5 inline-block rounded-md bg-amber-300 px-5 py-2 text-sm font-medium text-black"
-      >
-        {label}
-      </Link>
-    </div>
+                      <Link
+                        href={`/collection/${collectionCards[0].slug}`}
+                        className="mt-5 w-fit rounded-md bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
+                      >
+                        Explore Collection
+                        →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
+                {collectionCards.length >
+                  1 && (
+                  <>
+                    <h3 className="mt-9 font-serif text-[20px]">
+                      Explore More
+                      Collections
+                    </h3>
+
+                    <div className="mt-5 space-y-4">
+                      {collectionCards
+                        .slice(1)
+                        .map(
+                          (
+                            collection,
+                          ) => (
+                            <Link
+                              key={
+                                collection.slug
+                              }
+                              href={`/collection/${collection.slug}`}
+                              className="flex items-center gap-4 rounded-lg border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/40"
+                            >
+                              <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-md">
+                                <Image
+                                  src={
+                                    collection.image
+                                  }
+                                  alt={
+                                    collection.title
+                                  }
+                                  fill
+                                  sizes="80px"
+                                  className="object-cover"
+                                />
+                              </div>
+
+                              <div className="min-w-0 flex-1">
+                                <h4 className="font-serif text-[16px]">
+                                  {
+                                    collection.title
+                                  }
+                                </h4>
+
+                                <p className="mt-1 text-[13px] leading-5 text-white/45">
+                                  {
+                                    collection.description
+                                  }
+                                </p>
+                              </div>
+
+                              <span className="hidden shrink-0 text-[13px] font-medium text-[#C8A35A] sm:block">
+                                Explore
+                                Collection →
+                              </span>
+                            </Link>
+                          ),
+                        )}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </ArchivePanel>
+        )}
+    </main>
   );
 }
 
 export default function LibraryPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
+    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
       <Navbar />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
-        <h1 className="mb-2 font-serif text-3xl font-semibold">
-          The Wisdom Archive
-        </h1>
-
-        <p className="mb-8 max-w-2xl text-sm text-gray-400">
-          Explore nuggets by topic, business challenge, scripture,
-          or collection.
-        </p>
-
+      <div className="flex-1">
         <Suspense
           fallback={
-            <p className="text-gray-400">
-              Loading the library...
-            </p>
+            <StatusPanel>
+              Loading the Wisdom Archive...
+            </StatusPanel>
           }
         >
           <LibraryContent />
         </Suspense>
-      </main>
+      </div>
 
       <Footer />
+    </div>
+  );
+}
+
+function NuggetCard({
+  nugget,
+}: {
+  nugget: Nugget;
+}) {
+  return (
+    <Link
+      href={`/nugget/${nugget.slug}`}
+      className="group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#C8A35A]/45"
+    >
+      <div className="relative h-[165px] overflow-hidden">
+        <Image
+          src={nugget.image}
+          alt={nugget.title}
+          fill
+          sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
+          className="object-cover transition duration-500 group-hover:scale-[1.03]"
+        />
+      </div>
+
+      <div className="flex min-h-[210px] flex-col p-5">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[13px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+            {nugget.tag ||
+              nugget.topic}
+          </span>
+
+          <span className="flex items-center gap-1.5 text-[13px] text-white/40">
+            <Clock3 size={13} />
+
+            {nugget.duration}
+          </span>
+        </div>
+
+        <h3 className="mt-3 font-serif text-[19px] leading-[1.25]">
+          {nugget.title}
+        </h3>
+
+        <p className="mt-3 text-[13px] italic leading-5 text-white/40">
+          {nugget.scriptureRef}
+        </p>
+
+        <div className="mt-auto flex items-end justify-between pt-5">
+          <span className="text-[13px] font-medium text-[#C8A35A]">
+            Listen & Read
+          </span>
+
+          {nugget.isGold ? (
+            <span className="rounded border border-[#C8A35A]/40 bg-[#C8A35A]/10 px-2 py-1 text-[12px] font-semibold text-[#C8A35A]">
+              GOLD
+            </span>
+          ) : (
+            <Circle
+              size={15}
+              strokeWidth={1.3}
+              className="text-white/25"
+            />
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function ArchivePanel({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mx-auto max-w-[1280px] px-5 py-10 sm:px-8 lg:px-10">
+      {children}
+    </section>
+  );
+}
+
+function BackLabel() {
+  return (
+    <Link
+      href="/library"
+      className="text-[13px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+    >
+      ← All Nuggets
+    </Link>
+  );
+}
+
+function CheckBox({
+  selected,
+}: {
+  selected: boolean;
+}) {
+  return (
+    <span
+      className={`mt-[2px] flex h-[14px] w-[14px] shrink-0 items-center justify-center border ${
+        selected
+          ? "border-[#C8A35A] bg-[#C8A35A]"
+          : "border-[#C8A35A]/70"
+      }`}
+    >
+      {selected && (
+        <span className="h-1.5 w-1.5 bg-[#080808]" />
+      )}
+    </span>
+  );
+}
+
+function FilterGroup({
+  title,
+  items,
+  selected,
+  onToggle,
+}: {
+  title: string;
+
+  items: {
+    label: string;
+    count: number;
+  }[];
+
+  selected: string[];
+
+  onToggle: (value: string) => void;
+}) {
+  return (
+    <div>
+      <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-white">
+        {title}
+      </h2>
+
+      <div className="mt-4 space-y-3">
+        {items.map((item) => {
+          const checked =
+            selected.includes(
+              item.label,
+            );
+
+          return (
+            <label
+              key={item.label}
+              className="flex cursor-pointer items-center gap-2 text-[13px] leading-5 text-white/60"
+            >
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() =>
+                  onToggle(item.label)
+                }
+                className="sr-only"
+              />
+
+              <CheckBox
+                selected={checked}
+              />
+
+              <span>
+                {item.label} (
+                {item.count})
+              </span>
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function PageButton({
+  children,
+  onClick,
+  disabled = false,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-white/45 transition hover:border-[#C8A35A]/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+    >
+      {children}
+    </button>
+  );
+}
+
+function StatusPanel({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mx-auto max-w-[1280px] px-5 py-16 sm:px-8 lg:px-10">
+      <div className="rounded-xl border border-white/10 bg-[#111111] p-8 text-center text-[14px] text-white/55">
+        {children}
+      </div>
     </div>
   );
 }

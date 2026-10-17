@@ -1,228 +1,620 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, UserCircle, LogOut } from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
-const publicPages = [
-  "/",
-  "/login",
-  "/register",
-  "/forgot-password",
-  "/onboarding",
-];
+import {
+  ChevronDown,
+  LogOut,
+  Menu,
+  NotebookPen,
+  Search,
+  UserCircle,
+  X,
+  Bookmark,
+  ListMusic,
+  Settings,
+  Bell,
+} from "lucide-react";
 
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/library", label: "Library" },
-  { href: "/search", label: "Search" },
-];
+import {
+  usePathname,
+  useRouter,
+} from "next/navigation";
 
-const libraryViews = [
-  { href: "/library?tab=Topics+Index", label: "Topics" },
-  { href: "/library?tab=Challenges", label: "Challenges" },
-  { href: "/library?tab=Scripture+Matrix", label: "Scripture Matrix" },
-  { href: "/library?tab=Collections", label: "Collections" },
-];
+type StoredUser = {
+  id?: number | string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  avatar?: string | null;
+  image?: string | null;
+};
 
-const workspace = [
-  { href: "/home", label: "My workspace" },
-  { href: "/library/saved-nuggets", label: "Saved nuggets" },
-  { href: "/library/playlist", label: "Playlists" },
-  { href: "/library/personal-notes", label: "Notes" },
-  { href: "/library/history", label: "History" },
-  { href: "/library/following", label: "Following" },
-  { href: "/library/account", label: "Account settings" },
-];
-
-export default function Navbar({
-  showAuthLinks,
-}: {
-  showAuthLinks?: boolean;
-}) {
+export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [openFor, setOpenFor] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] =
+    useState(false);
 
-  const menuButton = useRef<HTMLButtonElement>(null);
+  const [user, setUser] =
+    useState<StoredUser | null>(null);
 
-  const open = openFor === pathname;
-  const close = () => setOpenFor(null);
+  const [mobileOpen, setMobileOpen] =
+    useState(false);
 
+  const [profileOpen, setProfileOpen] =
+    useState(false);
+
+  const profileRef =
+    useRef<HTMLDivElement>(null);
+
+  /*
+   * Read authentication state.
+   */
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    function readAuth() {
+      const token =
+        localStorage.getItem("token");
 
-    setIsLoggedIn(!!token);
+      const storedUser =
+        localStorage.getItem("user");
+
+      setIsLoggedIn(Boolean(token));
+
+      if (storedUser) {
+        try {
+          setUser(
+            JSON.parse(storedUser),
+          );
+        } catch {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    }
+
+    readAuth();
+
+    /*
+     * Allows login/logout to update the
+     * Navbar immediately.
+     */
+    window.addEventListener(
+      "auth-change",
+      readAuth,
+    );
+
+    window.addEventListener(
+      "storage",
+      readAuth,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "auth-change",
+        readAuth,
+      );
+
+      window.removeEventListener(
+        "storage",
+        readAuth,
+      );
+    };
   }, [pathname]);
 
-  const displayAuthLinks =
-    showAuthLinks ?? (publicPages.includes(pathname) && !isLoggedIn);
+  /*
+   * Close menus whenever the route changes.
+   */
+  useEffect(() => {
+    setMobileOpen(false);
+    setProfileOpen(false);
+  }, [pathname]);
 
-  function handleLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  /*
+   * Close profile menu when clicking outside.
+   */
+  useEffect(() => {
+    function handleOutsideClick(
+      event: MouseEvent,
+    ) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(
+          event.target as Node,
+        )
+      ) {
+        setProfileOpen(false);
+      }
+    }
 
-    setIsLoggedIn(false);
-    close();
+    document.addEventListener(
+      "mousedown",
+      handleOutsideClick,
+    );
 
-    router.push("/login");
+    return () =>
+      document.removeEventListener(
+        "mousedown",
+        handleOutsideClick,
+      );
+  }, []);
+
+  /*
+   * Logged-in Home:
+   * /home
+   *
+   * Guest Home:
+   * /
+   */
+  const homeHref = isLoggedIn
+    ? "/home"
+    : "/";
+
+  const links = [
+    {
+      href: homeHref,
+      label: "Home",
+    },
+
+    {
+      href: "/library",
+      label: "Library",
+    },
+
+    {
+      href: "/search",
+      label: "Search",
+    },
+  ];
+
+  function isActive(
+    href: string,
+  ) {
+    if (
+      href === "/" ||
+      href === "/home"
+    ) {
+      return pathname === href;
+    }
+
+    return pathname.startsWith(
+      href,
+    );
   }
 
-  useEffect(() => {
-    if (!open) return;
+  function handleLogout() {
+    localStorage.removeItem(
+      "token",
+    );
 
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpenFor(null);
-        menuButton.current?.focus();
-      }
-    };
+    localStorage.removeItem(
+      "user",
+    );
 
-    document.addEventListener("keydown", onKey);
+    setIsLoggedIn(false);
+    setUser(null);
+    setProfileOpen(false);
+    setMobileOpen(false);
 
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open]);
+    window.dispatchEvent(
+      new Event("auth-change"),
+    );
+
+    router.push("/");
+    router.refresh();
+  }
+
+  const displayName =
+    user?.name ||
+    [user?.firstName, user?.lastName]
+      .filter(Boolean)
+      .join(" ") ||
+    "My Account";
+
+  const displayEmail =
+    user?.email ?? "";
 
   return (
-    <header className="relative z-40 border-b border-gray-800 bg-black text-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
+    <header className="relative z-50 border-b border-white/[0.06] bg-[#0B0B0B] text-[#FAF9F6]">
+      <div className="mx-auto flex h-[80px] max-w-[1280px] items-center justify-between px-5 sm:px-8 lg:px-10">
+        {/* LOGO */}
         <Link
-          href="/"
-          onClick={close}
-          className="flex min-w-0 items-center gap-2"
+          href={homeHref}
+          className="flex shrink-0 items-center gap-3"
         >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-amber-300 font-bold text-black">
+          <span className="flex h-8 w-8 items-center justify-center rounded-sm bg-[#C8A35A] text-[14px] font-bold text-[#080808]">
             B
           </span>
 
-          <span>
-            <span className="block text-xs font-extrabold sm:text-sm">
-              BUSINESS NUGGETS
-            </span>
+          <div className="hidden sm:block">
+            <p className="text-[11px] font-bold uppercase leading-none tracking-[0.04em] text-white">
+              Business Nuggets
+            </p>
 
-            <span className="block font-serif text-xs italic text-amber-300">
+            <p className="mt-1 font-serif text-[10px] italic leading-none text-[#C8A35A]">
               from the Bible
-            </span>
-          </span>
+            </p>
+          </div>
         </Link>
 
+        {/* DESKTOP NAV */}
         <nav
           aria-label="Main navigation"
-          className="hidden gap-6 text-sm md:flex"
+          className="hidden items-center gap-8 md:flex"
         >
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={close}
-              aria-current={pathname === link.href ? "page" : undefined}
-              className="text-gray-300 hover:text-amber-300"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) => {
+            const active =
+              isActive(link.href);
+
+            return (
+              <Link
+                key={link.label}
+                href={link.href}
+                className={`relative py-2 text-[13px] transition ${
+                  active
+                    ? "text-[#C8A35A]"
+                    : "text-white/55 hover:text-white"
+                }`}
+              >
+                {link.label}
+
+                {active && (
+                  <span className="absolute -bottom-[25px] left-0 h-[2px] w-full bg-[#C8A35A]" />
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-3">
-          {!isLoggedIn && displayAuthLinks && (
-            <>
+        {/* RIGHT SIDE */}
+        <div className="flex items-center gap-3">
+          {/* GUEST */}
+          {!isLoggedIn && (
+            <div className="hidden items-center gap-4 sm:flex">
               <Link
                 href="/login"
-                onClick={close}
-                className="hidden text-sm text-gray-300 sm:block"
+                className="text-[13px] font-medium text-white/70 transition hover:text-white"
               >
                 Login
               </Link>
 
               <Link
                 href="/register"
-                onClick={close}
-                className="hidden rounded bg-amber-300 px-3 py-2 text-sm font-medium text-black sm:block"
+                className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
               >
                 Sign Up
               </Link>
-            </>
+            </div>
           )}
 
+          {/* LOGGED-IN PROFILE */}
           {isLoggedIn && (
-            <>
-              <Link
-                href="/library/account"
-                onClick={close}
-                aria-label="Account settings"
-                className="block text-gray-200 hover:text-amber-300"
-              >
-                <UserCircle size={26} />
-              </Link>
+  <>
+    {/* NOTIFICATIONS */}
+    <Link
+      href="/notifications"
+      aria-label="Notifications"
+      className={`relative flex h-10 w-10 items-center justify-center rounded-full transition ${
+        pathname.startsWith(
+          "/notifications",
+        )
+          ? "bg-[#C8A35A]/10 text-[#C8A35A]"
+          : "text-white/60 hover:bg-white/[0.04] hover:text-[#C8A35A]"
+      }`}
+    >
+      <Bell
+        size={20}
+        strokeWidth={1.6}
+      />
 
+      {/* Real unread badge will connect
+          to Notifications API later */}
+    </Link>
+
+    {/* PROFILE */}
+    <div
+      ref={profileRef}
+      className="relative"
+    >
               <button
                 type="button"
-                onClick={handleLogout}
-                aria-label="Logout"
-                className="hidden text-gray-300 hover:text-amber-300 sm:block"
+                onClick={() =>
+                  setProfileOpen(
+                    (current) =>
+                      !current,
+                  )
+                }
+                aria-label="Open account menu"
+                aria-expanded={
+                  profileOpen
+                }
+                className="flex items-center gap-1.5 rounded-full text-white/70 transition hover:text-[#C8A35A]"
               >
-                <LogOut size={22} />
+                {user?.avatar ||
+                user?.image ? (
+                  // We use a normal img here because
+                  // the backend image host may not yet
+                  // be configured in next.config.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={
+                      user.avatar ||
+                      user.image ||
+                      ""
+                    }
+                    alt=""
+                    className="h-9 w-9 rounded-full border border-[#C8A35A]/40 object-cover"
+                  />
+                ) : (
+                  <UserCircle
+                    size={34}
+                    strokeWidth={1.4}
+                    className="text-[#E0C48A]"
+                  />
+                )}
+
+                <ChevronDown
+                  size={13}
+                  className={`hidden transition-transform sm:block ${
+                    profileOpen
+                      ? "rotate-180"
+                      : ""
+                  }`}
+                />
               </button>
+
+              {/* PROFILE DROPDOWN */}
+              {profileOpen && (
+                <div className="absolute right-0 top-[48px] w-[240px] overflow-hidden rounded-xl border border-white/10 bg-[#111111] shadow-2xl">
+                  <div className="border-b border-white/[0.07] px-4 py-4">
+                    <p className="truncate text-[14px] font-medium text-[#FAF9F6]">
+                      {displayName}
+                    </p>
+
+                    {displayEmail && (
+                      <p className="mt-1 truncate text-[12px] text-white/35">
+                        {displayEmail}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="p-2">
+                    <ProfileLink
+                      href="/home"
+                      icon={
+                        <UserCircle
+                          size={16}
+                        />
+                      }
+                    >
+                      My Workspace
+                    </ProfileLink>
+
+                    <ProfileLink
+                      href="/library/saved-nuggets"
+                      icon={
+                        <Bookmark
+                          size={16}
+                        />
+                      }
+                    >
+                      Saved Nuggets
+                    </ProfileLink>
+
+                    <ProfileLink
+                      href="/library/playlist"
+                      icon={
+                        <ListMusic
+                          size={16}
+                        />
+                      }
+                    >
+                      Playlists
+                    </ProfileLink>
+
+                    <ProfileLink
+                      href="/library/personal-notes"
+                      icon={
+                        <NotebookPen
+                          size={16}
+                        />
+                      }
+                    >
+                      Notes
+                    </ProfileLink>
+
+                    <ProfileLink
+                      href="/library/account"
+                      icon={
+                        <Settings
+                          size={16}
+                        />
+                      }
+                    >
+                      Account Settings
+                    </ProfileLink>
+                  </div>
+
+                  <div className="border-t border-white/[0.07] p-2">
+                    <button
+                      type="button"
+                      onClick={
+                        handleLogout
+                      }
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[13px] text-[#D66B6B] transition hover:bg-white/[0.04]"
+                    >
+                      <LogOut
+                        size={16}
+                      />
+
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             </>
           )}
 
+          {/* MOBILE BUTTON */}
           <button
-            ref={menuButton}
             type="button"
-            aria-label={
-              open ? "Close navigation menu" : "Open navigation menu"
+            onClick={() =>
+              setMobileOpen(
+                (current) =>
+                  !current,
+              )
             }
-            aria-expanded={open}
-            aria-controls="navigation-menu"
-            onClick={() => setOpenFor(open ? null : pathname)}
-            className="rounded border border-gray-700 p-2 md:hidden"
+            aria-label={
+              mobileOpen
+                ? "Close menu"
+                : "Open menu"
+            }
+            aria-expanded={
+              mobileOpen
+            }
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-white/70 md:hidden"
           >
-            {open ? <X size={20} /> : <Menu size={20} />}
+            {mobileOpen ? (
+              <X size={18} />
+            ) : (
+              <Menu size={18} />
+            )}
           </button>
         </div>
       </div>
 
-      {open && (
-        <nav
-          id="navigation-menu"
-          aria-label="Expanded navigation"
-          className="mx-auto grid max-w-7xl gap-1 border-t border-gray-800 px-4 py-4 sm:grid-cols-2 sm:px-6 md:hidden"
-        >
-          {[
-            ...links,
-            ...libraryViews,
-            ...(isLoggedIn ? workspace : []),
-            ...(!isLoggedIn
-              ? [
-                  { href: "/login", label: "Login" },
-                  { href: "/register", label: "Sign Up" },
-                ]
-              : []),
-          ].map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={close}
-              className="rounded px-3 py-3 text-sm text-gray-300 hover:bg-gray-900 hover:text-amber-300"
-            >
-              {link.label}
-            </Link>
-          ))}
+      {/* MOBILE MENU */}
+      {mobileOpen && (
+        <div className="border-t border-white/[0.06] bg-[#0B0B0B] md:hidden">
+          <nav className="mx-auto max-w-[1280px] px-5 py-4 sm:px-8">
+            <div className="space-y-1">
+              {links.map((link) => {
+                const active =
+                  isActive(
+                    link.href,
+                  );
 
-          {isLoggedIn && (
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded px-3 py-3 text-left text-sm text-red-400 hover:bg-gray-900"
-            >
-              Logout
-            </button>
-          )}
-        </nav>
+                return (
+                  <Link
+                    key={
+                      link.label
+                    }
+                    href={
+                      link.href
+                    }
+                    className={`block rounded-lg px-3 py-3 text-[14px] ${
+                      active
+                        ? "bg-[#C8A35A]/10 text-[#C8A35A]"
+                        : "text-white/60"
+                    }`}
+                  >
+                    {
+                      link.label
+                    }
+                  </Link>
+                );
+              })}
+
+              <Link
+                href="/musicals"
+                className="block rounded-lg px-3 py-3 text-[14px] text-white/60"
+              >
+                Musicals
+              </Link>
+            </div>
+
+            {!isLoggedIn ? (
+              <div className="mt-4 grid grid-cols-2 gap-3 border-t border-white/[0.07] pt-4">
+                <Link
+                  href="/login"
+                  className="flex min-h-11 items-center justify-center rounded-lg border border-white/15 text-[13px] font-medium text-white"
+                >
+                  Login
+                </Link>
+
+                <Link
+                  href="/register"
+                  className="flex min-h-11 items-center justify-center rounded-lg bg-[#C8A35A] text-[13px] font-semibold text-[#080808]"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            ) : (
+              <div className="mt-4 space-y-1 border-t border-white/[0.07] pt-4">
+                <Link
+                  href="/library/saved-nuggets"
+                  className="block rounded-lg px-3 py-3 text-[14px] text-white/60"
+                >
+                  Saved Nuggets
+                </Link>
+
+                <Link
+                  href="/library/playlist"
+                  className="block rounded-lg px-3 py-3 text-[14px] text-white/60"
+                >
+                  Playlists
+                </Link>
+
+                <Link
+                  href="/library/personal-notes"
+                  className="block rounded-lg px-3 py-3 text-[14px] text-white/60"
+                >
+                  Notes
+                </Link>
+
+                <Link
+                  href="/library/account"
+                  className="block rounded-lg px-3 py-3 text-[14px] text-white/60"
+                >
+                  Account Settings
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={
+                    handleLogout
+                  }
+                  className="w-full rounded-lg px-3 py-3 text-left text-[14px] text-[#D66B6B]"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </nav>
+        </div>
       )}
     </header>
+  );
+}
+
+function ProfileLink({
+  href,
+  icon,
+  children,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 rounded-lg px-3 py-3 text-[13px] text-white/55 transition hover:bg-white/[0.04] hover:text-white"
+    >
+      <span className="text-[#C8A35A]">
+        {icon}
+      </span>
+
+      {children}
+    </Link>
   );
 }

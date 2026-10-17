@@ -1,15 +1,19 @@
 import Link from "next/link";
+import AuthRouteGuard from "@/components/AuthRouteGuard";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import NuggetCard from "@/components/NuggetCard";
 import { filterNuggets } from "@/lib/nuggets";
 
 export default function HomePage() {
+
   const items = filterNuggets().slice(0, 6);
 
   return (
+    <AuthRouteGuard type="protected">
+     
     <div className="flex min-h-screen flex-col bg-black text-white">
-      <Navbar showAuthLinks={false} />
+      <Navbar />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
         <h1 className="font-serif text-3xl sm:text-4xl">
@@ -66,5 +70,6 @@ export default function HomePage() {
 
       <Footer />
     </div>
+   </AuthRouteGuard>
   );
 }

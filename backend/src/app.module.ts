@@ -9,8 +9,8 @@ import { PlaylistsModule } from './playlists/playlists.module';
 import { NotesModule } from './notes/notes.module';
 import { HistoryModule } from './history/history.module';
 import { FollowingModule } from './following/following.module';
-
-
+import {AdminModule} from "./admin/admin.module";
+import {NuggetsModule} from "./nuggets/nuggets.module";
 
 @Module({
   imports: [
@@ -24,6 +24,8 @@ import { FollowingModule } from './following/following.module';
     NotesModule,
     HistoryModule,
     FollowingModule,
+    AdminModule,
+    NuggetsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,113 +1,88 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  Bookmark,
+  Check,
+} from "lucide-react";
 
-type Props = {
+import {
+  useEffect,
+  useState,
+} from "react";
+
+export default function FollowTopicButton({
+  topic,
+}: {
   topic: string;
-};
-
-export default function FollowTopicButton({ topic }: Props) {
-  const [following, setFollowing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
+}) {
+  const [followed, setFollowed] =
+    useState(false);
 
   useEffect(() => {
-    async function checkFollowing() {
-      const token = localStorage.getItem("token");
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem(
+          "followedTopics",
+        ) ?? "[]",
+      ) as string[];
 
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          "http://localhost:3001/following/topics",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const data = await response.json();
-
-        if (response.ok && Array.isArray(data)) {
-          setFollowing(
-            data.some(
-              (item) => item.topic === topic
-            )
-          );
-        }
-      } finally {
-        setLoading(false);
-      }
+      setFollowed(
+        stored.includes(topic),
+      );
+    } catch {
+      setFollowed(false);
     }
-
-    checkFollowing();
   }, [topic]);
 
-  async function toggleFollow() {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      window.location.href = "/login";
-      return;
-    }
-
-    setUpdating(true);
-
+  function toggleFollow() {
     try {
-      const response = await fetch(
-        following
-          ? `http://localhost:3001/following/topics/${encodeURIComponent(
-              topic
-            )}`
-          : "http://localhost:3001/following/topics",
-        {
-          method: following ? "DELETE" : "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          ...(following
-            ? {}
-            : {
-                body: JSON.stringify({
-                  topic,
-                }),
-              }),
-        }
+      const stored = JSON.parse(
+        localStorage.getItem(
+          "followedTopics",
+        ) ?? "[]",
+      ) as string[];
+
+      const updated = stored.includes(
+        topic,
+      )
+        ? stored.filter(
+            (item) =>
+              item !== topic,
+          )
+        : [...stored, topic];
+
+      localStorage.setItem(
+        "followedTopics",
+        JSON.stringify(updated),
       );
 
-      if (response.ok) {
-        setFollowing((current) => !current);
-      }
-    } finally {
-      setUpdating(false);
+      setFollowed(
+        updated.includes(topic),
+      );
+    } catch {
+      setFollowed((value) => !value);
     }
-  }
-
-  if (loading) {
-    return null;
   }
 
   return (
     <button
       type="button"
       onClick={toggleFollow}
-      disabled={updating}
-      className={`rounded-md px-4 py-2 text-xs font-semibold transition ${
-        following
-          ? "border border-amber-300 text-amber-300"
-          : "bg-amber-300 text-black hover:bg-amber-400"
-      } disabled:opacity-50`}
+      className={`inline-flex min-h-11 w-fit items-center gap-2 rounded-lg px-5 text-[13px] font-semibold transition ${
+        followed
+          ? "border border-[#C8A35A] bg-transparent text-[#C8A35A]"
+          : "bg-[#C8A35A] text-[#080808] hover:bg-[#E0C48A]"
+      }`}
     >
-      {updating
-        ? "Updating..."
-        : following
-          ? "Following"
-          : "Follow Topic"}
+      {followed ? (
+        <Check size={15} />
+      ) : (
+        <Bookmark size={15} />
+      )}
+
+      {followed
+        ? "Following Topic"
+        : "Follow Topic"}
     </button>
   );
 }

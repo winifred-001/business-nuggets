@@ -93,6 +93,32 @@ export class PlaylistsService {
       })
       .delete();
   }
+   
+  async updatePlaylist(
+  userId: number,
+  playlistId: number,
+  name: string
+) {
+  const playlist = await db.orm.public.Playlist
+    .where({
+      id: playlistId,
+      userId,
+    })
+    .first();
+
+  if (!playlist) {
+    throw new NotFoundException("Playlist not found");
+  }
+
+  return db.orm.public.Playlist
+    .where({
+      id: playlistId,
+      userId,
+    })
+    .update({
+      name: name.trim(),
+    });
+}
 
   async deletePlaylist(userId: number, playlistId: number) {
     const playlist = await db.orm.public.Playlist

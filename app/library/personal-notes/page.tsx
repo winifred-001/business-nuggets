@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from "@/lib/api";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Link2, Plus, Search } from "lucide-react";
@@ -42,7 +43,7 @@ export default function PersonalNotesPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:3001/notes", {
+      const response = await fetch(`${API_URL}/notes`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -98,8 +99,8 @@ export default function PersonalNotesPage() {
 
       const response = await fetch(
         editing
-          ? `http://localhost:3001/notes/${selectedId}`
-          : "http://localhost:3001/notes",
+          ? `${API_URL}/notes/${selectedId}`
+          : `${API_URL}/notes`,
         {
           method: editing ? "PATCH" : "POST",
           headers: {
@@ -139,7 +140,7 @@ export default function PersonalNotesPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3001/notes/${selectedId}`,
+        `${API_URL}/notes/${selectedId}`,
         {
           method: "DELETE",
           headers: {

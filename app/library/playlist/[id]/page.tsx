@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from "@/lib/api";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -47,7 +48,7 @@ export default function PlaylistDetailPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:3001/playlists",
+        `${API_URL}/playlists`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -95,7 +96,7 @@ export default function PlaylistDetailPage() {
 
   try {
     const response = await fetch(
-      `http://localhost:3001/playlists/${playlist.id}`,
+      `${API_URL}/playlists/${playlist.id}`,
       {
         method: "DELETE",
         headers: {
@@ -128,7 +129,7 @@ export default function PlaylistDetailPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3001/playlists/${playlist.id}/items/${nuggetId}`,
+        `${API_URL}/playlists/${playlist.id}/items/${nuggetId}`,
         {
           method: "DELETE",
           headers: {

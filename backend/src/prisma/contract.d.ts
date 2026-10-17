@@ -18,9 +18,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'dbd58cec1d4369d5cba813fe7da11e282f605cb4f0bd9d8b57dd870adb85f00e'>;
+  StorageHashBase<'ced9ba127d45a2a90039c9119e10047a9a46ae74a4ee72a669358f18f1a3b67a'>;
 export type ExecutionHash =
-  ExecutionHashBase<'1f8eff71a4dc7762ff3fb8ebe4c08cc8e649477a5b1132441105128467ac5e08'>;
+  ExecutionHashBase<'0411f6eaa681dcf2b9d77f20911dede69e56fff323dfa3b608bd976bd9388a78'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -256,6 +256,31 @@ export type FieldOutputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly userId: CodecTypes['pg/int4@1']['output'];
     };
+    readonly Nugget: {
+      readonly audioUrl: CodecTypes['pg/text@1']['output'] | null;
+      readonly bibleSection: CodecTypes['pg/text@1']['output'];
+      readonly book: CodecTypes['pg/text@1']['output'];
+      readonly challenges: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly duration: CodecTypes['pg/text@1']['output'];
+      readonly featured: CodecTypes['pg/bool@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly image: CodecTypes['pg/text@1']['output'];
+      readonly isGold: CodecTypes['pg/bool@1']['output'];
+      readonly keyPrinciple: CodecTypes['pg/text@1']['output'];
+      readonly marketplaceApplication: CodecTypes['pg/text@1']['output'];
+      readonly number: CodecTypes['pg/int4@1']['output'];
+      readonly practicalActionPlan: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
+      readonly publishedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly scriptureRef: CodecTypes['pg/text@1']['output'];
+      readonly scriptureText: CodecTypes['pg/text@1']['output'];
+      readonly slug: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly tag: CodecTypes['pg/text@1']['output'];
+      readonly title: CodecTypes['pg/text@1']['output'];
+      readonly topic: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly Playlist: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
@@ -280,6 +305,7 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly passwordHash: CodecTypes['pg/text@1']['output'];
+      readonly role: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
   };
@@ -308,6 +334,31 @@ export type FieldInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly userId: CodecTypes['pg/int4@1']['input'];
     };
+    readonly Nugget: {
+      readonly audioUrl: CodecTypes['pg/text@1']['input'] | null;
+      readonly bibleSection: CodecTypes['pg/text@1']['input'];
+      readonly book: CodecTypes['pg/text@1']['input'];
+      readonly challenges: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly duration: CodecTypes['pg/text@1']['input'];
+      readonly featured: CodecTypes['pg/bool@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly image: CodecTypes['pg/text@1']['input'];
+      readonly isGold: CodecTypes['pg/bool@1']['input'];
+      readonly keyPrinciple: CodecTypes['pg/text@1']['input'];
+      readonly marketplaceApplication: CodecTypes['pg/text@1']['input'];
+      readonly number: CodecTypes['pg/int4@1']['input'];
+      readonly practicalActionPlan: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
+      readonly publishedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly scriptureRef: CodecTypes['pg/text@1']['input'];
+      readonly scriptureText: CodecTypes['pg/text@1']['input'];
+      readonly slug: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly tag: CodecTypes['pg/text@1']['input'];
+      readonly title: CodecTypes['pg/text@1']['input'];
+      readonly topic: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly Playlist: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
@@ -332,6 +383,7 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly passwordHash: CodecTypes['pg/text@1']['input'];
+      readonly role: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
   };
@@ -360,6 +412,31 @@ export type StorageColumnTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly userId: CodecTypes['pg/int4@1']['output'];
     };
+    readonly Nugget: {
+      readonly audioUrl: CodecTypes['pg/text@1']['output'] | null;
+      readonly bibleSection: CodecTypes['pg/text@1']['output'];
+      readonly book: CodecTypes['pg/text@1']['output'];
+      readonly challenges: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly duration: CodecTypes['pg/text@1']['output'];
+      readonly featured: CodecTypes['pg/bool@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly image: CodecTypes['pg/text@1']['output'];
+      readonly isGold: CodecTypes['pg/bool@1']['output'];
+      readonly keyPrinciple: CodecTypes['pg/text@1']['output'];
+      readonly marketplaceApplication: CodecTypes['pg/text@1']['output'];
+      readonly number: CodecTypes['pg/int4@1']['output'];
+      readonly practicalActionPlan: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
+      readonly publishedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly scriptureRef: CodecTypes['pg/text@1']['output'];
+      readonly scriptureText: CodecTypes['pg/text@1']['output'];
+      readonly slug: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly tag: CodecTypes['pg/text@1']['output'];
+      readonly title: CodecTypes['pg/text@1']['output'];
+      readonly topic: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly Playlist: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
@@ -384,6 +461,7 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly passwordHash: CodecTypes['pg/text@1']['output'];
+      readonly role: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
   };
@@ -412,6 +490,31 @@ export type StorageColumnInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly userId: CodecTypes['pg/int4@1']['input'];
     };
+    readonly Nugget: {
+      readonly audioUrl: CodecTypes['pg/text@1']['input'] | null;
+      readonly bibleSection: CodecTypes['pg/text@1']['input'];
+      readonly book: CodecTypes['pg/text@1']['input'];
+      readonly challenges: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly duration: CodecTypes['pg/text@1']['input'];
+      readonly featured: CodecTypes['pg/bool@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly image: CodecTypes['pg/text@1']['input'];
+      readonly isGold: CodecTypes['pg/bool@1']['input'];
+      readonly keyPrinciple: CodecTypes['pg/text@1']['input'];
+      readonly marketplaceApplication: CodecTypes['pg/text@1']['input'];
+      readonly number: CodecTypes['pg/int4@1']['input'];
+      readonly practicalActionPlan: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
+      readonly publishedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly scriptureRef: CodecTypes['pg/text@1']['input'];
+      readonly scriptureText: CodecTypes['pg/text@1']['input'];
+      readonly slug: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly tag: CodecTypes['pg/text@1']['input'];
+      readonly title: CodecTypes['pg/text@1']['input'];
+      readonly topic: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly Playlist: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
@@ -436,6 +539,7 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly passwordHash: CodecTypes['pg/text@1']['input'];
+      readonly role: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
   };
@@ -470,6 +574,32 @@ export namespace Models {
     user: public_User;
     readonly [RelationKeys]?: 'user';
   };
+  export type public_Nugget = {
+    audioUrl: CodecTypes['pg/text@1']['output'] | null;
+    bibleSection: CodecTypes['pg/text@1']['output'];
+    book: CodecTypes['pg/text@1']['output'];
+    challenges: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    duration: CodecTypes['pg/text@1']['output'];
+    featured: CodecTypes['pg/bool@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    image: CodecTypes['pg/text@1']['output'];
+    isGold: CodecTypes['pg/bool@1']['output'];
+    keyPrinciple: CodecTypes['pg/text@1']['output'];
+    marketplaceApplication: CodecTypes['pg/text@1']['output'];
+    number: CodecTypes['pg/int4@1']['output'];
+    practicalActionPlan: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
+    publishedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    scriptureRef: CodecTypes['pg/text@1']['output'];
+    scriptureText: CodecTypes['pg/text@1']['output'];
+    slug: CodecTypes['pg/text@1']['output'];
+    status: CodecTypes['pg/text@1']['output'];
+    tag: CodecTypes['pg/text@1']['output'];
+    title: CodecTypes['pg/text@1']['output'];
+    topic: CodecTypes['pg/text@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_Playlist = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
@@ -501,6 +631,7 @@ export namespace Models {
     id: CodecTypes['pg/int4@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
     passwordHash: CodecTypes['pg/text@1']['output'];
+    role: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     followedTopics: public_FollowedTopic[];
     history: public_History[];
@@ -516,6 +647,7 @@ export declare const models: {
     FollowedTopic: Models.public_FollowedTopic;
     History: Models.public_History;
     Note: Models.public_Note;
+    Nugget: Models.public_Nugget;
     Playlist: Models.public_Playlist;
     PlaylistItem: Models.public_PlaylistItem;
     SavedNugget: Models.public_SavedNugget;
@@ -740,6 +872,168 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly Nugget: {
+              columns: {
+                readonly audioUrl: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly bibleSection: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly book: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly challenges: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: { readonly elementNullable: false };
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly duration: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly featured: {
+                  readonly dataType: 'pg/bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly image: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly isGold: {
+                  readonly dataType: 'pg/bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                  readonly many: false;
+                };
+                readonly keyPrinciple: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly marketplaceApplication: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly number: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly practicalActionPlan: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: { readonly elementNullable: false };
+                };
+                readonly publishedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly scriptureRef: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly scriptureText: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly slug: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'draft'>;
+                  };
+                  readonly many: false;
+                };
+                readonly tag: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly title: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly topic: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['slug'] },
+                { readonly columns: readonly ['number'] },
+              ];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly Playlist: {
               columns: {
                 readonly createdAt: {
@@ -948,6 +1242,16 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly role: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'user'>;
+                  };
+                  readonly many: false;
+                };
                 readonly updatedAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
@@ -977,6 +1281,7 @@ type ContractBase = Omit<
     };
     readonly History: { readonly namespace: 'public' & NamespaceId; readonly model: 'History' };
     readonly Note: { readonly namespace: 'public' & NamespaceId; readonly model: 'Note' };
+    readonly Nugget: { readonly namespace: 'public' & NamespaceId; readonly model: 'Nugget' };
     readonly Playlist: { readonly namespace: 'public' & NamespaceId; readonly model: 'Playlist' };
     readonly PlaylistItem: {
       readonly namespace: 'public' & NamespaceId;
@@ -1144,6 +1449,143 @@ type ContractBase = Omit<
                 readonly title: { readonly column: 'title' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly userId: { readonly column: 'userId' };
+              };
+            };
+          };
+          readonly Nugget: {
+            readonly fields: {
+              readonly audioUrl: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly bibleSection: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly book: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly challenges: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+                readonly many: { readonly elementNullable: false };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly duration: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly featured: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly image: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly isGold: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly keyPrinciple: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly marketplaceApplication: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly number: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly practicalActionPlan: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+                readonly many: { readonly elementNullable: false };
+              };
+              readonly publishedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly scriptureRef: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly scriptureText: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly slug: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly tag: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly title: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly topic: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'Nugget';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly audioUrl: { readonly column: 'audioUrl' };
+                readonly bibleSection: { readonly column: 'bibleSection' };
+                readonly book: { readonly column: 'book' };
+                readonly challenges: { readonly column: 'challenges' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly duration: { readonly column: 'duration' };
+                readonly featured: { readonly column: 'featured' };
+                readonly id: { readonly column: 'id' };
+                readonly image: { readonly column: 'image' };
+                readonly isGold: { readonly column: 'isGold' };
+                readonly keyPrinciple: { readonly column: 'keyPrinciple' };
+                readonly marketplaceApplication: { readonly column: 'marketplaceApplication' };
+                readonly number: { readonly column: 'number' };
+                readonly practicalActionPlan: { readonly column: 'practicalActionPlan' };
+                readonly publishedAt: { readonly column: 'publishedAt' };
+                readonly scriptureRef: { readonly column: 'scriptureRef' };
+                readonly scriptureText: { readonly column: 'scriptureText' };
+                readonly slug: { readonly column: 'slug' };
+                readonly status: { readonly column: 'status' };
+                readonly tag: { readonly column: 'tag' };
+                readonly title: { readonly column: 'title' };
+                readonly topic: { readonly column: 'topic' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
               };
             };
           };
@@ -1318,6 +1760,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly role: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly updatedAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -1389,6 +1835,7 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly name: { readonly column: 'name' };
                 readonly passwordHash: { readonly column: 'passwordHash' };
+                readonly role: { readonly column: 'role' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };
             };
@@ -1434,6 +1881,15 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'Note';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'Nugget';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };

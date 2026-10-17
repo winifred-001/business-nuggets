@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from "@/lib/api";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/navbar";
@@ -36,7 +37,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3001/auth/register", {
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

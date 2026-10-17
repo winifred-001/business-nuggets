@@ -1,31 +1,65 @@
 import {
+  Body,
   Controller,
+  Delete,
   Get,
-  UseGuards,
+  Patch,
   Request,
-  NotFoundException,
+  UseGuards,
 } from "@nestjs/common";
-import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+
 import { UsersService } from "./users.service";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+
+import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
+import { DeleteAccountDto } from "./dto/delete-account.dto";
 
 @Controller("users")
+@UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService
+  ) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get("me")
-  async getProfile(@Request() req: any) {
-    const user = await this.usersService.findById(req.user.sub);
-
-    if (!user) {
-      throw new NotFoundException("User not found");
-    }
-
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      createdAt: user.createdAt,
-    };
+  getMe(@Request() req: any) {
+    return this.usersService.findById(
+      req.user.sub
+    );
   }
+
+  @Patch("me")
+  updateProfile(
+    @Request() req: any,
+    @Body() body: UpdateProfileDto
+  ) {
+    return this.usersService.updateProfile(
+      req.user.sub,
+      body
+    );
+  }
+
+  @Patch("me/password")
+  changePassword(
+    @Request() req: any,
+    @Body() body: ChangePasswordDto
+  ) {
+    return this.usersService.changePassword(
+      req.user.sub,
+      body.currentPassword,
+      body.newPassword
+    );
+  }
+
+  @Delete("me")
+  deleteAccount(
+    @Request() req: any,
+    @Body() body: DeleteAccountDto
+  ) {
+    return this.usersService.deleteAccount(
+      req.user.sub,
+      body.password
+    );
+  } 
 }

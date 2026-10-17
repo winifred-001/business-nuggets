@@ -1,11 +1,21 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+  Maximize2,
+  Play,
+  Repeat2,
+  Shuffle,
+  SkipBack,
+  SkipForward,
+  Volume2,
+} from "lucide-react";
 
 import Navbar from "@/components/navbar";
-import Footer from "@/components/Footer";
 import ReaderProgressTracker from "@/components/ReaderProgressTracker";
 
 import { getNuggetBySlug } from "@/lib/nuggets";
+import { getNuggetBySlugFromApi } from "@/lib/nuggets-api";
 
 export default async function ReaderViewPage({
   params,
@@ -14,121 +24,291 @@ export default async function ReaderViewPage({
 }) {
   const { id } = await params;
 
-  const nugget = getNuggetBySlug(id);
+  let nugget = null;
+
+  try {
+    nugget = await getNuggetBySlugFromApi(id);
+  } catch {
+    nugget = null;
+  }
+
+  if (!nugget) {
+    nugget = getNuggetBySlug(id);
+  }
 
   if (!nugget) {
     notFound();
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-gray-900">
-      {/* Tracks real reading progress */}
+    <div className="min-h-screen bg-[#F5F0E8] pb-[96px] text-[#15120E]">
       <ReaderProgressTracker nuggetId={nugget.id} />
 
       <Navbar />
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
-        <article>
-          {/* Breadcrumb */}
-          <nav
-            aria-label="Reader breadcrumb"
-            className="mb-6 flex flex-wrap gap-2 text-sm text-gray-600"
-          >
-            <Link
-              href="/library"
-              className="hover:text-amber-700"
-            >
-              Wisdom Archive
-            </Link>
-
-            <span>/</span>
-
-            <Link
-              href={`/library?topic=${encodeURIComponent(
-                nugget.topic
-              )}`}
-              className="hover:text-amber-700"
-            >
-              {nugget.topic}
-            </Link>
-          </nav>
-
-          {/* Nugget information */}
-          <p className="text-xs text-amber-800">
-            Nugget #{nugget.number} ·{" "}
-            {nugget.scriptureRef}
-          </p>
-
-          <h1 className="mt-3 break-words font-serif text-3xl leading-tight sm:text-4xl">
-            {nugget.title}
-          </h1>
-
-          {/* Scripture */}
-          {nugget.scriptureText && (
-            <blockquote className="my-8 border-l-4 border-amber-400 bg-amber-50 p-5 font-serif text-lg italic">
-              “{nugget.scriptureText}”
-
-              <p className="mt-3 text-xs not-italic text-amber-800">
-                {nugget.scriptureRef}
-              </p>
-            </blockquote>
-          )}
-
-          {/* Key Principle */}
-          <section className="mt-8">
-            <h2 className="font-serif text-2xl">
-              Key Principle
-            </h2>
-
-            <p className="mt-3 leading-8 text-gray-700">
-              {nugget.keyPrinciple ||
-                "Commentary for this sample nugget will be added soon."}
-            </p>
-          </section>
-
-          {/* Marketplace Application */}
-          {nugget.marketplaceApplication && (
-            <section className="mt-8">
-              <h2 className="font-serif text-2xl">
-                Marketplace Application
-              </h2>
-
-              <p className="mt-3 leading-8 text-gray-700">
-                {nugget.marketplaceApplication}
-              </p>
-            </section>
-          )}
-
-          {/* Practical Action Plan */}
-          {nugget.practicalActionPlan.length > 0 && (
-            <section className="mt-8">
-              <h2 className="font-serif text-2xl">
-                Practical Action Plan
-              </h2>
-
-              <ol className="mt-4 list-decimal space-y-3 pl-5 leading-8 text-gray-700">
-                {nugget.practicalActionPlan.map(
-                  (action) => (
-                    <li key={action}>
-                      {action}
-                    </li>
-                  )
-                )}
-              </ol>
-            </section>
-          )}
-
-          {/* Back button */}
+      <main className="mx-auto w-full max-w-[1180px] px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
+        {/* BREADCRUMB */}
+        <nav
+          aria-label="Reader breadcrumb"
+          className="flex flex-wrap items-center gap-2 text-[13px] text-[#756E64]"
+        >
           <Link
-            href={`/nugget/${nugget.slug}`}
-            className="mt-10 inline-block rounded bg-amber-300 px-5 py-3 text-sm font-medium text-black transition hover:bg-amber-400"
+            href="/library"
+            className="transition hover:text-[#9A7839]"
           >
-            Back to nugget
+            Wisdom Archive
           </Link>
-        </article>
+
+          <span>/</span>
+
+          <Link
+            href={`/library?topic=${encodeURIComponent(
+              nugget.topic,
+            )}`}
+            className="transition hover:text-[#9A7839]"
+          >
+            {nugget.topic}
+          </Link>
+
+          <span>/</span>
+
+          <span className="text-[#9A7839]">
+            {nugget.title}
+          </span>
+        </nav>
+
+        <div className="mt-7 grid gap-10 lg:grid-cols-[minmax(0,1fr)_270px]">
+          {/* ARTICLE */}
+          <article className="min-w-0">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#9A7839]">
+              Nugget #{nugget.number} · {nugget.topic}
+            </p>
+
+            <h1 className="mt-3 max-w-[800px] font-serif text-[40px] leading-[1.05] text-[#15120E]">
+              {nugget.title}
+            </h1>
+
+            {/* SCRIPTURE */}
+            {nugget.scriptureText && (
+              <blockquote className="mt-6 max-w-[800px] border-l-2 border-[#C8A35A] pl-5">
+                <p className="font-serif text-[18px] italic leading-8 text-[#655D53]">
+                  “{nugget.scriptureText}”
+                </p>
+
+                <p className="mt-3 text-[13px] font-semibold uppercase tracking-[0.08em] text-[#9A7839]">
+                  {nugget.scriptureRef}
+                </p>
+              </blockquote>
+            )}
+
+            {/* SCRIPTURE CONTEXT */}
+            <section className="mt-9">
+              <h2 className="font-serif text-[28px] leading-tight text-[#15120E]">
+                Scripture Context
+              </h2>
+
+              <p className="mt-4 max-w-[820px] text-[14px] leading-7 text-[#4F4941]">
+                {nugget.keyPrinciple ||
+                  "Commentary for this Nugget will be added soon."}
+              </p>
+            </section>
+
+            {/* MARKETPLACE APPLICATION */}
+            {nugget.marketplaceApplication && (
+              <section className="mt-9">
+                <h2 className="font-serif text-[28px] leading-tight text-[#15120E]">
+                  Marketplace Application
+                </h2>
+
+                <p className="mt-4 max-w-[820px] text-[14px] leading-7 text-[#4F4941]">
+                  {nugget.marketplaceApplication}
+                </p>
+              </section>
+            )}
+
+            {/* PRACTICAL ACTION PLAN */}
+            {nugget.practicalActionPlan &&
+              nugget.practicalActionPlan.length > 0 && (
+                <section className="mt-9">
+                  <h2 className="font-serif text-[28px] leading-tight text-[#15120E]">
+                    Practical Action Plan
+                  </h2>
+
+                  <ol className="mt-4 space-y-3">
+                    {nugget.practicalActionPlan.map(
+                      (action, index) => (
+                        <li
+                          key={action}
+                          className="flex gap-3 text-[14px] leading-7 text-[#4F4941]"
+                        >
+                          <span className="shrink-0 font-semibold text-[#9A7839]">
+                            {index + 1}.
+                          </span>
+
+                          <span>{action}</span>
+                        </li>
+                      ),
+                    )}
+                  </ol>
+                </section>
+              )}
+
+            <Link
+              href={`/nugget/${nugget.slug}`}
+              className="mt-10 inline-flex items-center text-[13px] font-semibold text-[#9A7839] transition hover:text-[#6F5224]"
+            >
+              ← Back to Nugget
+            </Link>
+          </article>
+
+          {/* STUDY NOTES */}
+          <aside className="self-start lg:sticky lg:top-24">
+            <div className="border border-[#BCA46E] bg-[#F8F3EA] p-5">
+              <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#15120E]">
+                My Study Notes
+              </h2>
+
+              <p className="mt-3 text-[13px] leading-5 text-[#756E64]">
+                Take this in, then act. Write what you must
+                execute each week instead of buying the next
+                prosperity read.
+              </p>
+
+              <label
+                htmlFor="study-notes"
+                className="sr-only"
+              >
+                My study notes
+              </label>
+
+              <textarea
+                id="study-notes"
+                rows={7}
+                placeholder="Write your notes here..."
+                className="mt-4 w-full resize-none border border-[#BCA46E] bg-[#F5F0E8] p-3 text-[13px] leading-5 text-[#15120E] outline-none placeholder:text-[#9B9388] focus:border-[#9A7839]"
+              />
+            </div>
+          </aside>
+        </div>
       </main>
 
-      <Footer />
+      {/* AUDIO PLAYER */}
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#DDD2C0] bg-[#F5F0E8]">
+        <div className="mx-auto flex min-h-[82px] max-w-[1180px] items-center gap-5 px-5 sm:px-8 lg:px-10">
+          {/* TRACK */}
+          <div className="flex min-w-0 items-center gap-3 sm:w-[270px]">
+            <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded">
+              <Image
+                src="/images/musical.png"
+                alt=""
+                fill
+                sizes="44px"
+                className="object-cover"
+              />
+            </div>
+
+            <div className="min-w-0">
+              <p className="truncate font-serif text-[13px] font-semibold text-[#15120E]">
+                The Joseph Storage Blueprint
+              </p>
+
+              <p className="mt-1 truncate text-[11px] text-[#756E64]">
+                Genesis 41 · Strategic Reserve
+              </p>
+            </div>
+          </div>
+
+          {/* PLAYER CENTER */}
+          <div className="hidden min-w-0 flex-1 flex-col items-center md:flex">
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                aria-label="Shuffle"
+                className="text-[#756E64] transition hover:text-[#15120E]"
+              >
+                <Shuffle size={14} />
+              </button>
+
+              <button
+                type="button"
+                aria-label="Previous track"
+                className="text-[#756E64] transition hover:text-[#15120E]"
+              >
+                <SkipBack size={15} />
+              </button>
+
+              <button
+                type="button"
+                aria-label="Play"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#C8A35A] text-[#15120E]"
+              >
+                <Play
+                  size={14}
+                  fill="currentColor"
+                />
+              </button>
+
+              <button
+                type="button"
+                aria-label="Next track"
+                className="text-[#756E64] transition hover:text-[#15120E]"
+              >
+                <SkipForward size={15} />
+              </button>
+
+              <button
+                type="button"
+                aria-label="Repeat"
+                className="text-[#756E64] transition hover:text-[#15120E]"
+              >
+                <Repeat2 size={14} />
+              </button>
+            </div>
+
+            <div className="mt-2 flex w-full max-w-[520px] items-center gap-3">
+              <span className="text-[10px] text-[#8A8175]">
+                01:45
+              </span>
+
+              <div className="h-[3px] flex-1 overflow-hidden rounded-full bg-[#D8CDBB]">
+                <div className="h-full w-[38%] rounded-full bg-[#C8A35A]" />
+              </div>
+
+              <span className="text-[10px] text-[#8A8175]">
+                {nugget.duration || "06:42"}
+              </span>
+            </div>
+          </div>
+
+          {/* MOBILE PLAY */}
+          <button
+            type="button"
+            aria-label="Play"
+            className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C8A35A] text-[#15120E] md:hidden"
+          >
+            <Play
+              size={15}
+              fill="currentColor"
+            />
+          </button>
+
+          {/* RIGHT CONTROLS */}
+          <div className="hidden items-center justify-end gap-4 sm:w-[150px] md:flex">
+            <Volume2
+              size={15}
+              className="text-[#756E64]"
+            />
+
+            <button
+              type="button"
+              aria-label="Full screen"
+              className="text-[#756E64] transition hover:text-[#15120E]"
+            >
+              <Maximize2 size={15} />
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

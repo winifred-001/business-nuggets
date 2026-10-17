@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Patch,
   Request,
   UseGuards,
 } from "@nestjs/common";
@@ -49,6 +50,19 @@ export class PlaylistsController {
       body.nuggetId
     );
   }
+   
+  @Patch(":id")
+updatePlaylist(
+  @Request() req: any,
+  @Param("id", ParseIntPipe) id: number,
+  @Body() body: { name: string }
+) {
+  return this.playlistsService.updatePlaylist(
+    req.user.sub,
+    id,
+    body.name
+  );
+}
 
   @Delete(":id/items/:nuggetId")
   removeItem(

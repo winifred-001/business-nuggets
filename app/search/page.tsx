@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getPublishedNuggets } from "@/lib/nuggets-api";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import NuggetCard from "@/components/NuggetCard";
@@ -13,8 +14,12 @@ export default async function SearchPage({
   const rawQuery = Array.isArray(params.q) ? params.q[0] : params.q;
   const query = (rawQuery ?? "").trim();
 
-  const results = filterNuggets({ query });
+  const apiNuggets = await getPublishedNuggets();
 
+const results = filterNuggets(
+  { query },
+  apiNuggets,
+);
   return (
     <div className="flex min-h-screen flex-col bg-black text-white">
       <Navbar />

@@ -1,83 +1,392 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+  ArrowRight,
+  Clock3,
+  Headphones,
+} from "lucide-react";
+
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
-import NuggetCard from "@/components/NuggetCard";
-import {
-  getNuggetsByTopic,
-  slugify,
-  topics,
-} from "@/lib/nuggets";
+import FollowTopicButton from "@/components/FollowTopicButton";
+
+import { getPublishedNuggets } from "@/lib/nuggets-api";
+import { slugify } from "@/lib/nuggets";
+
+import type { Nugget } from "@/types/nugget";
 
 export default async function TopicDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+
+  searchParams: Promise<{
+    segment?: string | string[];
+  }>;
 }) {
   const { slug } = await params;
-  const topic = topics.find((item) => slugify(item) === slug);
+  const query = await searchParams;
 
-  if (!topic) notFound();
+  let nuggets: Nugget[] = [];
 
-  const items = getNuggetsByTopic(topic);
-  const tags = [...new Set(items.map((nugget) => nugget.tag))];
+  try {
+    nuggets = await getPublishedNuggets();
+  } catch (error) {
+    console.error(
+      "Failed to load topic Nuggets:",
+      error,
+    );
+  }
+
+  /*
+   * Find the actual topic using the
+   * dynamic URL slug.
+   */
+  const availableTopics = [
+    ...new Set(
+      nuggets
+        .map((nugget) => nugget.topic)
+        .filter(Boolean),
+    ),
+  ];
+
+  const topic = availableTopics.find(
+    (item) => slugify(item) === slug,
+  );
+
+  if (!topic) {
+    notFound();
+  }
+
+  const topicNuggets = nuggets.filter(
+    (nugget) =>
+      nugget.topic === topic,
+  );
+
+  /*
+   * Featured wisdom:
+   * Prefer a Gold Nugget.
+   * Otherwise use the first published
+   * Nugget in this topic.
+   */
+  const featured =
+    topicNuggets.find(
+      (nugget) => nugget.isGold,
+    ) ??
+    topicNuggets[0] ??
+    null;
+
+  /*
+   * Subtopics / Segments are generated
+   * from backend tags.
+   */
+  const segments = [
+    ...new Set(
+      topicNuggets
+        .map((nugget) => nugget.tag)
+        .filter(Boolean),
+    ),
+  ];
+
+  const selectedSegment =
+    typeof query.segment === "string"
+      ? query.segment
+      : "";
+
+  const displayedNuggets =
+    selectedSegment
+      ? topicNuggets.filter(
+          (nugget) =>
+            nugget.tag ===
+            selectedSegment,
+        )
+      : topicNuggets;
+
+  const heroImage =
+    featured?.image ??
+    topicNuggets[0]?.image ??
+    "/images/visiting-homepage2.png";
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
+    <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
       <Navbar />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
-        <Link
-          href="/library?tab=Topics+Index"
-          className="text-sm text-amber-300"
-        >
-          ← All topics
-        </Link>
+      <main>
+        {/* HERO */}
+        <section className="relative min-h-[330px] overflow-hidden border-b border-white/[0.06]">
+          <Image
+            src={heroImage}
+            alt={topic}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
 
-        <p className="mt-6 text-xs uppercase text-amber-300">
-          Core Wisdom Pathway
-        </p>
+          <div className="absolute inset-0 bg-black/65" />
 
-        <h1 className="mt-2 font-serif text-3xl sm:text-4xl">
-          {topic}
-        </h1>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#080808]/95 via-[#080808]/65 to-black/30" />
 
-        <p className="mt-3 text-sm text-gray-400">
-          {items.length} nuggets in the sample library.
-        </p>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-transparent" />
 
-        <div className="mt-8 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_250px]">
-          <section className="min-w-0">
-            {items.length > 0 ? (
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                {items.map((nugget) => (
-                  <NuggetCard key={nugget.slug} nugget={nugget} />
-                ))}
+          <div className="relative mx-auto flex min-h-[330px] max-w-[1280px] items-center px-5 py-12 sm:px-8 lg:px-10">
+            <div className="w-full">
+              <Link
+                href="/library?tab=Topics+Index"
+                className="text-[13px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              >
+                ← Core Wisdom Pathway
+              </Link>
+
+              <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-[760px]">
+                  <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[#C8A35A]">
+                    Core Wisdom Pathway
+                  </p>
+
+                  <h1 className="mt-3 font-serif text-[40px] leading-tight text-white">
+                    {topic}
+                  </h1>
+
+                  <p className="mt-4 max-w-[700px] text-[14px] leading-6 text-white/55">
+                    Explore biblical business wisdom,
+                    practical principles and marketplace
+                    applications connected to {topic}.
+                  </p>
+
+                  <p className="mt-3 text-[13px] text-white/40">
+                    {topicNuggets.length}{" "}
+                    {topicNuggets.length === 1
+                      ? "published Nugget"
+                      : "published Nuggets"}
+                  </p>
+                </div>
+
+                <FollowTopicButton
+                  topic={topic}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CONTENT */}
+        <section className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10">
+          {/* FEATURED */}
+          {featured && (
+            <section>
+              <h2 className="font-serif text-[28px]">
+                Featured {topic} Wisdom
+              </h2>
+
+              <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+                {/* FEATURED CARD */}
+                <div className="overflow-hidden rounded-xl border border-[#C8A35A]/55 bg-[#111111]">
+                  <div className="grid md:grid-cols-[270px_minmax(0,1fr)]">
+                    <div className="relative min-h-[250px]">
+                      <Image
+                        src={featured.image}
+                        alt={featured.title}
+                        fill
+                        sizes="270px"
+                        className="object-cover"
+                      />
+                    </div>
+
+                    <div className="flex flex-col justify-center p-6 lg:p-7">
+                      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                        Featured Wisdom ·{" "}
+                        {featured.scriptureRef}
+                      </p>
+
+                      <h3 className="mt-3 max-w-[520px] font-serif text-[24px] leading-tight">
+                        {featured.title}
+                      </h3>
+
+                      {featured.keyPrinciple && (
+                        <p className="mt-3 line-clamp-3 text-[13px] leading-6 text-white/45">
+                          {featured.keyPrinciple}
+                        </p>
+                      )}
+
+                      <div className="mt-5 flex flex-wrap items-center gap-3">
+                        <Link
+                          href={`/nugget/${featured.slug}`}
+                          className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                        >
+                          <Headphones
+                            size={15}
+                          />
+
+                          Listen Audio
+                        </Link>
+
+                        <Link
+                          href={`/nugget/${featured.slug}`}
+                          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 px-5 text-[13px] font-medium text-white transition hover:border-[#C8A35A]/50"
+                        >
+                          Read Commentary
+
+                          <ArrowRight
+                            size={14}
+                          />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SUBTOPICS */}
+                <aside className="self-start rounded-xl border border-white/10 bg-[#111111] p-5">
+                  <h3 className="text-[13px] font-semibold uppercase tracking-[0.08em]">
+                    Subtopics & Segments
+                  </h3>
+
+                  <div className="mt-4 space-y-2">
+                    <Link
+                      href={`/topics/${slug}`}
+                      className={`block rounded-md border px-3 py-2.5 text-[13px] transition ${
+                        !selectedSegment
+                          ? "border-[#C8A35A]/45 bg-[#C8A35A]/10 text-[#C8A35A]"
+                          : "border-white/10 bg-[#161616] text-white/50 hover:border-[#C8A35A]/30"
+                      }`}
+                    >
+                      All {topic}
+                    </Link>
+
+                    {segments.map(
+                      (segment) => (
+                        <Link
+                          key={segment}
+                          href={`/topics/${slug}?segment=${encodeURIComponent(
+                            segment,
+                          )}`}
+                          className={`block rounded-md border px-3 py-2.5 text-[13px] transition ${
+                            selectedSegment ===
+                            segment
+                              ? "border-[#C8A35A]/45 bg-[#C8A35A]/10 text-[#C8A35A]"
+                              : "border-white/10 bg-[#161616] text-white/50 hover:border-[#C8A35A]/30 hover:text-white"
+                          }`}
+                        >
+                          {segment}
+                        </Link>
+                      ),
+                    )}
+                  </div>
+                </aside>
+              </div>
+            </section>
+          )}
+
+          {/* ALL NUGGETS */}
+          <section className="mt-12">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="font-serif text-[28px]">
+                  {selectedSegment
+                    ? `${selectedSegment} Nuggets`
+                    : `All ${topic} Nuggets`}
+                </h2>
+
+                <p className="mt-2 text-[14px] text-white/45">
+                  {displayedNuggets.length}{" "}
+                  {displayedNuggets.length === 1
+                    ? "Nugget"
+                    : "Nuggets"}{" "}
+                  available
+                </p>
+              </div>
+
+              {selectedSegment && (
+                <Link
+                  href={`/topics/${slug}`}
+                  className="text-[13px] font-medium text-[#C8A35A]"
+                >
+                  Clear segment
+                </Link>
+              )}
+            </div>
+
+            {displayedNuggets.length >
+            0 ? (
+              <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {displayedNuggets.map(
+                  (nugget) => (
+                    <Link
+                      key={
+                        nugget.slug
+                      }
+                      href={`/nugget/${nugget.slug}`}
+                      className="group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#C8A35A]/45"
+                    >
+                      <div className="relative h-[185px] overflow-hidden">
+                        <Image
+                          src={
+                            nugget.image
+                          }
+                          alt={
+                            nugget.title
+                          }
+                          fill
+                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                          className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                        />
+                      </div>
+
+                      <div className="flex min-h-[190px] flex-col p-5">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
+                            {nugget.tag}
+                          </span>
+
+                          <span className="flex items-center gap-1.5 text-[13px] text-white/35">
+                            <Clock3
+                              size={13}
+                            />
+
+                            {
+                              nugget.duration
+                            }
+                          </span>
+                        </div>
+
+                        <h3 className="mt-3 font-serif text-[19px] leading-[1.2]">
+                          {
+                            nugget.title
+                          }
+                        </h3>
+
+                        <p className="mt-3 text-[13px] text-white/40">
+                          {
+                            nugget.scriptureRef
+                          }
+                        </p>
+
+                        <span className="mt-auto inline-flex items-center gap-2 pt-5 text-[13px] font-medium text-[#C8A35A]">
+                          Listen & Read
+
+                          <ArrowRight
+                            size={13}
+                          />
+                        </span>
+                      </div>
+                    </Link>
+                  ),
+                )}
               </div>
             ) : (
-              <p className="rounded-xl border border-gray-800 p-6 text-gray-400">
-                No nuggets have been added to this topic yet.
-              </p>
+              <div className="mt-7 rounded-xl border border-white/10 bg-[#111111] p-8 text-center">
+                <p className="text-[14px] text-white/50">
+                  No published Nuggets are
+                  available in this segment
+                  yet.
+                </p>
+              </div>
             )}
           </section>
-
-          <aside className="h-fit rounded-xl border border-gray-800 p-5">
-            <h2 className="font-semibold">Explore segments</h2>
-
-            <ul className="mt-4 space-y-4">
-              {tags.map((tag) => (
-                <li key={tag}>
-                  <Link
-                    href={`/library?topic=${encodeURIComponent(topic)}&tag=${encodeURIComponent(tag)}`}
-                    className="text-sm text-amber-300 hover:underline"
-                  >
-                    {tag}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </aside>
-        </div>
+        </section>
       </main>
 
       <Footer />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { API_URL } from "@/lib/api";
 
 type Props = {
   nuggetId: string;
@@ -25,7 +26,7 @@ export default function ReaderProgressTracker({
       if (progress === lastSavedProgress.current) return;
 
       try {
-        await fetch("http://localhost:3001/history", {
+        await fetch(`${API_URL}/history`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

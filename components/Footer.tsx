@@ -19,7 +19,7 @@ const workspaceLinks = [
 export default function Footer() {
   return (
     <footer className="border-t border-gray-800 bg-black text-gray-400">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-3">
+      <div className="mx-auto flex justify-between max-w-7xl gap-28 px-4 py-10 sm:px-6 ">
         <div>
           <p className="font-serif font-semibold text-white">
             BUSINESS NUGGETS
@@ -29,7 +29,7 @@ export default function Footer() {
             Timeless Biblical Wisdom for Today&apos;s Marketplace.
           </p>
         </div>
-
+       <div className="grid grid-cols-2 gap-8 sm:gap-6 md:grid-cols-4">
         {[
           { title: "Explore", links: exploreLinks },
           { title: "Your workspace", links: workspaceLinks },
@@ -56,11 +56,32 @@ export default function Footer() {
             </ul>
           </nav>
         ))}
+       </div>
       </div>
 
-      <p className="border-t border-gray-800 px-4 py-4 text-center text-xs">
-        © 2026 Business Nuggets from the Bible.
-      </p>
+      <div className="border-t border-gray-800">
+  <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <p>
+      © 2026 Business Nuggets from the Bible. All rights reserved.
+    </p>
+
+    <div className="flex items-center gap-5">
+      <Link
+        href="/terms-of-use"
+        className="transition hover:text-amber-300"
+      >
+        Terms of Use
+      </Link>
+
+      <Link
+        href="/privacy-policy"
+        className="transition hover:text-amber-300"
+      >
+        Privacy Policy
+      </Link>
+    </div>
+  </div>
+</div>
     </footer>
   );
 }

@@ -33,6 +33,7 @@ export class AuthService {
     const token = await this.jwtService.signAsync({
       sub: user.id,
       email: user.email,
+      role: user.role,
     });
 
     return {
@@ -42,6 +43,7 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
     };
   }
@@ -65,6 +67,7 @@ export class AuthService {
   const token = await this.jwtService.signAsync({
     sub: user.id,
     email: user.email,
+    role: user.role,
   });
 
   return {
@@ -74,6 +77,7 @@ export class AuthService {
       id: user.id,
       name: user.name,
       email: user.email,
+      role: user.role,
     },
   };
 }

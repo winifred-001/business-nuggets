@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { Bookmark } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -34,7 +35,7 @@ export default function SaveNuggetButton({
 
       try {
         const response = await fetch(
-          "http://localhost:3001/saved-nuggets",
+          `${API_URL}/saved-nuggets`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -75,7 +76,7 @@ export default function SaveNuggetButton({
     try {
       if (isSaved) {
         const response = await fetch(
-          `http://localhost:3001/saved-nuggets/${nuggetId}`,
+          `${API_URL}/saved-nuggets/${nuggetId}`,
           {
             method: "DELETE",
             headers: {
@@ -89,7 +90,7 @@ export default function SaveNuggetButton({
         }
       } else {
         const response = await fetch(
-          "http://localhost:3001/saved-nuggets",
+          `${API_URL}/saved-nuggets`,
           {
             method: "POST",
             headers: {

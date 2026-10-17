@@ -1,12 +1,14 @@
 "use client";
 
+import { API_URL } from "@/lib/api";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { RotateCcw, Trash2 } from "lucide-react";
 
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
-import { nuggets } from "@/lib/nuggets";
+import { getPublishedNuggets } from "@/lib/nuggets-api";
+import type { Nugget } from "@/types/nugget";
 
 type HistoryItem = {
   id: number;
@@ -19,37 +21,42 @@ export default function HistoryPage() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [apiNuggets, setApiNuggets] = useState<Nugget[]>([]);
 
   async function loadHistory() {
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-    if (!token) {
-      setError("Please log in to view your history.");
-      setLoading(false);
-      return;
-    }
+  if (!token) {
+    setError("Please log in to view your history.");
+    setLoading(false);
+    return;
+  }
 
-    try {
-      const response = await fetch("http://localhost:3001/history", {
+  try {
+    const [response, publishedNuggets] = await Promise.all([
+      fetch(`${API_URL}/history`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
+      }),
+      getPublishedNuggets(),
+    ]);
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok) {
-        setError(data.message || "Could not load history.");
-        return;
-      }
-
-      setHistory(Array.isArray(data) ? data : []);
-    } catch {
-      setError("Could not connect to the server.");
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      setError(data.message || "Could not load history.");
+      return;
     }
+
+    setHistory(Array.isArray(data) ? data : []);
+    setApiNuggets(publishedNuggets);
+  } catch {
+    setError("Could not connect to the server.");
+  } finally {
+    setLoading(false);
   }
+}
 
   useEffect(() => {
     loadHistory();
@@ -62,7 +69,7 @@ export default function HistoryPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3001/history/${nuggetId}`,
+        `${API_URL}/history/${nuggetId}`,
         {
           method: "DELETE",
           headers: {
@@ -89,7 +96,7 @@ export default function HistoryPage() {
     try {
       await Promise.all(
         history.map((item) =>
-          fetch(`http://localhost:3001/history/${item.nuggetId}`, {
+          fetch(`${API_URL}/history/${item.nuggetId}`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -107,7 +114,7 @@ export default function HistoryPage() {
   const historyNuggets = useMemo(() => {
     return history
       .map((item) => {
-        const nugget = nuggets.find(
+        const nugget = apiNuggets.find(
           (nugget) => nugget.id === item.nuggetId
         );
 
@@ -119,7 +126,7 @@ export default function HistoryPage() {
         };
       })
       .filter(Boolean);
-  }, [history]);
+  }, [history, apiNuggets]);
 
   function formatDate(dateString: string) {
     const date = new Date(dateString);

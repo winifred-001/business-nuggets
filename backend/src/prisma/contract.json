@@ -16,6 +16,10 @@
       "model": "Note",
       "namespace": "public"
     },
+    "Nugget": {
+      "model": "Nugget",
+      "namespace": "public"
+    },
     "Playlist": {
       "model": "Playlist",
       "namespace": "public"
@@ -281,6 +285,253 @@
               "table": "Note"
             }
           },
+          "Nugget": {
+            "fields": {
+              "audioUrl": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "bibleSection": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "book": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "challenges": {
+                "many": {
+                  "elementNullable": false
+                },
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "duration": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "featured": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "image": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "isGold": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "keyPrinciple": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "marketplaceApplication": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "number": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "practicalActionPlan": {
+                "many": {
+                  "elementNullable": false
+                },
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "publishedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "scriptureRef": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "scriptureText": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "slug": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "tag": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "title": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "topic": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "audioUrl": {
+                  "column": "audioUrl"
+                },
+                "bibleSection": {
+                  "column": "bibleSection"
+                },
+                "book": {
+                  "column": "book"
+                },
+                "challenges": {
+                  "column": "challenges"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "duration": {
+                  "column": "duration"
+                },
+                "featured": {
+                  "column": "featured"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "image": {
+                  "column": "image"
+                },
+                "isGold": {
+                  "column": "isGold"
+                },
+                "keyPrinciple": {
+                  "column": "keyPrinciple"
+                },
+                "marketplaceApplication": {
+                  "column": "marketplaceApplication"
+                },
+                "number": {
+                  "column": "number"
+                },
+                "practicalActionPlan": {
+                  "column": "practicalActionPlan"
+                },
+                "publishedAt": {
+                  "column": "publishedAt"
+                },
+                "scriptureRef": {
+                  "column": "scriptureRef"
+                },
+                "scriptureText": {
+                  "column": "scriptureText"
+                },
+                "slug": {
+                  "column": "slug"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "tag": {
+                  "column": "tag"
+                },
+                "title": {
+                  "column": "title"
+                },
+                "topic": {
+                  "column": "topic"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "Nugget"
+            }
+          },
           "Playlist": {
             "fields": {
               "createdAt": {
@@ -537,6 +788,13 @@
                   "kind": "scalar"
                 }
               },
+              "role": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -638,6 +896,9 @@
                 },
                 "passwordHash": {
                   "column": "passwordHash"
+                },
+                "role": {
+                  "column": "role"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -903,6 +1164,178 @@
                 ]
               },
               "uniques": []
+            },
+            "Nugget": {
+              "checks": [
+                {
+                  "expression": "array_position(\"challenges\", NULL) IS NULL",
+                  "name": "Nugget_challenges_elem_not_null_8c29d25c",
+                  "prefix": "Nugget_challenges_elem_not_null"
+                },
+                {
+                  "expression": "array_position(\"practicalActionPlan\", NULL) IS NULL",
+                  "name": "Nugget_practicalActionPlan_elem_not_null_d53b649f",
+                  "prefix": "Nugget_practicalActionPlan_elem_not_null"
+                }
+              ],
+              "columns": {
+                "audioUrl": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "bibleSection": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "book": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "challenges": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "many": {
+                    "elementNullable": false
+                  },
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "duration": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "featured": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "image": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "isGold": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nullable": false
+                },
+                "keyPrinciple": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "marketplaceApplication": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "number": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "practicalActionPlan": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "many": {
+                    "elementNullable": false
+                  },
+                  "nullable": false
+                },
+                "publishedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "scriptureRef": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "scriptureText": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "slug": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "draft"
+                  },
+                  "nullable": false
+                },
+                "tag": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "title": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "topic": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "slug"
+                  ]
+                },
+                {
+                  "columns": [
+                    "number"
+                  ]
+                }
+              ]
             },
             "Playlist": {
               "columns": {
@@ -1170,6 +1603,15 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
+                "role": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "user"
+                  },
+                  "nullable": false
+                },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "dataType": "pg/timestamptz",
@@ -1197,10 +1639,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "dbd58cec1d4369d5cba813fe7da11e282f605cb4f0bd9d8b57dd870adb85f00e"
+    "storageHash": "ced9ba127d45a2a90039c9119e10047a9a46ae74a4ee72a669358f18f1a3b67a"
   },
   "execution": {
-    "executionHash": "1f8eff71a4dc7762ff3fb8ebe4c08cc8e649477a5b1132441105128467ac5e08",
+    "executionHash": "0411f6eaa681dcf2b9d77f20911dede69e56fff323dfa3b608bd976bd9388a78",
     "mutations": {
       "defaults": [
         {
@@ -1214,6 +1656,21 @@
           },
           "ref": {
             "entry": "Note",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "Nugget",
             "field": "updatedAt",
             "namespace": "public"
           }

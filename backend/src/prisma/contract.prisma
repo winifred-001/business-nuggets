@@ -5,6 +5,7 @@ model User {
   name         String
   email        String   @unique
   passwordHash String
+   role         String   @default("user")
   createdAt    TimestamptzString @default(now())
   updatedAt    temporal.updatedAtString()
 
@@ -102,4 +103,33 @@ model FollowedTopic {
 
   @@unique([userId, topic])
   @@index([userId])
+}
+
+model Nugget {
+  id                     String   @id
+  slug                   String   @unique
+  number                 Int      @unique
+  title                  String
+  topic                  String
+  tag                    String
+  scriptureRef           String
+  scriptureText          String
+  image                  String
+  keyPrinciple           String
+  marketplaceApplication String
+  practicalActionPlan    String[]
+  duration               String
+  isGold                 Boolean  @default(false)
+  book                   String
+  bibleSection           String
+  challenges             String[]
+
+  status                 String   @default("draft")
+  featured               Boolean  @default(false)
+
+  audioUrl               String?
+
+  publishedAt            TimestamptzString?
+  createdAt              TimestamptzString @default(now())
+  updatedAt              temporal.updatedAtString()
 }
