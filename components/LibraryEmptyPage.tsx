@@ -17,7 +17,7 @@ export default function LibraryEmptyPage({
 }: LibraryEmptyPageProps) {
   return (
     <div className="flex min-h-screen flex-col bg-black text-white">
-      <Navbar showAuthLinks={false} />
+      <Navbar />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
         <h1 className="font-serif text-3xl sm:text-4xl">

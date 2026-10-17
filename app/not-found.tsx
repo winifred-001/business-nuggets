@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col bg-black text-white">
-      <Navbar showAuthLinks={false} />
+      <Navbar/>
 
       <main className="flex flex-1 items-center justify-center px-4 py-16">
         <div className="w-full max-w-xl rounded-xl border border-gray-800 p-6 text-center sm:p-10">
