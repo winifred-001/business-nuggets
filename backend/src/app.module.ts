@@ -20,11 +20,13 @@ import { ModerationModule } from "./moderation/moderation.module";
 import { AnalyticsModule } from "./analytics/analytics.module";
 import { MobileAppModule } from "./mobile-app/mobile-app.module";
 import { AppSettingsModule } from "./app-settings/app-settings.module";
-
+import {UserNotificationsModule,} from "./user-notifications/user-notifications.module";
 import { AdminModule } from "./admin/admin.module";
+import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     UsersModule,
     AuthModule,
 
@@ -36,7 +38,7 @@ import { AdminModule } from "./admin/admin.module";
     NotesModule,
     HistoryModule,
     FollowingModule,
-
+     UserNotificationsModule,
     MediaModule,
     ModerationModule,
     AnalyticsModule,

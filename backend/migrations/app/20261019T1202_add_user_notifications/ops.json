@@ -1,0 +1,278 @@
+[
+  {
+    "id": "table.UserNotification",
+    "label": "Create table \"UserNotification\"",
+    "summary": "Creates table \"UserNotification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "UserNotification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"UserNotification\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"UserNotification\"",
+        "sql": "CREATE TABLE \"public\".\"UserNotification\" (\n  \"campaignId\" int4,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"href\" text,\n  \"id\" SERIAL NOT NULL,\n  \"message\" text NOT NULL,\n  \"readAt\" timestamptz,\n  \"title\" text NOT NULL,\n  \"type\" text DEFAULT 'system' NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"UserNotification\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.UserNotification.UserNotification_campaignId_idx_3aacd648",
+    "label": "Create index \"UserNotification_campaignId_idx_3aacd648\" on \"UserNotification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "UserNotification_campaignId_idx_3aacd648",
+        "table": "UserNotification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"UserNotification_campaignId_idx_3aacd648\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification_campaignId_idx_3aacd648\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"UserNotification_campaignId_idx_3aacd648\"",
+        "sql": "CREATE INDEX \"UserNotification_campaignId_idx_3aacd648\" ON \"public\".\"UserNotification\" (\"campaignId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"UserNotification_campaignId_idx_3aacd648\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification_campaignId_idx_3aacd648\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.UserNotification.UserNotification_createdAt_idx_9575dbd7",
+    "label": "Create index \"UserNotification_createdAt_idx_9575dbd7\" on \"UserNotification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "UserNotification_createdAt_idx_9575dbd7",
+        "table": "UserNotification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"UserNotification_createdAt_idx_9575dbd7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification_createdAt_idx_9575dbd7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"UserNotification_createdAt_idx_9575dbd7\"",
+        "sql": "CREATE INDEX \"UserNotification_createdAt_idx_9575dbd7\" ON \"public\".\"UserNotification\" (\"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"UserNotification_createdAt_idx_9575dbd7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification_createdAt_idx_9575dbd7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.UserNotification.UserNotification_readAt_idx_1b4c936e",
+    "label": "Create index \"UserNotification_readAt_idx_1b4c936e\" on \"UserNotification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "UserNotification_readAt_idx_1b4c936e",
+        "table": "UserNotification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"UserNotification_readAt_idx_1b4c936e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification_readAt_idx_1b4c936e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"UserNotification_readAt_idx_1b4c936e\"",
+        "sql": "CREATE INDEX \"UserNotification_readAt_idx_1b4c936e\" ON \"public\".\"UserNotification\" (\"readAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"UserNotification_readAt_idx_1b4c936e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification_readAt_idx_1b4c936e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.UserNotification.UserNotification_type_idx_b6b604ea",
+    "label": "Create index \"UserNotification_type_idx_b6b604ea\" on \"UserNotification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "UserNotification_type_idx_b6b604ea",
+        "table": "UserNotification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"UserNotification_type_idx_b6b604ea\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification_type_idx_b6b604ea\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"UserNotification_type_idx_b6b604ea\"",
+        "sql": "CREATE INDEX \"UserNotification_type_idx_b6b604ea\" ON \"public\".\"UserNotification\" (\"type\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"UserNotification_type_idx_b6b604ea\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification_type_idx_b6b604ea\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.UserNotification.UserNotification_userId_idx_a489d58a",
+    "label": "Create index \"UserNotification_userId_idx_a489d58a\" on \"UserNotification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "UserNotification_userId_idx_a489d58a",
+        "table": "UserNotification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"UserNotification_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"UserNotification_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"UserNotification_userId_idx_a489d58a\" ON \"public\".\"UserNotification\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"UserNotification_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.UserNotification.UserNotification_userId_fkey",
+    "label": "Add foreign key \"UserNotification_userId_fkey\" on \"UserNotification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "UserNotification_userId_fkey",
+        "table": "UserNotification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"UserNotification_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "UserNotification_userId_fkey",
+          "public",
+          "\"public\".\"UserNotification\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"UserNotification_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"UserNotification\"\nADD CONSTRAINT \"UserNotification_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"UserNotification_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "UserNotification_userId_fkey",
+          "public",
+          "\"public\".\"UserNotification\""
+        ]
+      }
+    ]
+  }
+]

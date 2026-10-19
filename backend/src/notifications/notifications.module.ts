@@ -6,7 +6,15 @@ import {
   NotificationsService,
 } from "./notifications.service";
 
+import {
+  UserNotificationsModule,
+} from "../user-notifications/user-notifications.module";
+
 @Module({
+  imports: [
+    UserNotificationsModule,
+  ],
+
   providers: [
     NotificationsService,
   ],

@@ -29,6 +29,7 @@ model User {
   history       History[]
   followedTopics FollowedTopic[]
   savedFolders  SavedFolder[]
+  notifications UserNotification[]
 }
 
 model SavedNugget {
@@ -483,4 +484,35 @@ model AppSettings {
 
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
+}
+
+model UserNotification {
+  id Int @id @default(autoincrement())
+
+  userId Int
+
+  campaignId Int?
+
+  type String @default("system")
+
+  title   String
+  message String
+
+  href String?
+
+  readAt TimestamptzString?
+
+  createdAt TimestamptzString @default(now())
+
+  user User @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@index([userId])
+  @@index([campaignId])
+  @@index([type])
+  @@index([readAt])
+  @@index([createdAt])
 }
