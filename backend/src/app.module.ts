@@ -1,33 +1,53 @@
-import { Module } from '@nestjs/common';
+import { Module } from "@nestjs/common";
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
-import { SavedNuggetsModule } from './saved-nuggets/saved-nuggets.module';
-import { PlaylistsModule } from './playlists/playlists.module';
-import { NotesModule } from './notes/notes.module';
-import { HistoryModule } from './history/history.module';
-import { FollowingModule } from './following/following.module';
-import {AdminModule} from "./admin/admin.module";
-import {NuggetsModule} from "./nuggets/nuggets.module";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+
+import { UsersModule } from "./users/users.module";
+import { AuthModule } from "./auth/auth.module";
+
+import { SavedNuggetsModule } from "./saved-nuggets/saved-nuggets.module";
+import { SavedFoldersModule } from "./saved-folders/saved-folders.module";
+import { PlaylistsModule } from "./playlists/playlists.module";
+import { NotesModule } from "./notes/notes.module";
+import { HistoryModule } from "./history/history.module";
+import { FollowingModule } from "./following/following.module";
+
+import { NuggetsModule } from "./nuggets/nuggets.module";
+
+import { MediaModule } from "./media/media.module";
+import { ModerationModule } from "./moderation/moderation.module";
+import { AnalyticsModule } from "./analytics/analytics.module";
+import { MobileAppModule } from "./mobile-app/mobile-app.module";
+import { AppSettingsModule } from "./app-settings/app-settings.module";
+
+import { AdminModule } from "./admin/admin.module";
 
 @Module({
   imports: [
-    // Distributed tracing, auto-correlated logs, request/job metrics, error
-    // telemetry, alarms, and more — out of the box. Sign up at https://observe.nestjs.com
-  
     UsersModule,
     AuthModule,
+
+    NuggetsModule,
+
     SavedNuggetsModule,
+    SavedFoldersModule,
     PlaylistsModule,
     NotesModule,
     HistoryModule,
     FollowingModule,
+
+    MediaModule,
+    ModerationModule,
+    AnalyticsModule,
+    MobileAppModule,
+    AppSettingsModule,
+
     AdminModule,
-    NuggetsModule,
   ],
+
   controllers: [AppController],
+
   providers: [AppService],
 })
 export class AppModule {}

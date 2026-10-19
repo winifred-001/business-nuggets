@@ -62,4 +62,29 @@ export class UsersController {
       body.password
     );
   } 
+
+  @Get("me/preferences")
+getPreferences(
+  @Request() req: any,
+) {
+  return this.usersService.getPreferences(
+    req.user.sub,
+  );
+}
+
+@Patch("me/preferences")
+updatePreferences(
+  @Request() req: any,
+
+  @Body()
+  body: {
+    interests?: string[];
+    wisdomNeeds?: string[];
+  },
+) {
+  return this.usersService.updatePreferences(
+    req.user.sub,
+    body,
+  );
+}
 }

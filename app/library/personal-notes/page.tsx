@@ -80,12 +80,6 @@ export default function PersonalNotesPage() {
     setContent(note.content);
   }
 
-  function newNote() {
-    setSelectedId(null);
-    setTitle("");
-    setContent("");
-  }
-
   async function saveNote() {
     const token = localStorage.getItem("token");
 
@@ -215,14 +209,13 @@ export default function PersonalNotesPage() {
                 My Journal & Notes
               </h1>
 
-              <button
-                type="button"
-                onClick={newNote}
-                aria-label="Create new note"
-                className="text-amber-300 transition hover:text-amber-200"
-              >
-                <Plus size={19} />
-              </button>
+              <Link
+  href="/library/personal-notes/create"
+  aria-label="Create new note"
+  className="text-[#C8A35A] transition hover:text-[#E0C48A]"
+>
+  <Plus size={19} />
+</Link>
             </div>
 
             <div className="relative mt-4">

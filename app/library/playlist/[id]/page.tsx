@@ -113,7 +113,7 @@ export default function PlaylistDetailPage() {
     }
 
     setShowDeleteModal(false);
-    router.push("/library/saved-nuggets");
+    router.push("/library/playlist");
   } catch {
     alert("Could not connect to the server");
   } finally {
@@ -168,10 +168,10 @@ export default function PlaylistDetailPage() {
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6">
         <Link
-          href="/library/saved-nuggets"
+          href="/library/playlist"
           className="text-sm text-amber-300 hover:text-amber-200"
         >
-          ← Back to Saved Nuggets
+          ← Back to Playlists
         </Link>
 
         {loading && (
@@ -204,21 +204,30 @@ export default function PlaylistDetailPage() {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteModal(true)}
-                  disabled={deleting}
-                  className="rounded-md border border-red-900/60 px-4 py-2 text-sm text-red-400 transition hover:bg-red-950/30 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Delete Folder
-                </button>
+                <div className="flex flex-wrap gap-3">
+  <Link
+    href={`/library/playlist/${playlist.id}/edit`}
+    className="rounded-md border border-[#C8A35A]/40 px-4 py-2 text-[11px] text-[#C8A35A] transition hover:bg-[#C8A35A]/10"
+  >
+    Edit Playlist
+  </Link>
+
+  <button
+    type="button"
+    onClick={() => setShowDeleteModal(true)}
+    disabled={deleting}
+    className="rounded-md border border-red-900/60 px-4 py-2 text-[11px] text-red-400 transition hover:bg-red-950/30 disabled:opacity-50"
+  >
+    Delete Playlist
+  </button>
+</div>
               </div>
 
               {playlistNuggets.length ===
               0 ? (
                 <div className="mt-10 rounded-xl border border-white/10 bg-[#101010] p-8 text-center">
                   <p className="text-gray-500">
-                    No nuggets in this folder
+                    No nuggets in this playlist
                     yet.
                   </p>
                 </div>

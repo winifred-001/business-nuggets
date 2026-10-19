@@ -1,25 +1,41 @@
 // use prisma-8
 
 model User {
-  id           Int      @id @default(autoincrement())
+  id           Int    @id @default(autoincrement())
   name         String
-  email        String   @unique
+  email        String @unique
   passwordHash String
-   role         String   @default("user")
-  createdAt    TimestamptzString @default(now())
-  updatedAt    temporal.updatedAtString()
 
-  savedNuggets SavedNugget[]
-  playlists    Playlist[]
-  notes Note[]
-  history History[]
+  role          String @default("user")
+  membershipTier String @default("free")
+  accountStatus  String @default("active")
+
+  interests   String[] @default([])
+  wisdomNeeds String[] @default([])
+
+  subscriptionPlan      String @default("free")
+  subscriptionStatus    String @default("inactive")
+  subscriptionExpiresAt TimestamptzString?
+
+  adminRole   String?
+  lastLoginAt TimestamptzString?
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  savedNuggets  SavedNugget[]
+  playlists     Playlist[]
+  notes         Note[]
+  history       History[]
   followedTopics FollowedTopic[]
+  savedFolders  SavedFolder[]
 }
 
 model SavedNugget {
-  id        Int      @id @default(autoincrement())
-  nuggetId  String
-  userId    Int
+  id       Int    @id @default(autoincrement())
+  nuggetId String
+  userId   Int
+
   createdAt TimestamptzString @default(now())
 
   user User @relation(
@@ -32,34 +48,46 @@ model SavedNugget {
 }
 
 model Playlist {
-  id        Int      @id @default(autoincrement())
-  name      String
-  userId    Int
+  id     Int    @id @default(autoincrement())
+  name   String
+  userId Int
+
   createdAt TimestamptzString @default(now())
 
-  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
   items PlaylistItem[]
 
   @@unique([userId, name])
 }
 
 model PlaylistItem {
-  id         Int      @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   playlistId Int
   nuggetId   String
-  createdAt  TimestamptzString @default(now())
 
-  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  createdAt TimestamptzString @default(now())
+
+  playlist Playlist @relation(
+    fields: [playlistId],
+    references: [id],
+    onDelete: Cascade
+  )
 
   @@unique([playlistId, nuggetId])
 }
 
 model Note {
-  id        Int      @id @default(autoincrement())
-  title     String?
-  content   String
-  nuggetId  String?
-  userId    Int
+  id       Int     @id @default(autoincrement())
+  title    String?
+  content  String
+  nuggetId String?
+  userId   Int
+
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
 
@@ -73,10 +101,11 @@ model Note {
 }
 
 model History {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  nuggetId    String
-  progress    Int      @default(0)
+  id           Int    @id @default(autoincrement())
+  userId       Int
+  nuggetId     String
+  progress     Int    @default(0)
+
   lastOpenedAt TimestamptzString @default(now())
 
   user User @relation(
@@ -90,9 +119,10 @@ model History {
 }
 
 model FollowedTopic {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  topic     String
+  id     Int    @id @default(autoincrement())
+  userId Int
+  topic  String
+
   createdAt TimestamptzString @default(now())
 
   user User @relation(
@@ -106,30 +136,351 @@ model FollowedTopic {
 }
 
 model Nugget {
-  id                     String   @id
-  slug                   String   @unique
-  number                 Int      @unique
+  id                     String @id
+  slug                   String @unique
+  number                 Int    @unique
+
   title                  String
   topic                  String
   tag                    String
+
   scriptureRef           String
   scriptureText          String
+
   image                  String
+
   keyPrinciple           String
   marketplaceApplication String
   practicalActionPlan    String[]
+
   duration               String
-  isGold                 Boolean  @default(false)
+  isGold                 Boolean @default(false)
+
   book                   String
   bibleSection           String
+
   challenges             String[]
 
-  status                 String   @default("draft")
-  featured               Boolean  @default(false)
+  status                 String  @default("draft")
+  featured               Boolean @default(false)
 
   audioUrl               String?
 
-  publishedAt            TimestamptzString?
-  createdAt              TimestamptzString @default(now())
-  updatedAt              temporal.updatedAtString()
+  publishedAt TimestamptzString?
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+}
+
+model SavedFolder {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  userId      Int
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  user User @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  items SavedFolderItem[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model SavedFolderItem {
+  id       Int    @id @default(autoincrement())
+  folderId Int
+  nuggetId String
+
+  createdAt TimestamptzString @default(now())
+
+  folder SavedFolder @relation(
+    fields: [folderId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@unique([folderId, nuggetId])
+  @@index([folderId])
+}
+
+model Topic {
+  id           Int    @id @default(autoincrement())
+
+  name         String @unique
+  slug         String @unique
+
+  description  String?
+
+  visible      Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+}
+
+model ScriptureBook {
+  id           Int    @id @default(autoincrement())
+
+  name         String @unique
+  slug         String @unique
+
+  chapterCount Int     @default(0)
+
+  visible      Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+}
+
+model NuggetSchedule {
+  id           Int    @id @default(autoincrement())
+
+  nuggetId     String
+
+  scheduledFor TimestamptzString
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  @@index([nuggetId])
+  @@index([scheduledFor])
+}
+
+model MediaFolder {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+}
+
+model MediaAsset {
+  id           Int    @id @default(autoincrement())
+
+  filename     String @unique
+  originalName String
+
+  mimeType     String
+  size         Int
+
+  width        Int?
+  height       Int?
+
+  folderId     Int?
+
+  url          String
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  @@index([folderId])
+}
+
+model SubscriptionPlan {
+  id           Int    @id @default(autoincrement())
+
+  slug         String @unique
+  name         String
+
+  priceCents   Int    @default(0)
+  currency     String @default("USD")
+
+  billingCycle String @default("free")
+
+  features     String[]
+
+  active       Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+}
+
+model BillingTransaction {
+  id                Int    @id @default(autoincrement())
+
+  userId            Int
+  planSlug          String
+
+  amountCents       Int
+  currency          String @default("USD")
+
+  status            String @default("pending")
+
+  provider          String?
+  providerReference String? @unique
+
+  paidAt            TimestamptzString?
+
+  createdAt         TimestamptzString @default(now())
+  updatedAt         temporal.updatedAtString()
+
+  @@index([userId])
+  @@index([planSlug])
+  @@index([status])
+}
+
+model Comment {
+  id          Int    @id @default(autoincrement())
+
+  nuggetId    String
+  userId      Int?
+
+  authorName  String
+  body        String
+
+  status      String @default("pending")
+  reportCount Int    @default(0)
+
+  adminReply  String?
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  @@index([nuggetId])
+  @@index([userId])
+  @@index([status])
+}
+
+model AnalyticsEvent {
+  id              Int    @id @default(autoincrement())
+
+  visitorId       String
+  eventType       String
+
+  nuggetId        String?
+
+  platform        String @default("web")
+
+  durationSeconds Int?
+
+  country         String?
+
+  createdAt TimestamptzString @default(now())
+
+  @@index([visitorId])
+  @@index([eventType])
+  @@index([nuggetId])
+  @@index([createdAt])
+}
+
+model MobileAppSettings {
+  id                Int @id @default(autoincrement())
+
+  forceUpdate       Boolean @default(false)
+  maintenanceMode   Boolean @default(false)
+  offlineReading    Boolean @default(true)
+  dailyNuggetWidget Boolean @default(true)
+
+  homeBannerTitle String @default("Command Your Business with Absolute Clarity")
+
+  publishedAt TimestamptzString?
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+}
+
+model MobileAppVersion {
+  id           Int @id @default(autoincrement())
+
+  platform     String
+  version      String
+
+  installCount Int    @default(0)
+
+  status       String @default("review")
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  @@unique([platform, version])
+}
+
+model MobileOnboardingScreen {
+  id          Int @id @default(autoincrement())
+
+  step        Int @unique
+
+  title       String
+  description String?
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+}
+
+model NotificationCampaign {
+  id       Int @id @default(autoincrement())
+
+  title    String
+  message  String
+
+  channel  String @default("push")
+
+  audience String @default("all")
+  platform String @default("all")
+
+  sendAt   TimestamptzString?
+
+  status   String @default("draft")
+  reach    Int    @default(0)
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  @@index([status])
+  @@index([sendAt])
+}
+
+model AuditLog {
+  id         Int @id @default(autoincrement())
+
+  adminId    Int?
+  adminEmail String?
+
+  action     String
+  target     String?
+
+  method     String
+  path       String
+
+  result     String @default("success")
+
+  createdAt  TimestamptzString @default(now())
+
+  @@index([adminId])
+  @@index([result])
+  @@index([createdAt])
+}
+
+model AppSettings {
+  id                    Int @id @default(autoincrement())
+
+  siteName              String @default("Business Nuggets")
+
+  tagline               String @default("Command Your Business with Absolute Clarity")
+
+  supportEmail          String @default("support@businessnuggets.com")
+
+  timezone              String @default("WAT (UTC+1)")
+  defaultLanguage       String @default("English")
+
+  dailyPublishTime      String @default("06:00")
+
+  twoFactorAdmins       Boolean @default(false)
+
+  sessionTimeoutMinutes Int @default(30)
+
+  ipAllowListEnabled    Boolean @default(false)
+
+  maintenanceMode       Boolean @default(false)
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
 }

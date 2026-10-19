@@ -388,7 +388,7 @@ export default function Navbar() {
 
                   <div className="p-2">
                     <ProfileLink
-                      href="/home"
+                      href="/workspace"
                       icon={
                         <UserCircle
                           size={16}

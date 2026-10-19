@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 import Navbar from "@/components/navbar";
-
+import NuggetAnalyticsTracker from "@/components/analytics/NuggetAnalyticsTracker";
 import { getNuggetBySlug } from "@/lib/nuggets";
 import { getNuggetBySlugFromApi } from "@/lib/nuggets-api";
 
@@ -44,6 +44,7 @@ export default async function NuggetDetailPage({
 
   return (
     <div className="min-h-screen bg-[#080808] pb-[96px] text-[#FAF9F6]">
+     <NuggetAnalyticsTracker nuggetId={nugget.id}/>
       <Navbar />
 
       <main>
@@ -207,17 +208,17 @@ export default async function NuggetDetailPage({
                   Add to Playlist
                 </button>
 
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[14px] text-white/65 transition hover:bg-white/[0.04] hover:text-[#E0C48A]"
-                >
-                  <Share2
-                    size={16}
-                    className="text-[#C8A35A]"
-                  />
+                <Link
+  href={`/share-nugget/${nugget.slug}`}
+  className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[14px] text-white/65 transition hover:bg-white/[0.04] hover:text-[#E0C48A]"
+>
+  <Share2
+    size={16}
+    className="text-[#C8A35A]"
+  />
 
-                  Share Commentary
-                </button>
+  Share Commentary
+</Link>
               </div>
             </aside>
           </div>
