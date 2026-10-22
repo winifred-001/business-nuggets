@@ -20,7 +20,7 @@ import {
   Save,
 } from "lucide-react";
 
-import AdminShell from "@/components/AdminShell";
+import AdminShell from "@/components/admin/AdminShell";
 import { API_URL } from "@/lib/api";
 
 import type {

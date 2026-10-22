@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 
-import AdminShell from "@/components/AdminShell";
+import AdminShell from "@/components/admin/AdminShell";
 
 import {
   API_URL,
