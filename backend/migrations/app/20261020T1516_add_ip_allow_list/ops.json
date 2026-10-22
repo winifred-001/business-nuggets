@@ -1,0 +1,86 @@
+[
+  {
+    "id": "column.public.AppSettings.ipAllowList",
+    "label": "Add column \"ipAllowList\" to \"AppSettings\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "ipAllowList",
+        "table": "AppSettings"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"ipAllowList\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "AppSettings",
+          "ipAllowList"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"ipAllowList\"",
+        "sql": "ALTER TABLE \"public\".\"AppSettings\" ADD COLUMN \"ipAllowList\" text[] DEFAULT '{}' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"ipAllowList\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "AppSettings",
+          "ipAllowList"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.AppSettings.AppSettings_ipAllowList_elem_not_null_788ceb17",
+    "label": "Add check constraint \"AppSettings_ipAllowList_elem_not_null_788ceb17\" on \"AppSettings\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "AppSettings_ipAllowList_elem_not_null_788ceb17",
+        "table": "AppSettings"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"AppSettings_ipAllowList_elem_not_null_788ceb17\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "AppSettings_ipAllowList_elem_not_null_788ceb17",
+          "public",
+          "\"public\".\"AppSettings\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"AppSettings_ipAllowList_elem_not_null_788ceb17\"",
+        "sql": "ALTER TABLE \"public\".\"AppSettings\" ADD CONSTRAINT \"AppSettings_ipAllowList_elem_not_null_788ceb17\" CHECK (array_position(\"ipAllowList\", NULL) IS NULL)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"AppSettings_ipAllowList_elem_not_null_788ceb17\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "AppSettings_ipAllowList_elem_not_null_788ceb17",
+          "public",
+          "\"public\".\"AppSettings\""
+        ]
+      }
+    ]
+  }
+]

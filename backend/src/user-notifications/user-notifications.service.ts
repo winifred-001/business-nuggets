@@ -127,11 +127,14 @@ export class UserNotificationsService {
       new Date().toISOString();
 
     for (
-      const notification of unread
+      const notification
+      of unread
     ) {
       await db.orm.public.UserNotification
         .where({
-          id: notification.id,
+          id:
+            notification.id,
+
           userId,
         })
         .update({
@@ -142,12 +145,13 @@ export class UserNotificationsService {
     return {
       message:
         "All notifications marked as read",
+
       updatedCount:
         unread.length,
     };
   }
 
-    /* =========================================================
+  /* =========================================================
      CREATE ONE NOTIFICATION
      INTERNAL BACKEND USE
   ========================================================= */
@@ -162,15 +166,41 @@ export class UserNotificationsService {
       href?: string | null;
     },
   ) {
+    /*
+     * If this notification belongs to
+     * a campaign, check whether this user
+     * already received that campaign.
+     */
+    if (
+      data.campaignId != null
+    ) {
+      const existing =
+        await db.orm.public.UserNotification
+          .where({
+            userId:
+              data.userId,
+
+            campaignId:
+              data.campaignId,
+          })
+          .first();
+
+      if (existing) {
+        return existing;
+      }
+    }
+
     return db.orm.public.UserNotification.create({
       userId:
         data.userId,
 
       campaignId:
-        data.campaignId ?? null,
+        data.campaignId ??
+        null,
 
       type:
-        data.type ?? "system",
+        data.type ??
+        "system",
 
       title:
         data.title.trim(),
@@ -179,7 +209,8 @@ export class UserNotificationsService {
         data.message.trim(),
 
       href:
-        data.href ?? null,
+        data.href ??
+        null,
 
       readAt:
         null,
@@ -200,36 +231,37 @@ export class UserNotificationsService {
       href?: string | null;
     },
   ) {
-    let createdCount = 0;
+    let processedCount =
+      0;
 
-    for (const userId of userIds) {
-      const created =
-        await this.createNotification({
-          userId,
+    for (
+      const userId
+      of userIds
+    ) {
+      await this.createNotification({
+        userId,
 
-          campaignId:
-            data.campaignId,
+        campaignId:
+          data.campaignId,
 
-          type:
-            data.type,
+        type:
+          data.type,
 
-          title:
-            data.title,
+        title:
+          data.title,
 
-          message:
-            data.message,
+        message:
+          data.message,
 
-          href:
-            data.href,
-        });
+        href:
+          data.href,
+      });
 
-      if (created) {
-        createdCount += 1;
-      }
+      processedCount += 1;
     }
 
     return {
-      createdCount,
+      processedCount,
     };
   }
 }

@@ -9,55 +9,22 @@ import * as bcrypt from "bcrypt";
 
 import { db } from "../prisma/db";
 
-export type AdminRole =
-  | "super-admin"
-  | "editor"
-  | "moderator"
-  | "support";
+import {
+  ADMIN_PERMISSIONS,
+  AdminRole,
+} from "../auth/admin-permissions";
 
 @Injectable()
 export class RolesAccessService {
-  private readonly allowedRoles:
-    AdminRole[] = [
+  private readonly allowedRoles: AdminRole[] = [
     "super-admin",
     "editor",
     "moderator",
     "support",
   ];
 
-  private readonly permissions = {
-    "super-admin": {
-      manageNuggets: true,
-      moderateComments: true,
-      billing: true,
-      manageAdmins: true,
-      settings: true,
-    },
-
-    editor: {
-      manageNuggets: true,
-      moderateComments: false,
-      billing: false,
-      manageAdmins: false,
-      settings: false,
-    },
-
-    moderator: {
-      manageNuggets: false,
-      moderateComments: true,
-      billing: false,
-      manageAdmins: false,
-      settings: false,
-    },
-
-    support: {
-      manageNuggets: false,
-      moderateComments: false,
-      billing: true,
-      manageAdmins: false,
-      settings: false,
-    },
-  };
+  private readonly permissions =
+    ADMIN_PERMISSIONS;
 
   /* =========================================
      ADMIN TEAM
@@ -71,32 +38,26 @@ export class RolesAccessService {
       users
         .filter(
           (user) =>
-            user.role ===
-              "admin" ||
-            user.role ===
-              "owner",
+            user.role === "admin" ||
+            user.role === "owner",
         )
-        .map(
-          (user) => {
-            const {
-              passwordHash:
-                _passwordHash,
+        .map((user) => {
+          const {
+            passwordHash:
+              _passwordHash,
+            ...safeUser
+          } = user;
 
-              ...safeUser
-            } = user;
+          return {
+            ...safeUser,
 
-            return {
-              ...safeUser,
-
-              adminRole:
-                user.role ===
-                "owner"
-                  ? "super-admin"
-                  : user.adminRole ??
-                    "editor",
-            };
-          },
-        )
+            adminRole:
+              user.role === "owner"
+                ? "super-admin"
+                : user.adminRole ??
+                  "editor",
+          };
+        })
         .sort(
           (a, b) =>
             new Date(
@@ -146,8 +107,7 @@ export class RolesAccessService {
     }
 
     if (
-      data.password.length <
-      8
+      data.password.length < 8
     ) {
       throw new BadRequestException(
         "Initial password must be at least 8 characters",
@@ -191,8 +151,7 @@ export class RolesAccessService {
 
         passwordHash,
 
-        role:
-          "admin",
+        role: "admin",
 
         adminRole:
           data.adminRole,
@@ -213,7 +172,6 @@ export class RolesAccessService {
     const {
       passwordHash:
         _passwordHash,
-
       ...safeAdmin
     } = created;
 
@@ -248,10 +206,8 @@ export class RolesAccessService {
     }
 
     if (
-      user.role !==
-        "admin" &&
-      user.role !==
-        "owner"
+      user.role !== "admin" &&
+      user.role !== "owner"
     ) {
       throw new BadRequestException(
         "User is not an admin",
@@ -259,12 +215,11 @@ export class RolesAccessService {
     }
 
     /*
-     * The owner stays Super Admin
-     * and cannot be suspended here.
+     * Owner always remains
+     * Super Admin.
      */
     if (
-      user.role ===
-      "owner"
+      user.role === "owner"
     ) {
       throw new BadRequestException(
         "The owner account cannot be modified here",
@@ -324,7 +279,6 @@ export class RolesAccessService {
     const {
       passwordHash:
         _passwordHash,
-
       ...safeAdmin
     } = updated;
 

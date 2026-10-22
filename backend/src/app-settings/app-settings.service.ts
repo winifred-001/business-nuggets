@@ -5,7 +5,7 @@ import {
 } from "@nestjs/common";
 
 import { db } from "../prisma/db";
-
+import { isIP } from "node:net";
 @Injectable()
 export class AppSettingsService {
   private async ensureSettings() {
@@ -187,62 +187,107 @@ export class AppSettingsService {
   }
 
   async updateSecurity(data: {
-    twoFactorAdmins?: boolean;
-    sessionTimeoutMinutes?: number;
-    ipAllowListEnabled?: boolean;
-  }) {
-    const settings =
-      await this.ensureSettings();
+  twoFactorAdmins?: boolean;
+  sessionTimeoutMinutes?: number;
+  ipAllowListEnabled?: boolean;
+  ipAllowList?: string[];
+}) {
+  const settings =
+    await this.ensureSettings();
 
+  if (
+    data.sessionTimeoutMinutes !==
+    undefined
+  ) {
     if (
-      data.sessionTimeoutMinutes !==
-      undefined
+      data.sessionTimeoutMinutes < 5 ||
+      data.sessionTimeoutMinutes > 1440
     ) {
-      if (
-        data.sessionTimeoutMinutes <
-          5 ||
-        data.sessionTimeoutMinutes >
-          1440
-      ) {
+      throw new BadRequestException(
+        "Session timeout must be between 5 and 1440 minutes",
+      );
+    }
+  }
+
+  let ipAllowList =
+    data.ipAllowList;
+
+  if (ipAllowList !== undefined) {
+    ipAllowList = [
+      ...new Set(
+        ipAllowList
+          .map((ip) =>
+            ip.trim(),
+          )
+          .filter(Boolean),
+      ),
+    ];
+
+    for (const ip of ipAllowList) {
+      if (isIP(ip) === 0) {
         throw new BadRequestException(
-          "Session timeout must be between 5 and 1440 minutes",
+          `Invalid IP address: ${ip}`,
         );
       }
     }
-
-    const updated =
-      await db.orm.public.AppSettings
-        .where({
-          id: settings.id,
-        })
-        .update({
-          ...(data.twoFactorAdmins !==
-            undefined && {
-            twoFactorAdmins:
-              data.twoFactorAdmins,
-          }),
-
-          ...(data.sessionTimeoutMinutes !==
-            undefined && {
-            sessionTimeoutMinutes:
-              data.sessionTimeoutMinutes,
-          }),
-
-          ...(data.ipAllowListEnabled !==
-            undefined && {
-            ipAllowListEnabled:
-              data.ipAllowListEnabled,
-          }),
-        });
-
-    if (!updated) {
-      throw new NotFoundException(
-        "Settings not found",
-      );
-    }
-
-    return updated;
   }
+
+  const effectiveIpAllowList =
+    ipAllowList ??
+    settings.ipAllowList ??
+    [];
+
+  const enableIpAllowList =
+    data.ipAllowListEnabled ??
+    settings.ipAllowListEnabled;
+
+  if (
+    enableIpAllowList &&
+    effectiveIpAllowList.length === 0
+  ) {
+    throw new BadRequestException(
+      "Add at least one allowed IP address before enabling the IP allow-list",
+    );
+  }
+
+  const updated =
+    await db.orm.public.AppSettings
+      .where({
+        id: settings.id,
+      })
+      .update({
+        ...(data.twoFactorAdmins !==
+          undefined && {
+          twoFactorAdmins:
+            data.twoFactorAdmins,
+        }),
+
+        ...(data.sessionTimeoutMinutes !==
+          undefined && {
+          sessionTimeoutMinutes:
+            data.sessionTimeoutMinutes,
+        }),
+
+        ...(data.ipAllowListEnabled !==
+          undefined && {
+          ipAllowListEnabled:
+            data.ipAllowListEnabled,
+        }),
+
+        ...(ipAllowList !==
+          undefined && {
+          ipAllowList,
+        }),
+      });
+
+  if (!updated) {
+    throw new NotFoundException(
+      "Settings not found",
+    );
+  }
+
+  return updated;
+}
 
   async setMaintenanceMode(
     enabled: boolean,

@@ -30,6 +30,8 @@ import {NotificationsModule,} from "../notifications/notifications.module";
 import {RolesAccessModule,} from "../roles-access/roles-access.module";
 import {AuditLogsModule,} from "../audit-logs/audit-logs.module";
 import {AppSettingsModule,} from "../app-settings/app-settings.module";
+import {AdminIpAllowListGuard,} from "./admin-ip-allow-list.guard";
+import { EmailModule } from "../email/email.module";
 
 @Module({
   imports: [
@@ -47,10 +49,16 @@ import {AppSettingsModule,} from "../app-settings/app-settings.module";
     NotificationsModule,
     RolesAccessModule,
     AppSettingsModule,
+    EmailModule,
   ],
 
   controllers: [
     AdminController,
   ],
+
+  providers: [
+  AdminIpAllowListGuard,
+],
+
 })
 export class AdminModule {}

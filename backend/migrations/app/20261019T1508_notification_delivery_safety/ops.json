@@ -1,0 +1,73 @@
+[
+  {
+    "id": "setDefault.NotificationCampaign.channel",
+    "label": "Set default on \"NotificationCampaign\".\"channel\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "channel",
+        "table": "NotificationCampaign"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"channel\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "NotificationCampaign",
+          "channel"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "set default on \"channel\"",
+        "sql": "ALTER TABLE \"public\".\"NotificationCampaign\" ALTER COLUMN \"channel\" SET DEFAULT 'in-app'"
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "index.UserNotification.UserNotification_userId_campaignId_idx_86a84a2d",
+    "label": "Create index \"UserNotification_userId_campaignId_idx_86a84a2d\" on \"UserNotification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "UserNotification_userId_campaignId_idx_86a84a2d",
+        "table": "UserNotification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"UserNotification_userId_campaignId_idx_86a84a2d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification_userId_campaignId_idx_86a84a2d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"UserNotification_userId_campaignId_idx_86a84a2d\"",
+        "sql": "CREATE INDEX \"UserNotification_userId_campaignId_idx_86a84a2d\" ON \"public\".\"UserNotification\" (\"userId\", \"campaignId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"UserNotification_userId_campaignId_idx_86a84a2d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserNotification_userId_campaignId_idx_86a84a2d\""
+        ]
+      }
+    ]
+  }
+]

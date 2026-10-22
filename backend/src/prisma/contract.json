@@ -76,6 +76,10 @@
       "model": "PlaylistItem",
       "namespace": "public"
     },
+    "PushDeviceToken": {
+      "model": "PushDeviceToken",
+      "namespace": "public"
+    },
     "SavedFolder": {
       "model": "SavedFolder",
       "namespace": "public"
@@ -106,6 +110,10 @@
     },
     "UserNotification": {
       "model": "UserNotification",
+      "namespace": "public"
+    },
+    "UserSession": {
+      "model": "UserSession",
       "namespace": "public"
     }
   },
@@ -234,6 +242,16 @@
                   "kind": "scalar"
                 }
               },
+              "ipAllowList": {
+                "many": {
+                  "elementNullable": false
+                },
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "ipAllowListEnabled": {
                 "nullable": false,
                 "type": {
@@ -312,6 +330,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "ipAllowList": {
+                  "column": "ipAllowList"
                 },
                 "ipAllowListEnabled": {
                   "column": "ipAllowListEnabled"
@@ -1927,6 +1948,124 @@
               "table": "PlaylistItem"
             }
           },
+          "PushDeviceToken": {
+            "fields": {
+              "active": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "deviceName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "lastSeenAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "platform": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "token": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "user": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "active": {
+                  "column": "active"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "deviceName": {
+                  "column": "deviceName"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "lastSeenAt": {
+                  "column": "lastSeenAt"
+                },
+                "platform": {
+                  "column": "platform"
+                },
+                "token": {
+                  "column": "token"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "PushDeviceToken"
+            }
+          },
           "SavedFolder": {
             "fields": {
               "createdAt": {
@@ -2575,6 +2714,30 @@
                   "kind": "scalar"
                 }
               },
+              "twoFactorEnabled": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "twoFactorRecoveryCodes": {
+                "many": {
+                  "elementNullable": false
+                },
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "twoFactorSecret": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -2669,6 +2832,21 @@
                   "namespace": "public"
                 }
               },
+              "pushTokens": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "PushDeviceToken",
+                  "namespace": "public"
+                }
+              },
               "savedFolders": {
                 "cardinality": "1:N",
                 "on": {
@@ -2696,6 +2874,21 @@
                 },
                 "to": {
                   "model": "SavedNugget",
+                  "namespace": "public"
+                }
+              },
+              "sessions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "UserSession",
                   "namespace": "public"
                 }
               }
@@ -2743,6 +2936,15 @@
                 },
                 "subscriptionStatus": {
                   "column": "subscriptionStatus"
+                },
+                "twoFactorEnabled": {
+                  "column": "twoFactorEnabled"
+                },
+                "twoFactorRecoveryCodes": {
+                  "column": "twoFactorRecoveryCodes"
+                },
+                "twoFactorSecret": {
+                  "column": "twoFactorSecret"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -2872,6 +3074,154 @@
               "namespaceId": "public",
               "table": "UserNotification"
             }
+          },
+          "UserSession": {
+            "fields": {
+              "browser": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "deviceName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiresAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "ipAddress": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "lastSeenAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "operatingSystem": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "revokedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "userAgent": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "user": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "browser": {
+                  "column": "browser"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "deviceName": {
+                  "column": "deviceName"
+                },
+                "expiresAt": {
+                  "column": "expiresAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "ipAddress": {
+                  "column": "ipAddress"
+                },
+                "lastSeenAt": {
+                  "column": "lastSeenAt"
+                },
+                "operatingSystem": {
+                  "column": "operatingSystem"
+                },
+                "revokedAt": {
+                  "column": "revokedAt"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "userAgent": {
+                  "column": "userAgent"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "UserSession"
+            }
           }
         }
       }
@@ -2980,6 +3330,13 @@
               "uniques": []
             },
             "AppSettings": {
+              "checks": [
+                {
+                  "expression": "array_position(\"ipAllowList\", NULL) IS NULL",
+                  "name": "AppSettings_ipAllowList_elem_not_null_788ceb17",
+                  "prefix": "AppSettings_ipAllowList_elem_not_null"
+                }
+              ],
               "columns": {
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -3014,6 +3371,18 @@
                   "default": {
                     "expression": "autoincrement()",
                     "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "ipAllowList": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": []
+                  },
+                  "many": {
+                    "elementNullable": false
                   },
                   "nullable": false
                 },
@@ -4026,7 +4395,7 @@
                   "dataType": "pg/text",
                   "default": {
                     "kind": "literal",
-                    "value": "push"
+                    "value": "in-app"
                   },
                   "nullable": false
                 },
@@ -4506,6 +4875,123 @@
                   "columns": [
                     "playlistId",
                     "nuggetId"
+                  ]
+                }
+              ]
+            },
+            "PushDeviceToken": {
+              "columns": {
+                "active": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "deviceName": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "lastSeenAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "platform": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "token": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "PushDeviceToken_userId_idx_a489d58a"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "PushDeviceToken"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "active"
+                  ],
+                  "name": "PushDeviceToken_active_idx_8af4daed",
+                  "prefix": "PushDeviceToken_active_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "PushDeviceToken_userId_idx_a489d58a",
+                  "prefix": "PushDeviceToken_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "token"
                   ]
                 }
               ]
@@ -5032,6 +5518,11 @@
                   "prefix": "User_interests_elem_not_null"
                 },
                 {
+                  "expression": "array_position(\"twoFactorRecoveryCodes\", NULL) IS NULL",
+                  "name": "User_twoFactorRecoveryCodes_elem_not_null_4a22bcfa",
+                  "prefix": "User_twoFactorRecoveryCodes_elem_not_null"
+                },
+                {
                   "expression": "array_position(\"wisdomNeeds\", NULL) IS NULL",
                   "name": "User_wisdomNeeds_elem_not_null_c5d5b6dc",
                   "prefix": "User_wisdomNeeds_elem_not_null"
@@ -5142,6 +5633,32 @@
                     "value": "inactive"
                   },
                   "nullable": false
+                },
+                "twoFactorEnabled": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nullable": false
+                },
+                "twoFactorRecoveryCodes": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": []
+                  },
+                  "many": {
+                    "elementNullable": false
+                  },
+                  "nullable": false
+                },
+                "twoFactorSecret": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -5293,10 +5810,153 @@
                 },
                 {
                   "columns": [
+                    "userId",
+                    "campaignId"
+                  ],
+                  "name": "UserNotification_userId_campaignId_idx_86a84a2d",
+                  "prefix": "UserNotification_userId_campaignId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "userId"
                   ],
                   "name": "UserNotification_userId_idx_a489d58a",
                   "prefix": "UserNotification_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "UserSession": {
+              "columns": {
+                "browser": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "deviceName": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "Unknown device"
+                  },
+                  "nullable": false
+                },
+                "expiresAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "ipAddress": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "lastSeenAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "operatingSystem": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "revokedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                },
+                "userAgent": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "UserSession_userId_idx_a489d58a"
+                  },
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "UserSession"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "expiresAt"
+                  ],
+                  "name": "UserSession_expiresAt_idx_6b6b8c10",
+                  "prefix": "UserSession_expiresAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "revokedAt"
+                  ],
+                  "name": "UserSession_revokedAt_idx_f1d8e6b3",
+                  "prefix": "UserSession_revokedAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "UserSession_userId_idx_a489d58a",
+                  "prefix": "UserSession_userId_idx",
                   "unique": false
                 }
               ],
@@ -5313,10 +5973,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "7bfa62b22ca888b07e108866c99f9af7a85d4e717b71921b2409ef9be5f7dcc5"
+    "storageHash": "b1df6bc073a3a9d51b79beb4ab7dfa61cd90e81f4108f57a8a39c7e604816675"
   },
   "execution": {
-    "executionHash": "409b3a205ff326ac808e67126bbe4d8e5b52190771ed8e4b38ef074deca38e61",
+    "executionHash": "917ed3fa5ee6a658b322f650ff1b68b9703c31d0b5099dded5df325972edf468",
     "mutations": {
       "defaults": [
         {
@@ -5509,6 +6169,21 @@
             "kind": "generator"
           },
           "ref": {
+            "entry": "PushDeviceToken",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
             "entry": "SavedFolder",
             "field": "updatedAt",
             "namespace": "public"
@@ -5570,6 +6245,21 @@
           },
           "ref": {
             "entry": "User",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "UserSession",
             "field": "updatedAt",
             "namespace": "public"
           }

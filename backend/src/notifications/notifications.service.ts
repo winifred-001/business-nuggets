@@ -21,7 +21,7 @@ type CreateCampaignInput = {
   title: string;
   message: string;
 
-  channel?: string;
+  channel?: "in-app";
 
   audience: string;
   platform: string;
@@ -118,12 +118,6 @@ export class NotificationsService
       "ios-android",
     ];
 
-    const channels = [
-      "push",
-      "email",
-      "in-app",
-    ];
-
     if (
       !audiences.includes(
         data.audience,
@@ -144,17 +138,22 @@ export class NotificationsService
       );
     }
 
+    /*
+     * Only in-app delivery is currently
+     * implemented.
+     *
+     * Push and email will be added later
+     * when their providers are connected.
+     */
     const channel =
       data.channel ??
-      "push";
+      "in-app";
 
     if (
-      !channels.includes(
-        channel,
-      )
+      channel !== "in-app"
     ) {
       throw new BadRequestException(
-        "Invalid notification channel",
+        "This notification channel is not configured yet",
       );
     }
 
@@ -165,9 +164,7 @@ export class NotificationsService
     let status =
       "draft";
 
-    if (
-      data.sendAt
-    ) {
+    if (data.sendAt) {
       const date =
         new Date(
           data.sendAt,
@@ -236,6 +233,10 @@ export class NotificationsService
     const users =
       await db.orm.public.User.all();
 
+    /*
+     * Suspended accounts must not receive
+     * campaigns.
+     */
     const activeUsers =
       users.filter(
         (user) =>
@@ -288,6 +289,10 @@ export class NotificationsService
       );
     }
 
+    /*
+     * Already completed campaigns should
+     * never be delivered again.
+     */
     if (
       campaign.status ===
       "sent"
@@ -302,11 +307,38 @@ export class NotificationsService
       return campaign;
     }
 
+    /*
+     * Protect older campaigns that may
+     * have been stored as push/email before
+     * those providers were implemented.
+     */
+    if (
+      campaign.channel !==
+      "in-app"
+    ) {
+      await db.orm.public.NotificationCampaign
+        .where({
+          id,
+        })
+        .update({
+          status:
+            "failed",
+        });
+
+      throw new BadRequestException(
+        "This notification channel is not configured yet",
+      );
+    }
+
     const users =
       await this.getEligibleUsers(
         campaign.audience,
       );
 
+    /*
+     * UserNotificationsService handles
+     * duplicate campaign/user protection.
+     */
     await this.userNotificationsService.createForUsers(
       users.map(
         (user) =>
@@ -358,9 +390,11 @@ export class NotificationsService
   ========================================================= */
 
   async processDueCampaigns() {
-    if (
-      this.processing
-    ) {
+    /*
+     * Prevent two scheduler executions
+     * from overlapping in this Nest process.
+     */
+    if (this.processing) {
       return;
     }
 
@@ -389,10 +423,21 @@ export class NotificationsService
               return false;
             }
 
-            return (
+            const scheduledTime =
               new Date(
                 campaign.sendAt,
-              ).getTime() <=
+              ).getTime();
+
+            if (
+              Number.isNaN(
+                scheduledTime,
+              )
+            ) {
+              return false;
+            }
+
+            return (
+              scheduledTime <=
               now
             );
           },
@@ -464,6 +509,10 @@ export class NotificationsService
       );
     }
 
+    /*
+     * Manually changing a campaign to sent
+     * must actually perform delivery first.
+     */
     if (
       status === "sent" &&
       campaign.status !==

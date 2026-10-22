@@ -14,12 +14,14 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { DeleteAccountDto } from "./dto/delete-account.dto";
+import {SessionsService,} from "../auth/sessions.service";
 
 @Controller("users")
 @UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
+    private readonly sessionsService: SessionsService,
   ) {}
 
   @Get("me")
@@ -40,17 +42,29 @@ export class UsersController {
     );
   }
 
-  @Patch("me/password")
-  changePassword(
-    @Request() req: any,
-    @Body() body: ChangePasswordDto
-  ) {
-    return this.usersService.changePassword(
-      req.user.sub,
-      body.currentPassword,
-      body.newPassword
-    );
-  }
+ @Patch("me/password")
+async changePassword(
+  @Request()
+  req: any,
+
+  @Body()
+  body: ChangePasswordDto,
+) {
+  await this.usersService.changePassword(
+    req.user.sub,
+    body.currentPassword,
+    body.newPassword,
+  );
+
+  await this.sessionsService.revokeAllSessions(
+    req.user.sub,
+  );
+
+  return {
+    message:
+      "Password changed successfully. Please log in again.",
+  };
+}
 
   @Delete("me")
   deleteAccount(

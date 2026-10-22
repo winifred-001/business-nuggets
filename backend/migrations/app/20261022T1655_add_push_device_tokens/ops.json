@@ -1,0 +1,203 @@
+[
+  {
+    "id": "table.PushDeviceToken",
+    "label": "Create table \"PushDeviceToken\"",
+    "summary": "Creates table \"PushDeviceToken\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "PushDeviceToken"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"PushDeviceToken\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PushDeviceToken\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"PushDeviceToken\"",
+        "sql": "CREATE TABLE \"public\".\"PushDeviceToken\" (\n  \"active\" bool DEFAULT true NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"deviceName\" text,\n  \"id\" SERIAL NOT NULL,\n  \"lastSeenAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"platform\" text NOT NULL,\n  \"token\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"PushDeviceToken\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PushDeviceToken\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.PushDeviceToken.PushDeviceToken_token_key",
+    "label": "Add unique constraint on \"PushDeviceToken\" (token)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "PushDeviceToken_token_key",
+        "table": "PushDeviceToken"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"PushDeviceToken_token_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PushDeviceToken_token_key",
+          "public",
+          "\"public\".\"PushDeviceToken\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"PushDeviceToken_token_key\"",
+        "sql": "ALTER TABLE \"public\".\"PushDeviceToken\" ADD CONSTRAINT \"PushDeviceToken_token_key\" UNIQUE (\"token\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"PushDeviceToken_token_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PushDeviceToken_token_key",
+          "public",
+          "\"public\".\"PushDeviceToken\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.PushDeviceToken.PushDeviceToken_active_idx_8af4daed",
+    "label": "Create index \"PushDeviceToken_active_idx_8af4daed\" on \"PushDeviceToken\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "PushDeviceToken_active_idx_8af4daed",
+        "table": "PushDeviceToken"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"PushDeviceToken_active_idx_8af4daed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PushDeviceToken_active_idx_8af4daed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"PushDeviceToken_active_idx_8af4daed\"",
+        "sql": "CREATE INDEX \"PushDeviceToken_active_idx_8af4daed\" ON \"public\".\"PushDeviceToken\" (\"active\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"PushDeviceToken_active_idx_8af4daed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PushDeviceToken_active_idx_8af4daed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.PushDeviceToken.PushDeviceToken_userId_idx_a489d58a",
+    "label": "Create index \"PushDeviceToken_userId_idx_a489d58a\" on \"PushDeviceToken\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "PushDeviceToken_userId_idx_a489d58a",
+        "table": "PushDeviceToken"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"PushDeviceToken_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PushDeviceToken_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"PushDeviceToken_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"PushDeviceToken_userId_idx_a489d58a\" ON \"public\".\"PushDeviceToken\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"PushDeviceToken_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PushDeviceToken_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.PushDeviceToken.PushDeviceToken_userId_fkey",
+    "label": "Add foreign key \"PushDeviceToken_userId_fkey\" on \"PushDeviceToken\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "PushDeviceToken_userId_fkey",
+        "table": "PushDeviceToken"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"PushDeviceToken_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PushDeviceToken_userId_fkey",
+          "public",
+          "\"public\".\"PushDeviceToken\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"PushDeviceToken_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"PushDeviceToken\"\nADD CONSTRAINT \"PushDeviceToken_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"PushDeviceToken_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PushDeviceToken_userId_fkey",
+          "public",
+          "\"public\".\"PushDeviceToken\""
+        ]
+      }
+    ]
+  }
+]

@@ -18,6 +18,10 @@ model User {
   subscriptionExpiresAt TimestamptzString?
 
   adminRole   String?
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+  twoFactorRecoveryCodes String[] @default([])
+
   lastLoginAt TimestamptzString?
 
   createdAt TimestamptzString @default(now())
@@ -30,6 +34,8 @@ model User {
   followedTopics FollowedTopic[]
   savedFolders  SavedFolder[]
   notifications UserNotification[]
+  sessions UserSession[]
+  pushTokens PushDeviceToken[]
 }
 
 model SavedNugget {
@@ -422,7 +428,7 @@ model NotificationCampaign {
   title    String
   message  String
 
-  channel  String @default("push")
+  channel  String @default("in-app")
 
   audience String @default("all")
   platform String @default("all")
@@ -479,11 +485,13 @@ model AppSettings {
   sessionTimeoutMinutes Int @default(30)
 
   ipAllowListEnabled    Boolean @default(false)
+  ipAllowList        String[] @default([])
 
   maintenanceMode       Boolean @default(false)
 
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
+
 }
 
 model UserNotification {
@@ -510,9 +518,60 @@ model UserNotification {
     onDelete: Cascade
   )
 
+  @@index([userId,campaignId])
   @@index([userId])
   @@index([campaignId])
   @@index([type])
   @@index([readAt])
   @@index([createdAt])
+}
+
+model UserSession {
+  id     Int @id @default(autoincrement())
+  userId Int
+
+  deviceName     String @default("Unknown device")
+  browser        String?
+  operatingSystem String?
+  userAgent      String?
+  ipAddress      String?
+
+  lastSeenAt TimestamptzString @default(now())
+  expiresAt  TimestamptzString
+  revokedAt  TimestamptzString?
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  user User @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+}
+
+model PushDeviceToken {
+  id         Int    @id @default(autoincrement())
+  userId     Int
+  token      String @unique
+  platform   String
+  deviceName String?
+  active     Boolean @default(true)
+
+  lastSeenAt TimestamptzString @default(now())
+  createdAt  TimestamptzString @default(now())
+  updatedAt  temporal.updatedAtString()
+
+  user User @relation(
+    fields: [userId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@index([userId])
+  @@index([active])
 }

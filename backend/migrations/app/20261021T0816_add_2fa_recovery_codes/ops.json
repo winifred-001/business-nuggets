@@ -1,0 +1,86 @@
+[
+  {
+    "id": "column.public.User.twoFactorRecoveryCodes",
+    "label": "Add column \"twoFactorRecoveryCodes\" to \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "twoFactorRecoveryCodes",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"twoFactorRecoveryCodes\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "twoFactorRecoveryCodes"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"twoFactorRecoveryCodes\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD COLUMN \"twoFactorRecoveryCodes\" text[] DEFAULT '{}' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"twoFactorRecoveryCodes\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "twoFactorRecoveryCodes"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.User.User_twoFactorRecoveryCodes_elem_not_null_4a22bcfa",
+    "label": "Add check constraint \"User_twoFactorRecoveryCodes_elem_not_null_4a22bcfa\" on \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "User_twoFactorRecoveryCodes_elem_not_null_4a22bcfa",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"User_twoFactorRecoveryCodes_elem_not_null_4a22bcfa\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_twoFactorRecoveryCodes_elem_not_null_4a22bcfa",
+          "public",
+          "\"public\".\"User\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"User_twoFactorRecoveryCodes_elem_not_null_4a22bcfa\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD CONSTRAINT \"User_twoFactorRecoveryCodes_elem_not_null_4a22bcfa\" CHECK (array_position(\"twoFactorRecoveryCodes\", NULL) IS NULL)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"User_twoFactorRecoveryCodes_elem_not_null_4a22bcfa\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_twoFactorRecoveryCodes_elem_not_null_4a22bcfa",
+          "public",
+          "\"public\".\"User\""
+        ]
+      }
+    ]
+  }
+]

@@ -18,9 +18,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'7bfa62b22ca888b07e108866c99f9af7a85d4e717b71921b2409ef9be5f7dcc5'>;
+  StorageHashBase<'b1df6bc073a3a9d51b79beb4ab7dfa61cd90e81f4108f57a8a39c7e604816675'>;
 export type ExecutionHash =
-  ExecutionHashBase<'409b3a205ff326ac808e67126bbe4d8e5b52190771ed8e4b38ef074deca38e61'>;
+  ExecutionHashBase<'917ed3fa5ee6a658b322f650ff1b68b9703c31d0b5099dded5df325972edf468'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -249,6 +249,7 @@ export type FieldOutputTypes = {
       readonly dailyPublishTime: CodecTypes['pg/text@1']['output'];
       readonly defaultLanguage: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly ipAllowList: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
       readonly ipAllowListEnabled: CodecTypes['pg/bool@1']['output'];
       readonly maintenanceMode: CodecTypes['pg/bool@1']['output'];
       readonly sessionTimeoutMinutes: CodecTypes['pg/int4@1']['output'];
@@ -421,6 +422,17 @@ export type FieldOutputTypes = {
       readonly nuggetId: CodecTypes['pg/text@1']['output'];
       readonly playlistId: CodecTypes['pg/int4@1']['output'];
     };
+    readonly PushDeviceToken: {
+      readonly active: CodecTypes['pg/bool@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly deviceName: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly lastSeenAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly platform: CodecTypes['pg/text@1']['output'];
+      readonly token: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly userId: CodecTypes['pg/int4@1']['output'];
+    };
     readonly SavedFolder: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
@@ -489,6 +501,9 @@ export type FieldOutputTypes = {
       readonly subscriptionExpiresAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly subscriptionPlan: CodecTypes['pg/text@1']['output'];
       readonly subscriptionStatus: CodecTypes['pg/text@1']['output'];
+      readonly twoFactorEnabled: CodecTypes['pg/bool@1']['output'];
+      readonly twoFactorRecoveryCodes: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
+      readonly twoFactorSecret: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly wisdomNeeds: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
     };
@@ -501,6 +516,20 @@ export type FieldOutputTypes = {
       readonly readAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly type: CodecTypes['pg/text@1']['output'];
+      readonly userId: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly UserSession: {
+      readonly browser: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly deviceName: CodecTypes['pg/text@1']['output'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly ipAddress: CodecTypes['pg/text@1']['output'] | null;
+      readonly lastSeenAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly operatingSystem: CodecTypes['pg/text@1']['output'] | null;
+      readonly revokedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly userAgent: CodecTypes['pg/text@1']['output'] | null;
       readonly userId: CodecTypes['pg/int4@1']['output'];
     };
   };
@@ -522,6 +551,7 @@ export type FieldInputTypes = {
       readonly dailyPublishTime: CodecTypes['pg/text@1']['input'];
       readonly defaultLanguage: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly ipAllowList: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
       readonly ipAllowListEnabled: CodecTypes['pg/bool@1']['input'];
       readonly maintenanceMode: CodecTypes['pg/bool@1']['input'];
       readonly sessionTimeoutMinutes: CodecTypes['pg/int4@1']['input'];
@@ -694,6 +724,17 @@ export type FieldInputTypes = {
       readonly nuggetId: CodecTypes['pg/text@1']['input'];
       readonly playlistId: CodecTypes['pg/int4@1']['input'];
     };
+    readonly PushDeviceToken: {
+      readonly active: CodecTypes['pg/bool@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly deviceName: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly lastSeenAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly platform: CodecTypes['pg/text@1']['input'];
+      readonly token: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly userId: CodecTypes['pg/int4@1']['input'];
+    };
     readonly SavedFolder: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
@@ -762,6 +803,9 @@ export type FieldInputTypes = {
       readonly subscriptionExpiresAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly subscriptionPlan: CodecTypes['pg/text@1']['input'];
       readonly subscriptionStatus: CodecTypes['pg/text@1']['input'];
+      readonly twoFactorEnabled: CodecTypes['pg/bool@1']['input'];
+      readonly twoFactorRecoveryCodes: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
+      readonly twoFactorSecret: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly wisdomNeeds: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
     };
@@ -774,6 +818,20 @@ export type FieldInputTypes = {
       readonly readAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly type: CodecTypes['pg/text@1']['input'];
+      readonly userId: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly UserSession: {
+      readonly browser: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly deviceName: CodecTypes['pg/text@1']['input'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly ipAddress: CodecTypes['pg/text@1']['input'] | null;
+      readonly lastSeenAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly operatingSystem: CodecTypes['pg/text@1']['input'] | null;
+      readonly revokedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly userAgent: CodecTypes['pg/text@1']['input'] | null;
       readonly userId: CodecTypes['pg/int4@1']['input'];
     };
   };
@@ -795,6 +853,7 @@ export type StorageColumnTypes = {
       readonly dailyPublishTime: CodecTypes['pg/text@1']['output'];
       readonly defaultLanguage: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly ipAllowList: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
       readonly ipAllowListEnabled: CodecTypes['pg/bool@1']['output'];
       readonly maintenanceMode: CodecTypes['pg/bool@1']['output'];
       readonly sessionTimeoutMinutes: CodecTypes['pg/int4@1']['output'];
@@ -967,6 +1026,17 @@ export type StorageColumnTypes = {
       readonly nuggetId: CodecTypes['pg/text@1']['output'];
       readonly playlistId: CodecTypes['pg/int4@1']['output'];
     };
+    readonly PushDeviceToken: {
+      readonly active: CodecTypes['pg/bool@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly deviceName: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly lastSeenAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly platform: CodecTypes['pg/text@1']['output'];
+      readonly token: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly userId: CodecTypes['pg/int4@1']['output'];
+    };
     readonly SavedFolder: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
@@ -1035,6 +1105,9 @@ export type StorageColumnTypes = {
       readonly subscriptionExpiresAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly subscriptionPlan: CodecTypes['pg/text@1']['output'];
       readonly subscriptionStatus: CodecTypes['pg/text@1']['output'];
+      readonly twoFactorEnabled: CodecTypes['pg/bool@1']['output'];
+      readonly twoFactorRecoveryCodes: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
+      readonly twoFactorSecret: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly wisdomNeeds: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
     };
@@ -1047,6 +1120,20 @@ export type StorageColumnTypes = {
       readonly readAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly type: CodecTypes['pg/text@1']['output'];
+      readonly userId: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly UserSession: {
+      readonly browser: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly deviceName: CodecTypes['pg/text@1']['output'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly ipAddress: CodecTypes['pg/text@1']['output'] | null;
+      readonly lastSeenAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly operatingSystem: CodecTypes['pg/text@1']['output'] | null;
+      readonly revokedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly userAgent: CodecTypes['pg/text@1']['output'] | null;
       readonly userId: CodecTypes['pg/int4@1']['output'];
     };
   };
@@ -1068,6 +1155,7 @@ export type StorageColumnInputTypes = {
       readonly dailyPublishTime: CodecTypes['pg/text@1']['input'];
       readonly defaultLanguage: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly ipAllowList: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
       readonly ipAllowListEnabled: CodecTypes['pg/bool@1']['input'];
       readonly maintenanceMode: CodecTypes['pg/bool@1']['input'];
       readonly sessionTimeoutMinutes: CodecTypes['pg/int4@1']['input'];
@@ -1240,6 +1328,17 @@ export type StorageColumnInputTypes = {
       readonly nuggetId: CodecTypes['pg/text@1']['input'];
       readonly playlistId: CodecTypes['pg/int4@1']['input'];
     };
+    readonly PushDeviceToken: {
+      readonly active: CodecTypes['pg/bool@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly deviceName: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly lastSeenAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly platform: CodecTypes['pg/text@1']['input'];
+      readonly token: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly userId: CodecTypes['pg/int4@1']['input'];
+    };
     readonly SavedFolder: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
@@ -1308,6 +1407,9 @@ export type StorageColumnInputTypes = {
       readonly subscriptionExpiresAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly subscriptionPlan: CodecTypes['pg/text@1']['input'];
       readonly subscriptionStatus: CodecTypes['pg/text@1']['input'];
+      readonly twoFactorEnabled: CodecTypes['pg/bool@1']['input'];
+      readonly twoFactorRecoveryCodes: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
+      readonly twoFactorSecret: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly wisdomNeeds: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
     };
@@ -1320,6 +1422,20 @@ export type StorageColumnInputTypes = {
       readonly readAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly type: CodecTypes['pg/text@1']['input'];
+      readonly userId: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly UserSession: {
+      readonly browser: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly deviceName: CodecTypes['pg/text@1']['input'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly ipAddress: CodecTypes['pg/text@1']['input'] | null;
+      readonly lastSeenAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly operatingSystem: CodecTypes['pg/text@1']['input'] | null;
+      readonly revokedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly userAgent: CodecTypes['pg/text@1']['input'] | null;
       readonly userId: CodecTypes['pg/int4@1']['input'];
     };
   };
@@ -1342,6 +1458,7 @@ export namespace Models {
     dailyPublishTime: CodecTypes['pg/text@1']['output'];
     defaultLanguage: CodecTypes['pg/text@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
+    ipAllowList: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
     ipAllowListEnabled: CodecTypes['pg/bool@1']['output'];
     maintenanceMode: CodecTypes['pg/bool@1']['output'];
     sessionTimeoutMinutes: CodecTypes['pg/int4@1']['output'];
@@ -1537,6 +1654,19 @@ export namespace Models {
     playlist: public_Playlist;
     readonly [RelationKeys]?: 'playlist';
   };
+  export type public_PushDeviceToken = {
+    active: CodecTypes['pg/bool@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    deviceName: CodecTypes['pg/text@1']['output'] | null;
+    id: CodecTypes['pg/int4@1']['output'];
+    lastSeenAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    platform: CodecTypes['pg/text@1']['output'];
+    token: CodecTypes['pg/text@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    userId: CodecTypes['pg/int4@1']['output'];
+    user: public_User;
+    readonly [RelationKeys]?: 'user';
+  };
   export type public_SavedFolder = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     description: CodecTypes['pg/text@1']['output'] | null;
@@ -1615,6 +1745,9 @@ export namespace Models {
     subscriptionExpiresAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
     subscriptionPlan: CodecTypes['pg/text@1']['output'];
     subscriptionStatus: CodecTypes['pg/text@1']['output'];
+    twoFactorEnabled: CodecTypes['pg/bool@1']['output'];
+    twoFactorRecoveryCodes: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
+    twoFactorSecret: CodecTypes['pg/text@1']['output'] | null;
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     wisdomNeeds: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
     followedTopics: public_FollowedTopic[];
@@ -1622,16 +1755,20 @@ export namespace Models {
     notes: public_Note[];
     notifications: public_UserNotification[];
     playlists: public_Playlist[];
+    pushTokens: public_PushDeviceToken[];
     savedFolders: public_SavedFolder[];
     savedNuggets: public_SavedNugget[];
+    sessions: public_UserSession[];
     readonly [RelationKeys]?:
       | 'followedTopics'
       | 'history'
       | 'notes'
       | 'notifications'
       | 'playlists'
+      | 'pushTokens'
       | 'savedFolders'
-      | 'savedNuggets';
+      | 'savedNuggets'
+      | 'sessions';
   };
   export type public_UserNotification = {
     campaignId: CodecTypes['pg/int4@1']['output'] | null;
@@ -1642,6 +1779,22 @@ export namespace Models {
     readAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
     title: CodecTypes['pg/text@1']['output'];
     type: CodecTypes['pg/text@1']['output'];
+    userId: CodecTypes['pg/int4@1']['output'];
+    user: public_User;
+    readonly [RelationKeys]?: 'user';
+  };
+  export type public_UserSession = {
+    browser: CodecTypes['pg/text@1']['output'] | null;
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    deviceName: CodecTypes['pg/text@1']['output'];
+    expiresAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    id: CodecTypes['pg/int4@1']['output'];
+    ipAddress: CodecTypes['pg/text@1']['output'] | null;
+    lastSeenAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    operatingSystem: CodecTypes['pg/text@1']['output'] | null;
+    revokedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    userAgent: CodecTypes['pg/text@1']['output'] | null;
     userId: CodecTypes['pg/int4@1']['output'];
     user: public_User;
     readonly [RelationKeys]?: 'user';
@@ -1668,6 +1821,7 @@ export declare const models: {
     NuggetSchedule: Models.public_NuggetSchedule;
     Playlist: Models.public_Playlist;
     PlaylistItem: Models.public_PlaylistItem;
+    PushDeviceToken: Models.public_PushDeviceToken;
     SavedFolder: Models.public_SavedFolder;
     SavedFolderItem: Models.public_SavedFolderItem;
     SavedNugget: Models.public_SavedNugget;
@@ -1676,6 +1830,7 @@ export declare const models: {
     Topic: Models.public_Topic;
     User: Models.public_User;
     UserNotification: Models.public_UserNotification;
+    UserSession: Models.public_UserSession;
   };
 };
 
@@ -1825,6 +1980,16 @@ type ContractBase = Omit<
                     readonly expression: 'autoincrement()';
                   };
                   readonly many: false;
+                };
+                readonly ipAllowList: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', readonly []>;
+                  };
+                  readonly many: { readonly elementNullable: false };
                 };
                 readonly ipAllowListEnabled: {
                   readonly dataType: 'pg/bool';
@@ -2759,7 +2924,7 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly default: {
                     readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/text@1', 'push'>;
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'in-app'>;
                   };
                   readonly many: false;
                 };
@@ -3180,6 +3345,104 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'Playlist';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly PushDeviceToken: {
+              columns: {
+                readonly active: {
+                  readonly dataType: 'pg/bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
+                  };
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly deviceName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly lastSeenAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly platform: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly token: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly userId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['token'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'PushDeviceToken_active_idx_8af4daed';
+                  readonly prefix: 'PushDeviceToken_active_idx';
+                  readonly columns: readonly ['active'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'PushDeviceToken_userId_idx_a489d58a';
+                  readonly prefix: 'PushDeviceToken_userId_idx';
+                  readonly columns: readonly ['userId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'PushDeviceToken';
+                    readonly columns: readonly ['userId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -3730,6 +3993,32 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
+                readonly twoFactorEnabled: {
+                  readonly dataType: 'pg/bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                  readonly many: false;
+                };
+                readonly twoFactorRecoveryCodes: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', readonly []>;
+                  };
+                  readonly many: { readonly elementNullable: false };
+                };
+                readonly twoFactorSecret: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly updatedAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
@@ -3846,6 +4135,12 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
+                  readonly name: 'UserNotification_userId_campaignId_idx_86a84a2d';
+                  readonly prefix: 'UserNotification_userId_campaignId_idx';
+                  readonly columns: readonly ['userId', 'campaignId'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'UserNotification_userId_idx_a489d58a';
                   readonly prefix: 'UserNotification_userId_idx';
                   readonly columns: readonly ['userId'];
@@ -3857,6 +4152,128 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'UserNotification';
+                    readonly columns: readonly ['userId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly UserSession: {
+              columns: {
+                readonly browser: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly deviceName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'Unknown device'>;
+                  };
+                  readonly many: false;
+                };
+                readonly expiresAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly ipAddress: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly lastSeenAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly operatingSystem: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly revokedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly userAgent: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly userId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'UserSession_expiresAt_idx_6b6b8c10';
+                  readonly prefix: 'UserSession_expiresAt_idx';
+                  readonly columns: readonly ['expiresAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'UserSession_revokedAt_idx_f1d8e6b3';
+                  readonly prefix: 'UserSession_revokedAt_idx';
+                  readonly columns: readonly ['revokedAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'UserSession_userId_idx_a489d58a';
+                  readonly prefix: 'UserSession_userId_idx';
+                  readonly columns: readonly ['userId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'UserSession';
                     readonly columns: readonly ['userId'];
                   };
                   readonly target: {
@@ -3932,6 +4349,10 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'PlaylistItem';
     };
+    readonly PushDeviceToken: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PushDeviceToken';
+    };
     readonly SavedFolder: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'SavedFolder';
@@ -3957,6 +4378,10 @@ type ContractBase = Omit<
     readonly UserNotification: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'UserNotification';
+    };
+    readonly UserSession: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'UserSession';
     };
   };
   readonly domain: {
@@ -4038,6 +4463,11 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly ipAllowList: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+                readonly many: { readonly elementNullable: false };
+              };
               readonly ipAllowListEnabled: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
@@ -4087,6 +4517,7 @@ type ContractBase = Omit<
                 readonly dailyPublishTime: { readonly column: 'dailyPublishTime' };
                 readonly defaultLanguage: { readonly column: 'defaultLanguage' };
                 readonly id: { readonly column: 'id' };
+                readonly ipAllowList: { readonly column: 'ipAllowList' };
                 readonly ipAllowListEnabled: { readonly column: 'ipAllowListEnabled' };
                 readonly maintenanceMode: { readonly column: 'maintenanceMode' };
                 readonly sessionTimeoutMinutes: { readonly column: 'sessionTimeoutMinutes' };
@@ -5087,6 +5518,81 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly PushDeviceToken: {
+            readonly fields: {
+              readonly active: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly deviceName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly lastSeenAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly platform: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly token: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly userId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly user: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['userId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'PushDeviceToken';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly active: { readonly column: 'active' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly deviceName: { readonly column: 'deviceName' };
+                readonly id: { readonly column: 'id' };
+                readonly lastSeenAt: { readonly column: 'lastSeenAt' };
+                readonly platform: { readonly column: 'platform' };
+                readonly token: { readonly column: 'token' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly userId: { readonly column: 'userId' };
+              };
+            };
+          };
           readonly SavedFolder: {
             readonly fields: {
               readonly createdAt: {
@@ -5501,6 +6007,19 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly twoFactorEnabled: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly twoFactorRecoveryCodes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+                readonly many: { readonly elementNullable: false };
+              };
+              readonly twoFactorSecret: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly updatedAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -5567,6 +6086,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['userId'];
                 };
               };
+              readonly pushTokens: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PushDeviceToken';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['userId'];
+                };
+              };
               readonly savedFolders: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -5582,6 +6112,17 @@ type ContractBase = Omit<
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'SavedNugget';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['userId'];
+                };
+              };
+              readonly sessions: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'UserSession';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -5608,6 +6149,9 @@ type ContractBase = Omit<
                 readonly subscriptionExpiresAt: { readonly column: 'subscriptionExpiresAt' };
                 readonly subscriptionPlan: { readonly column: 'subscriptionPlan' };
                 readonly subscriptionStatus: { readonly column: 'subscriptionStatus' };
+                readonly twoFactorEnabled: { readonly column: 'twoFactorEnabled' };
+                readonly twoFactorRecoveryCodes: { readonly column: 'twoFactorRecoveryCodes' };
+                readonly twoFactorSecret: { readonly column: 'twoFactorSecret' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly wisdomNeeds: { readonly column: 'wisdomNeeds' };
               };
@@ -5681,6 +6225,102 @@ type ContractBase = Omit<
                 readonly readAt: { readonly column: 'readAt' };
                 readonly title: { readonly column: 'title' };
                 readonly type: { readonly column: 'type' };
+                readonly userId: { readonly column: 'userId' };
+              };
+            };
+          };
+          readonly UserSession: {
+            readonly fields: {
+              readonly browser: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly deviceName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly expiresAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly ipAddress: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly lastSeenAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly operatingSystem: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly revokedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly userAgent: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly userId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly user: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['userId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'UserSession';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly browser: { readonly column: 'browser' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly deviceName: { readonly column: 'deviceName' };
+                readonly expiresAt: { readonly column: 'expiresAt' };
+                readonly id: { readonly column: 'id' };
+                readonly ipAddress: { readonly column: 'ipAddress' };
+                readonly lastSeenAt: { readonly column: 'lastSeenAt' };
+                readonly operatingSystem: { readonly column: 'operatingSystem' };
+                readonly revokedAt: { readonly column: 'revokedAt' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly userAgent: { readonly column: 'userAgent' };
                 readonly userId: { readonly column: 'userId' };
               };
             };
@@ -5833,6 +6473,15 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
           readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
           readonly ref: {
+            readonly entry: 'PushDeviceToken';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly ref: {
             readonly entry: 'SavedFolder';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
@@ -5870,6 +6519,15 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'User';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'timestampNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'UserSession';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };

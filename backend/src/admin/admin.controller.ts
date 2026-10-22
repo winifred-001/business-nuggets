@@ -1,479 +1,697 @@
 import {
   Body,
   Controller,
-  Get,
-  Post,
-  Patch,
   Delete,
+  Get,
   Param,
+  Patch,
+  Post,
   Query,
   Request,
   UseGuards,
-  UseInterceptors
+  UseInterceptors,
 } from "@nestjs/common";
 
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { AdminGuard } from "../auth/admin.guard";
+
+import {
+  AdminPermissionGuard,
+  RequireAdminPermission,
+} from "../auth/admin-permission.guard";
+
 import { NuggetsService } from "../nuggets/nuggets.service";
 import { CreateNuggetDto } from "../nuggets/dto/create-nugget.dto";
 import { UpdateNuggetDto } from "../nuggets/dto/update-nugget.dto";
+
 import { ScriptureService } from "../scripture/scripture.service";
 import { ScheduleService } from "../schedule/schedule.service";
 import { UsersService } from "../users/users.service";
-import {SubscriptionsService,} from "../subscriptions/subscriptions.service";
-import {ModerationService,} from "../moderation/moderation.service";
-import {AnalyticsService,} from "../analytics/analytics.service";
-import {MobileAppService,} from "../mobile-app/mobile-app.service";
-import {NotificationsService,} from "../notifications/notifications.service";
-import {RolesAccessService,} from "../roles-access/roles-access.service";
-import {AdminAuditInterceptor,} from "../audit-logs/admin-audit.interceptor";
-import {AuditLogsService,} from "../audit-logs/audit-logs.service";
-import {AppSettingsService,} from "../app-settings/app-settings.service";
+import { SubscriptionsService } from "../subscriptions/subscriptions.service";
+import { ModerationService } from "../moderation/moderation.service";
+import { AnalyticsService } from "../analytics/analytics.service";
+import { MobileAppService } from "../mobile-app/mobile-app.service";
+import { NotificationsService } from "../notifications/notifications.service";
+import { RolesAccessService } from "../roles-access/roles-access.service";
+import { AuditLogsService } from "../audit-logs/audit-logs.service";
+import { AppSettingsService } from "../app-settings/app-settings.service";
+import { TopicsService } from "../topics/topics.service";
+import { EmailService } from "../email/email.service";
+import { AdminAuditInterceptor } from "../audit-logs/admin-audit.interceptor";
+import {AdminIpAllowListGuard,} from "./admin-ip-allow-list.guard";
 
-import {
-  TopicsService,
-} from "../topics/topics.service";
 @Controller("admin")
-@UseGuards(JwtAuthGuard, AdminGuard)
-@UseInterceptors(AdminAuditInterceptor,)
+@UseGuards(
+  JwtAuthGuard,
+  AdminGuard,
+  AdminPermissionGuard,
+  AdminIpAllowListGuard,
+)
+@UseInterceptors(
+  AdminAuditInterceptor,
+)
 export class AdminController {
   constructor(
     private readonly nuggetsService: NuggetsService,
     private readonly topicsService: TopicsService,
     private readonly scriptureService: ScriptureService,
-    private readonly scheduleService:ScheduleService,
+    private readonly scheduleService: ScheduleService,
     private readonly usersService: UsersService,
     private readonly subscriptionsService: SubscriptionsService,
-    private readonly moderationService:ModerationService,
-    private readonly analyticsService:AnalyticsService,
+    private readonly moderationService: ModerationService,
+    private readonly analyticsService: AnalyticsService,
     private readonly mobileAppService: MobileAppService,
     private readonly notificationsService: NotificationsService,
-    private readonly rolesAccessService:RolesAccessService,
+    private readonly rolesAccessService: RolesAccessService,
     private readonly auditLogsService: AuditLogsService,
-    private readonly appSettingsService:
-  AppSettingsService,
+    private readonly appSettingsService: AppSettingsService,
+    private readonly emailService: EmailService,
   ) {}
 
+  /* =========================================
+     ADMIN TEST
+  ========================================= */
+
   @Get("test")
-  testAdminAccess(@Request() req: any) {
+  testAdminAccess(
+    @Request() req: any,
+  ) {
     return {
-      message: "Admin access granted",
+      message:
+        "Admin access granted",
+
       user: {
-        id: req.user.sub,
-        email: req.user.email,
-        role: req.user.role,
+        id:
+          req.user.sub,
+
+        email:
+          req.user.email,
+
+        role:
+          req.user.role,
+
+        adminRole:
+          req.user.adminRole,
       },
     };
   }
 
+  /* =========================================
+     NUGGETS
+  ========================================= */
+
   @Post("nuggets")
-  createNugget(@Body() dto: CreateNuggetDto) {
-    return this.nuggetsService.createNugget(dto);
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  createNugget(
+    @Body()
+    dto: CreateNuggetDto,
+  ) {
+    return this.nuggetsService.createNugget(
+      dto,
+    );
   }
 
   @Get("nuggets")
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
   getAllNuggets() {
     return this.nuggetsService.getAllNuggetsForAdmin();
   }
 
   @Patch("nuggets/:id")
-updateNugget(
-  @Param("id") id: string,
-  @Body() dto: UpdateNuggetDto
-) {
-  return this.nuggetsService.updateNugget(id, dto);
-}
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  updateNugget(
+    @Param("id")
+    id: string,
 
-@Delete("nuggets/:id")
-deleteNugget(@Param("id") id: string) {
-  return this.nuggetsService.deleteNugget(id);
-}
+    @Body()
+    dto: UpdateNuggetDto,
+  ) {
+    return this.nuggetsService.updateNugget(
+      id,
+      dto,
+    );
+  }
 
-@Get("topics")
-getTopics() {
-  return this.topicsService.getAllTopics();
-}
+  @Delete("nuggets/:id")
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  deleteNugget(
+    @Param("id")
+    id: string,
+  ) {
+    return this.nuggetsService.deleteNugget(
+      id,
+    );
+  }
 
-@Post("topics")
-createTopic(
-  @Body()
-  body: {
-    name: string;
-    description?: string;
-    visible?: boolean;
-  },
-) {
-  return this.topicsService.createTopic(
-    body,
-  );
-}
+  /* =========================================
+     TOPICS
+  ========================================= */
 
-@Patch("topics/reorder")
-reorderTopics(
-  @Body()
-  body: {
-    ids: number[];
-  },
-) {
-  return this.topicsService.reorderTopics(
-    body.ids,
-  );
-}
+  @Get("topics")
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  getTopics() {
+    return this.topicsService.getAllTopics();
+  }
 
-@Patch("topics/:id")
-updateTopic(
-  @Param("id") id: string,
+  @Post("topics")
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  createTopic(
+    @Body()
+    body: {
+      name: string;
+      description?: string;
+      visible?: boolean;
+    },
+  ) {
+    return this.topicsService.createTopic(
+      body,
+    );
+  }
 
-  @Body()
-  body: {
-    name?: string;
-    description?: string;
-    visible?: boolean;
-    displayOrder?: number;
-  },
-) {
-  return this.topicsService.updateTopic(
-    Number(id),
-    body,
-  );
-}
+  @Patch("topics/reorder")
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  reorderTopics(
+    @Body()
+    body: {
+      ids: number[];
+    },
+  ) {
+    return this.topicsService.reorderTopics(
+      body.ids,
+    );
+  }
 
-@Get("scripture")
-getScriptureIndex() {
-  return this.scriptureService.getIndex();
-}
+  @Patch("topics/:id")
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  updateTopic(
+    @Param("id")
+    id: string,
 
-@Post("scripture/books")
-createScriptureBook(
-  @Body()
-  body: {
-    name: string;
-    chapterCount?: number;
-  },
-) {
-  return this.scriptureService.createBook(
-    body,
-  );
-}
+    @Body()
+    body: {
+      name?: string;
+      description?: string;
+      visible?: boolean;
+      displayOrder?: number;
+    },
+  ) {
+    return this.topicsService.updateTopic(
+      Number(id),
+      body,
+    );
+  }
 
-@Patch("scripture/books/:id")
-updateScriptureBook(
-  @Param("id") id: string,
+  /* =========================================
+     SCRIPTURE
+  ========================================= */
 
-  @Body()
-  body: {
-    name?: string;
-    chapterCount?: number;
-    visible?: boolean;
-    displayOrder?: number;
-  },
-) {
-  return this.scriptureService.updateBook(
-    Number(id),
-    body,
-  );
-}
+  @Get("scripture")
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  getScriptureIndex() {
+    return this.scriptureService.getIndex();
+  }
 
-@Get("schedule")
-getSchedule() {
-  return this.scheduleService.getSchedule();
-}
+  @Post("scripture/books")
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  createScriptureBook(
+    @Body()
+    body: {
+      name: string;
+      chapterCount?: number;
+    },
+  ) {
+    return this.scriptureService.createBook(
+      body,
+    );
+  }
 
-@Post("schedule")
-createSchedule(
-  @Body()
-  body: {
-    nuggetId: string;
-    scheduledFor: string;
-  },
-) {
-  return this.scheduleService.createSchedule(
-    body,
-  );
-}
+  @Patch(
+    "scripture/books/:id",
+  )
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  updateScriptureBook(
+    @Param("id")
+    id: string,
 
-@Patch("schedule/:id")
-updateSchedule(
-  @Param("id") id: string,
+    @Body()
+    body: {
+      name?: string;
+      chapterCount?: number;
+      visible?: boolean;
+      displayOrder?: number;
+    },
+  ) {
+    return this.scriptureService.updateBook(
+      Number(id),
+      body,
+    );
+  }
 
-  @Body()
-  body: {
-    nuggetId: string;
-    scheduledFor: string;
-  },
-) {
-  return this.scheduleService.updateSchedule(
-    Number(id),
-    body,
-  );
-}
+  /* =========================================
+     SCHEDULE
+  ========================================= */
 
-@Delete("schedule/:id")
-deleteSchedule(
-  @Param("id") id: string,
-) {
-  return this.scheduleService.deleteSchedule(
-    Number(id),
-  );
-}
+  @Get("schedule")
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  getSchedule() {
+    return this.scheduleService.getSchedule();
+  }
 
-@Post("schedule/auto-fill")
-autoFillSchedule() {
-  return this.scheduleService.autoFillWeek();
-}
+  @Post("schedule")
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  createSchedule(
+    @Body()
+    body: {
+      nuggetId: string;
+      scheduledFor: string;
+    },
+  ) {
+    return this.scheduleService.createSchedule(
+      body,
+    );
+  }
 
-@Get("users")
-getAdminUsers() {
-  return this.usersService.getAllUsersForAdmin();
-}
+  @Patch("schedule/:id")
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  updateSchedule(
+    @Param("id")
+    id: string,
 
-@Post("users")
-createAdminUser(
-  @Body()
-  body: {
-    name: string;
-    email: string;
-    password: string;
-    membershipTier?: string;
-    accountStatus?: string;
-  },
-) {
-  return this.usersService.createUserForAdmin(
-    body,
-  );
-}
+    @Body()
+    body: {
+      nuggetId: string;
+      scheduledFor: string;
+    },
+  ) {
+    return this.scheduleService.updateSchedule(
+      Number(id),
+      body,
+    );
+  }
 
-@Patch("users/:id")
-updateAdminUser(
-  @Param("id") id: string,
+  @Delete("schedule/:id")
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  deleteSchedule(
+    @Param("id")
+    id: string,
+  ) {
+    return this.scheduleService.deleteSchedule(
+      Number(id),
+    );
+  }
 
-  @Body()
-  body: {
-    name?: string;
-    email?: string;
-    role?: string;
-    membershipTier?: string;
-    accountStatus?: string;
-  },
-) {
-  return this.usersService.updateUserForAdmin(
-    Number(id),
-    body,
-  );
-}
+  @Post(
+    "schedule/auto-fill",
+  )
+  @RequireAdminPermission(
+    "manageNuggets",
+  )
+  autoFillSchedule() {
+    return this.scheduleService.autoFillWeek();
+  }
 
-@Get("subscriptions")
-getSubscriptions() {
-  return this.subscriptionsService.getOverview();
-}
+  /* =========================================
+     USERS
+  ========================================= */
 
-@Post("subscriptions/plans")
-createSubscriptionPlan(
-  @Body()
-  body: {
-    name: string;
-    slug: string;
-    priceCents: number;
-    currency?: string;
-    billingCycle: string;
-    features?: string[];
-  },
-) {
-  return this.subscriptionsService.createPlan(
-    body,
-  );
-}
+  @Get("users")
+  @RequireAdminPermission(
+    "manageUsers",
+  )
+  getAdminUsers() {
+    return this.usersService.getAllUsersForAdmin();
+  }
 
-@Patch("subscriptions/plans/:id")
-updateSubscriptionPlan(
-  @Param("id")
-  id: string,
+  @Post("users")
+  @RequireAdminPermission(
+    "manageUsers",
+  )
+  createAdminUser(
+    @Body()
+    body: {
+      name: string;
+      email: string;
+      password: string;
+      membershipTier?: string;
+      accountStatus?: string;
+    },
+  ) {
+    return this.usersService.createUserForAdmin(
+      body,
+    );
+  }
 
-  @Body()
-  body: {
-    name?: string;
-    priceCents?: number;
-    currency?: string;
-    billingCycle?: string;
-    features?: string[];
-    active?: boolean;
-  },
-) {
-  return this.subscriptionsService.updatePlan(
-    Number(id),
-    body,
-  );
-}
+  @Patch("users/:id")
+  @RequireAdminPermission(
+    "manageUsers",
+  )
+  updateAdminUser(
+    @Param("id")
+    id: string,
 
-@Get("moderation")
-getModerationQueue() {
-  return this.moderationService.getAdminComments();
-}
+    @Body()
+    body: {
+      name?: string;
+      email?: string;
+      role?: string;
+      membershipTier?: string;
+      accountStatus?: string;
+    },
+  ) {
+    return this.usersService.updateUserForAdmin(
+      Number(id),
+      body,
+    );
+  }
 
-@Patch("moderation/:id/status")
-updateModerationStatus(
-  @Param("id")
-  id: string,
+  /* =========================================
+     SUBSCRIPTIONS
+  ========================================= */
 
-  @Body()
-  body: {
-    status:
-      | "pending"
-      | "approved"
-      | "flagged"
-      | "rejected";
-  },
-) {
-  return this.moderationService.updateStatus(
-    Number(id),
-    body.status,
-  );
-}
+  @Get("subscriptions")
+  @RequireAdminPermission(
+    "billing",
+  )
+  getSubscriptions() {
+    return this.subscriptionsService.getOverview();
+  }
 
-@Patch("moderation/:id/reply")
-replyToComment(
-  @Param("id")
-  id: string,
+  @Post(
+    "subscriptions/plans",
+  )
+  @RequireAdminPermission(
+    "billing",
+  )
+  createSubscriptionPlan(
+    @Body()
+    body: {
+      name: string;
+      slug: string;
+      priceCents: number;
+      currency?: string;
+      billingCycle: string;
+      features?: string[];
+    },
+  ) {
+    return this.subscriptionsService.createPlan(
+      body,
+    );
+  }
 
-  @Body()
-  body: {
-    reply: string;
-  },
-) {
-  return this.moderationService.reply(
-    Number(id),
-    body.reply,
-  );
-}
+  @Patch(
+    "subscriptions/plans/:id",
+  )
+  @RequireAdminPermission(
+    "billing",
+  )
+  updateSubscriptionPlan(
+    @Param("id")
+    id: string,
 
-@Post("moderation/bulk")
-bulkModeration(
-  @Body()
-  body: {
-    ids: number[];
+    @Body()
+    body: {
+      name?: string;
+      priceCents?: number;
+      currency?: string;
+      billingCycle?: string;
+      features?: string[];
+      active?: boolean;
+    },
+  ) {
+    return this.subscriptionsService.updatePlan(
+      Number(id),
+      body,
+    );
+  }
 
-    action:
-      | "approve"
-      | "reject"
-      | "pending";
-  },
-) {
-  return this.moderationService.bulkAction(
-    body.ids,
-    body.action,
-  );
-}
+  /* =========================================
+     MODERATION
+  ========================================= */
 
-@Get("analytics")
-getAnalytics(
-  @Query("days")
-  days?: string,
-) {
-  return this.analyticsService.getAdminAnalytics(
-    Number(days) || 30,
-  );
-}
+  @Get("moderation")
+  @RequireAdminPermission(
+    "moderateComments",
+  )
+  getModerationQueue() {
+    return this.moderationService.getAdminComments();
+  }
 
-@Get("mobile")
-getMobileAppConfig() {
-  return this.mobileAppService.getConfig();
-}
+  @Patch(
+    "moderation/:id/status",
+  )
+  @RequireAdminPermission(
+    "moderateComments",
+  )
+  updateModerationStatus(
+    @Param("id")
+    id: string,
 
-@Patch("mobile/settings")
-publishMobileSettings(
-  @Body()
-  body: {
-    forceUpdate?: boolean;
-    maintenanceMode?: boolean;
-    offlineReading?: boolean;
-    dailyNuggetWidget?: boolean;
-    homeBannerTitle?: string;
-  },
-) {
-  return this.mobileAppService.publishSettings(
-    body,
-  );
-}
+    @Body()
+    body: {
+      status:
+        | "pending"
+        | "approved"
+        | "flagged"
+        | "rejected";
+    },
+  ) {
+    return this.moderationService.updateStatus(
+      Number(id),
+      body.status,
+    );
+  }
 
-@Patch("mobile/onboarding/:id")
-updateMobileOnboarding(
-  @Param("id")
-  id: string,
+  @Patch(
+    "moderation/:id/reply",
+  )
+  @RequireAdminPermission(
+    "moderateComments",
+  )
+  replyToComment(
+    @Param("id")
+    id: string,
 
-  @Body()
-  body: {
-    title?: string;
-    description?: string;
-  },
-) {
-  return this.mobileAppService.updateOnboarding(
-    Number(id),
-    body,
-  );
-}
+    @Body()
+    body: {
+      reply: string;
+    },
+  ) {
+    return this.moderationService.reply(
+      Number(id),
+      body.reply,
+    );
+  }
 
-@Patch("mobile/versions/:id")
-updateMobileVersion(
-  @Param("id")
-  id: string,
+  @Post(
+    "moderation/bulk",
+  )
+  @RequireAdminPermission(
+    "moderateComments",
+  )
+  bulkModeration(
+    @Body()
+    body: {
+      ids: number[];
 
-  @Body()
-  body: {
-    version?: string;
-    installCount?: number;
-    status?: string;
-  },
-) {
-  return this.mobileAppService.updateVersion(
-    Number(id),
-    body,
-  );
-}
-@Get("notifications")
-getNotificationCampaigns() {
-  return this.notificationsService.getCampaigns();
-}
+      action:
+        | "approve"
+        | "reject"
+        | "pending";
+    },
+  ) {
+    return this.moderationService.bulkAction(
+      body.ids,
+      body.action,
+    );
+  }
 
-@Post("notifications")
-createNotificationCampaign(
-  @Body()
-  body: {
-    title: string;
-    message: string;
-    channel?: string;
-    audience: string;
-    platform: string;
-    sendAt?: string;
-  },
-) {
-  return this.notificationsService.createCampaign(
-    body,
-  );
-}
+  /* =========================================
+     ANALYTICS
+  ========================================= */
 
-@Patch("notifications/:id/status")
-updateNotificationStatus(
-  @Param("id")
-  id: string,
+  @Get("analytics")
+  @RequireAdminPermission(
+    "viewAnalytics",
+  )
+  getAnalytics(
+    @Query("days")
+    days?: string,
+  ) {
+    return this.analyticsService.getAdminAnalytics(
+      Number(days) || 30,
+    );
+  }
 
-  @Body()
-  body: {
-    status: string;
-  },
-) {
-  return this.notificationsService.updateStatus(
-    Number(id),
-    body.status,
-  );
-}
+  /* =========================================
+     MOBILE
+  ========================================= */
 
-@Get("roles")
-getAdminRoles() {
-  return this.rolesAccessService.getAdminTeam();
-}
+  @Get("mobile")
+  @RequireAdminPermission(
+    "manageMobile",
+  )
+  getMobileAppConfig() {
+    return this.mobileAppService.getConfig();
+  }
 
-@Post("roles/admins")
-createAdminAccount(
+  @Patch(
+    "mobile/settings",
+  )
+  @RequireAdminPermission(
+    "manageMobile",
+  )
+  publishMobileSettings(
+    @Body()
+    body: {
+      forceUpdate?: boolean;
+      maintenanceMode?: boolean;
+      offlineReading?: boolean;
+      dailyNuggetWidget?: boolean;
+      homeBannerTitle?: string;
+    },
+  ) {
+    return this.mobileAppService.publishSettings(
+      body,
+    );
+  }
+
+  @Patch(
+    "mobile/onboarding/:id",
+  )
+  @RequireAdminPermission(
+    "manageMobile",
+  )
+  updateMobileOnboarding(
+    @Param("id")
+    id: string,
+
+    @Body()
+    body: {
+      title?: string;
+      description?: string;
+    },
+  ) {
+    return this.mobileAppService.updateOnboarding(
+      Number(id),
+      body,
+    );
+  }
+
+  @Patch(
+    "mobile/versions/:id",
+  )
+  @RequireAdminPermission(
+    "manageMobile",
+  )
+  updateMobileVersion(
+    @Param("id")
+    id: string,
+
+    @Body()
+    body: {
+      version?: string;
+      installCount?: number;
+      status?: string;
+    },
+  ) {
+    return this.mobileAppService.updateVersion(
+      Number(id),
+      body,
+    );
+  }
+
+  /* =========================================
+     NOTIFICATIONS
+  ========================================= */
+
+  @Get("notifications")
+  @RequireAdminPermission(
+    "manageNotifications",
+  )
+  getNotificationCampaigns() {
+    return this.notificationsService.getCampaigns();
+  }
+
+  @Post("notifications")
+  @RequireAdminPermission(
+    "manageNotifications",
+  )
+  createNotificationCampaign(
+    @Body()
+    body: {
+      title: string;
+      message: string;
+      channel?: "in-app";
+      audience: string;
+      platform: string;
+      sendAt?: string;
+    },
+  ) {
+    return this.notificationsService.createCampaign(
+      body,
+    );
+  }
+
+  @Patch(
+    "notifications/:id/status",
+  )
+  @RequireAdminPermission(
+    "manageNotifications",
+  )
+  updateNotificationStatus(
+    @Param("id")
+    id: string,
+
+    @Body()
+    body: {
+      status: string;
+    },
+  ) {
+    return this.notificationsService.updateStatus(
+      Number(id),
+      body.status,
+    );
+  }
+
+  /* =========================================
+     ADMIN ROLES
+  ========================================= */
+
+  @Post("roles/admins")
+@RequireAdminPermission(
+  "manageAdmins",
+)
+async createAdminAccount(
   @Body()
   body: {
     name: string;
@@ -487,46 +705,68 @@ createAdminAccount(
       | "support";
   },
 ) {
-  return this.rolesAccessService.createAdmin(
-    body,
-  );
+  const admin =
+    await this.rolesAccessService.createAdmin(
+      body,
+    );
+
+  const frontendUrl =
+    (
+      process.env.FRONTEND_URL ||
+      "http://localhost:3000"
+    ).replace(
+      /\/$/,
+      "",
+    );
+
+  const loginUrl =
+    `${frontendUrl}/login`;
+
+  try {
+    await this.emailService.sendAdminInviteEmail(
+      body.email,
+      body.name,
+      loginUrl,
+    );
+  } catch (error) {
+    console.error(
+      "Failed to send admin invitation email:",
+      error,
+    );
+  }
+
+  return admin;
 }
+  /* =========================================
+     AUDIT LOGS
+  ========================================= */
 
-@Patch("roles/admins/:id")
-updateAdminAccount(
-  @Param("id")
-  id: string,
+  @Get("audit-logs")
+  @RequireAdminPermission(
+    "viewAuditLogs",
+  )
+  getAuditLogs() {
+    return this.auditLogsService.getLogs();
+  }
 
-  @Body()
-  body: {
-    adminRole?:
-      | "super-admin"
-      | "editor"
-      | "moderator"
-      | "support";
-
-    accountStatus?:
-      | "active"
-      | "suspended";
-  },
-) {
-  return this.rolesAccessService.updateAdmin(
-    Number(id),
-    body,
-  );
-}
-
-@Get("audit-logs")
-getAuditLogs() {
-  return this.auditLogsService.getLogs();
-}
+  /* =========================================
+     SETTINGS
+  ========================================= */
 
   @Get("settings")
+  @RequireAdminPermission(
+    "settings",
+  )
   getAdminSettings() {
     return this.appSettingsService.getSettings();
   }
 
-  @Patch("settings/general")
+  @Patch(
+    "settings/general",
+  )
+  @RequireAdminPermission(
+    "settings",
+  )
   updateGeneralSettings(
     @Body()
     body: {
@@ -538,22 +778,37 @@ getAuditLogs() {
       dailyPublishTime?: string;
     },
   ) {
-    return this.appSettingsService.updateGeneral(body);
+    return this.appSettingsService.updateGeneral(
+      body,
+    );
   }
 
-  @Patch("settings/security")
+  @Patch(
+    "settings/security",
+  )
+  @RequireAdminPermission(
+    "settings",
+  )
   updateSecuritySettings(
     @Body()
     body: {
       twoFactorAdmins?: boolean;
       sessionTimeoutMinutes?: number;
       ipAllowListEnabled?: boolean;
+      ipAllowList?: string[];
     },
   ) {
-    return this.appSettingsService.updateSecurity(body);
+    return this.appSettingsService.updateSecurity(
+      body,
+    );
   }
 
-  @Patch("settings/maintenance")
+  @Patch(
+    "settings/maintenance",
+  )
+  @RequireAdminPermission(
+    "settings",
+  )
   updateMaintenanceMode(
     @Body()
     body: {

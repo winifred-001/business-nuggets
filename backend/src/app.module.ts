@@ -1,32 +1,107 @@
-import { Module } from "@nestjs/common";
+import {
+  Module,
+} from "@nestjs/common";
 
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
+import {
+  APP_GUARD,
+} from "@nestjs/core";
 
-import { UsersModule } from "./users/users.module";
-import { AuthModule } from "./auth/auth.module";
+import {
+  ThrottlerGuard,
+  ThrottlerModule,
+} from "@nestjs/throttler";
 
-import { SavedNuggetsModule } from "./saved-nuggets/saved-nuggets.module";
-import { SavedFoldersModule } from "./saved-folders/saved-folders.module";
-import { PlaylistsModule } from "./playlists/playlists.module";
-import { NotesModule } from "./notes/notes.module";
-import { HistoryModule } from "./history/history.module";
-import { FollowingModule } from "./following/following.module";
+import {
+  ScheduleModule,
+} from "@nestjs/schedule";
 
-import { NuggetsModule } from "./nuggets/nuggets.module";
+import {
+  AppController,
+} from "./app.controller";
 
-import { MediaModule } from "./media/media.module";
-import { ModerationModule } from "./moderation/moderation.module";
-import { AnalyticsModule } from "./analytics/analytics.module";
-import { MobileAppModule } from "./mobile-app/mobile-app.module";
-import { AppSettingsModule } from "./app-settings/app-settings.module";
-import {UserNotificationsModule,} from "./user-notifications/user-notifications.module";
-import { AdminModule } from "./admin/admin.module";
-import { ScheduleModule } from "@nestjs/schedule";
+import {
+  AppService,
+} from "./app.service";
+
+import {
+  UsersModule,
+} from "./users/users.module";
+
+import {
+  AuthModule,
+} from "./auth/auth.module";
+
+import {
+  SavedNuggetsModule,
+} from "./saved-nuggets/saved-nuggets.module";
+
+import {
+  SavedFoldersModule,
+} from "./saved-folders/saved-folders.module";
+
+import {
+  PlaylistsModule,
+} from "./playlists/playlists.module";
+
+import {
+  NotesModule,
+} from "./notes/notes.module";
+
+import {
+  HistoryModule,
+} from "./history/history.module";
+
+import {
+  FollowingModule,
+} from "./following/following.module";
+
+import {
+  NuggetsModule,
+} from "./nuggets/nuggets.module";
+
+import {
+  MediaModule,
+} from "./media/media.module";
+
+import {
+  ModerationModule,
+} from "./moderation/moderation.module";
+
+import {
+  AnalyticsModule,
+} from "./analytics/analytics.module";
+
+import {
+  MobileAppModule,
+} from "./mobile-app/mobile-app.module";
+
+import {
+  AppSettingsModule,
+} from "./app-settings/app-settings.module";
+
+import {
+  UserNotificationsModule,
+} from "./user-notifications/user-notifications.module";
+
+import {
+  AdminModule,
+} from "./admin/admin.module";
+
+import {
+  PushNotificationsModule,
+} from "./push-notifications/push-notifications.module";
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60_000,
+        limit: 100,
+      },
+    ]),
+
     UsersModule,
     AuthModule,
 
@@ -38,7 +113,8 @@ import { ScheduleModule } from "@nestjs/schedule";
     NotesModule,
     HistoryModule,
     FollowingModule,
-     UserNotificationsModule,
+    UserNotificationsModule,
+    PushNotificationsModule,
     MediaModule,
     ModerationModule,
     AnalyticsModule,
@@ -48,8 +124,20 @@ import { ScheduleModule } from "@nestjs/schedule";
     AdminModule,
   ],
 
-  controllers: [AppController],
+  controllers: [
+    AppController,
+  ],
 
-  providers: [AppService],
+  providers: [
+    AppService,
+
+    {
+      provide:
+        APP_GUARD,
+
+      useClass:
+        ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

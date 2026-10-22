@@ -1,0 +1,86 @@
+[
+  {
+    "id": "column.public.User.twoFactorEnabled",
+    "label": "Add column \"twoFactorEnabled\" to \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "twoFactorEnabled",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"twoFactorEnabled\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "twoFactorEnabled"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"twoFactorEnabled\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD COLUMN \"twoFactorEnabled\" bool DEFAULT false NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"twoFactorEnabled\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "twoFactorEnabled"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.User.twoFactorSecret",
+    "label": "Add column \"twoFactorSecret\" to \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "twoFactorSecret",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"twoFactorSecret\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "twoFactorSecret"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"twoFactorSecret\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD COLUMN \"twoFactorSecret\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"twoFactorSecret\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "User",
+          "twoFactorSecret"
+        ]
+      }
+    ]
+  }
+]

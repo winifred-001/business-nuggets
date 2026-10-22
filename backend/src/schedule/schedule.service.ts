@@ -1,8 +1,15 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
+  OnModuleInit,
 } from "@nestjs/common";
+
+import {
+  Cron,
+  CronExpression,
+} from "@nestjs/schedule";
 
 import { db } from "../prisma/db";
 
@@ -12,7 +19,31 @@ type CreateScheduleInput = {
 };
 
 @Injectable()
-export class ScheduleService {
+export class ScheduleService
+  implements OnModuleInit
+{
+  private readonly logger =
+    new Logger(
+      ScheduleService.name,
+    );
+
+  private processing = false;
+
+  /* =========================================
+     START SCHEDULE CHECKER
+  ========================================= */
+
+  onModuleInit() {
+    void this.processDueSchedules();
+  }
+
+  @Cron(
+    CronExpression.EVERY_MINUTE,
+  )
+  async handleScheduledNuggets() {
+    await this.processDueSchedules();
+  }
+
   /* =========================================
      GET ALL
   ========================================= */
@@ -38,15 +69,29 @@ export class ScheduleService {
 
           nugget: nugget
             ? {
-                id: nugget.id,
-                slug: nugget.slug,
-                number: nugget.number,
-                title: nugget.title,
-                topic: nugget.topic,
+                id:
+                  nugget.id,
+
+                slug:
+                  nugget.slug,
+
+                number:
+                  nugget.number,
+
+                title:
+                  nugget.title,
+
+                topic:
+                  nugget.topic,
+
                 scriptureRef:
                   nugget.scriptureRef,
-                status: nugget.status,
-                image: nugget.image,
+
+                status:
+                  nugget.status,
+
+                image:
+                  nugget.image,
               }
             : null,
         };
@@ -72,13 +117,23 @@ export class ScheduleService {
     const nugget =
       await db.orm.public.Nugget
         .where({
-          id: input.nuggetId,
+          id:
+            input.nuggetId,
         })
         .first();
 
     if (!nugget) {
       throw new NotFoundException(
         "Nugget not found",
+      );
+    }
+
+    if (
+      nugget.status ===
+      "published"
+    ) {
+      throw new ConflictException(
+        "Published nuggets cannot be scheduled",
       );
     }
 
@@ -97,7 +152,7 @@ export class ScheduleService {
       );
     }
 
-    const existing =
+    const existingTime =
       await db.orm.public.NuggetSchedule
         .where({
           scheduledFor:
@@ -105,9 +160,23 @@ export class ScheduleService {
         })
         .first();
 
-    if (existing) {
+    if (existingTime) {
       throw new ConflictException(
         "Another Nugget is already scheduled for that exact time",
+      );
+    }
+
+    const existingNugget =
+      await db.orm.public.NuggetSchedule
+        .where({
+          nuggetId:
+            input.nuggetId,
+        })
+        .first();
+
+    if (existingNugget) {
+      throw new ConflictException(
+        "This Nugget is already scheduled",
       );
     }
 
@@ -116,7 +185,7 @@ export class ScheduleService {
         input.nuggetId,
 
       scheduledFor:
-        input.scheduledFor,
+        scheduledDate.toISOString(),
     });
   }
 
@@ -130,7 +199,9 @@ export class ScheduleService {
   ) {
     const existing =
       await db.orm.public.NuggetSchedule
-        .where({ id })
+        .where({
+          id,
+        })
         .first();
 
     if (!existing) {
@@ -142,7 +213,8 @@ export class ScheduleService {
     const nugget =
       await db.orm.public.Nugget
         .where({
-          id: input.nuggetId,
+          id:
+            input.nuggetId,
         })
         .first();
 
@@ -152,14 +224,71 @@ export class ScheduleService {
       );
     }
 
+    if (
+      nugget.status ===
+      "published"
+    ) {
+      throw new ConflictException(
+        "Published nuggets cannot be scheduled",
+      );
+    }
+
+    const scheduledDate =
+      new Date(
+        input.scheduledFor,
+      );
+
+    if (
+      Number.isNaN(
+        scheduledDate.getTime(),
+      )
+    ) {
+      throw new ConflictException(
+        "Invalid schedule date",
+      );
+    }
+
+    const schedules =
+      await db.orm.public.NuggetSchedule.all();
+
+    const conflictingTime =
+      schedules.find(
+        (schedule) =>
+          schedule.id !== id &&
+          schedule.scheduledFor ===
+            input.scheduledFor,
+      );
+
+    if (conflictingTime) {
+      throw new ConflictException(
+        "Another Nugget is already scheduled for that exact time",
+      );
+    }
+
+    const conflictingNugget =
+      schedules.find(
+        (schedule) =>
+          schedule.id !== id &&
+          schedule.nuggetId ===
+            input.nuggetId,
+      );
+
+    if (conflictingNugget) {
+      throw new ConflictException(
+        "This Nugget is already scheduled",
+      );
+    }
+
     return db.orm.public.NuggetSchedule
-      .where({ id })
+      .where({
+        id,
+      })
       .update({
         nuggetId:
           input.nuggetId,
 
         scheduledFor:
-          input.scheduledFor,
+          scheduledDate.toISOString(),
       });
   }
 
@@ -172,7 +301,9 @@ export class ScheduleService {
   ) {
     const existing =
       await db.orm.public.NuggetSchedule
-        .where({ id })
+        .where({
+          id,
+        })
         .first();
 
     if (!existing) {
@@ -182,7 +313,9 @@ export class ScheduleService {
     }
 
     return db.orm.public.NuggetSchedule
-      .where({ id })
+      .where({
+        id,
+      })
       .delete();
   }
 
@@ -208,6 +341,8 @@ export class ScheduleService {
     const available =
       nuggets.filter(
         (nugget) =>
+          nugget.status !==
+            "published" &&
           !scheduledIds.has(
             nugget.id,
           ),
@@ -231,7 +366,9 @@ export class ScheduleService {
       }
 
       const date =
-        new Date(now);
+        new Date(
+          now,
+        );
 
       date.setDate(
         now.getDate() +
@@ -244,9 +381,6 @@ export class ScheduleService {
         0,
         0,
       );
-
-      const dateString =
-        date.toISOString();
 
       const dayAlreadyUsed =
         schedules.some(
@@ -278,12 +412,127 @@ export class ScheduleService {
           ].id,
 
         scheduledFor:
-          dateString,
+          date.toISOString(),
       });
 
       nuggetIndex += 1;
     }
 
     return this.getSchedule();
+  }
+
+  /* =========================================
+     PROCESS DUE SCHEDULES
+  ========================================= */
+
+  async processDueSchedules() {
+    if (this.processing) {
+      return;
+    }
+
+    this.processing = true;
+
+    try {
+      const schedules =
+        await db.orm.public.NuggetSchedule.all();
+
+      const now =
+        Date.now();
+
+      const dueSchedules =
+        schedules.filter(
+          (schedule) => {
+            const scheduledTime =
+              new Date(
+                schedule.scheduledFor,
+              ).getTime();
+
+            if (
+              Number.isNaN(
+                scheduledTime,
+              )
+            ) {
+              return false;
+            }
+
+            return (
+              scheduledTime <=
+              now
+            );
+          },
+        );
+
+      for (
+        const schedule
+        of dueSchedules
+      ) {
+        try {
+          const nugget =
+            await db.orm.public.Nugget
+              .where({
+                id:
+                  schedule.nuggetId,
+              })
+              .first();
+
+          if (!nugget) {
+            this.logger.warn(
+              `Scheduled Nugget ${schedule.nuggetId} no longer exists`,
+            );
+
+            await db.orm.public.NuggetSchedule
+              .where({
+                id:
+                  schedule.id,
+              })
+              .delete();
+
+            continue;
+          }
+
+          if (
+            nugget.status !==
+            "published"
+          ) {
+            await db.orm.public.Nugget
+              .where({
+                id:
+                  nugget.id,
+              })
+              .update({
+                status:
+                  "published",
+
+                publishedAt:
+                  new Date().toISOString(),
+              });
+
+            this.logger.log(
+              `Published scheduled Nugget ${nugget.id}`,
+            );
+          }
+
+          /*
+           * Once processed, remove it from
+           * the active schedule queue.
+           */
+          await db.orm.public.NuggetSchedule
+            .where({
+              id:
+                schedule.id,
+            })
+            .delete();
+        } catch (error) {
+          this.logger.error(
+            `Could not publish scheduled Nugget ${schedule.nuggetId}`,
+            error instanceof Error
+              ? error.stack
+              : undefined,
+          );
+        }
+      }
+    } finally {
+      this.processing = false;
+    }
   }
 }
