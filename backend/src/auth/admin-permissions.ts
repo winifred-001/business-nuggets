@@ -128,7 +128,7 @@ async function ensurePermissionsTable() {
     return;
   }
 
-  await db.execute(
+  await db.runtime().execute(
     db.raw.sql`
       CREATE TABLE IF NOT EXISTS "AdminRolePermission" (
         "role" text NOT NULL,
@@ -153,7 +153,7 @@ export async function getAdminPermissionMatrix(): Promise<AdminPermissionMatrix>
     await ensurePermissionsTable();
 
     const rows =
-      await db.query(
+      await db.runtime().query(
         db.raw.sql`
           SELECT "role", "permission", "enabled"
           FROM "AdminRolePermission"
@@ -167,20 +167,19 @@ export async function getAdminPermissionMatrix(): Promise<AdminPermissionMatrix>
       );
 
     for (const row of rows) {
+      const role = row.role;
+      const permission = row.permission;
+
       if (
-        !isAdminRole(row.role) ||
-        !isAdminPermission(
-          row.permission,
-        ) ||
-        row.role ===
-          "super-admin"
+        !isAdminRole(role) ||
+        !isAdminPermission(permission) ||
+        role === "super-admin"
       ) {
         continue;
       }
 
-      matrix[row.role][
-        row.permission
-      ] = row.enabled;
+      matrix[role][permission] =
+        row.enabled;
     }
   } catch (error) {
     console.error(
@@ -210,7 +209,7 @@ export async function setAdminRolePermission(
 
   await ensurePermissionsTable();
 
-  await db.execute(
+  await db.runtime().execute(
     db.raw.sql`
       INSERT INTO "AdminRolePermission" (
         "role",
