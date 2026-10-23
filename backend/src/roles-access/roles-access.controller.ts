@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   Patch,
+  Request,
   UseGuards,
 } from "@nestjs/common";
 
@@ -29,6 +31,7 @@ import {
 } from "./roles-access.service";
 
 import type {
+  AdminPermission,
   AdminRole,
 } from "../auth/admin-permissions";
 
@@ -51,6 +54,38 @@ export class RolesAccessController {
   )
   getAdminRoles() {
     return this.rolesAccessService.getAdminTeam();
+  }
+
+  @Patch("permissions")
+  @RequireAdminPermission(
+    "manageAdmins",
+  )
+  updateRolePermission(
+    @Request()
+    req: any,
+
+    @Body()
+    body: {
+      role: AdminRole;
+      permission: AdminPermission;
+      enabled: boolean;
+    },
+  ) {
+    const isSuperAdmin =
+      req.user?.role ===
+        "owner" ||
+      req.user?.adminRole ===
+        "super-admin";
+
+    if (!isSuperAdmin) {
+      throw new ForbiddenException(
+        "Only a Super Admin can change role permissions",
+      );
+    }
+
+    return this.rolesAccessService.updateRolePermission(
+      body,
+    );
   }
 
   @Patch("admins/:id")
