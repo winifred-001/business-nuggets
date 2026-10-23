@@ -78,19 +78,44 @@ async function bootstrap() {
      CORS
   ========================================================= */
 
-  const allowedOrigins =
-    [
-      "http://localhost:3000",
+  const configuredOrigins = [
+    process.env.FRONTEND_URL,
+    ...(process.env.FRONTEND_URLS ?? "")
+      .split(",")
+      .map((origin) => origin.trim()),
+  ].filter(Boolean) as string[];
 
-      process.env
-        .FRONTEND_URL,
-    ].filter(
-      Boolean,
-    ) as string[];
+  const allowedOrigins = new Set([
+    "http://localhost:3000",
+    "https://business-nuggets-theta.vercel.app",
+    "https://business-nuggets-chioms.vercel.app",
+    "https://business-nuggets-git-main-chioms.vercel.app",
+    ...configuredOrigins,
+  ]);
+
+  const businessNuggetsDeploymentOrigin =
+    /^https:\/\/business-nuggets(?:-[a-z0-9-]+)?-chioms\.vercel\.app$/i;
 
   app.enableCors({
-    origin:
-      allowedOrigins,
+    origin: (
+      origin,
+      callback,
+    ) => {
+      if (
+        !origin ||
+        allowedOrigins.has(origin) ||
+        businessNuggetsDeploymentOrigin.test(origin)
+      ) {
+        callback(null, true);
+        return;
+      }
+
+      callback(
+        new Error(
+          "Origin not allowed by CORS",
+        ),
+      );
+    },
 
     credentials:
       true,
