@@ -24,3 +24,65 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* =========================================================
+   ADMIN TYPOGRAPHY SYSTEM
+   Page headers: 40px
+   Section/subheaders: 28px
+   Body/content: 14px-16px
+========================================================= */
+
+.admin-typography {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.admin-typography h1 {
+  font-size: 40px !important;
+  line-height: 1.15;
+}
+
+.admin-typography h2,
+.admin-typography h3 {
+  font-size: 28px !important;
+  line-height: 1.25;
+}
+
+.admin-typography p,
+.admin-typography span,
+.admin-typography label,
+.admin-typography button,
+.admin-typography a,
+.admin-typography li,
+.admin-typography th,
+.admin-typography td,
+.admin-typography code,
+.admin-typography small {
+  font-size: 14px;
+}
+
+.admin-typography input,
+.admin-typography textarea,
+.admin-typography select {
+  font-size: 16px;
+}
+
+.admin-typography [class*="text-[6px]"],
+.admin-typography [class*="text-[7px]"],
+.admin-typography [class*="text-[8px]"],
+.admin-typography [class*="text-[9px]"],
+.admin-typography [class*="text-[10px]"],
+.admin-typography [class*="text-[11px]"],
+.admin-typography [class*="text-[12px]"],
+.admin-typography [class*="text-[13px]"] {
+  font-size: 14px !important;
+}
+
+.admin-typography .text-xs,
+.admin-typography .text-sm {
+  font-size: 14px !important;
+}
+
+.admin-typography .text-base {
+  font-size: 16px !important;
+}
