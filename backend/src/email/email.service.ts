@@ -9,6 +9,7 @@ import nodemailer, {
 
 import {
   adminInviteEmailTemplate,
+  adminLoginCodeEmailTemplate,
   passwordChangedEmailTemplate,
   passwordResetEmailTemplate,
   securityAlertEmailTemplate,
@@ -22,10 +23,6 @@ export class EmailService {
     Transporter | null =
     null;
 
-  /* =========================================================
-     SMTP CONFIG CHECK
-  ========================================================= */
-
   private isConfigured() {
     return Boolean(
       process.env.SMTP_HOST &&
@@ -33,10 +30,6 @@ export class EmailService {
       process.env.SMTP_PASS
     );
   }
-
-  /* =========================================================
-     SMTP TRANSPORTER
-  ========================================================= */
 
   private getTransporter() {
     if (
@@ -91,7 +84,6 @@ export class EmailService {
         host,
         port,
         secure,
-
         auth: {
           user,
           pass,
@@ -101,20 +93,12 @@ export class EmailService {
     return this.transporter;
   }
 
-  /* =========================================================
-     FROM ADDRESS
-  ========================================================= */
-
   private getFromAddress() {
     return (
       process.env.SMTP_FROM ||
       process.env.SMTP_USER
     );
   }
-
-  /* =========================================================
-     GENERIC EMAIL SENDER
-  ========================================================= */
 
   private async sendEmail(
     to: string,
@@ -143,19 +127,14 @@ export class EmailService {
     await transporter.sendMail({
       from:
         this.getFromAddress(),
-
       to,
-
       replyTo:
         process.env.SMTP_REPLY_TO ||
         undefined,
-
       subject:
         template.subject,
-
       text:
         template.text,
-
       html:
         template.html,
     });
@@ -166,113 +145,85 @@ export class EmailService {
     };
   }
 
-  /* =========================================================
-     PASSWORD RESET
-  ========================================================= */
-
   async sendPasswordResetEmail(
     to: string,
     resetUrl: string,
   ) {
-    const template =
-      passwordResetEmailTemplate(
-        resetUrl,
-      );
-
     return this.sendEmail(
       to,
-      template,
+      passwordResetEmailTemplate(
+        resetUrl,
+      ),
     );
   }
-
-  /* =========================================================
-     WELCOME EMAIL
-  ========================================================= */
 
   async sendWelcomeEmail(
     to: string,
     name: string,
   ) {
-    const template =
-      welcomeEmailTemplate(
-        name,
-      );
-
     return this.sendEmail(
       to,
-      template,
+      welcomeEmailTemplate(
+        name,
+      ),
     );
   }
-
-  /* =========================================================
-     PASSWORD CHANGED
-  ========================================================= */
 
   async sendPasswordChangedEmail(
     to: string,
   ) {
-    const template =
-      passwordChangedEmailTemplate();
-
     return this.sendEmail(
       to,
-      template,
+      passwordChangedEmailTemplate(),
     );
   }
 
-  /* =========================================================
-     2FA ENABLED
-  ========================================================= */
+  async sendAdminLoginCodeEmail(
+    to: string,
+    code: string,
+    expiresInMinutes: number,
+  ) {
+    return this.sendEmail(
+      to,
+      adminLoginCodeEmailTemplate(
+        code,
+        expiresInMinutes,
+      ),
+    );
+  }
 
   async sendTwoFactorEnabledEmail(
     to: string,
   ) {
-    const template =
-      twoFactorEnabledEmailTemplate();
-
     return this.sendEmail(
       to,
-      template,
+      twoFactorEnabledEmailTemplate(),
     );
   }
-
-  /* =========================================================
-     SECURITY ALERT
-  ========================================================= */
 
   async sendSecurityAlertEmail(
     to: string,
     message: string,
   ) {
-    const template =
-      securityAlertEmailTemplate(
-        message,
-      );
-
     return this.sendEmail(
       to,
-      template,
+      securityAlertEmailTemplate(
+        message,
+      ),
     );
   }
-
-  /* =========================================================
-     ADMIN INVITATION
-  ========================================================= */
 
   async sendAdminInviteEmail(
     to: string,
     name: string,
     loginUrl: string,
   ) {
-    const template =
+    return this.sendEmail(
+      to,
       adminInviteEmailTemplate(
         name,
         loginUrl,
-      );
-
-    return this.sendEmail(
-      to,
-      template,
+      ),
     );
   }
 }
