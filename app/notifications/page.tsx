@@ -7,202 +7,222 @@ import {
   Music2,
   ShieldCheck,
 } from "lucide-react";
-
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import AuthRouteGuard from "@/components/AuthRouteGuard";
-
-/* =========================================================
-   TEMPORARY NOTIFICATION DATA
-
-   We do not have a notifications backend yet.
-   Read/unread state is stored locally for now.
-========================================================= */
+import { API_URL } from "@/lib/api";
 
 type NotificationItem = {
-  id: string;
-  group: "TODAY" | "YESTERDAY";
-  type: string;
-  time: string;
+  id: number;
+  userId?: number;
+  campaignId?: number | null;
+  type?: string | null;
   title: string;
-  description: string;
-  href: string;
-  icon: "nugget" | "topic" | "musical" | "system";
+  message: string;
+  href?: string | null;
+  readAt?: string | null;
+  createdAt: string;
 };
 
-const notifications: NotificationItem[] = [
-  {
-    id: "daily-nugget-1",
-    group: "TODAY",
-    type: "TODAY'S NUGGET",
-    time: "10 min ago",
-    title: "The Law of Just Balances in Corporate Negotiation",
-    description:
-      "New daily commentary on Proverbs 11:1. Honesty is not a moral compromise; it is tactical dominion.",
-    href: "/library",
-    icon: "nugget",
-  },
-
-  {
-    id: "followed-topic-1",
-    group: "TODAY",
-    type: "FOLLOWED TOPIC UPDATE",
-    time: "2 hours ago",
-    title: "New Nugget added to 'Leadership & Governance'",
-    description:
-      "Exodus 18: Jethro's delegation plan for scale is now available in premium format.",
-    href: "/topics/leadership-governance",
-    icon: "topic",
-  },
-
-  {
-    id: "musical-1",
-    group: "YESTERDAY",
-    type: "NEW WISDOM MUSICAL",
-    time: "1 day ago",
-    title: "Genesis 41: Joseph's Reserve Blueprint Released",
-    description:
-      "A new cinematic Wisdom Musical is now available to explore.",
-    href: "/musicals",
-    icon: "musical",
-  },
-
-  {
-    id: "system-1",
-    group: "YESTERDAY",
-    type: "SYSTEM NOTICE",
-    time: "1 day ago",
-    title: "Your Business Nuggets workspace is ready",
-    description:
-      "Your account and workspace preferences can be managed from Account Settings.",
-    href: "/library/account",
-    icon: "system",
-  },
-];
-
-/* =========================================================
-   PAGE
-========================================================= */
+type NotificationGroup = {
+  label: string;
+  items: NotificationItem[];
+};
 
 export default function NotificationsPage() {
   const router = useRouter();
 
-  const [readIds, setReadIds] =
-    useState<string[]>([]);
-
-  const [loaded, setLoaded] =
-    useState(false);
-
-  /* =======================================================
-     LOAD READ STATE
-  ======================================================= */
+  const [notifications, setNotifications] =
+    useState<NotificationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [markingAll, setMarkingAll] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    try {
-      const stored =
-        localStorage.getItem(
-          "readNotifications",
-        );
+    let cancelled = false;
 
-      if (stored) {
-        setReadIds(
-          JSON.parse(stored),
-        );
+    async function loadNotifications() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        if (!cancelled) {
+          setError("Please sign in to view your notifications.");
+          setLoading(false);
+        }
+        return;
       }
-    } catch {
-      setReadIds([]);
-    } finally {
-      setLoaded(true);
+
+      try {
+        const response = await fetch(`${API_URL}/notifications`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json().catch(() => []);
+
+        if (!response.ok) {
+          if (!cancelled) {
+            setError(
+              Array.isArray(data?.message)
+                ? data.message.join(", ")
+                : data?.message || "Could not load notifications.",
+            );
+          }
+          return;
+        }
+
+        if (!cancelled) {
+          setNotifications(Array.isArray(data) ? data : []);
+          setError("");
+        }
+      } catch {
+        if (!cancelled) {
+          setError("Could not connect to the server.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     }
+
+    void loadNotifications();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  /* =======================================================
-     HELPERS
-  ======================================================= */
+  const unreadCount = useMemo(
+    () => notifications.filter((notification) => !notification.readAt).length,
+    [notifications],
+  );
 
-  function saveReadState(
-    ids: string[],
-  ) {
-    setReadIds(ids);
+  const groups = useMemo<NotificationGroup[]>(() => {
+    const today: NotificationItem[] = [];
+    const yesterday: NotificationItem[] = [];
+    const earlier: NotificationItem[] = [];
 
-    localStorage.setItem(
-      "readNotifications",
-      JSON.stringify(ids),
+    const now = new Date();
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    ).getTime();
+    const startOfYesterday = startOfToday - 24 * 60 * 60 * 1000;
+
+    for (const notification of notifications) {
+      const createdAt = new Date(notification.createdAt).getTime();
+
+      if (createdAt >= startOfToday) {
+        today.push(notification);
+      } else if (createdAt >= startOfYesterday) {
+        yesterday.push(notification);
+      } else {
+        earlier.push(notification);
+      }
+    }
+
+    return [
+      { label: "Today", items: today },
+      { label: "Yesterday", items: yesterday },
+      { label: "Earlier", items: earlier },
+    ].filter((group) => group.items.length > 0);
+  }, [notifications]);
+
+  async function markAsRead(notificationId: number) {
+    const existing = notifications.find(
+      (notification) => notification.id === notificationId,
     );
 
-    window.dispatchEvent(
-      new Event(
-        "notifications-change",
-      ),
-    );
-  }
-
-  function markAsRead(
-    id: string,
-  ) {
-    if (readIds.includes(id)) {
+    if (!existing || existing.readAt) {
       return;
     }
 
-    saveReadState([
-      ...readIds,
-      id,
-    ]);
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(
+        `${API_URL}/notifications/${notificationId}/read`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!response.ok) return;
+
+      const readAt = new Date().toISOString();
+      setNotifications((current) =>
+        current.map((notification) =>
+          notification.id === notificationId
+            ? { ...notification, readAt }
+            : notification,
+        ),
+      );
+
+      window.dispatchEvent(new Event("notifications-change"));
+    } catch {
+      setError("Could not update the notification.");
+    }
   }
 
-  function markAllAsRead() {
-    saveReadState(
-      notifications.map(
-        (notification) =>
-          notification.id,
-      ),
-    );
+  async function markAllAsRead() {
+    const token = localStorage.getItem("token");
+
+    if (!token || unreadCount === 0 || markingAll) {
+      return;
+    }
+
+    setMarkingAll(true);
+    setError("");
+
+    try {
+      const response = await fetch(`${API_URL}/notifications/read-all`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setError(
+          Array.isArray(data?.message)
+            ? data.message.join(", ")
+            : data?.message || "Could not mark notifications as read.",
+        );
+        return;
+      }
+
+      const readAt = new Date().toISOString();
+      setNotifications((current) =>
+        current.map((notification) => ({
+          ...notification,
+          readAt: notification.readAt || readAt,
+        })),
+      );
+
+      window.dispatchEvent(new Event("notifications-change"));
+    } catch {
+      setError("Could not connect to the server.");
+    } finally {
+      setMarkingAll(false);
+    }
   }
 
-  function openNotification(
-    notification: NotificationItem,
-  ) {
-    markAsRead(
-      notification.id,
-    );
-
-    router.push(
-      notification.href,
-    );
+  async function openNotification(notification: NotificationItem) {
+    await markAsRead(notification.id);
+    router.push(notification.href || "/library");
   }
-
-  const unreadCount =
-    useMemo(
-      () =>
-        notifications.filter(
-          (notification) =>
-            !readIds.includes(
-              notification.id,
-            ),
-        ).length,
-      [readIds],
-    );
-
-  const today =
-    notifications.filter(
-      (notification) =>
-        notification.group ===
-        "TODAY",
-    );
-
-  const yesterday =
-    notifications.filter(
-      (notification) =>
-        notification.group ===
-        "YESTERDAY",
-    );
-
-  /* =======================================================
-     JSX
-  ======================================================= */
 
   return (
     <AuthRouteGuard type="protected">
@@ -210,10 +230,6 @@ export default function NotificationsPage() {
         <Navbar />
 
         <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
-          {/* ===============================================
-              HEADER
-          =============================================== */}
-
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h1 className="font-serif text-[40px] leading-tight text-[#FAF9F6]">
@@ -221,71 +237,61 @@ export default function NotificationsPage() {
               </h1>
 
               <p className="mt-3 text-[13px] leading-6 text-white/40">
-                Stay updated on direct
-                updates, followed topics,
-                and daily corporate wisdom.
+                Stay updated on direct updates, followed topics, and account activity.
               </p>
             </div>
 
             <button
               type="button"
-              onClick={
-                markAllAsRead
-              }
-              disabled={
-                unreadCount === 0
-              }
+              onClick={() => void markAllAsRead()}
+              disabled={unreadCount === 0 || markingAll}
               className="inline-flex w-fit items-center gap-2 rounded-md border border-white/10 px-4 py-2.5 text-[11px] text-white/60 transition hover:border-white/20 hover:text-white disabled:cursor-default disabled:opacity-40"
             >
-              <Check
-                size={14}
-              />
-
-              {unreadCount === 0
-                ? "All notifications read"
-                : "Mark all as read"}
+              <Check size={14} />
+              {markingAll
+                ? "Updating..."
+                : unreadCount === 0
+                  ? "All notifications read"
+                  : `Mark all as read (${unreadCount})`}
             </button>
           </div>
 
-          {/* ===============================================
-              CENTRE
-          =============================================== */}
+          {error && (
+            <div className="mt-6 rounded-md border border-red-500/20 bg-red-500/[0.05] px-4 py-3 text-[11px] text-red-300">
+              {error}
+            </div>
+          )}
 
           <section className="mt-8 rounded-[10px] border border-white/10 bg-[#111111] p-4 sm:p-6">
-            {!loaded ? (
+            {loading ? (
               <p className="py-10 text-center text-[12px] text-white/35">
                 Loading notifications...
               </p>
+            ) : notifications.length === 0 ? (
+              <div className="flex min-h-[220px] flex-col items-center justify-center px-6 text-center">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#181818] text-[#C8A35A]">
+                  <Bell size={18} />
+                </div>
+                <h2 className="mt-4 font-serif text-[18px] text-white/85">
+                  You&apos;re all caught up
+                </h2>
+                <p className="mt-2 max-w-md text-[11px] leading-5 text-white/35">
+                  New Business Nuggets updates and account notifications will appear here.
+                </p>
+              </div>
             ) : (
-              <>
-                {/* TODAY */}
-
-                <NotificationGroup
-                  title="Today"
-                  items={today}
-                  readIds={readIds}
-                  onView={
-                    openNotification
-                  }
-                />
-
-                {/* YESTERDAY */}
-
-                <div className="mt-8">
-                  <NotificationGroup
-                    title="Yesterday"
-                    items={
-                      yesterday
-                    }
-                    readIds={
-                      readIds
-                    }
-                    onView={
-                      openNotification
+              <div className="space-y-8">
+                {groups.map((group) => (
+                  <NotificationGroupView
+                    key={group.label}
+                    title={group.label}
+                    items={group.items}
+                    onView={(notification) =>
+                      void openNotification(notification)
                     }
                   />
-                </div>
-              </>
+                ))}
+              </div>
             )}
           </section>
         </main>
@@ -296,22 +302,14 @@ export default function NotificationsPage() {
   );
 }
 
-/* =========================================================
-   GROUP
-========================================================= */
-
-function NotificationGroup({
+function NotificationGroupView({
   title,
   items,
-  readIds,
   onView,
 }: {
   title: string;
   items: NotificationItem[];
-  readIds: string[];
-  onView: (
-    notification: NotificationItem,
-  ) => void;
+  onView: (notification: NotificationItem) => void;
 }) {
   return (
     <section>
@@ -320,48 +318,27 @@ function NotificationGroup({
       </h2>
 
       <div className="space-y-3">
-        {items.map(
-          (notification) => (
-            <NotificationCard
-              key={
-                notification.id
-              }
-              notification={
-                notification
-              }
-              read={readIds.includes(
-                notification.id,
-              )}
-              onView={() =>
-                onView(
-                  notification,
-                )
-              }
-            />
-          ),
-        )}
+        {items.map((notification) => (
+          <NotificationCard
+            key={notification.id}
+            notification={notification}
+            onView={() => onView(notification)}
+          />
+        ))}
       </div>
     </section>
   );
 }
 
-/* =========================================================
-   CARD
-========================================================= */
-
 function NotificationCard({
   notification,
-  read,
   onView,
 }: {
   notification: NotificationItem;
-  read: boolean;
   onView: () => void;
 }) {
-  const Icon =
-    getNotificationIcon(
-      notification.icon,
-    );
+  const read = Boolean(notification.readAt);
+  const Icon = getNotificationIcon(notification.type);
 
   return (
     <article
@@ -371,53 +348,32 @@ function NotificationCard({
           : "border-white/10 bg-[#18181B]"
       }`}
     >
-      {/* UNREAD DOT */}
-
       {!read && (
         <span className="absolute left-3 top-1/2 hidden h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-[#C8A35A] sm:block" />
       )}
 
-      {/* ICON */}
-
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/[0.06] bg-[#1D1D20] text-[#C8A35A] sm:ml-3">
-        <Icon
-          size={15}
-          strokeWidth={1.7}
-        />
+        <Icon size={15} strokeWidth={1.7} />
       </div>
-
-      {/* CONTENT */}
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[9px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
-            {
-              notification.type
-            }
+            {formatType(notification.type)}
           </span>
-
           <span className="text-[9px] text-white/25">
-            •{" "}
-            {
-              notification.time
-            }
+            • {formatRelativeTime(notification.createdAt)}
           </span>
         </div>
 
         <h3 className="mt-1 font-serif text-[15px] leading-5 text-white/85">
-          {
-            notification.title
-          }
+          {notification.title}
         </h3>
 
         <p className="mt-1 max-w-[850px] text-[10px] leading-5 text-white/35">
-          {
-            notification.description
-          }
+          {notification.message}
         </p>
       </div>
-
-      {/* ACTION */}
 
       <button
         type="button"
@@ -430,27 +386,43 @@ function NotificationCard({
   );
 }
 
-/* =========================================================
-   ICON
-========================================================= */
+function getNotificationIcon(type?: string | null) {
+  const normalized = (type || "system").toLowerCase();
 
-function getNotificationIcon(
-  type: NotificationItem["icon"],
-) {
-  switch (type) {
-    case "nugget":
-      return BookOpen;
+  if (normalized.includes("musical")) return Music2;
+  if (normalized.includes("topic") || normalized.includes("follow")) return Bell;
+  if (normalized.includes("nugget")) return BookOpen;
+  return ShieldCheck;
+}
 
-    case "topic":
-      return Bell;
+function formatType(type?: string | null) {
+  return (type || "system")
+    .replace(/[-_]+/g, " ")
+    .trim()
+    .toUpperCase();
+}
 
-    case "musical":
-      return Music2;
+function formatRelativeTime(dateString: string) {
+  const date = new Date(dateString);
+  const time = date.getTime();
 
-    case "system":
-      return ShieldCheck;
+  if (!Number.isFinite(time)) return "Recently";
 
-    default:
-      return Bell;
-  }
+  const difference = Math.max(0, Date.now() - time);
+  const minutes = Math.floor(difference / 60000);
+
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes} min ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} ${days === 1 ? "day" : "days"} ago`;
+
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }

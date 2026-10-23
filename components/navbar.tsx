@@ -26,6 +26,8 @@ import {
   useRouter,
 } from "next/navigation";
 
+import { API_URL } from "@/lib/api";
+
 type StoredUser = {
   id?: number | string;
   name?: string;
@@ -52,12 +54,12 @@ export default function Navbar() {
   const [profileOpen, setProfileOpen] =
     useState(false);
 
+  const [unreadNotifications, setUnreadNotifications] =
+    useState(0);
+
   const profileRef =
     useRef<HTMLDivElement>(null);
 
-  /*
-   * Read authentication state.
-   */
   useEffect(() => {
     function readAuth() {
       const token =
@@ -83,10 +85,6 @@ export default function Navbar() {
 
     readAuth();
 
-    /*
-     * Allows login/logout to update the
-     * Navbar immediately.
-     */
     window.addEventListener(
       "auth-change",
       readAuth,
@@ -110,17 +108,88 @@ export default function Navbar() {
     };
   }, [pathname]);
 
-  /*
-   * Close menus whenever the route changes.
-   */
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadUnreadCount() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        if (!cancelled) {
+          setUnreadNotifications(0);
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${API_URL}/notifications/unread-count`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (!response.ok) {
+          if (!cancelled) {
+            setUnreadNotifications(0);
+          }
+          return;
+        }
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!cancelled) {
+          setUnreadNotifications(
+            typeof data.unreadCount === "number"
+              ? Math.max(0, data.unreadCount)
+              : 0,
+          );
+        }
+      } catch {
+        if (!cancelled) {
+          setUnreadNotifications(0);
+        }
+      }
+    }
+
+    const refreshUnreadCount = () => {
+      void loadUnreadCount();
+    };
+
+    refreshUnreadCount();
+
+    window.addEventListener(
+      "notifications-change",
+      refreshUnreadCount,
+    );
+
+    window.addEventListener(
+      "auth-change",
+      refreshUnreadCount,
+    );
+
+    return () => {
+      cancelled = true;
+
+      window.removeEventListener(
+        "notifications-change",
+        refreshUnreadCount,
+      );
+
+      window.removeEventListener(
+        "auth-change",
+        refreshUnreadCount,
+      );
+    };
+  }, [pathname]);
+
   useEffect(() => {
     setMobileOpen(false);
     setProfileOpen(false);
   }, [pathname]);
 
-  /*
-   * Close profile menu when clicking outside.
-   */
   useEffect(() => {
     function handleOutsideClick(
       event: MouseEvent,
@@ -147,13 +216,6 @@ export default function Navbar() {
       );
   }, []);
 
-  /*
-   * Logged-in Home:
-   * /home
-   *
-   * Guest Home:
-   * /
-   */
   const homeHref = isLoggedIn
     ? "/home"
     : "/";
@@ -163,12 +225,10 @@ export default function Navbar() {
       href: homeHref,
       label: "Home",
     },
-
     {
       href: "/library",
       label: "Library",
     },
-
     {
       href: "/search",
       label: "Search",
@@ -201,6 +261,7 @@ export default function Navbar() {
 
     setIsLoggedIn(false);
     setUser(null);
+    setUnreadNotifications(0);
     setProfileOpen(false);
     setMobileOpen(false);
 
@@ -225,7 +286,6 @@ export default function Navbar() {
   return (
     <header className="relative z-50 border-b border-white/[0.06] bg-[#0B0B0B] text-[#FAF9F6]">
       <div className="mx-auto flex h-[80px] max-w-[1280px] items-center justify-between px-5 sm:px-8 lg:px-10">
-        {/* LOGO */}
         <Link
           href={homeHref}
           className="flex shrink-0 items-center gap-3"
@@ -245,7 +305,6 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* DESKTOP NAV */}
         <nav
           aria-label="Main navigation"
           className="hidden items-center gap-8 md:flex"
@@ -274,9 +333,7 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* RIGHT SIDE */}
         <div className="flex items-center gap-3">
-          {/* GUEST */}
           {!isLoggedIn && (
             <div className="hidden items-center gap-4 sm:flex">
               <Link
@@ -295,176 +352,176 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* LOGGED-IN PROFILE */}
           {isLoggedIn && (
-  <>
-    {/* NOTIFICATIONS */}
-    <Link
-      href="/notifications"
-      aria-label="Notifications"
-      className={`relative flex h-10 w-10 items-center justify-center rounded-full transition ${
-        pathname.startsWith(
-          "/notifications",
-        )
-          ? "bg-[#C8A35A]/10 text-[#C8A35A]"
-          : "text-white/60 hover:bg-white/[0.04] hover:text-[#C8A35A]"
-      }`}
-    >
-      <Bell
-        size={20}
-        strokeWidth={1.6}
-      />
-
-      {/* Real unread badge will connect
-          to Notifications API later */}
-    </Link>
-
-    {/* PROFILE */}
-    <div
-      ref={profileRef}
-      className="relative"
-    >
-              <button
-                type="button"
-                onClick={() =>
-                  setProfileOpen(
-                    (current) =>
-                      !current,
+            <>
+              <Link
+                href="/notifications"
+                aria-label={
+                  unreadNotifications > 0
+                    ? `Notifications, ${unreadNotifications} unread`
+                    : "Notifications"
+                }
+                className={`relative flex h-10 w-10 items-center justify-center rounded-full transition ${
+                  pathname.startsWith(
+                    "/notifications",
                   )
-                }
-                aria-label="Open account menu"
-                aria-expanded={
-                  profileOpen
-                }
-                className="flex items-center gap-1.5 rounded-full text-white/70 transition hover:text-[#C8A35A]"
+                    ? "bg-[#C8A35A]/10 text-[#C8A35A]"
+                    : "text-white/60 hover:bg-white/[0.04] hover:text-[#C8A35A]"
+                }`}
               >
-                {user?.avatar ||
-                user?.image ? (
-                  // We use a normal img here because
-                  // the backend image host may not yet
-                  // be configured in next.config.
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={
-                      user.avatar ||
-                      user.image ||
-                      ""
-                    }
-                    alt=""
-                    className="h-9 w-9 rounded-full border border-[#C8A35A]/40 object-cover"
-                  />
-                ) : (
-                  <UserCircle
-                    size={34}
-                    strokeWidth={1.4}
-                    className="text-[#E0C48A]"
-                  />
-                )}
-
-                <ChevronDown
-                  size={13}
-                  className={`hidden transition-transform sm:block ${
-                    profileOpen
-                      ? "rotate-180"
-                      : ""
-                  }`}
+                <Bell
+                  size={20}
+                  strokeWidth={1.6}
                 />
-              </button>
 
-              {/* PROFILE DROPDOWN */}
-              {profileOpen && (
-                <div className="absolute right-0 top-[48px] w-[240px] overflow-hidden rounded-xl border border-white/10 bg-[#111111] shadow-2xl">
-                  <div className="border-b border-white/[0.07] px-4 py-4">
-                    <p className="truncate text-[14px] font-medium text-[#FAF9F6]">
-                      {displayName}
-                    </p>
+                {unreadNotifications > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex min-h-[16px] min-w-[16px] items-center justify-center rounded-full bg-[#C8A35A] px-1 text-[8px] font-bold leading-none text-[#080808]">
+                    {unreadNotifications > 9
+                      ? "9+"
+                      : unreadNotifications}
+                  </span>
+                )}
+              </Link>
 
-                    {displayEmail && (
-                      <p className="mt-1 truncate text-[12px] text-white/35">
-                        {displayEmail}
+              <div
+                ref={profileRef}
+                className="relative"
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setProfileOpen(
+                      (current) =>
+                        !current,
+                    )
+                  }
+                  aria-label="Open account menu"
+                  aria-expanded={
+                    profileOpen
+                  }
+                  className="flex items-center gap-1.5 rounded-full text-white/70 transition hover:text-[#C8A35A]"
+                >
+                  {user?.avatar ||
+                  user?.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={
+                        user.avatar ||
+                        user.image ||
+                        ""
+                      }
+                      alt=""
+                      className="h-9 w-9 rounded-full border border-[#C8A35A]/40 object-cover"
+                    />
+                  ) : (
+                    <UserCircle
+                      size={34}
+                      strokeWidth={1.4}
+                      className="text-[#E0C48A]"
+                    />
+                  )}
+
+                  <ChevronDown
+                    size={13}
+                    className={`hidden transition-transform sm:block ${
+                      profileOpen
+                        ? "rotate-180"
+                        : ""
+                    }`}
+                  />
+                </button>
+
+                {profileOpen && (
+                  <div className="absolute right-0 top-[48px] w-[240px] overflow-hidden rounded-xl border border-white/10 bg-[#111111] shadow-2xl">
+                    <div className="border-b border-white/[0.07] px-4 py-4">
+                      <p className="truncate text-[14px] font-medium text-[#FAF9F6]">
+                        {displayName}
                       </p>
-                    )}
+
+                      {displayEmail && (
+                        <p className="mt-1 truncate text-[12px] text-white/35">
+                          {displayEmail}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="p-2">
+                      <ProfileLink
+                        href="/workspace"
+                        icon={
+                          <UserCircle
+                            size={16}
+                          />
+                        }
+                      >
+                        My Workspace
+                      </ProfileLink>
+
+                      <ProfileLink
+                        href="/library/saved-nuggets"
+                        icon={
+                          <Bookmark
+                            size={16}
+                          />
+                        }
+                      >
+                        Saved Nuggets
+                      </ProfileLink>
+
+                      <ProfileLink
+                        href="/library/playlist"
+                        icon={
+                          <ListMusic
+                            size={16}
+                          />
+                        }
+                      >
+                        Playlists
+                      </ProfileLink>
+
+                      <ProfileLink
+                        href="/library/personal-notes"
+                        icon={
+                          <NotebookPen
+                            size={16}
+                          />
+                        }
+                      >
+                        Notes
+                      </ProfileLink>
+
+                      <ProfileLink
+                        href="/library/account"
+                        icon={
+                          <Settings
+                            size={16}
+                          />
+                        }
+                      >
+                        Account Settings
+                      </ProfileLink>
+                    </div>
+
+                    <div className="border-t border-white/[0.07] p-2">
+                      <button
+                        type="button"
+                        onClick={
+                          handleLogout
+                        }
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[13px] text-[#D66B6B] transition hover:bg-white/[0.04]"
+                      >
+                        <LogOut
+                          size={16}
+                        />
+                        Logout
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="p-2">
-                    <ProfileLink
-                      href="/workspace"
-                      icon={
-                        <UserCircle
-                          size={16}
-                        />
-                      }
-                    >
-                      My Workspace
-                    </ProfileLink>
-
-                    <ProfileLink
-                      href="/library/saved-nuggets"
-                      icon={
-                        <Bookmark
-                          size={16}
-                        />
-                      }
-                    >
-                      Saved Nuggets
-                    </ProfileLink>
-
-                    <ProfileLink
-                      href="/library/playlist"
-                      icon={
-                        <ListMusic
-                          size={16}
-                        />
-                      }
-                    >
-                      Playlists
-                    </ProfileLink>
-
-                    <ProfileLink
-                      href="/library/personal-notes"
-                      icon={
-                        <NotebookPen
-                          size={16}
-                        />
-                      }
-                    >
-                      Notes
-                    </ProfileLink>
-
-                    <ProfileLink
-                      href="/library/account"
-                      icon={
-                        <Settings
-                          size={16}
-                        />
-                      }
-                    >
-                      Account Settings
-                    </ProfileLink>
-                  </div>
-
-                  <div className="border-t border-white/[0.07] p-2">
-                    <button
-                      type="button"
-                      onClick={
-                        handleLogout
-                      }
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[13px] text-[#D66B6B] transition hover:bg-white/[0.04]"
-                    >
-                      <LogOut
-                        size={16}
-                      />
-
-                      Logout
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
             </>
           )}
 
-          {/* MOBILE BUTTON */}
           <button
             type="button"
             onClick={() =>
@@ -492,7 +549,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* MOBILE MENU */}
       {mobileOpen && (
         <div className="border-t border-white/[0.06] bg-[#0B0B0B] md:hidden">
           <nav className="mx-auto max-w-[1280px] px-5 py-4 sm:px-8">
@@ -550,6 +606,20 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="mt-4 space-y-1 border-t border-white/[0.07] pt-4">
+                <Link
+                  href="/notifications"
+                  className="flex items-center justify-between rounded-lg px-3 py-3 text-[14px] text-white/60"
+                >
+                  <span>Notifications</span>
+                  {unreadNotifications > 0 && (
+                    <span className="rounded-full bg-[#C8A35A] px-2 py-0.5 text-[9px] font-semibold text-[#080808]">
+                      {unreadNotifications > 9
+                        ? "9+"
+                        : unreadNotifications}
+                    </span>
+                  )}
+                </Link>
+
                 <Link
                   href="/library/saved-nuggets"
                   className="block rounded-lg px-3 py-3 text-[14px] text-white/60"
@@ -613,7 +683,6 @@ function ProfileLink({
       <span className="text-[#C8A35A]">
         {icon}
       </span>
-
       {children}
     </Link>
   );
