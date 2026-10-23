@@ -98,8 +98,11 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (
-      origin,
-      callback,
+      origin: string | undefined,
+      callback: (
+        error: Error | null,
+        allow?: boolean,
+      ) => void,
     ) => {
       if (
         !origin ||
