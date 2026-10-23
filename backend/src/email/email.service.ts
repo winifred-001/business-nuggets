@@ -13,9 +13,16 @@ import {
   passwordChangedEmailTemplate,
   passwordResetEmailTemplate,
   securityAlertEmailTemplate,
+  smtpTestEmailTemplate,
   twoFactorEnabledEmailTemplate,
   welcomeEmailTemplate,
 } from "./email.templates";
+
+type SmtpError = Error & {
+  code?: string;
+  command?: string;
+  responseCode?: number;
+};
 
 @Injectable()
 export class EmailService {
@@ -31,16 +38,25 @@ export class EmailService {
     );
   }
 
-  private getTransporter() {
-    if (
-      this.transporter
-    ) {
-      return this.transporter;
+  private getMissingConfiguration() {
+    const missing: string[] = [];
+
+    if (!process.env.SMTP_HOST) {
+      missing.push("SMTP_HOST");
     }
 
-    const host =
-      process.env.SMTP_HOST;
+    if (!process.env.SMTP_USER) {
+      missing.push("SMTP_USER");
+    }
 
+    if (!process.env.SMTP_PASS) {
+      missing.push("SMTP_PASS");
+    }
+
+    return missing;
+  }
+
+  private getPort() {
     const port =
       Number(
         process.env.SMTP_PORT ??
@@ -55,6 +71,29 @@ export class EmailService {
         "SMTP_PORT must be a valid positive integer",
       );
     }
+
+    return port;
+  }
+
+  private getSecure(
+    port: number,
+  ) {
+    return process.env.SMTP_SECURE !==
+      undefined
+      ? process.env.SMTP_SECURE ===
+        "true"
+      : port === 465;
+  }
+
+  private getTransporter() {
+    if (
+      this.transporter
+    ) {
+      return this.transporter;
+    }
+
+    const host =
+      process.env.SMTP_HOST;
 
     const user =
       process.env.SMTP_USER;
@@ -72,12 +111,13 @@ export class EmailService {
       );
     }
 
+    const port =
+      this.getPort();
+
     const secure =
-      process.env.SMTP_SECURE !==
-      undefined
-        ? process.env.SMTP_SECURE ===
-          "true"
-        : port === 465;
+      this.getSecure(
+        port,
+      );
 
     this.transporter =
       nodemailer.createTransport({
@@ -88,6 +128,12 @@ export class EmailService {
           user,
           pass,
         },
+        connectionTimeout:
+          10_000,
+        greetingTimeout:
+          10_000,
+        socketTimeout:
+          20_000,
       });
 
     return this.transporter;
@@ -98,6 +144,94 @@ export class EmailService {
       process.env.SMTP_FROM ||
       process.env.SMTP_USER
     );
+  }
+
+  private describeSmtpError(
+    error: unknown,
+  ) {
+    const smtpError =
+      error as SmtpError;
+
+    switch (
+      smtpError?.code
+    ) {
+      case "EAUTH":
+        return "SMTP authentication failed. Check SMTP_USER and the Gmail App Password in SMTP_PASS.";
+
+      case "ECONNECTION":
+      case "ESOCKET":
+      case "ETIMEDOUT":
+        return "Could not connect to the SMTP server. Check SMTP_HOST, SMTP_PORT, SMTP_SECURE, and the provider connection.";
+
+      default:
+        return "SMTP connection failed. Check the Render email environment variables and provider settings.";
+    }
+  }
+
+  async getDeliveryStatus() {
+    const missing =
+      this.getMissingConfiguration();
+
+    if (
+      missing.length > 0
+    ) {
+      return {
+        configured:
+          false,
+        connected:
+          false,
+        missing,
+        message:
+          "SMTP is not fully configured.",
+      };
+    }
+
+    try {
+      await this.getTransporter().verify();
+
+      const port =
+        this.getPort();
+
+      return {
+        configured:
+          true,
+        connected:
+          true,
+        host:
+          process.env.SMTP_HOST,
+        port,
+        secure:
+          this.getSecure(
+            port,
+          ),
+        from:
+          this.getFromAddress(),
+        message:
+          "SMTP connection verified successfully.",
+      };
+    } catch (error) {
+      console.error(
+        "SMTP verification failed:",
+        error,
+      );
+
+      const smtpError =
+        error as SmtpError;
+
+      return {
+        configured:
+          true,
+        connected:
+          false,
+        code:
+          smtpError?.code ??
+          "UNKNOWN",
+        message:
+          this.describeSmtpError(
+            error,
+          ),
+      };
+    }
   }
 
   private async sendEmail(
@@ -121,28 +255,39 @@ export class EmailService {
       };
     }
 
-    const transporter =
-      this.getTransporter();
+    try {
+      const transporter =
+        this.getTransporter();
 
-    await transporter.sendMail({
-      from:
-        this.getFromAddress(),
-      to,
-      replyTo:
-        process.env.SMTP_REPLY_TO ||
-        undefined,
-      subject:
-        template.subject,
-      text:
-        template.text,
-      html:
-        template.html,
-    });
+      await transporter.sendMail({
+        from:
+          this.getFromAddress(),
+        to,
+        replyTo:
+          process.env.SMTP_REPLY_TO ||
+          undefined,
+        subject:
+          template.subject,
+        text:
+          template.text,
+        html:
+          template.html,
+      });
 
-    return {
-      message:
-        "Email sent successfully",
-    };
+      return {
+        message:
+          "Email sent successfully",
+      };
+    } catch (error) {
+      console.error(
+        `Email delivery failed for ${template.subject}:`,
+        error,
+      );
+
+      throw new InternalServerErrorException(
+        "Email delivery failed",
+      );
+    }
   }
 
   async sendPasswordResetEmail(
@@ -224,6 +369,15 @@ export class EmailService {
         name,
         loginUrl,
       ),
+    );
+  }
+
+  async sendSmtpTestEmail(
+    to: string,
+  ) {
+    return this.sendEmail(
+      to,
+      smtpTestEmailTemplate(),
     );
   }
 }
