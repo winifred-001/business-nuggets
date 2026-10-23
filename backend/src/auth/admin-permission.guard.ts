@@ -9,9 +9,9 @@ import {
 import { Reflector } from "@nestjs/core";
 
 import {
-  ADMIN_PERMISSIONS,
   AdminPermission,
   AdminRole,
+  getAdminPermissionMatrix,
 } from "./admin-permissions";
 
 const ADMIN_PERMISSION_KEY =
@@ -33,7 +33,7 @@ export class AdminPermissionGuard
     private readonly reflector: Reflector,
   ) {}
 
-  canActivate(
+  async canActivate(
     context: ExecutionContext,
   ) {
     const requiredPermission =
@@ -81,21 +81,28 @@ export class AdminPermissionGuard
         user.adminRole ?? null;
     }
 
-    if (
-      !adminRole ||
-      !ADMIN_PERMISSIONS[
-        adminRole
-      ]
-    ) {
+    if (!adminRole) {
+      throw new ForbiddenException(
+        "Admin role is not configured",
+      );
+    }
+
+    const permissions =
+      await getAdminPermissionMatrix();
+
+    const rolePermissions =
+      permissions[adminRole];
+
+    if (!rolePermissions) {
       throw new ForbiddenException(
         "Admin role is not configured",
       );
     }
 
     const allowed =
-      ADMIN_PERMISSIONS[
-        adminRole
-      ][requiredPermission];
+      rolePermissions[
+        requiredPermission
+      ];
 
     if (!allowed) {
       throw new ForbiddenException(
