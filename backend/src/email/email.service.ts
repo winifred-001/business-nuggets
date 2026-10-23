@@ -54,6 +54,15 @@ export class EmailService {
         "587",
       );
 
+    if (
+      !Number.isInteger(port) ||
+      port <= 0
+    ) {
+      throw new InternalServerErrorException(
+        "SMTP_PORT must be a valid positive integer",
+      );
+    }
+
     const user =
       process.env.SMTP_USER;
 
@@ -71,8 +80,11 @@ export class EmailService {
     }
 
     const secure =
-      process.env.SMTP_SECURE ===
-      "true";
+      process.env.SMTP_SECURE !==
+      undefined
+        ? process.env.SMTP_SECURE ===
+          "true"
+        : port === 465;
 
     this.transporter =
       nodemailer.createTransport({
@@ -133,6 +145,10 @@ export class EmailService {
         this.getFromAddress(),
 
       to,
+
+      replyTo:
+        process.env.SMTP_REPLY_TO ||
+        undefined,
 
       subject:
         template.subject,
