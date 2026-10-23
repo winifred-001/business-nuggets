@@ -81,6 +81,40 @@ If you did not change your password, contact support immediately.
   };
 }
 
+export function adminLoginCodeEmailTemplate(
+  code: string,
+  expiresInMinutes: number,
+) {
+  return {
+    subject:
+      "Your Business Nuggets admin sign-in code",
+
+    text: `
+Business Nuggets Admin Verification
+
+Your verification code is:
+
+${code}
+
+This code expires in ${expiresInMinutes} minutes and can only be used for this sign-in attempt.
+
+If you did not attempt to sign in to the Business Nuggets Admin Console, you can ignore this email.
+    `.trim(),
+
+    html: `
+      <div style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #171717;">
+        <h2>Business Nuggets Admin Verification</h2>
+        <p>Use this verification code to finish signing in:</p>
+        <div style="font-size: 32px; font-weight: 700; letter-spacing: 8px; margin: 24px 0;">
+          ${code}
+        </div>
+        <p>This code expires in ${expiresInMinutes} minutes and can only be used for this sign-in attempt.</p>
+        <p>If you did not attempt to sign in to the Business Nuggets Admin Console, you can ignore this email.</p>
+      </div>
+    `.trim(),
+  };
+}
+
 export function twoFactorEnabledEmailTemplate() {
   return {
     subject:
@@ -89,7 +123,7 @@ export function twoFactorEnabledEmailTemplate() {
     text: `
 Two-factor authentication has been enabled on your Business Nuggets administrator account.
 
-Your account now requires an authenticator code or recovery code when signing in.
+When admin email verification is required, a one-time sign-in code will be sent to your email address.
 
 If you did not make this change, contact support immediately.
     `.trim(),
@@ -101,8 +135,8 @@ If you did not make this change, contact support immediately.
         on your Business Nuggets administrator account.
       </p>
       <p>
-        Your account now requires an authenticator code
-        or recovery code when signing in.
+        When admin email verification is required,
+        a one-time sign-in code will be sent to your email address.
       </p>
       <p>
         If you did not make this change,
@@ -154,7 +188,7 @@ You have been invited to join the Business Nuggets administration team.
 Sign in here:
 ${loginUrl}
 
-You may be required to set up two-factor authentication during your first login.
+If two-factor authentication is required, a verification code will be sent to your email during sign-in.
     `.trim(),
 
     html: `
@@ -170,8 +204,8 @@ You may be required to set up two-factor authentication during your first login.
         </a>
       </p>
       <p>
-        You may be required to set up two-factor
-        authentication during your first login.
+        If two-factor authentication is required,
+        a verification code will be sent to your email during sign-in.
       </p>
     `.trim(),
   };
