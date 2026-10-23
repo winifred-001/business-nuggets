@@ -9,9 +9,11 @@ import { API_URL } from "@/lib/api";
 import {
   clearAdminSession,
   clearPendingAdminLogin,
+  clearPendingAdminSetup,
   getAdminToken,
   isAdminAccount,
   setPendingAdminLogin,
+  setPendingAdminSetup,
   storeAdminSession,
   type AdminUser,
 } from "@/lib/admin-auth";
@@ -19,81 +21,53 @@ import {
 type LoginResponse = {
   message?: string | string[];
   token?: string;
-  requiresEmailTwoFactor?: boolean;
-  challengeToken?: string;
+  requiresTwoFactorSetup?: boolean;
+  setupToken?: string;
   user?: AdminUser;
 };
 
-function responseMessage(
-  data: LoginResponse,
-  fallback: string,
-) {
-  if (
-    Array.isArray(
-      data.message,
-    )
-  ) {
-    return data.message.join(
-      ", ",
-    );
-  }
+function responseMessage(data: LoginResponse, fallback: string) {
+  if (Array.isArray(data.message)) return data.message.join(", ");
+  return data.message || fallback;
+}
 
-  return data.message ||
-    fallback;
+function requiresTwoFactor(message: string) {
+  return message
+    .toLowerCase()
+    .includes("two-factor authentication code or recovery code required");
 }
 
 export default function AdminLoginPage() {
-  const router =
-    useRouter();
+  const router = useRouter();
 
-  const [email, setEmail] =
-    useState("");
-  const [password, setPassword] =
-    useState("");
-  const [showPassword, setShowPassword] =
-    useState(false);
-  const [keepSignedIn, setKeepSignedIn] =
-    useState(false);
-  const [checkingSession, setCheckingSession] =
-    useState(true);
-  const [loading, setLoading] =
-    useState(false);
-  const [error, setError] =
-    useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [keepSignedIn, setKeepSignedIn] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    let cancelled =
-      false;
+    let cancelled = false;
 
     async function checkExistingAdmin() {
-      const token =
-        getAdminToken();
+      const token = getAdminToken();
 
       if (!token) {
-        if (!cancelled) {
-          setCheckingSession(
-            false,
-          );
-        }
+        if (!cancelled) setCheckingSession(false);
         return;
       }
 
       try {
-        const response =
-          await fetch(
-            `${API_URL}/admin/test`,
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            },
-          );
+        const response = await fetch(`${API_URL}/admin/test`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (response.ok) {
-          router.replace(
-            "/admin/dashboard",
-          );
+          router.replace("/admin/dashboard");
           return;
         }
 
@@ -101,19 +75,14 @@ export default function AdminLoginPage() {
       } catch {
         clearAdminSession();
       } finally {
-        if (!cancelled) {
-          setCheckingSession(
-            false,
-          );
-        }
+        if (!cancelled) setCheckingSession(false);
       }
     }
 
     void checkExistingAdmin();
 
     return () => {
-      cancelled =
-        true;
+      cancelled = true;
     };
   }, [router]);
 
@@ -121,66 +90,37 @@ export default function AdminLoginPage() {
     token: string,
     user: AdminUser,
   ) {
-    if (
-      !isAdminAccount(
-        user,
-      )
-    ) {
-      setError(
-        "This account does not have Admin Console access.",
-      );
+    if (!isAdminAccount(user)) {
+      setError("This account does not have Admin Console access.");
       return false;
     }
 
-    const verifyResponse =
-      await fetch(
-        `${API_URL}/admin/test`,
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
-        },
-      );
+    const verifyResponse = await fetch(`${API_URL}/admin/test`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!verifyResponse.ok) {
-      setError(
-        "Admin access could not be verified.",
-      );
+      setError("Admin access could not be verified.");
       return false;
     }
 
-    storeAdminSession(
-      token,
-      user,
-      keepSignedIn,
-    );
+    storeAdminSession(token, user, keepSignedIn);
     clearPendingAdminLogin();
-
-    router.replace(
-      "/admin/dashboard",
-    );
+    clearPendingAdminSetup();
+    router.replace("/admin/dashboard");
 
     return true;
   }
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const normalizedEmail =
-      email
-        .trim()
-        .toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (
-      !normalizedEmail ||
-      !password
-    ) {
-      setError(
-        "Enter your admin email and password.",
-      );
+    if (!normalizedEmail || !password) {
+      setError("Enter your admin email and password.");
       return;
     }
 
@@ -188,102 +128,69 @@ export default function AdminLoginPage() {
     setError("");
 
     try {
-      const response =
-        await fetch(
-          `${API_URL}/auth/login`,
-          {
-            method:
-              "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body:
-              JSON.stringify({
-                email:
-                  normalizedEmail,
-                password,
-              }),
-          },
-        );
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          password,
+        }),
+      });
 
-      const data:
-        LoginResponse =
-        await response
-          .json()
-          .catch(
-            () => ({}),
-          );
-
-      if (!response.ok) {
-        setError(
-          responseMessage(
-            data,
-            "Invalid email or password.",
-          ),
-        );
-        return;
-      }
+      const data: LoginResponse = await response.json().catch(() => ({}));
 
       if (
-        data.requiresEmailTwoFactor
+        data.requiresTwoFactorSetup &&
+        data.setupToken &&
+        data.user
       ) {
-        if (
-          !data.challengeToken ||
-          !data.user
-        ) {
-          setError(
-            "The server did not return a complete email verification challenge.",
-          );
+        if (!isAdminAccount(data.user)) {
+          setError("This account does not have Admin Console access.");
           return;
         }
 
-        if (
-          !isAdminAccount(
-            data.user,
-          )
-        ) {
-          setError(
-            "This account does not have Admin Console access.",
-          );
-          return;
-        }
-
-        setPendingAdminLogin({
-          email:
-            data.user.email ||
-            normalizedEmail,
-          challengeToken:
-            data.challengeToken,
-          keepSignedIn,
+        clearPendingAdminLogin();
+        setPendingAdminSetup({
+          setupToken: data.setupToken,
+          user: data.user,
         });
 
-        setPassword("");
-
-        router.push(
-          "/admin/verify-2fa",
-        );
+        router.push("/admin/setup-2fa");
         return;
       }
 
-      if (
-        !data.token ||
-        !data.user
-      ) {
-        setError(
-          "The server did not return a complete admin session.",
+      if (!response.ok) {
+        const message = responseMessage(
+          data,
+          "Invalid email or password.",
         );
+
+        if (response.status === 401 && requiresTwoFactor(message)) {
+          clearPendingAdminSetup();
+          setPendingAdminLogin({
+            email: normalizedEmail,
+            password,
+            keepSignedIn,
+          });
+
+          router.push("/admin/verify-2fa");
+          return;
+        }
+
+        setError(message);
         return;
       }
 
-      await verifyAndStoreSession(
-        data.token,
-        data.user,
-      );
+      if (!data.token || !data.user) {
+        setError("The server did not return a complete admin session.");
+        return;
+      }
+
+      await verifyAndStoreSession(data.token, data.user);
     } catch {
-      setError(
-        "Could not connect to the server.",
-      );
+      setError("Could not connect to the server.");
     } finally {
       setLoading(false);
     }
@@ -291,7 +198,7 @@ export default function AdminLoginPage() {
 
   if (checkingSession) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#080808] px-5 text-[14px] text-white/50">
+      <div className="flex min-h-screen items-center justify-center bg-[#080808] text-[11px] text-white/40">
         Checking Admin Console session...
       </div>
     );
@@ -300,19 +207,16 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
       <header className="border-b border-white/[0.07] bg-[#111111]">
-        <div className="flex h-[76px] items-center px-6 lg:px-10">
-          <Link
-            href="/"
-            className="flex items-center gap-3"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded bg-[#C8A35A] font-serif text-[16px] font-bold text-[#080808]">
+        <div className="flex h-[72px] items-center px-6 lg:px-10">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-[#C8A35A] font-serif text-[14px] font-bold text-[#080808]">
               B
             </div>
             <div>
-              <p className="text-[16px] font-semibold text-white">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.05em] text-white">
                 Business Nuggets
               </p>
-              <p className="text-[14px] text-[#C8A35A]">
+              <p className="mt-0.5 text-[8px] text-[#C8A35A]">
                 Admin Console
               </p>
             </div>
@@ -320,29 +224,24 @@ export default function AdminLoginPage() {
         </div>
       </header>
 
-      <main className="flex min-h-[calc(100vh-76px)] items-start justify-center px-5 py-14 sm:py-20">
-        <section className="w-full max-w-[500px] rounded-[12px] border border-white/10 bg-[#111111] p-6 sm:p-9">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md bg-[#C8A35A] text-[#080808]">
-            <ShieldCheck size={22} />
+      <main className="flex min-h-[calc(100vh-72px)] items-start justify-center px-5 py-16 sm:py-20">
+        <section className="w-full max-w-[440px] rounded-[10px] border border-white/10 bg-[#111111] p-6 sm:p-8">
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md bg-[#C8A35A] text-[#080808]">
+            <ShieldCheck size={20} />
           </div>
 
-          <div className="mt-6 text-center">
-            <h1 className="font-serif text-[40px] leading-tight">
-              Admin Sign In
-            </h1>
-            <p className="mt-3 text-[16px] leading-6 text-white/50">
-              Sign in with your administrator account. If email verification is required, we will send a 6-digit code to your email.
+          <div className="mt-5 text-center">
+            <h1 className="font-serif text-[28px] leading-tight">Admin Sign In</h1>
+            <p className="mt-2 text-[11px] text-white/35">
+              Authorised administrators only
             </p>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="mt-8"
-          >
+          <form onSubmit={handleSubmit} className="mt-7">
             <div>
               <label
                 htmlFor="email"
-                className="mb-2 block text-[14px] font-medium text-white/65"
+                className="mb-2 block text-[9px] font-medium text-white/45"
               >
                 Email address
               </label>
@@ -352,107 +251,87 @@ export default function AdminLoginPage() {
                 autoComplete="email"
                 value={email}
                 onChange={(event) => {
-                  setEmail(
-                    event.target.value,
-                  );
+                  setEmail(event.target.value);
                   setError("");
                 }}
                 placeholder="admin@businessnuggets.com"
-                className="h-12 w-full rounded-md border border-white/10 bg-[#0D0D0D] px-4 text-[16px] text-white outline-none placeholder:text-white/25 focus:border-[#C8A35A]/60"
+                className="h-11 w-full rounded-md border border-white/10 bg-[#0D0D0D] px-4 text-[11px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/50"
               />
             </div>
 
-            <div className="mt-5">
+            <div className="mt-4">
               <label
                 htmlFor="password"
-                className="mb-2 block text-[14px] font-medium text-white/65"
+                className="mb-2 block text-[9px] font-medium text-white/45"
               >
                 Password
               </label>
               <div className="relative">
                 <input
                   id="password"
-                  type={
-                    showPassword
-                      ? "text"
-                      : "password"
-                  }
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   value={password}
                   onChange={(event) => {
-                    setPassword(
-                      event.target.value,
-                    );
+                    setPassword(event.target.value);
                     setError("");
                   }}
                   placeholder="Enter your password"
-                  className="h-12 w-full rounded-md border border-white/10 bg-[#0D0D0D] px-4 pr-12 text-[16px] text-white outline-none placeholder:text-white/25 focus:border-[#C8A35A]/60"
+                  className="h-11 w-full rounded-md border border-white/10 bg-[#0D0D0D] px-4 pr-11 text-[11px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/50"
                 />
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowPassword(
-                      (current) =>
-                        !current,
-                    )
-                  }
+                  onClick={() => setShowPassword((current) => !current)}
                   aria-label="Toggle password visibility"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 transition hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/25 transition hover:text-white/60"
                 >
-                  {showPassword
-                    ? <EyeOff size={19} />
-                    : <Eye size={19} />}
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="mt-4 flex items-center justify-between gap-4">
               <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="checkbox"
                   checked={keepSignedIn}
-                  onChange={(event) =>
-                    setKeepSignedIn(
-                      event.target.checked,
-                    )
-                  }
-                  className="h-4 w-4 accent-[#C8A35A]"
+                  onChange={(event) => setKeepSignedIn(event.target.checked)}
+                  className="h-3.5 w-3.5 accent-[#C8A35A]"
                 />
-                <span className="text-[14px] text-white/55">
+                <span className="text-[9px] text-white/35">
                   Keep me signed in
                 </span>
               </label>
 
               <Link
                 href="/forgot-password"
-                className="text-[14px] text-[#C8A35A] transition hover:text-[#E0C48A]"
+                className="text-[9px] text-[#C8A35A] transition hover:text-[#E0C48A]"
               >
                 Forgot password?
               </Link>
             </div>
 
             {error && (
-              <div className="mt-5 rounded-md border border-red-500/20 bg-red-500/[0.05] px-4 py-3">
-                <p className="text-[14px] leading-6 text-red-400">
-                  {error}
-                </p>
+              <div className="mt-4 rounded-md border border-red-500/20 bg-red-500/[0.05] px-4 py-3">
+                <p className="text-[10px] leading-5 text-red-400">{error}</p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="mt-7 flex min-h-12 w-full items-center justify-center rounded-md bg-[#C8A35A] px-4 text-[16px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-6 flex min-h-10 w-full items-center justify-center rounded-md bg-[#C8A35A] px-4 text-[10px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading
-                ? "Signing in..."
-                : "Continue Secure Sign In"}
+              {loading ? "Signing in..." : "Continue Secure Sign In"}
             </button>
           </form>
 
           <div className="mt-8 border-t border-white/[0.07] pt-6 text-center">
-            <p className="text-[14px] leading-6 text-white/40">
-              Need Admin Console access? Contact the Super Admin.
+            <p className="text-[9px] leading-5 text-white/25">
+              If two-factor authentication is required, you will verify it on the next screen.
+            </p>
+            <p className="text-[9px] leading-5 text-white/25">
+              Need access? Contact the Super Admin.
             </p>
           </div>
         </section>
