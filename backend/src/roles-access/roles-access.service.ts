@@ -10,8 +10,12 @@ import * as bcrypt from "bcrypt";
 import { db } from "../prisma/db";
 
 import {
-  ADMIN_PERMISSIONS,
+  AdminPermission,
   AdminRole,
+  getAdminPermissionMatrix,
+  isAdminPermission,
+  isAdminRole,
+  setAdminRolePermission,
 } from "../auth/admin-permissions";
 
 @Injectable()
@@ -22,9 +26,6 @@ export class RolesAccessService {
     "moderator",
     "support",
   ];
-
-  private readonly permissions =
-    ADMIN_PERMISSIONS;
 
   /* =========================================
      ADMIN TEAM
@@ -72,8 +73,82 @@ export class RolesAccessService {
       admins,
 
       permissions:
-        this.permissions,
+        await getAdminPermissionMatrix(),
     };
+  }
+
+  /* =========================================
+     UPDATE ROLE PERMISSION
+  ========================================= */
+
+  async updateRolePermission(
+    data: {
+      role: AdminRole;
+      permission: AdminPermission;
+      enabled: boolean;
+    },
+  ) {
+    if (
+      !isAdminRole(
+        data.role,
+      )
+    ) {
+      throw new BadRequestException(
+        "Invalid admin role",
+      );
+    }
+
+    if (
+      !isAdminPermission(
+        data.permission,
+      )
+    ) {
+      throw new BadRequestException(
+        "Invalid admin permission",
+      );
+    }
+
+    if (
+      typeof data.enabled !==
+      "boolean"
+    ) {
+      throw new BadRequestException(
+        "Permission value must be true or false",
+      );
+    }
+
+    if (
+      data.role ===
+      "super-admin"
+    ) {
+      throw new BadRequestException(
+        "Super Admin permissions cannot be changed",
+      );
+    }
+
+    try {
+      const permissions =
+        await setAdminRolePermission(
+          data.role,
+          data.permission,
+          data.enabled,
+        );
+
+      return {
+        message:
+          "Role permission updated",
+        permissions,
+      };
+    } catch (error) {
+      console.error(
+        "Could not update admin role permission:",
+        error,
+      );
+
+      throw new BadRequestException(
+        "Could not update role permission",
+      );
+    }
   }
 
   /* =========================================
@@ -214,10 +289,6 @@ export class RolesAccessService {
       );
     }
 
-    /*
-     * Owner always remains
-     * Super Admin.
-     */
     if (
       user.role === "owner"
     ) {
