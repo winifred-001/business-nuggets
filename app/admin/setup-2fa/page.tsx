@@ -56,6 +56,7 @@ export default function AdminSetupTwoFactorPage() {
       return;
     }
 
+    const setupToken = setup.setupToken;
     setPending(setup);
 
     async function beginSetup() {
@@ -66,7 +67,7 @@ export default function AdminSetupTwoFactorPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            setupToken: setup.setupToken,
+            setupToken,
           }),
         });
 
