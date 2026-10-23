@@ -17,15 +17,17 @@ If you did not request this password reset, you can ignore this email.
     `.trim(),
 
     html: `
-      <h2>Reset your password</h2>
-      <p>We received a request to reset your Business Nuggets password.</p>
-      <p>
-        <a href="${resetUrl}">
-          Reset Password
-        </a>
-      </p>
-      <p>This link expires in 15 minutes.</p>
-      <p>If you did not request this, you can ignore this email.</p>
+      <div style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #171717;">
+        <h2>Reset your Business Nuggets password</h2>
+        <p>We received a request to reset your password.</p>
+        <p>
+          <a href="${resetUrl}" style="display:inline-block;padding:12px 18px;background:#C8A35A;color:#080808;text-decoration:none;font-weight:700;border-radius:6px;">
+            Reset Password
+          </a>
+        </p>
+        <p>This link expires in 15 minutes.</p>
+        <p>If you did not request this, you can ignore this email.</p>
+      </div>
     `.trim(),
   };
 }
@@ -48,10 +50,12 @@ We're glad to have you with us.
     `.trim(),
 
     html: `
-      <h2>Welcome to Business Nuggets</h2>
-      <p>Hi ${name},</p>
-      <p>Your account has been created successfully.</p>
-      <p>We're glad to have you with us.</p>
+      <div style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #171717;">
+        <h2>Welcome to Business Nuggets</h2>
+        <p>Hi ${name},</p>
+        <p>Your account has been created successfully.</p>
+        <p>We're glad to have you with us.</p>
+      </div>
     `.trim(),
   };
 }
@@ -70,13 +74,12 @@ If you did not change your password, contact support immediately.
     `.trim(),
 
     html: `
-      <h2>Password changed</h2>
-      <p>Your Business Nuggets password was changed successfully.</p>
-      <p>If you made this change, no further action is required.</p>
-      <p>
-        If you did not change your password,
-        contact support immediately.
-      </p>
+      <div style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #171717;">
+        <h2>Password changed</h2>
+        <p>Your Business Nuggets password was changed successfully.</p>
+        <p>If you made this change, no further action is required.</p>
+        <p>If you did not change your password, contact support immediately.</p>
+      </div>
     `.trim(),
   };
 }
@@ -118,30 +121,23 @@ If you did not attempt to sign in to the Business Nuggets Admin Console, you can
 export function twoFactorEnabledEmailTemplate() {
   return {
     subject:
-      "Two-factor authentication enabled",
+      "Admin email verification enabled",
 
     text: `
-Two-factor authentication has been enabled on your Business Nuggets administrator account.
+Email verification has been enabled for your Business Nuggets administrator account.
 
-When admin email verification is required, a one-time sign-in code will be sent to your email address.
+When admin two-factor verification is required, a one-time sign-in code will be sent to your email address.
 
 If you did not make this change, contact support immediately.
     `.trim(),
 
     html: `
-      <h2>Two-factor authentication enabled</h2>
-      <p>
-        Two-factor authentication has been enabled
-        on your Business Nuggets administrator account.
-      </p>
-      <p>
-        When admin email verification is required,
-        a one-time sign-in code will be sent to your email address.
-      </p>
-      <p>
-        If you did not make this change,
-        contact support immediately.
-      </p>
+      <div style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #171717;">
+        <h2>Admin email verification enabled</h2>
+        <p>Email verification has been enabled for your Business Nuggets administrator account.</p>
+        <p>When admin two-factor verification is required, a one-time sign-in code will be sent to your email address.</p>
+        <p>If you did not make this change, contact support immediately.</p>
+      </div>
     `.trim(),
   };
 }
@@ -162,12 +158,11 @@ If this activity was not performed by you, secure your account immediately.
     `.trim(),
 
     html: `
-      <h2>Security alert</h2>
-      <p>${message}</p>
-      <p>
-        If this activity was not performed by you,
-        secure your account immediately.
-      </p>
+      <div style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #171717;">
+        <h2>Security alert</h2>
+        <p>${message}</p>
+        <p>If this activity was not performed by you, secure your account immediately.</p>
+      </div>
     `.trim(),
   };
 }
@@ -176,6 +171,16 @@ export function adminInviteEmailTemplate(
   name: string,
   loginUrl: string,
 ) {
+  const adminLoginUrl =
+    /\/admin\/login\/?$/i.test(
+      loginUrl,
+    )
+      ? loginUrl
+      : loginUrl.replace(
+          /\/login\/?$/i,
+          "/admin/login",
+        );
+
   return {
     subject:
       "You've been invited to Business Nuggets Admin",
@@ -186,27 +191,43 @@ Hi ${name},
 You have been invited to join the Business Nuggets administration team.
 
 Sign in here:
-${loginUrl}
+${adminLoginUrl}
 
-If two-factor authentication is required, a verification code will be sent to your email during sign-in.
+If admin email verification is required, a 6-digit verification code will be sent to your email during sign-in.
     `.trim(),
 
     html: `
-      <h2>Business Nuggets Admin Invitation</h2>
-      <p>Hi ${name},</p>
-      <p>
-        You have been invited to join the
-        Business Nuggets administration team.
-      </p>
-      <p>
-        <a href="${loginUrl}">
-          Sign In
-        </a>
-      </p>
-      <p>
-        If two-factor authentication is required,
-        a verification code will be sent to your email during sign-in.
-      </p>
+      <div style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #171717;">
+        <h2>Business Nuggets Admin Invitation</h2>
+        <p>Hi ${name},</p>
+        <p>You have been invited to join the Business Nuggets administration team.</p>
+        <p>
+          <a href="${adminLoginUrl}" style="display:inline-block;padding:12px 18px;background:#C8A35A;color:#080808;text-decoration:none;font-weight:700;border-radius:6px;">
+            Open Admin Sign In
+          </a>
+        </p>
+        <p>If admin email verification is required, a 6-digit verification code will be sent to your email during sign-in.</p>
+      </div>
+    `.trim(),
+  };
+}
+
+export function smtpTestEmailTemplate() {
+  return {
+    subject:
+      "Business Nuggets email test successful",
+
+    text: `
+Business Nuggets email delivery is working correctly.
+
+This test confirms that the deployed backend can connect to the configured SMTP provider and send email.
+    `.trim(),
+
+    html: `
+      <div style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #171717;">
+        <h2>Email delivery is working</h2>
+        <p>Business Nuggets successfully sent this message through the configured SMTP provider.</p>
+      </div>
     `.trim(),
   };
 }
