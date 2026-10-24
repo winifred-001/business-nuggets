@@ -24,6 +24,10 @@ import {
 } from "./jwt-auth.guard";
 
 import {
+  OptionalJwtAuthGuard,
+} from "./optional-jwt-auth.guard";
+
+import {
   AdminGuard,
 } from "./admin.guard";
 
@@ -68,6 +72,7 @@ import { EmailModule } from "../email/email.module";
   providers: [
     AuthService,
     JwtAuthGuard,
+    OptionalJwtAuthGuard,
     AdminGuard,
     AdminPermissionGuard,
     SessionsService,
@@ -77,6 +82,7 @@ import { EmailModule } from "../email/email.module";
   exports: [
     JwtModule,
     JwtAuthGuard,
+    OptionalJwtAuthGuard,
     AdminGuard,
     AdminPermissionGuard,
     SessionsService,
