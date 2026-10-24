@@ -3,11 +3,16 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import FullAudioPlayer from "@/components/FullAudioPlayer";
+import PremiumNuggetGate from "@/components/PremiumNuggetGate";
 
 import {
   getNuggetBySlugFromApi,
   getPublishedNuggets,
+  PremiumRequiredError,
 } from "@/lib/nuggets-api";
+import {
+  getServerMemberToken,
+} from "@/lib/server-member-token";
 
 import type { Nugget } from "@/types/nugget";
 
@@ -23,19 +28,35 @@ export default async function AudioPlayerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const token =
+    await getServerMemberToken();
 
   let nugget: AudioNugget | null = null;
   let nuggets: AudioNugget[] = [];
 
   try {
     const [current, all] = await Promise.all([
-      getNuggetBySlugFromApi(id),
-      getPublishedNuggets(),
+      getNuggetBySlugFromApi(
+        id,
+        token,
+      ),
+      getPublishedNuggets(
+        token,
+      ),
     ]);
 
     nugget = current as AudioNugget;
     nuggets = all as AudioNugget[];
   } catch (error) {
+    if (
+      error instanceof
+      PremiumRequiredError
+    ) {
+      return (
+        <PremiumNuggetGate />
+      );
+    }
+
     console.error(
       "Could not load audio player:",
       error,
