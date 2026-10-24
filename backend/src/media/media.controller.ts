@@ -160,11 +160,11 @@ export class AdminMediaController {
         : null;
 
     if (
-      body.folderId &&
+      folderId !== null &&
       (!Number.isInteger(
         folderId,
       ) ||
-        Number(folderId) <= 0)
+        folderId <= 0)
     ) {
       throw new BadRequestException(
         "Invalid media folder",
