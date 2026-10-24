@@ -11,41 +11,35 @@ import Footer from "@/components/Footer";
 import FollowChallengeButton from "@/components/FollowChallengeButton";
 
 import { getPublishedNuggets } from "@/lib/nuggets-api";
+import { getServerMemberToken } from "@/lib/server-member-token";
 import { slugify } from "@/lib/nuggets";
 
 import type { Nugget } from "@/types/nugget";
 
 const challengeCopy: Record<
   string,
-  {
-    description: string;
-  }
+  { description: string }
 > = {
   "Starting a Business": {
     description:
       "Build on a strong foundation with biblical wisdom for planning, stewardship, launch and sustainable growth.",
   },
-
   "Money & Cashflow Problems": {
     description:
       "In times of market instability or cash access constraints, Scripture commands strategic prudence, debt management and structural agility. Explore curated biblical blueprints for navigating capital struggles.",
   },
-
   "Managing Difficult People": {
     description:
       "Explore biblical principles for accountability, communication, boundaries, delegation and healthier working relationships.",
   },
-
   "Strategic Decision Making": {
     description:
       "Approach important decisions with biblical wisdom for counsel, risk, preparation, timing and long-term thinking.",
   },
-
   "Scaling & Growth Pressures": {
     description:
       "Discover principles for delegation, structure, stewardship and sustainable expansion without losing operational clarity.",
   },
-
   "Leadership Burnout": {
     description:
       "Explore biblical wisdom for sustainable leadership, rest, delegation, resilience and long-term effectiveness.",
@@ -55,17 +49,15 @@ const challengeCopy: Record<
 export default async function ChallengeDetailPage({
   params,
 }: {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const token = await getServerMemberToken();
 
   let nuggets: Nugget[] = [];
 
   try {
-    nuggets =
-      await getPublishedNuggets();
+    nuggets = await getPublishedNuggets(token);
   } catch (error) {
     console.error(
       "Failed to load challenge Nuggets:",
@@ -73,10 +65,6 @@ export default async function ChallengeDetailPage({
     );
   }
 
-  /*
-   * Build the challenge list directly
-   * from Nuggets returned by the backend.
-   */
   const availableChallenges = [
     ...new Set(
       nuggets.flatMap(
@@ -86,13 +74,6 @@ export default async function ChallengeDetailPage({
     ),
   ];
 
-  /*
-   * Match URL:
-   * /challenges/money-cashflow-problems
-   *
-   * against backend challenge:
-   * Money & Cashflow Problems
-   */
   const challenge =
     availableChallenges.find(
       (item) =>
@@ -103,10 +84,6 @@ export default async function ChallengeDetailPage({
     notFound();
   }
 
-  /*
-   * Every Nugget associated with this
-   * challenge.
-   */
   const challengeNuggets =
     nuggets.filter((nugget) =>
       nugget.challenges?.includes(
@@ -114,26 +91,15 @@ export default async function ChallengeDetailPage({
       ),
     );
 
-  /*
-   * Prefer Gold Nuggets first.
-   */
   const sortedSolutions = [
     ...challengeNuggets,
   ].sort((a, b) => {
-    if (
-      a.isGold &&
-      !b.isGold
-    ) {
+    if (a.isGold && !b.isGold) {
       return -1;
     }
-
-    if (
-      !a.isGold &&
-      b.isGold
-    ) {
+    if (!a.isGold && b.isGold) {
       return 1;
     }
-
     return 0;
   });
 
@@ -142,10 +108,6 @@ export default async function ChallengeDetailPage({
       ?.description ??
     `Explore biblical business wisdom and practical marketplace principles for navigating ${challenge.toLowerCase()}.`;
 
-  /*
-   * Other backend challenges become
-   * Related Marketplace Challenges.
-   */
   const relatedChallenges =
     availableChallenges
       .filter(
@@ -154,7 +116,6 @@ export default async function ChallengeDetailPage({
       )
       .map((item) => ({
         title: item,
-
         count: nuggets.filter(
           (nugget) =>
             nugget.challenges?.includes(
@@ -173,7 +134,6 @@ export default async function ChallengeDetailPage({
       <Navbar />
 
       <main>
-        {/* HEADER */}
         <section className="border-b border-white/[0.06]">
           <div className="mx-auto max-w-[1280px] px-5 py-14 sm:px-8 lg:px-10 lg:py-16">
             <Link
@@ -198,26 +158,18 @@ export default async function ChallengeDetailPage({
                 </p>
 
                 <p className="mt-3 text-[13px] text-white/35">
-                  {
-                    challengeNuggets.length
-                  }{" "}
-                  {challengeNuggets.length ===
-                  1
+                  {challengeNuggets.length}{" "}
+                  {challengeNuggets.length === 1
                     ? "published Nugget"
                     : "published Nuggets"}
                 </p>
               </div>
 
-              <FollowChallengeButton
-                challenge={
-                  challenge
-                }
-              />
+              <FollowChallengeButton challenge={challenge} />
             </div>
           </div>
         </section>
 
-        {/* CURATED BLUEPRINT */}
         <section className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -226,89 +178,62 @@ export default async function ChallengeDetailPage({
               </h2>
 
               <p className="mt-2 text-[14px] leading-6 text-white/45">
-                Biblical strategies selected
-                for this marketplace challenge.
+                Biblical strategies selected for this marketplace challenge.
               </p>
             </div>
           </div>
 
-          {sortedSolutions.length >
-          0 ? (
+          {sortedSolutions.length > 0 ? (
             <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {sortedSolutions.map(
-                (nugget) => (
-                  <Link
-                    key={
-                      nugget.slug
-                    }
-                    href={`/nugget/${nugget.slug}`}
-                    className="group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#C8A35A]/45"
-                  >
-                    {/* IMAGE */}
-                    <div className="relative h-[165px] overflow-hidden">
-                      <Image
-                        src={
-                          nugget.image
-                        }
-                        alt={
-                          nugget.title
-                        }
-                        fill
-                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                        className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                      />
+              {sortedSolutions.map((nugget) => (
+                <Link
+                  key={nugget.slug}
+                  href={`/nugget/${nugget.slug}`}
+                  className="group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#C8A35A]/45"
+                >
+                  <div className="relative h-[165px] overflow-hidden">
+                    <Image
+                      src={nugget.image}
+                      alt={nugget.title}
+                      fill
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                    />
 
-                      {nugget.isGold && (
-                        <span className="absolute right-3 top-3 rounded border border-[#C8A35A]/50 bg-black/70 px-2 py-1 text-[11px] font-semibold text-[#C8A35A]">
-                          GOLD
-                        </span>
-                      )}
-                    </div>
+                    {nugget.isGold && (
+                      <span className="absolute right-3 top-3 rounded border border-[#C8A35A]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E0C48A]">
+                        GOLD
+                      </span>
+                    )}
+                  </div>
 
-                    {/* CONTENT */}
-                    <div className="flex min-h-[190px] flex-col p-5">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
-                          {nugget.tag ||
-                            nugget.topic}
-                        </span>
+                  <div className="flex min-h-[190px] flex-col p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
+                        {nugget.tag || nugget.topic}
+                      </span>
 
-                        <span className="flex items-center gap-1.5 text-[13px] text-white/35">
-                          <Clock3
-                            size={
-                              13
-                            }
-                          />
-
-                          {
-                            nugget.duration
-                          }
-                        </span>
-                      </div>
-
-                      <h3 className="mt-3 font-serif text-[19px] leading-[1.2]">
-                        {
-                          nugget.title
-                        }
-                      </h3>
-
-                      <p className="mt-3 text-[13px] leading-5 text-white/40">
-                        {
-                          nugget.scriptureRef
-                        }
-                      </p>
-
-                      <span className="mt-auto inline-flex items-center gap-2 pt-5 text-[13px] font-medium text-[#C8A35A]">
-                        Listen & Read
-
-                        <ArrowRight
-                          size={13}
-                        />
+                      <span className="flex items-center gap-1.5 text-[13px] text-white/35">
+                        <Clock3 size={13} />
+                        {nugget.duration}
                       </span>
                     </div>
-                  </Link>
-                ),
-              )}
+
+                    <h3 className="mt-3 font-serif text-[19px] leading-[1.2]">
+                      {nugget.title}
+                    </h3>
+
+                    <p className="mt-3 text-[13px] leading-5 text-white/40">
+                      {nugget.scriptureRef}
+                    </p>
+
+                    <span className="mt-auto inline-flex items-center gap-2 pt-5 text-[13px] font-medium text-[#C8A35A]">
+                      Listen & Read
+                      <ArrowRight size={13} />
+                    </span>
+                  </div>
+                </Link>
+              ))}
             </div>
           ) : (
             <div className="mt-7 rounded-xl border border-white/10 bg-[#111111] p-8 text-center">
@@ -317,59 +242,42 @@ export default async function ChallengeDetailPage({
               </h3>
 
               <p className="mt-2 text-[14px] text-white/45">
-                Nuggets associated with this
-                challenge will appear here
-                automatically.
+                Nuggets associated with this challenge will appear here automatically.
               </p>
             </div>
           )}
 
-          {/* RELATED MARKETPLACE CHALLENGES */}
-          {relatedChallenges.length >
-            0 && (
+          {relatedChallenges.length > 0 && (
             <section className="mt-12 border-t border-white/[0.06] pt-10">
               <h2 className="font-serif text-[28px]">
-                Related Marketplace
-                Challenges
+                Related Marketplace Challenges
               </h2>
 
               <p className="mt-2 text-[14px] text-white/45">
-                Explore other business
-                situations covered by the
-                Wisdom Archive.
+                Explore other business situations covered by the Wisdom Archive.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                {relatedChallenges.map(
-                  (item) => (
-                    <Link
-                      key={
-                        item.title
-                      }
-                      href={`/challenges/${slugify(
-                        item.title,
-                      )}`}
-                      className="group inline-flex items-center gap-3 rounded-lg border border-white/10 bg-[#111111] px-4 py-3 transition hover:border-[#C8A35A]/45"
-                    >
-                      <span className="text-[13px] text-white/65 transition group-hover:text-white">
-                        {
-                          item.title
-                        }
-                      </span>
+                {relatedChallenges.map((item) => (
+                  <Link
+                    key={item.title}
+                    href={`/challenges/${slugify(item.title)}`}
+                    className="group inline-flex items-center gap-3 rounded-lg border border-white/10 bg-[#111111] px-4 py-3 transition hover:border-[#C8A35A]/45"
+                  >
+                    <span className="text-[13px] text-white/65 transition group-hover:text-white">
+                      {item.title}
+                    </span>
 
-                      <span className="rounded-full bg-white/[0.06] px-2 py-1 text-[11px] text-white/35">
-                        {
-                          item.count
-                        }
-                      </span>
+                    <span className="rounded-full bg-white/[0.06] px-2 py-1 text-[11px] text-white/35">
+                      {item.count}
+                    </span>
 
-                      <ArrowRight
-                        size={13}
-                        className="text-[#C8A35A]"
-                      />
-                    </Link>
-                  ),
-                )}
+                    <ArrowRight
+                      size={13}
+                      className="text-[#C8A35A]"
+                    />
+                  </Link>
+                ))}
               </div>
             </section>
           )}
