@@ -6,7 +6,6 @@ import {
   Get,
   Param,
   Post,
-  Request,
   Res,
   UploadedFile,
   UseGuards,
@@ -18,22 +17,13 @@ import {
 } from "@nestjs/platform-express";
 
 import {
-  diskStorage,
+  memoryStorage,
 } from "multer";
 
 import {
-  randomUUID,
-} from "crypto";
-
-import {
-  extname,
   join,
   basename,
 } from "path";
-
-import {
-  mkdirSync,
-} from "fs";
 
 import type {
   Response,
@@ -51,41 +41,12 @@ import {
   MediaService,
 } from "./media.service";
 
-const uploadDirectory =
+const legacyUploadDirectory =
   join(
     process.cwd(),
     "uploads",
     "media",
   );
-
-mkdirSync(
-  uploadDirectory,
-  {
-    recursive: true,
-  },
-);
-
-const storage =
-  diskStorage({
-    destination:
-      uploadDirectory,
-
-    filename: (
-      _request,
-      file,
-      callback,
-    ) => {
-      const extension =
-        extname(
-          file.originalname,
-        ).toLowerCase();
-
-      callback(
-        null,
-        `${randomUUID()}${extension}`,
-      );
-    },
-  });
 
 @Controller("admin/media")
 @UseGuards(
@@ -120,7 +81,8 @@ export class AdminMediaController {
     FileInterceptor(
       "file",
       {
-        storage,
+        storage:
+          memoryStorage(),
 
         limits: {
           fileSize:
@@ -173,8 +135,6 @@ export class AdminMediaController {
     @Body()
     body: {
       folderId?: string;
-      width?: string;
-      height?: string;
     },
   ) {
     if (!file) {
@@ -183,40 +143,29 @@ export class AdminMediaController {
       );
     }
 
-    return this.mediaService.createAsset({
-      filename:
-        file.filename,
+    const folderId =
+      body.folderId
+        ? Number(
+            body.folderId,
+          )
+        : null;
 
-      originalName:
-        file.originalname,
+    if (
+      body.folderId &&
+      (!Number.isInteger(
+        folderId,
+      ) ||
+        Number(folderId) <= 0)
+    ) {
+      throw new BadRequestException(
+        "Invalid media folder",
+      );
+    }
 
-      mimeType:
-        file.mimetype,
-
-      size:
-        file.size,
-
-      folderId:
-        body.folderId
-          ? Number(
-              body.folderId,
-            )
-          : null,
-
-      width:
-        body.width
-          ? Number(
-              body.width,
-            )
-          : null,
-
-      height:
-        body.height
-          ? Number(
-              body.height,
-            )
-          : null,
-    });
+    return this.mediaService.uploadAsset(
+      file,
+      folderId,
+    );
   }
 
   @Delete(":id")
@@ -231,7 +180,8 @@ export class AdminMediaController {
 }
 
 /* =========================================
-   PUBLIC MEDIA FILES
+   LEGACY PUBLIC MEDIA FILES
+   New uploads use Cloudinary secure URLs.
 ========================================= */
 
 @Controller("media")
@@ -273,7 +223,7 @@ export class MediaController {
       safeFilename,
       {
         root:
-          uploadDirectory,
+          legacyUploadDirectory,
       },
     );
   }
