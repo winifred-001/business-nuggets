@@ -1,4 +1,6 @@
 import {
+  BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -13,8 +15,118 @@ import {
   UpdateNuggetDto,
 } from "./dto/update-nugget.dto";
 
+const FREE_NUGGET_LIMIT = 10;
+
 @Injectable()
 export class NuggetsService {
+  private async hasPremiumAccess(
+    userId?: number,
+  ) {
+    if (!userId) {
+      return false;
+    }
+
+    const user =
+      await db.orm.public.User
+        .where({
+          id: userId,
+        })
+        .first();
+
+    if (!user) {
+      return false;
+    }
+
+    return (
+      user.membershipTier ===
+        "premium" ||
+      user.role === "owner" ||
+      Boolean(user.adminRole)
+    );
+  }
+
+  private getFreePublishedIds(
+    nuggets: Array<{
+      id: string;
+      number: number;
+      isGold: boolean;
+    }>,
+  ) {
+    return new Set(
+      nuggets
+        .filter(
+          (nugget) =>
+            !nugget.isGold,
+        )
+        .sort(
+          (a, b) =>
+            a.number -
+            b.number,
+        )
+        .slice(
+          0,
+          FREE_NUGGET_LIMIT,
+        )
+        .map(
+          (nugget) =>
+            nugget.id,
+        ),
+    );
+  }
+
+  private async assertFreePublishedSlotAvailable(
+    excludeId?: string,
+  ) {
+    const published =
+      await db.orm.public.Nugget
+        .where({
+          status: "published",
+        })
+        .all();
+
+    const freeCount =
+      published.filter(
+        (nugget) =>
+          !nugget.isGold &&
+          nugget.id !==
+            excludeId,
+      ).length;
+
+    if (
+      freeCount >=
+      FREE_NUGGET_LIMIT
+    ) {
+      throw new BadRequestException(
+        `Free members can access only ${FREE_NUGGET_LIMIT} published Nuggets. Mark another free Nugget as Gold before making this one free.`,
+      );
+    }
+  }
+
+  private toLockedPreview<
+    T extends {
+      isGold: boolean;
+      scriptureText: string;
+      keyPrinciple: string;
+      marketplaceApplication: string;
+      practicalActionPlan: string[];
+      audioUrl?: string | null;
+    },
+  >(
+    nugget: T,
+  ) {
+    return {
+      ...nugget,
+      isGold: true,
+      locked: true,
+      scriptureText: "",
+      keyPrinciple: "",
+      marketplaceApplication:
+        "",
+      practicalActionPlan: [],
+      audioUrl: null,
+    };
+  }
+
   /* =========================================================
      GET PUBLISHED NUGGETS
      SEARCH + FILTER + SORT + PAGINATION
@@ -32,13 +144,45 @@ export class NuggetsService {
       page?: string;
       limit?: string;
     },
+    userId?: number,
   ) {
-    let nuggets =
+    const published =
       await db.orm.public.Nugget
         .where({
           status: "published",
         })
         .all();
+
+    const premium =
+      await this.hasPremiumAccess(
+        userId,
+      );
+
+    const freeIds =
+      this.getFreePublishedIds(
+        published,
+      );
+
+    let nuggets =
+      published.map(
+        (nugget) => {
+          if (
+            premium ||
+            freeIds.has(
+              nugget.id,
+            )
+          ) {
+            return {
+              ...nugget,
+              locked: false,
+            };
+          }
+
+          return this.toLockedPreview(
+            nugget,
+          );
+        },
+      );
 
     /* =========================================================
        SEARCH
@@ -286,6 +430,12 @@ export class NuggetsService {
     return {
       data,
 
+      access: {
+        premium,
+        freeLimit:
+          FREE_NUGGET_LIMIT,
+      },
+
       pagination: {
         page,
         limit,
@@ -308,6 +458,7 @@ export class NuggetsService {
 
   async getNuggetBySlug(
     slug: string,
+    userId?: number,
   ) {
     const nugget =
       await db.orm.public.Nugget
@@ -322,6 +473,40 @@ export class NuggetsService {
       throw new NotFoundException(
         "Nugget not found",
       );
+    }
+
+    const premium =
+      await this.hasPremiumAccess(
+        userId,
+      );
+
+    if (!premium) {
+      const published =
+        await db.orm.public.Nugget
+          .where({
+            status:
+              "published",
+          })
+          .all();
+
+      const freeIds =
+        this.getFreePublishedIds(
+          published,
+        );
+
+      if (
+        !freeIds.has(
+          nugget.id,
+        )
+      ) {
+        throw new ForbiddenException({
+          statusCode: 403,
+          code:
+            "PREMIUM_REQUIRED",
+          message:
+            "This Business Nugget is available to Premium members.",
+        });
+      }
     }
 
     return nugget;
@@ -345,6 +530,18 @@ export class NuggetsService {
     const status =
       dto.status ??
       "draft";
+
+    const isGold =
+      dto.isGold ??
+      false;
+
+    if (
+      status ===
+        "published" &&
+      !isGold
+    ) {
+      await this.assertFreePublishedSlotAvailable();
+    }
 
     return db.orm.public.Nugget.create({
       id:
@@ -386,9 +583,7 @@ export class NuggetsService {
       duration:
         dto.duration,
 
-      isGold:
-        dto.isGold ??
-        false,
+      isGold,
 
       book:
         dto.book,
@@ -437,6 +632,33 @@ export class NuggetsService {
     if (!existing) {
       throw new NotFoundException(
         "Nugget not found",
+      );
+    }
+
+    const finalStatus =
+      dto.status ??
+      existing.status;
+
+    const finalIsGold =
+      dto.isGold ??
+      existing.isGold;
+
+    const wasFreePublished =
+      existing.status ===
+        "published" &&
+      !existing.isGold;
+
+    const willBeFreePublished =
+      finalStatus ===
+        "published" &&
+      !finalIsGold;
+
+    if (
+      willBeFreePublished &&
+      !wasFreePublished
+    ) {
+      await this.assertFreePublishedSlotAvailable(
+        id,
       );
     }
 
