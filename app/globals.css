@@ -49,7 +49,8 @@ body {
 
 h1,
 h2,
-.font-serif {
+.font-serif,
+.bnb-display {
   font-family: var(--font-eb-garamond), "EB Garamond", Georgia, "Times New Roman", serif;
 }
 
@@ -107,9 +108,6 @@ td {
 
 /* =========================================================
    LEGACY CLASS NORMALIZATION
-   Older screens used generic Tailwind black/amber/gray tokens.
-   Map those common legacy choices into the approved BNB system
-   so the whole product remains visually consistent.
 ========================================================= */
 
 [class~="bg-black"] {
@@ -173,9 +171,6 @@ td {
 
 /* =========================================================
    RESPONSIVE PRODUCT TYPOGRAPHY
-   Brand guide mobile scale:
-   H1 34/40, H2 28/34, H3 22/28,
-   body 16/25, small 14/21, caption 12/18.
 ========================================================= */
 
 @media (max-width: 767px) {
@@ -187,6 +182,11 @@ td {
   h1 {
     font-size: 34px !important;
     line-height: 40px !important;
+  }
+
+  .bnb-display {
+    font-size: 42px !important;
+    line-height: 46px !important;
   }
 
   h2 {
@@ -254,6 +254,11 @@ td {
     line-height: 1.15 !important;
   }
 
+  .bnb-display {
+    font-size: 52px !important;
+    line-height: 1.05 !important;
+  }
+
   h2 {
     font-size: min(30px, 4vw) !important;
     line-height: 1.2 !important;
@@ -268,9 +273,6 @@ td {
 
 /* =========================================================
    ADMIN TYPOGRAPHY SYSTEM
-   Desktop/tablet page headers: 40px
-   Section/subheaders: 28px
-   Body/content: 14px-16px
 ========================================================= */
 
 .admin-typography {
