@@ -38,6 +38,11 @@ import {
 } from "../auth/admin.guard";
 
 import {
+  AdminPermissionGuard,
+  RequireAdminPermission,
+} from "../auth/admin-permission.guard";
+
+import {
   MediaService,
 } from "./media.service";
 
@@ -52,6 +57,10 @@ const legacyUploadDirectory =
 @UseGuards(
   JwtAuthGuard,
   AdminGuard,
+  AdminPermissionGuard,
+)
+@RequireAdminPermission(
+  "manageNuggets",
 )
 export class AdminMediaController {
   constructor(
