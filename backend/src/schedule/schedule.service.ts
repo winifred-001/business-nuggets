@@ -13,6 +13,8 @@ import {
 
 import { db } from "../prisma/db";
 
+const FREE_NUGGET_LIMIT = 10;
+
 type CreateScheduleInput = {
   nuggetId: string;
   scheduledFor: string;
@@ -28,6 +30,52 @@ export class ScheduleService
     );
 
   private processing = false;
+
+  private async hasFreePublishedSlot(
+    excludeId?: string,
+  ) {
+    const published =
+      await db.orm.public.Nugget
+        .where({
+          status: "published",
+        })
+        .all();
+
+    const freeCount =
+      published.filter(
+        (nugget) =>
+          !nugget.isGold &&
+          nugget.id !==
+            excludeId,
+      ).length;
+
+    return (
+      freeCount <
+      FREE_NUGGET_LIMIT
+    );
+  }
+
+  private async assertScheduleAccessSlot(
+    nugget: {
+      id: string;
+      isGold: boolean;
+    },
+  ) {
+    if (nugget.isGold) {
+      return;
+    }
+
+    const hasSlot =
+      await this.hasFreePublishedSlot(
+        nugget.id,
+      );
+
+    if (!hasSlot) {
+      throw new ConflictException(
+        `The free tier already has ${FREE_NUGGET_LIMIT} published Nuggets. Mark this Nugget as Gold or make another published Nugget Gold before scheduling it.`,
+      );
+    }
+  }
 
   /* =========================================
      START SCHEDULE CHECKER
@@ -137,6 +185,10 @@ export class ScheduleService
       );
     }
 
+    await this.assertScheduleAccessSlot(
+      nugget,
+    );
+
     const scheduledDate =
       new Date(
         input.scheduledFor,
@@ -233,6 +285,10 @@ export class ScheduleService
       );
     }
 
+    await this.assertScheduleAccessSlot(
+      nugget,
+    );
+
     const scheduledDate =
       new Date(
         input.scheduledFor,
@@ -280,9 +336,7 @@ export class ScheduleService
     }
 
     return db.orm.public.NuggetSchedule
-      .where({
-        id,
-      })
+      .where({ id })
       .update({
         nuggetId:
           input.nuggetId,
@@ -301,9 +355,7 @@ export class ScheduleService
   ) {
     const existing =
       await db.orm.public.NuggetSchedule
-        .where({
-          id,
-        })
+        .where({ id })
         .first();
 
     if (!existing) {
@@ -313,9 +365,7 @@ export class ScheduleService
     }
 
     return db.orm.public.NuggetSchedule
-      .where({
-        id,
-      })
+      .where({ id })
       .delete();
   }
 
@@ -366,9 +416,7 @@ export class ScheduleService
       }
 
       const date =
-        new Date(
-          now,
-        );
+        new Date(now);
 
       date.setDate(
         now.getDate() +
@@ -405,11 +453,29 @@ export class ScheduleService
         continue;
       }
 
+      const nugget =
+        available[
+          nuggetIndex
+        ];
+
+      if (
+        !nugget.isGold
+      ) {
+        const hasSlot =
+          await this.hasFreePublishedSlot(
+            nugget.id,
+          );
+
+        if (!hasSlot) {
+          nuggetIndex += 1;
+          dayOffset -= 1;
+          continue;
+        }
+      }
+
       await db.orm.public.NuggetSchedule.create({
         nuggetId:
-          available[
-            nuggetIndex
-          ].id,
+          nugget.id,
 
         scheduledFor:
           date.toISOString(),
@@ -494,6 +560,22 @@ export class ScheduleService
             nugget.status !==
             "published"
           ) {
+            if (
+              !nugget.isGold
+            ) {
+              const hasSlot =
+                await this.hasFreePublishedSlot(
+                  nugget.id,
+                );
+
+              if (!hasSlot) {
+                this.logger.warn(
+                  `Scheduled Nugget ${nugget.id} was not published because the free tier already has ${FREE_NUGGET_LIMIT} Nuggets. Mark it Gold or free another slot.`,
+                );
+                continue;
+              }
+            }
+
             await db.orm.public.Nugget
               .where({
                 id:
@@ -512,10 +594,6 @@ export class ScheduleService
             );
           }
 
-          /*
-           * Once processed, remove it from
-           * the active schedule queue.
-           */
           await db.orm.public.NuggetSchedule
             .where({
               id:
