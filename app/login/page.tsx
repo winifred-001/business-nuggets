@@ -1,6 +1,7 @@
 "use client";
 
 import { API_URL } from "@/lib/api";
+import { syncMemberTokenCookie } from "@/lib/auth-cookie";
 import { useState } from "react";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
@@ -42,6 +43,7 @@ export default function LoginPage() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      syncMemberTokenCookie(data.token);
       window.dispatchEvent(new Event("auth-change"));
 
       router.push("/home");
