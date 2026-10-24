@@ -60,6 +60,11 @@ select {
   font: inherit;
 }
 
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--bnb-gold);
+}
+
 img,
 video,
 canvas {
@@ -98,6 +103,72 @@ td {
 :focus-visible {
   outline: 2px solid var(--bnb-soft-gold);
   outline-offset: 2px;
+}
+
+/* =========================================================
+   LEGACY CLASS NORMALIZATION
+   Older screens used generic Tailwind black/amber/gray tokens.
+   Map those common legacy choices into the approved BNB system
+   so the whole product remains visually consistent.
+========================================================= */
+
+[class~="bg-black"] {
+  background-color: var(--bnb-obsidian) !important;
+}
+
+[class~="bg-neutral-950"],
+[class~="bg-gray-950"] {
+  background-color: var(--bnb-charcoal) !important;
+}
+
+[class~="bg-gray-900"] {
+  background-color: var(--bnb-obsidian) !important;
+}
+
+[class~="bg-amber-300"] {
+  background-color: var(--bnb-gold) !important;
+}
+
+[class~="hover:bg-amber-400"]:hover,
+[class~="hover:bg-amber-300"]:hover {
+  background-color: var(--bnb-soft-gold) !important;
+}
+
+[class~="text-white"] {
+  color: var(--bnb-ivory) !important;
+}
+
+[class~="text-black"] {
+  color: var(--bnb-obsidian) !important;
+}
+
+[class~="text-amber-300"],
+[class~="text-amber-400"] {
+  color: var(--bnb-gold) !important;
+}
+
+[class~="hover:text-amber-300"]:hover,
+[class~="hover:text-amber-400"]:hover {
+  color: var(--bnb-soft-gold) !important;
+}
+
+[class~="text-gray-300"] {
+  color: color-mix(in srgb, var(--bnb-ivory) 78%, transparent) !important;
+}
+
+[class~="text-gray-400"],
+[class~="text-gray-500"] {
+  color: var(--bnb-slate) !important;
+}
+
+[class~="border-gray-700"],
+[class~="border-gray-800"] {
+  border-color: rgb(250 249 246 / 0.1) !important;
+}
+
+[class~="border-amber-300"],
+[class~="focus:border-amber-500"]:focus {
+  border-color: var(--bnb-gold) !important;
 }
 
 /* =========================================================
@@ -143,6 +214,10 @@ td {
 
   a[class*="rounded"] {
     min-height: 44px;
+  }
+
+  a[aria-label][class*="rounded"] {
+    min-width: 44px;
   }
 
   [class~="text-[6px]"],
