@@ -12,10 +12,16 @@ import {
 } from "lucide-react";
 
 import Navbar from "@/components/navbar";
+import PremiumNuggetGate from "@/components/PremiumNuggetGate";
 import ReaderProgressTracker from "@/components/ReaderProgressTracker";
 
-import { getNuggetBySlug } from "@/lib/nuggets";
-import { getNuggetBySlugFromApi } from "@/lib/nuggets-api";
+import {
+  getNuggetBySlugFromApi,
+  PremiumRequiredError,
+} from "@/lib/nuggets-api";
+import {
+  getServerMemberToken,
+} from "@/lib/server-member-token";
 
 export default async function ReaderViewPage({
   params,
@@ -23,17 +29,28 @@ export default async function ReaderViewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const token =
+    await getServerMemberToken();
 
   let nugget = null;
 
   try {
-    nugget = await getNuggetBySlugFromApi(id);
-  } catch {
-    nugget = null;
-  }
+    nugget =
+      await getNuggetBySlugFromApi(
+        id,
+        token,
+      );
+  } catch (error) {
+    if (
+      error instanceof
+      PremiumRequiredError
+    ) {
+      return (
+        <PremiumNuggetGate />
+      );
+    }
 
-  if (!nugget) {
-    nugget = getNuggetBySlug(id);
+    throw error;
   }
 
   if (!nugget) {
@@ -47,7 +64,6 @@ export default async function ReaderViewPage({
       <Navbar />
 
       <main className="mx-auto w-full max-w-[1180px] px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
-        {/* BREADCRUMB */}
         <nav
           aria-label="Reader breadcrumb"
           className="flex flex-wrap items-center gap-2 text-[13px] text-[#756E64]"
@@ -78,7 +94,6 @@ export default async function ReaderViewPage({
         </nav>
 
         <div className="mt-7 grid gap-10 lg:grid-cols-[minmax(0,1fr)_270px]">
-          {/* ARTICLE */}
           <article className="min-w-0">
             <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#9A7839]">
               Nugget #{nugget.number} · {nugget.topic}
@@ -88,7 +103,6 @@ export default async function ReaderViewPage({
               {nugget.title}
             </h1>
 
-            {/* SCRIPTURE */}
             {nugget.scriptureText && (
               <blockquote className="mt-6 max-w-[800px] border-l-2 border-[#C8A35A] pl-5">
                 <p className="font-serif text-[18px] italic leading-8 text-[#655D53]">
@@ -101,7 +115,6 @@ export default async function ReaderViewPage({
               </blockquote>
             )}
 
-            {/* SCRIPTURE CONTEXT */}
             <section className="mt-9">
               <h2 className="font-serif text-[28px] leading-tight text-[#15120E]">
                 Scripture Context
@@ -113,7 +126,6 @@ export default async function ReaderViewPage({
               </p>
             </section>
 
-            {/* MARKETPLACE APPLICATION */}
             {nugget.marketplaceApplication && (
               <section className="mt-9">
                 <h2 className="font-serif text-[28px] leading-tight text-[#15120E]">
@@ -126,7 +138,6 @@ export default async function ReaderViewPage({
               </section>
             )}
 
-            {/* PRACTICAL ACTION PLAN */}
             {nugget.practicalActionPlan &&
               nugget.practicalActionPlan.length > 0 && (
                 <section className="mt-9">
@@ -161,7 +172,6 @@ export default async function ReaderViewPage({
             </Link>
           </article>
 
-          {/* STUDY NOTES */}
           <aside className="self-start lg:sticky lg:top-24">
             <div className="border border-[#BCA46E] bg-[#F8F3EA] p-5">
               <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#15120E]">
@@ -169,9 +179,7 @@ export default async function ReaderViewPage({
               </h2>
 
               <p className="mt-3 text-[13px] leading-5 text-[#756E64]">
-                Take this in, then act. Write what you must
-                execute each week instead of buying the next
-                prosperity read.
+                Take this in, then act. Write what you must execute each week instead of buying the next prosperity read.
               </p>
 
               <label
@@ -192,10 +200,8 @@ export default async function ReaderViewPage({
         </div>
       </main>
 
-      {/* AUDIO PLAYER */}
       <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#DDD2C0] bg-[#F5F0E8]">
         <div className="mx-auto flex min-h-[82px] max-w-[1180px] items-center gap-5 px-5 sm:px-8 lg:px-10">
-          {/* TRACK */}
           <div className="flex min-w-0 items-center gap-3 sm:w-[270px]">
             <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded">
               <Image
@@ -218,7 +224,6 @@ export default async function ReaderViewPage({
             </div>
           </div>
 
-          {/* PLAYER CENTER */}
           <div className="hidden min-w-0 flex-1 flex-col items-center md:flex">
             <div className="flex items-center gap-4">
               <button
@@ -280,7 +285,6 @@ export default async function ReaderViewPage({
             </div>
           </div>
 
-          {/* MOBILE PLAY */}
           <button
             type="button"
             aria-label="Play"
@@ -292,7 +296,6 @@ export default async function ReaderViewPage({
             />
           </button>
 
-          {/* RIGHT CONTROLS */}
           <div className="hidden items-center justify-end gap-4 sm:w-[150px] md:flex">
             <Volume2
               size={15}
