@@ -17,6 +17,9 @@ import {
 import {
   getPublishedNuggets,
 } from "@/lib/nuggets-api";
+import {
+  getServerMemberToken,
+} from "@/lib/server-member-token";
 
 import type { Nugget } from "@/types/nugget";
 
@@ -26,10 +29,8 @@ const collectionImages: Record<
 > = {
   "starting-your-business-gods-way":
     "/images/collection-main.png",
-
   "capital-stewardship-debt":
     "/images/saved-nugget1.png",
-
   "integrity-as-a-premium-brand":
     "/images/saved-nugget2.png",
 };
@@ -37,17 +38,11 @@ const collectionImages: Record<
 export default async function CollectionDetailPage({
   params,
 }: {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const token = await getServerMemberToken();
 
-  /*
-   * Collection structure is still stored
-   * locally for now because we have not
-   * built a Collections backend model yet.
-   */
   const collection =
     getCollectionBySlug(slug);
 
@@ -55,15 +50,13 @@ export default async function CollectionDetailPage({
     notFound();
   }
 
-  /*
-   * Actual Nugget data comes from the
-   * running backend.
-   */
   let nuggets: Nugget[] = [];
 
   try {
     nuggets =
-      await getPublishedNuggets();
+      await getPublishedNuggets(
+        token,
+      );
   } catch (error) {
     console.error(
       "Failed to load collection Nuggets:",
@@ -71,10 +64,6 @@ export default async function CollectionDetailPage({
     );
   }
 
-  /*
-   * Preserve the exact collection order,
-   * but resolve each unit against API data.
-   */
   const units = collection.nuggetSlugs
     .map((nuggetSlug) =>
       nuggets.find(
@@ -104,7 +93,6 @@ export default async function CollectionDetailPage({
       <Navbar />
 
       <main>
-        {/* COLLECTION HERO */}
         <section className="border-b border-white/[0.06]">
           <div className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10 lg:py-16">
             <Link
@@ -115,7 +103,6 @@ export default async function CollectionDetailPage({
             </Link>
 
             <div className="mt-8 grid gap-8 lg:grid-cols-[270px_minmax(0,1fr)] lg:items-center">
-              {/* IMAGE */}
               <div className="relative min-h-[260px] overflow-hidden rounded-xl border border-white/10 sm:min-h-[300px] lg:min-h-[270px]">
                 <Image
                   src={coverImage}
@@ -129,7 +116,6 @@ export default async function CollectionDetailPage({
                 <div className="absolute inset-0 bg-black/10" />
               </div>
 
-              {/* DETAILS */}
               <div>
                 <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-[#C8A35A]">
                   Curated Learning Pathway
@@ -144,15 +130,12 @@ export default async function CollectionDetailPage({
                 </p>
 
                 <CollectionProgressActions
-                  collectionSlug={
-                    collection.slug
-                  }
+                  collectionSlug={collection.slug}
                   nuggetIds={units.map(
                     (unit) => unit.id,
                   )}
                   firstNuggetSlug={
-                    firstUnit?.slug ??
-                    null
+                    firstUnit?.slug ?? null
                   }
                 />
               </div>
@@ -160,7 +143,6 @@ export default async function CollectionDetailPage({
           </div>
         </section>
 
-        {/* UNITS */}
         <section className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -169,9 +151,7 @@ export default async function CollectionDetailPage({
               </h2>
 
               <p className="mt-2 text-[14px] text-white/45">
-                Follow the pathway in order
-                or open any teaching
-                individually.
+                Follow the pathway in order or open any teaching individually.
               </p>
             </div>
 
@@ -185,79 +165,67 @@ export default async function CollectionDetailPage({
 
           {units.length > 0 ? (
             <div className="mt-7 space-y-3">
-              {units.map(
-                (unit, index) => (
-                  <div
-                    key={unit.slug}
-                    className="grid gap-4 rounded-xl border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/35 sm:grid-cols-[42px_70px_minmax(0,1fr)_90px_auto] sm:items-center"
-                  >
-                    {/* NUMBER */}
-                    <span className="font-serif text-[18px] text-[#C8A35A]">
-                      {String(
-                        index + 1,
-                      ).padStart(
-                        2,
-                        "0",
-                      )}
-                    </span>
+              {units.map((unit, index) => (
+                <div
+                  key={unit.slug}
+                  className="grid gap-4 rounded-xl border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/35 sm:grid-cols-[42px_70px_minmax(0,1fr)_90px_auto] sm:items-center"
+                >
+                  <span className="font-serif text-[18px] text-[#C8A35A]">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
 
-                    {/* IMAGE */}
-                    <div className="relative h-[64px] w-[70px] overflow-hidden rounded-md">
-                      <Image
-                        src={unit.image}
-                        alt={unit.title}
-                        fill
-                        sizes="70px"
-                        className="object-cover"
-                      />
-                    </div>
+                  <div className="relative h-[64px] w-[70px] overflow-hidden rounded-md">
+                    <Image
+                      src={unit.image}
+                      alt={unit.title}
+                      fill
+                      sizes="70px"
+                      className="object-cover"
+                    />
 
-                    {/* TITLE */}
-                    <div className="min-w-0">
-                      <Link
-                        href={`/nugget/${unit.slug}`}
-                        className="font-serif text-[17px] leading-5 text-[#FAF9F6] transition hover:text-[#E0C48A]"
-                      >
-                        {unit.title}
-                      </Link>
-
-                      <p className="mt-1 text-[13px] text-white/40">
-                        {
-                          unit.scriptureRef
-                        }
-                      </p>
-                    </div>
-
-                    {/* DURATION */}
-                    <span className="text-[13px] text-white/35">
-                      {unit.duration}
-                    </span>
-
-                    {/* ACTIONS */}
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/nugget/${unit.slug}`}
-                        aria-label={`Open ${unit.title}`}
-                        className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-white/50 transition hover:border-[#C8A35A]/50 hover:text-[#C8A35A]"
-                      >
-                        <BookOpen
-                          size={15}
-                        />
-                      </Link>
-
-                      <Link
-                        href={`/nugget/${unit.slug}/reader`}
-                        aria-label={`Read ${unit.title}`}
-                        className="flex h-9 w-9 items-center justify-center rounded-md border border-[#C8A35A]/35 text-[#C8A35A] transition hover:bg-[#C8A35A] hover:text-[#080808]"
-                      >
-                        <Headphones
-                          size={15}
-                        />
-                      </Link>
-                    </div>
+                    {unit.isGold && (
+                      <span className="absolute right-1 top-1 rounded border border-[#C8A35A]/50 bg-[#080808]/90 px-1.5 py-0.5 text-[9px] font-bold text-[#E0C48A]">
+                        GOLD
+                      </span>
+                    )}
                   </div>
-                ),
-              )}
+
+                  <div className="min-w-0">
+                    <Link
+                      href={`/nugget/${unit.slug}`}
+                      className="font-serif text-[17px] leading-5 text-[#FAF9F6] transition hover:text-[#E0C48A]"
+                    >
+                      {unit.title}
+                    </Link>
+
+                    <p className="mt-1 text-[13px] text-white/40">
+                      {unit.scriptureRef}
+                    </p>
+                  </div>
+
+                  <span className="text-[13px] text-white/35">
+                    {unit.duration}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/nugget/${unit.slug}`}
+                      aria-label={`Open ${unit.title}`}
+                      className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-white/50 transition hover:border-[#C8A35A]/50 hover:text-[#C8A35A]"
+                    >
+                      <BookOpen size={15} />
+                    </Link>
+
+                    <Link
+                      href={`/nugget/${unit.slug}/reader`}
+                      aria-label={`Read ${unit.title}`}
+                      className="flex h-9 w-9 items-center justify-center rounded-md border border-[#C8A35A]/35 text-[#C8A35A] transition hover:bg-[#C8A35A] hover:text-[#080808]"
+                    >
+                      <Headphones size={15} />
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="mt-7 rounded-xl border border-white/10 bg-[#111111] p-8 text-center">
@@ -266,9 +234,7 @@ export default async function CollectionDetailPage({
               </h3>
 
               <p className="mt-2 text-[14px] text-white/45">
-                Some Nuggets in this
-                collection may not be
-                published in the backend yet.
+                Some Nuggets in this collection may not be published in the backend yet.
               </p>
             </div>
           )}
