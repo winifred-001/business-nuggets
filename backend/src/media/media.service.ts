@@ -69,8 +69,8 @@ export class MediaService {
         1024 *
         1024;
 
-    return {
-      assets: [...assets].sort(
+    const sortedAssets =
+      [...assets].sort(
         (
           a,
           b,
@@ -81,7 +81,20 @@ export class MediaService {
           new Date(
             a.createdAt,
           ).getTime(),
-      ),
+      );
+
+    return {
+      assets:
+        sortedAssets.map(
+          (asset) => ({
+            ...asset,
+            url:
+              this.isCloudinaryAsset(
+                asset.url,
+              )
+                ? `/media/cloudinary/${asset.id}`
+                : asset.url,
+          }),
 
       folders: [...folders].sort(
         (
@@ -217,9 +230,9 @@ export class MediaService {
     id: number,
   ) {
     const asset =
-      await db.orm.public.MediaAsset
-        .where({ id })
-        .first();
+      await this.findById(
+        id,
+      );
 
     if (!asset) {
       throw new NotFoundException(
@@ -264,8 +277,16 @@ export class MediaService {
   }
 
   /* =========================================
-     FIND LEGACY PUBLIC FILE
+     FIND ASSETS
   ========================================= */
+
+  async findById(
+    id: number,
+  ) {
+    return db.orm.public.MediaAsset
+      .where({ id })
+      .first();
+  }
 
   async findByFilename(
     filename: string,
@@ -277,7 +298,7 @@ export class MediaService {
       .first();
   }
 
-  private isCloudinaryAsset(
+  isCloudinaryAsset(
     url: string,
   ) {
     return /^https:\/\/res\.cloudinary\.com\//i.test(
