@@ -15,29 +15,28 @@ export default async function SearchPage({
   const query = (rawQuery ?? "").trim();
 
   const apiNuggets = await getPublishedNuggets();
+  const results = filterNuggets({ query }, apiNuggets);
 
-const results = filterNuggets(
-  { query },
-  apiNuggets,
-);
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
+    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
       <Navbar />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="font-serif text-3xl">
-          Search the wisdom library
-        </h1>
+      <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-6 sm:py-12 md:px-8 lg:px-10 lg:py-14">
+        <section className="max-w-3xl">
+          <h1 className="font-serif text-[40px] leading-tight text-[#FAF9F6]">
+            Search the Wisdom Library
+          </h1>
 
-        <p className="mt-3 text-sm text-gray-400">
-          Search by title, scripture, topic, or business challenge.
-        </p>
+          <p className="mt-3 text-[16px] leading-7 text-white/50">
+            Search by title, scripture, topic, or business challenge.
+          </p>
+        </section>
 
         <form
           key={query}
           action="/search"
           method="get"
-          className="mt-6 flex flex-col gap-3 sm:flex-row"
+          className="mt-7 flex max-w-4xl flex-col gap-3 sm:flex-row"
         >
           <label htmlFor="nugget-search" className="sr-only">
             Search nuggets
@@ -49,32 +48,30 @@ const results = filterNuggets(
             type="search"
             defaultValue={query}
             placeholder="Try Joseph, Genesis, or negotiation"
-            className="min-w-0 flex-1 rounded-lg border border-gray-700 bg-neutral-950 px-4 py-3 text-white focus:border-amber-300 focus:outline-none"
+            className="min-h-12 min-w-0 flex-1 rounded-xl border border-white/10 bg-[#111111] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
           />
 
           <button
             type="submit"
-            className="rounded-lg bg-amber-300 px-5 py-3 font-medium text-black hover:bg-amber-400"
+            className="min-h-12 rounded-xl bg-[#C8A35A] px-6 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] sm:min-w-[120px]"
           >
             Search
           </button>
         </form>
 
-        <div className="my-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="my-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p
             role="status"
-            className="break-words text-sm text-gray-400"
+            className="break-words text-[14px] leading-6 text-[#8A8781]"
           >
             {results.length} nugget{results.length === 1 ? "" : "s"}{" "}
-            {query
-              ? `matching “${query}”`
-              : "in the sample library"}
+            {query ? `matching “${query}”` : "in the wisdom library"}
           </p>
 
           {query && (
             <Link
               href="/search"
-              className="text-sm text-amber-300 hover:underline"
+              className="inline-flex min-h-11 items-center text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
             >
               Clear search
             </Link>
@@ -82,24 +79,24 @@ const results = filterNuggets(
         </div>
 
         {results.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {results.map((nugget) => (
               <NuggetCard key={nugget.slug} nugget={nugget} />
             ))}
           </div>
         ) : (
-          <section className="rounded-xl border border-gray-800 p-6 text-center sm:p-10">
-            <h2 className="font-serif text-2xl">
+          <section className="rounded-xl border border-white/10 bg-[#111111] px-5 py-10 text-center sm:px-8 sm:py-12">
+            <h2 className="font-serif text-[28px] text-[#FAF9F6]">
               No nuggets found
             </h2>
 
-            <p className="mt-3 text-sm text-gray-400">
+            <p className="mx-auto mt-3 max-w-lg text-[16px] leading-7 text-white/50">
               Try a different word, a Bible book, or a topic.
             </p>
 
             <Link
               href="/search"
-              className="mt-5 inline-block rounded bg-amber-300 px-5 py-3 font-medium text-black"
+              className="mt-6 inline-flex min-h-11 items-center justify-center rounded-lg bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
             >
               Clear search
             </Link>
