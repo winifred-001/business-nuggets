@@ -31,7 +31,7 @@ type LockedNuggetPreview<T> = Omit<
   scriptureText: string;
   keyPrinciple: string;
   marketplaceApplication: string;
-  practicalActionPlan: string[];
+  practicalActionPlan: readonly string[];
   audioUrl: null;
 };
 
@@ -130,7 +130,7 @@ export class NuggetsService {
       scriptureText: string;
       keyPrinciple: string;
       marketplaceApplication: string;
-      practicalActionPlan: string[];
+      practicalActionPlan: readonly string[];
       book: string;
       bibleSection: string;
       isGold: boolean;
