@@ -122,11 +122,19 @@ export class NuggetsService {
 
   private toLockedPreview<
     T extends {
-      isGold: boolean;
+      number: number;
+      title: string;
+      topic: string;
+      tag: string;
+      scriptureRef: string;
       scriptureText: string;
       keyPrinciple: string;
       marketplaceApplication: string;
       practicalActionPlan: string[];
+      book: string;
+      bibleSection: string;
+      isGold: boolean;
+      featured: boolean;
       audioUrl?: string | null;
     },
   >(
