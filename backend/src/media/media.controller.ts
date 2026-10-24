@@ -207,6 +207,11 @@ export class MediaController {
     @Res()
     response: Response,
   ) {
+    response.setHeader(
+      "Cross-Origin-Resource-Policy",
+      "cross-origin",
+    );
+
     const asset =
       await this.mediaService.findById(
         Number(id),
@@ -245,6 +250,11 @@ export class MediaController {
     @Res()
     response: Response,
   ) {
+    response.setHeader(
+      "Cross-Origin-Resource-Policy",
+      "cross-origin",
+    );
+
     const safeFilename =
       basename(
         filename,
