@@ -20,9 +20,11 @@ export type Nugget = {
   practicalActionPlan: string[];
   duration: string;
   isGold: boolean;
+  locked?: boolean;
   book: string;
   bibleSection: BibleSection;
   challenges: string[];
+  audioUrl?: string | null;
   publishedAt: string;
 };
 
