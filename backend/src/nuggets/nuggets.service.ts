@@ -17,6 +17,24 @@ import {
 
 const FREE_NUGGET_LIMIT = 10;
 
+type LockedNuggetPreview<T> = Omit<
+  T,
+  | "isGold"
+  | "scriptureText"
+  | "keyPrinciple"
+  | "marketplaceApplication"
+  | "practicalActionPlan"
+  | "audioUrl"
+> & {
+  isGold: true;
+  locked: true;
+  scriptureText: string;
+  keyPrinciple: string;
+  marketplaceApplication: string;
+  practicalActionPlan: string[];
+  audioUrl: null;
+};
+
 @Injectable()
 export class NuggetsService {
   private async hasPremiumAccess(
@@ -113,7 +131,7 @@ export class NuggetsService {
     },
   >(
     nugget: T,
-  ) {
+  ): LockedNuggetPreview<T> {
     return {
       ...nugget,
       isGold: true,
