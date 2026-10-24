@@ -180,8 +180,7 @@ export class AdminMediaController {
 }
 
 /* =========================================
-   LEGACY PUBLIC MEDIA FILES
-   New uploads use Cloudinary secure URLs.
+   PUBLIC MEDIA DELIVERY
 ========================================= */
 
 @Controller("media")
@@ -191,6 +190,44 @@ export class MediaController {
       MediaService,
   ) {}
 
+  @Get("cloudinary/:id")
+  async getCloudinaryAsset(
+    @Param("id")
+    id: string,
+
+    @Res()
+    response: Response,
+  ) {
+    const asset =
+      await this.mediaService.findById(
+        Number(id),
+      );
+
+    if (
+      !asset ||
+      !this.mediaService.isCloudinaryAsset(
+        asset.url,
+      )
+    ) {
+      response
+        .status(404)
+        .send(
+          "File not found",
+        );
+
+      return;
+    }
+
+    response.redirect(
+      302,
+      asset.url,
+    );
+  }
+
+  /*
+   * Backward-compatible local delivery for media records
+   * created before Cloudinary storage was enabled.
+   */
   @Get(":filename")
   async getFile(
     @Param("filename")
