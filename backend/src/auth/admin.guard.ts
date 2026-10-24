@@ -5,11 +5,13 @@ import {
   Injectable,
 } from "@nestjs/common";
 
+import { db } from "../prisma/db";
+
 @Injectable()
 export class AdminGuard
   implements CanActivate
 {
-  canActivate(
+  async canActivate(
     context:
       ExecutionContext,
   ) {
@@ -18,12 +20,39 @@ export class AdminGuard
         .switchToHttp()
         .getRequest();
 
-    const user =
+    const tokenUser =
       request.user;
 
-    if (!user) {
+    if (!tokenUser) {
       throw new ForbiddenException(
         "User not authenticated",
+      );
+    }
+
+    const userId = Number(
+      tokenUser.sub ??
+        tokenUser.id,
+    );
+
+    if (
+      !Number.isInteger(userId) ||
+      userId <= 0
+    ) {
+      throw new ForbiddenException(
+        "Invalid admin session",
+      );
+    }
+
+    const currentUser =
+      await db.orm.public.User
+        .where({
+          id: userId,
+        })
+        .first();
+
+    if (!currentUser) {
+      throw new ForbiddenException(
+        "Admin account no longer exists",
       );
     }
 
@@ -34,7 +63,7 @@ export class AdminGuard
 
     if (
       !allowedRoles.includes(
-        user.role,
+        currentUser.role,
       )
     ) {
       throw new ForbiddenException(
@@ -43,13 +72,28 @@ export class AdminGuard
     }
 
     if (
-      user.accountStatus ===
+      currentUser.accountStatus ===
       "suspended"
     ) {
       throw new ForbiddenException(
         "Admin account is suspended",
       );
     }
+
+    request.user = {
+      ...tokenUser,
+      id: currentUser.id,
+      sub: currentUser.id,
+      email: currentUser.email,
+      role: currentUser.role,
+      adminRole:
+        currentUser.role ===
+        "owner"
+          ? "super-admin"
+          : currentUser.adminRole,
+      accountStatus:
+        currentUser.accountStatus,
+    };
 
     return true;
   }
