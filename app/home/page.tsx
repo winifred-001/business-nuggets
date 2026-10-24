@@ -5,12 +5,13 @@ import Footer from "@/components/Footer";
 import NuggetCard from "@/components/NuggetCard";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 import { getServerMemberToken } from "@/lib/server-member-token";
+import type { Nugget } from "@/types/nugget";
 
 export default async function HomePage() {
   const token =
     await getServerMemberToken();
 
-  let items = [];
+  let items: Nugget[] = [];
 
   try {
     items = (
