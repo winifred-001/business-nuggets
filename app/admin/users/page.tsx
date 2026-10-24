@@ -112,14 +112,6 @@ export default function AdminUsersPage() {
       | "suspended"
     >("active");
 
-  const [
-    editRole,
-    setEditRole,
-  ] =
-    useState<
-      "user" | "admin"
-    >("user");
-
   /* =========================================
      CREATE FORM
   ========================================= */
@@ -315,13 +307,6 @@ export default function AdminUsersPage() {
         "active",
     );
 
-    setEditRole(
-      user.role ===
-        "admin"
-        ? "admin"
-        : "user",
-    );
-
     setMenuUserId(
       null,
     );
@@ -383,9 +368,6 @@ export default function AdminUsersPage() {
 
                 accountStatus:
                   editStatus,
-
-                role:
-                  editRole,
               }),
           },
         );
@@ -1002,31 +984,9 @@ export default function AdminUsersPage() {
                   ]}
                 />
 
-                <SelectField
-                  label="Role"
-                  value={
-                    editRole
-                  }
-                  onChange={(
-                    value,
-                  ) =>
-                    setEditRole(
-                      value as
-                        | "user"
-                        | "admin",
-                    )
-                  }
-                  options={[
-                    [
-                      "user",
-                      "User",
-                    ],
-                    [
-                      "admin",
-                      "Admin",
-                    ],
-                  ]}
-                />
+                <div className="rounded-md border border-[#C8A35A]/20 bg-[#C8A35A]/[0.05] px-4 py-3 text-[10px] leading-5 text-white/40">
+                  Admin access and role changes are managed securely from Roles &amp; Access.
+                </div>
               </div>
 
               <div className="mt-6 flex justify-end gap-3">
