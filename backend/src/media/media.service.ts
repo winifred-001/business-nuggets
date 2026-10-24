@@ -13,7 +13,15 @@ import {
   join,
 } from "path";
 
+import {
+  randomUUID,
+} from "crypto";
+
 import { db } from "../prisma/db";
+
+import {
+  CloudinaryStorageService,
+} from "./cloudinary-storage.service";
 
 @Injectable()
 export class MediaService {
@@ -23,6 +31,11 @@ export class MediaService {
       "uploads",
       "media",
     );
+
+  constructor(
+    private readonly cloudinaryStorage:
+      CloudinaryStorageService,
+  ) {}
 
   /* =========================================
      LIBRARY
@@ -83,6 +96,7 @@ export class MediaService {
       storage: {
         usedBytes,
         limitBytes,
+        ...this.cloudinaryStorage.getPublicStatus(),
       },
     };
   }
@@ -122,31 +136,18 @@ export class MediaService {
   }
 
   /* =========================================
-     CREATE FILE RECORD
+     UPLOAD TO CLOUDINARY + CREATE RECORD
   ========================================= */
 
-  async createAsset(
-    data: {
-      filename: string;
-
-      originalName: string;
-
-      mimeType: string;
-
-      size: number;
-
-      width?: number | null;
-
-      height?: number | null;
-
-      folderId?: number | null;
-    },
+  async uploadAsset(
+    file: Express.Multer.File,
+    folderId?: number | null,
   ) {
-    if (data.folderId) {
+    if (folderId) {
       const folder =
         await db.orm.public.MediaFolder
           .where({
-            id: data.folderId,
+            id: folderId,
           })
           .first();
 
@@ -157,34 +158,55 @@ export class MediaService {
       }
     }
 
-    return db.orm.public.MediaAsset.create({
-      filename:
-        data.filename,
+    const publicId =
+      `business-nuggets/media/${randomUUID()}`;
 
-      originalName:
-        data.originalName,
+    const uploaded =
+      await this.cloudinaryStorage.uploadImage(
+        file,
+        publicId,
+      );
 
-      mimeType:
-        data.mimeType,
+    try {
+      return await db.orm.public.MediaAsset.create({
+        filename:
+          uploaded.publicId,
 
-      size:
-        data.size,
+        originalName:
+          file.originalname,
 
-      width:
-        data.width ??
-        null,
+        mimeType:
+          file.mimetype,
 
-      height:
-        data.height ??
-        null,
+        size:
+          uploaded.bytes,
 
-      folderId:
-        data.folderId ??
-        null,
+        width:
+          uploaded.width,
 
-      url:
-        `/media/${data.filename}`,
-    });
+        height:
+          uploaded.height,
+
+        folderId:
+          folderId ?? null,
+
+        url:
+          uploaded.secureUrl,
+      });
+    } catch (error) {
+      try {
+        await this.cloudinaryStorage.deleteImage(
+          uploaded.publicId,
+        );
+      } catch (cleanupError) {
+        console.error(
+          "Could not clean up Cloudinary asset after database failure:",
+          cleanupError,
+        );
+      }
+
+      throw error;
+    }
   }
 
   /* =========================================
@@ -205,20 +227,30 @@ export class MediaService {
       );
     }
 
-    const filePath =
-      join(
-        this.uploadDirectory,
-        asset.filename,
-      );
-
     if (
-      existsSync(
-        filePath,
+      this.isCloudinaryAsset(
+        asset.url,
       )
     ) {
-      unlinkSync(
-        filePath,
+      await this.cloudinaryStorage.deleteImage(
+        asset.filename,
       );
+    } else {
+      const filePath =
+        join(
+          this.uploadDirectory,
+          asset.filename,
+        );
+
+      if (
+        existsSync(
+          filePath,
+        )
+      ) {
+        unlinkSync(
+          filePath,
+        );
+      }
     }
 
     await db.orm.public.MediaAsset
@@ -232,7 +264,7 @@ export class MediaService {
   }
 
   /* =========================================
-     FIND PUBLIC FILE
+     FIND LEGACY PUBLIC FILE
   ========================================= */
 
   async findByFilename(
@@ -243,5 +275,13 @@ export class MediaService {
         filename,
       })
       .first();
+  }
+
+  private isCloudinaryAsset(
+    url: string,
+  ) {
+    return /^https:\/\/res\.cloudinary\.com\//i.test(
+      url,
+    );
   }
 }
