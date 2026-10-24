@@ -19,10 +19,7 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const params = new URLSearchParams(
-      window.location.search,
-    );
-
+    const params = new URLSearchParams(window.location.search);
     setToken(params.get("token") || "");
     setTokenReady(true);
   }, []);
@@ -40,9 +37,7 @@ export default function ResetPasswordPage() {
     }
 
     if (newPassword.length < 8) {
-      setError(
-        "Your new password must be at least 8 characters.",
-      );
+      setError("Your new password must be at least 8 characters.");
       return;
     }
 
@@ -55,23 +50,18 @@ export default function ResetPasswordPage() {
     setError("");
 
     try {
-      const response = await fetch(
-        `${API_URL}/auth/reset-password`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            token,
-            newPassword,
-          }),
+      const response = await fetch(`${API_URL}/auth/reset-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          token,
+          newPassword,
+        }),
+      });
 
-      const data = await response
-        .json()
-        .catch(() => ({}));
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         setError(
@@ -81,13 +71,9 @@ export default function ResetPasswordPage() {
         return;
       }
 
-      router.replace(
-        "/password-reset-success",
-      );
+      router.replace("/password-reset-success");
     } catch {
-      setError(
-        "Could not connect to the server. Please try again.",
-      );
+      setError("Could not connect to the server. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -97,13 +83,13 @@ export default function ResetPasswordPage() {
     <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
       <Navbar />
 
-      <main className="flex flex-1 items-start justify-center px-5 py-16 sm:py-20">
-        <section className="w-full max-w-[430px] rounded-[10px] border border-white/10 bg-[#111111] p-6 sm:p-8">
-          <h1 className="font-serif text-[28px] leading-tight">
+      <main className="flex flex-1 items-center justify-center px-5 py-10 sm:px-6 sm:py-14 md:px-8 lg:px-10 lg:py-16">
+        <section className="w-full max-w-[520px] rounded-2xl border border-white/10 bg-[#111111] p-5 sm:p-8 md:p-10">
+          <h1 className="font-serif text-[40px] leading-tight">
             Reset Password
           </h1>
 
-          <p className="mt-4 text-[11px] leading-5 text-white/40">
+          <p className="mt-4 text-[16px] leading-7 text-white/50">
             Choose a new password for your Business Nuggets account.
           </p>
 
@@ -111,69 +97,70 @@ export default function ResetPasswordPage() {
             <div className="mt-6">
               <p
                 role="alert"
-                className="text-[11px] leading-5 text-red-300"
+                className="rounded-lg border border-[#B54A4A]/30 bg-[#B54A4A]/10 px-4 py-3 text-[14px] leading-6 text-[#D98383]"
               >
                 This reset link is missing its token or is no longer valid.
               </p>
 
               <Link
                 href="/forgot-password"
-                className="mt-5 flex min-h-10 w-full items-center justify-center rounded-md bg-[#C8A35A] px-4 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                className="mt-5 flex min-h-12 w-full items-center justify-center rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
               >
                 Request a New Link
               </Link>
             </div>
           ) : (
-            <form
-              onSubmit={handleSubmit}
-              className="mt-6"
-            >
-              <label
-                htmlFor="new-password"
-                className="mb-2 block text-[11px] font-medium text-white/70"
-              >
-                New Password
-              </label>
+            <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+              <div>
+                <label
+                  htmlFor="new-password"
+                  className="mb-2 block text-[14px] font-medium text-white/70"
+                >
+                  New password
+                </label>
 
-              <input
-                id="new-password"
-                type="password"
-                autoComplete="new-password"
-                value={newPassword}
-                onChange={(event) => {
-                  setNewPassword(event.target.value);
-                  setError("");
-                }}
-                minLength={8}
-                required
-                className="w-full rounded-md border border-[#292929] bg-[#1B1B1F] px-3 py-2.5 text-xs text-white outline-none focus:border-[#C8A35A]"
-              />
+                <input
+                  id="new-password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(event) => {
+                    setNewPassword(event.target.value);
+                    setError("");
+                  }}
+                  minLength={8}
+                  required
+                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none focus:border-[#C8A35A]"
+                />
+              </div>
 
-              <label
-                htmlFor="confirm-password"
-                className="mb-2 mt-4 block text-[11px] font-medium text-white/70"
-              >
-                Confirm New Password
-              </label>
+              <div>
+                <label
+                  htmlFor="confirm-password"
+                  className="mb-2 block text-[14px] font-medium text-white/70"
+                >
+                  Confirm new password
+                </label>
 
-              <input
-                id="confirm-password"
-                type="password"
-                autoComplete="new-password"
-                value={confirmPassword}
-                onChange={(event) => {
-                  setConfirmPassword(event.target.value);
-                  setError("");
-                }}
-                minLength={8}
-                required
-                className="w-full rounded-md border border-[#292929] bg-[#1B1B1F] px-3 py-2.5 text-xs text-white outline-none focus:border-[#C8A35A]"
-              />
+                <input
+                  id="confirm-password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value);
+                    setError("");
+                  }}
+                  minLength={8}
+                  required
+                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none focus:border-[#C8A35A]"
+                />
+              </div>
 
               {error && (
                 <p
                   role="alert"
-                  className="mt-4 text-[11px] leading-5 text-red-300"
+                  className="rounded-lg border border-[#B54A4A]/30 bg-[#B54A4A]/10 px-4 py-3 text-[14px] leading-6 text-[#D98383]"
                 >
                   {error}
                 </p>
@@ -182,18 +169,16 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={loading || !tokenReady}
-                className="mt-5 flex min-h-10 w-full items-center justify-center rounded-md bg-[#C8A35A] px-4 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-12 w-full rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loading
-                  ? "Resetting..."
-                  : "Reset Password"}
+                {loading ? "Resetting..." : "Reset Password"}
               </button>
             </form>
           )}
 
           <Link
             href="/login"
-            className="mt-4 flex min-h-10 w-full items-center justify-center rounded-md border border-white/10 bg-[#080808] text-[11px] text-white/60 transition hover:text-white"
+            className="mt-4 flex min-h-12 w-full items-center justify-center rounded-lg border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/65 transition hover:border-[#C8A35A]/35 hover:text-[#E0C48A]"
           >
             Back to Sign In
           </Link>
