@@ -11,6 +11,10 @@ import {
 } from "../app-settings/app-settings.module";
 
 import {
+  AuditLogsModule,
+} from "../audit-logs/audit-logs.module";
+
+import {
   AdminIpAllowListGuard,
 } from "../admin/admin-ip-allow-list.guard";
 
@@ -26,6 +30,7 @@ import {
   imports: [
     AuthModule,
     AppSettingsModule,
+    AuditLogsModule,
   ],
 
   controllers: [
