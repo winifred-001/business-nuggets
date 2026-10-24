@@ -1,6 +1,7 @@
 "use client";
 
 import { API_URL } from "@/lib/api";
+import { syncMemberTokenCookie } from "@/lib/auth-cookie";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/navbar";
@@ -60,6 +61,7 @@ export default function RegisterPage() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      syncMemberTokenCookie(data.token);
       window.dispatchEvent(new Event("auth-change"));
       router.push("/home");
     } catch {
@@ -186,7 +188,7 @@ export default function RegisterPage() {
               href="/login"
               className="font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
             >
-              Sign In
+              Sign in
             </Link>
           </p>
         </section>
