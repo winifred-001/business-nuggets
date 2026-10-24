@@ -65,6 +65,22 @@ export class AdminPermissionGuard
       );
     }
 
+    if (
+      requiredPermission ===
+        "manageUsers" &&
+      request.method ===
+        "PATCH" &&
+      request.body &&
+      Object.prototype.hasOwnProperty.call(
+        request.body,
+        "role",
+      )
+    ) {
+      throw new ForbiddenException(
+        "Admin access changes must be made from Roles & Access",
+      );
+    }
+
     let adminRole:
       | AdminRole
       | null = null;
