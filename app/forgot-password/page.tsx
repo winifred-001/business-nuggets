@@ -18,8 +18,7 @@ export default function ForgotPasswordPage() {
   ) {
     e.preventDefault();
 
-    const normalizedEmail =
-      email.trim().toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail || loading) {
       return;
@@ -42,9 +41,7 @@ export default function ForgotPasswordPage() {
         },
       );
 
-      const data = await response
-        .json()
-        .catch(() => ({}));
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         setError(
@@ -69,43 +66,35 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#080808]">
+    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
       <Navbar />
 
-      <main className="flex flex-1 items-start justify-center px-4 py-8 sm:py-10">
-        <div className="w-full max-w-md rounded-lg border border-[#222222] bg-[#111111] p-5 sm:p-8">
-          <div className="mb-5 flex justify-center">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-[#C8A35A] font-Inter text-sm font-bold text-black">
-                B
-              </div>
+      <main className="flex flex-1 items-center justify-center px-5 py-10 sm:px-6 sm:py-14 md:px-8 lg:px-10 lg:py-16">
+        <section className="w-full max-w-[520px] rounded-2xl border border-white/10 bg-[#111111] p-5 sm:p-8 md:p-10">
+          <div className="mb-7 text-center">
+            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-[#C8A35A] font-serif text-[20px] font-bold text-[#080808]">
+              B
+            </div>
 
-              <div>
-                <p className="font-Inter text-xs font-extrabold leading-none text-white">
-                  BUSINESS NUGGETS
-                </p>
-                <p className="font-EB_Garamond text-[10px] italic tracking-wide text-[#C8A35A]">
-                  from the Bible
-                </p>
-              </div>
-            </Link>
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#C8A35A]">
+              Business Nuggets
+            </p>
+
+            <h1 className="font-serif text-[40px] font-semibold leading-tight text-[#FAF9F6]">
+              Forgot Password?
+            </h1>
+
+            <p className="mx-auto mt-3 max-w-sm text-[16px] leading-7 text-white/50">
+              Enter your email address and we&apos;ll send you a link to reset your password.
+            </p>
           </div>
 
-          <h1 className="text-center font-EB_Garamond text-2xl font-semibold text-white">
-            Forgot Password?
-          </h1>
-
-          <p className="mx-auto mt-2 max-w-xs text-center font-Inter text-xs leading-relaxed text-gray-400">
-            Enter your email address and we&apos;ll send you a link to reset your
-            password.
-          </p>
-
-          <form onSubmit={handleSubmit} className="mt-6">
+          <form onSubmit={handleSubmit}>
             <label
               htmlFor="email"
-              className="mb-2 block font-Inter text-xs font-medium text-gray-200"
+              className="mb-2 block text-[14px] font-medium text-white/70"
             >
-              Email Address
+              Email address
             </label>
 
             <input
@@ -119,39 +108,37 @@ export default function ForgotPasswordPage() {
               }}
               placeholder="e.g. admin@kingdomventures.com"
               required
-              className="w-full rounded-md border border-[#292929] bg-[#1B1B1F] px-3 py-2 font-Inter text-xs text-white outline-none placeholder:text-gray-500 focus:border-[#C8A35A]"
+              className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
             />
 
             <button
               type="submit"
               disabled={loading}
-              className="mt-4 w-full rounded-md bg-[#C8A35A] px-4 py-2.5 font-Inter text-xs font-semibold text-black transition hover:bg-[#D5B36C] disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-5 min-h-12 w-full rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading
-                ? "Sending..."
-                : "Send Reset Link"}
+              {loading ? "Sending..." : "Send Reset Link"}
             </button>
 
             {error && (
               <p
                 role="alert"
-                className="mt-3 text-center font-Inter text-xs leading-relaxed text-red-300"
+                className="mt-4 rounded-lg border border-[#B54A4A]/30 bg-[#B54A4A]/10 px-4 py-3 text-center text-[14px] leading-6 text-[#D98383]"
               >
                 {error}
               </p>
             )}
           </form>
 
-          <p className="mt-5 text-center font-Inter text-xs text-gray-400">
+          <p className="mt-7 text-center text-[14px] leading-6 text-white/50">
             Remember your password?{" "}
             <Link
               href="/login"
-              className="text-[#C8A35A] transition hover:text-[#D5B36C]"
+              className="font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
             >
               Back to Sign In
             </Link>
           </p>
-        </div>
+        </section>
       </main>
 
       <Footer />
