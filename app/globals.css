@@ -1,33 +1,199 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bnb-obsidian: #080808;
+  --bnb-charcoal: #111111;
+  --bnb-gold: #c8a35a;
+  --bnb-soft-gold: #e0c48a;
+  --bnb-parchment: #f5f0e8;
+  --bnb-ivory: #faf9f6;
+  --bnb-slate: #8a8781;
+  --bnb-success: #2f6b52;
+  --bnb-warning: #b7791f;
+  --bnb-error: #b54a4a;
+  --bnb-info: #3d6fa8;
+
+  --background: var(--bnb-obsidian);
+  --foreground: var(--bnb-ivory);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-eb-garamond);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--bnb-obsidian);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-width: 320px;
+  overflow-x: clip;
+  background: var(--bnb-obsidian);
+  color: var(--bnb-ivory);
+  font-family: var(--font-inter), Inter, Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  line-height: 1.625;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+.font-serif {
+  font-family: var(--font-eb-garamond), "EB Garamond", Georgia, "Times New Roman", serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+main,
+section,
+article,
+nav,
+header,
+footer,
+aside,
+div {
+  min-width: 0;
+}
+
+p,
+li,
+label,
+button,
+a,
+input,
+textarea,
+select,
+th,
+td {
+  overflow-wrap: anywhere;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--bnb-gold) 38%, transparent);
+  color: var(--bnb-ivory);
+}
+
+:focus-visible {
+  outline: 2px solid var(--bnb-soft-gold);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   RESPONSIVE PRODUCT TYPOGRAPHY
+   Brand guide mobile scale:
+   H1 34/40, H2 28/34, H3 22/28,
+   body 16/25, small 14/21, caption 12/18.
+========================================================= */
+
+@media (max-width: 767px) {
+  body {
+    font-size: 16px;
+    line-height: 1.5625;
+  }
+
+  h1 {
+    font-size: 34px !important;
+    line-height: 40px !important;
+  }
+
+  h2 {
+    font-size: 28px !important;
+    line-height: 34px !important;
+  }
+
+  h3 {
+    font-size: 22px !important;
+    line-height: 28px !important;
+  }
+
+  input,
+  textarea,
+  select {
+    min-height: 44px;
+    font-size: 16px !important;
+  }
+
+  button,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  a[class*="rounded"] {
+    min-height: 44px;
+  }
+
+  [class~="text-[6px]"],
+  [class~="text-[7px]"],
+  [class~="text-[8px]"],
+  [class~="text-[9px]"] {
+    font-size: 12px !important;
+    line-height: 18px !important;
+  }
+
+  [class~="text-[10px]"],
+  [class~="text-[11px]"],
+  [class~="text-[12px]"],
+  [class~="text-[13px]"] {
+    font-size: 14px !important;
+    line-height: 21px !important;
+  }
+
+  p[class~="text-[11px]"],
+  p[class~="text-[12px]"],
+  p[class~="text-[13px]"] {
+    font-size: 16px !important;
+    line-height: 25px !important;
+  }
+
+  table {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  h1 {
+    font-size: min(40px, 6vw) !important;
+    line-height: 1.15 !important;
+  }
+
+  h2 {
+    font-size: min(30px, 4vw) !important;
+    line-height: 1.2 !important;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
 }
 
 /* =========================================================
    ADMIN TYPOGRAPHY SYSTEM
-   Page headers: 40px
+   Desktop/tablet page headers: 40px
    Section/subheaders: 28px
    Body/content: 14px-16px
 ========================================================= */
@@ -67,15 +233,16 @@ body {
   font-size: 16px;
 }
 
-.admin-typography [class*="text-[6px]"],
-.admin-typography [class*="text-[7px]"],
-.admin-typography [class*="text-[8px]"],
-.admin-typography [class*="text-[9px]"],
-.admin-typography [class*="text-[10px]"],
-.admin-typography [class*="text-[11px]"],
-.admin-typography [class*="text-[12px]"],
-.admin-typography [class*="text-[13px]"] {
+.admin-typography [class~="text-[6px]"],
+.admin-typography [class~="text-[7px]"],
+.admin-typography [class~="text-[8px]"],
+.admin-typography [class~="text-[9px]"],
+.admin-typography [class~="text-[10px]"],
+.admin-typography [class~="text-[11px]"],
+.admin-typography [class~="text-[12px]"],
+.admin-typography [class~="text-[13px]"] {
   font-size: 14px !important;
+  line-height: 1.5 !important;
 }
 
 .admin-typography .text-xs,
@@ -85,4 +252,50 @@ body {
 
 .admin-typography .text-base {
   font-size: 16px !important;
+}
+
+@media (max-width: 767px) {
+  .admin-typography h1 {
+    font-size: 34px !important;
+    line-height: 40px !important;
+  }
+
+  .admin-typography h2,
+  .admin-typography h3 {
+    font-size: 28px !important;
+    line-height: 34px !important;
+  }
+
+  .admin-typography p:not([class*="text-"]),
+  .admin-typography li:not([class*="text-"]) {
+    font-size: 16px;
+    line-height: 25px;
+  }
+}
+
+/* =========================================================
+   MOBILE/TABLET SAFETY RULES
+========================================================= */
+
+@media (max-width: 1023px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  [class*="grid-cols-"] > *,
+  [class*="flex"] > * {
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
