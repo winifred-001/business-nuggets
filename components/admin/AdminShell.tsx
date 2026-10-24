@@ -43,81 +43,21 @@ type AdminUser = {
 };
 
 const navItems = [
-  {
-    label: "Dashboard",
-    href: "/admin/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Nuggets",
-    href: "/admin/nuggets",
-    icon: FileText,
-  },
-  {
-    label: "Topics & Categories",
-    href: "/admin/topics",
-    icon: Tags,
-  },
-  {
-    label: "Scripture Index",
-    href: "/admin/scripture",
-    icon: BookOpen,
-  },
-  {
-    label: "Daily Schedule",
-    href: "/admin/schedule",
-    icon: CalendarDays,
-  },
-  {
-    label: "Media Library",
-    href: "/admin/media",
-    icon: FolderOpen,
-  },
-  {
-    label: "Users",
-    href: "/admin/users",
-    icon: Users,
-  },
-  {
-    label: "Subscriptions",
-    href: "/admin/subscriptions",
-    icon: Library,
-  },
-  {
-    label: "Moderation",
-    href: "/admin/moderation",
-    icon: ShieldCheck,
-  },
-  {
-    label: "Analytics",
-    href: "/admin/analytics",
-    icon: BarChart3,
-  },
-  {
-    label: "Mobile App",
-    href: "/admin/mobile",
-    icon: Smartphone,
-  },
-  {
-    label: "Notifications",
-    href: "/admin/notifications",
-    icon: Bell,
-  },
-  {
-    label: "Roles & Access",
-    href: "/admin/roles",
-    icon: UserCog,
-  },
-  {
-    label: "Audit Logs",
-    href: "/admin/audit-logs",
-    icon: FileText,
-  },
-  {
-    label: "Settings",
-    href: "/admin/settings",
-    icon: Settings,
-  },
+  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Nuggets", href: "/admin/nuggets", icon: FileText },
+  { label: "Topics & Categories", href: "/admin/topics", icon: Tags },
+  { label: "Scripture Index", href: "/admin/scripture", icon: BookOpen },
+  { label: "Daily Schedule", href: "/admin/schedule", icon: CalendarDays },
+  { label: "Media Library", href: "/admin/media", icon: FolderOpen },
+  { label: "Users", href: "/admin/users", icon: Users },
+  { label: "Subscriptions", href: "/admin/subscriptions", icon: Library },
+  { label: "Moderation", href: "/admin/moderation", icon: ShieldCheck },
+  { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+  { label: "Mobile App", href: "/admin/mobile", icon: Smartphone },
+  { label: "Notifications", href: "/admin/notifications", icon: Bell },
+  { label: "Roles & Access", href: "/admin/roles", icon: UserCog },
+  { label: "Audit Logs", href: "/admin/audit-logs", icon: FileText },
+  { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 export default function AdminShell({
@@ -125,127 +65,71 @@ export default function AdminShell({
 }: {
   children: ReactNode;
 }) {
-  const pathname =
-    usePathname();
+  const pathname = usePathname();
+  const router = useRouter();
 
-  const router =
-    useRouter();
-
-  const [user, setUser] =
-    useState<AdminUser | null>(
-      null,
-    );
-
-  const [checking, setChecking] =
-    useState(true);
-
-  const [mobileOpen, setMobileOpen] =
-    useState(false);
+  const [user, setUser] = useState<AdminUser | null>(null);
+  const [checking, setChecking] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     async function verifyAdmin() {
       const token =
-        localStorage.getItem(
-          "adminToken",
-        ) ||
-        sessionStorage.getItem(
-          "adminToken",
-        );
+        localStorage.getItem("adminToken") ||
+        sessionStorage.getItem("adminToken");
 
       if (!token) {
-        router.replace(
-          "/admin/login",
-        );
-
+        router.replace("/admin/login");
         return;
       }
 
       try {
-        const response =
-          await fetch(
-            `${API_URL}/admin/test`,
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            },
-          );
+        const response = await fetch(`${API_URL}/admin/test`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (!response.ok) {
-          throw new Error(
-            "Invalid admin session",
-          );
+          throw new Error("Invalid admin session");
         }
 
         const storedUser =
-          localStorage.getItem(
-            "adminUser",
-          ) ||
-          sessionStorage.getItem(
-            "adminUser",
-          );
+          localStorage.getItem("adminUser") ||
+          sessionStorage.getItem("adminUser");
 
         if (storedUser) {
-          setUser(
-            JSON.parse(
-              storedUser,
-            ),
-          );
+          setUser(JSON.parse(storedUser));
         }
       } catch {
-        localStorage.removeItem(
-          "adminToken",
-        );
-
-        localStorage.removeItem(
-          "adminUser",
-        );
-
-        sessionStorage.removeItem(
-          "adminToken",
-        );
-
-        sessionStorage.removeItem(
-          "adminUser",
-        );
-
-        router.replace(
-          "/admin/login",
-        );
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("adminUser");
+        sessionStorage.removeItem("adminToken");
+        sessionStorage.removeItem("adminUser");
+        router.replace("/admin/login");
       } finally {
         setChecking(false);
       }
     }
 
-    verifyAdmin();
+    void verifyAdmin();
   }, [router]);
 
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   function signOut() {
-    localStorage.removeItem(
-      "adminToken",
-    );
-
-    localStorage.removeItem(
-      "adminUser",
-    );
-
-    sessionStorage.removeItem(
-      "adminToken",
-    );
-
-    sessionStorage.removeItem(
-      "adminUser",
-    );
-
-    router.replace(
-      "/admin/login",
-    );
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminUser");
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminUser");
+    router.replace("/admin/login");
   }
 
   if (checking) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#080808] text-[11px] text-white/40">
+      <div className="flex min-h-screen items-center justify-center bg-[#080808] px-5 text-[14px] text-white/45">
         Verifying Admin Console...
       </div>
     );
@@ -253,43 +137,34 @@ export default function AdminShell({
 
   return (
     <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
-      {/* MOBILE OVERLAY */}
-
       {mobileOpen && (
         <button
           type="button"
           aria-label="Close menu"
-          onClick={() =>
-            setMobileOpen(false)
-          }
-          className="fixed inset-0 z-40 bg-black/70 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 z-40 bg-black/75 lg:hidden"
         />
       )}
 
-      {/* SIDEBAR */}
-
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[230px] flex-col border-r border-white/[0.07] bg-[#111111] transition-transform lg:translate-x-0 ${
-          mobileOpen
-            ? "translate-x-0"
-            : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 z-50 flex w-[min(86vw,280px)] flex-col border-r border-white/[0.07] bg-[#111111] transition-transform duration-200 lg:w-[230px] lg:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-[66px] items-center justify-between border-b border-white/[0.06] px-4">
+        <div className="flex min-h-[72px] items-center justify-between border-b border-white/[0.06] px-4 sm:px-5">
           <Link
             href="/admin/dashboard"
-            className="flex items-center gap-3"
+            className="flex min-h-11 items-center gap-3"
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded bg-[#C8A35A] font-serif text-[12px] font-bold text-[#080808]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#C8A35A] font-serif text-[18px] font-bold text-[#080808]">
               B
             </div>
 
             <div>
-              <p className="text-[9px] font-semibold uppercase tracking-[0.04em]">
+              <p className="text-[14px] font-semibold uppercase leading-tight tracking-[0.04em] text-[#FAF9F6]">
                 Business Nuggets
               </p>
-
-              <p className="mt-0.5 text-[7px] text-[#C8A35A]">
+              <p className="mt-1 text-[12px] leading-none text-[#C8A35A]">
                 Admin Console
               </p>
             </div>
@@ -297,131 +172,99 @@ export default function AdminShell({
 
           <button
             type="button"
-            onClick={() =>
-              setMobileOpen(false)
-            }
-            className="text-white/40 lg:hidden"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close navigation"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-white/50 transition hover:bg-white/[0.04] hover:text-[#E0C48A] lg:hidden"
           >
-            <X size={17} />
+            <X size={20} />
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-3">
-          {navItems.map(
-            (item) => {
-              const active =
-                pathname ===
-                  item.href ||
-                pathname.startsWith(
-                  `${item.href}/`,
-                );
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          {navItems.map((item) => {
+            const active =
+              pathname === item.href ||
+              pathname.startsWith(`${item.href}/`);
+            const Icon = item.icon;
 
-              const Icon =
-                item.icon;
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() =>
-                    setMobileOpen(
-                      false,
-                    )
-                  }
-                  className={`mb-1 flex items-center gap-3 rounded-md px-3 py-2.5 text-[10px] transition ${
-                    active
-                      ? "bg-[#C8A35A]/15 text-[#E0C48A]"
-                      : "text-white/45 hover:bg-white/[0.04] hover:text-white"
-                  }`}
-                >
-                  <Icon
-                    size={14}
-                  />
-
-                  {item.label}
-                </Link>
-              );
-            },
-          )}
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={`mb-1.5 flex min-h-11 items-center gap-3 rounded-lg px-3 text-[14px] transition ${
+                  active
+                    ? "bg-[#C8A35A]/15 text-[#E0C48A]"
+                    : "text-white/55 hover:bg-white/[0.04] hover:text-white"
+                }`}
+              >
+                <Icon size={18} strokeWidth={1.7} />
+                <span className="truncate">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
-
-        {/* ADMIN PROFILE */}
 
         <div className="border-t border-white/[0.07] p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#C8A35A]/20 text-[9px] font-semibold text-[#C8A35A]">
-              {user?.name
-                ?.slice(0, 2)
-                .toUpperCase() ||
-                "AD"}
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C8A35A]/15 text-[13px] font-semibold text-[#C8A35A]">
+              {user?.name?.slice(0, 2).toUpperCase() || "AD"}
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[9px] text-white/70">
-                {user?.name ||
-                  "Admin User"}
+              <p className="truncate text-[14px] text-white/75">
+                {user?.name || "Admin User"}
               </p>
-
-              <p className="mt-0.5 text-[7px] text-white/30">
-                Admin
-              </p>
+              <p className="mt-0.5 text-[12px] text-white/35">Admin</p>
             </div>
 
             <button
               type="button"
               onClick={signOut}
               aria-label="Sign out"
-              className="text-white/30 transition hover:text-red-400"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-white/35 transition hover:bg-white/[0.04] hover:text-[#B54A4A]"
             >
-              <LogOut
-                size={14}
-              />
+              <LogOut size={18} />
             </button>
           </div>
         </div>
       </aside>
 
-      {/* PAGE AREA */}
-
       <div className="lg:pl-[230px]">
-        {/* HEADER */}
-
-        <header className="sticky top-0 z-30 flex h-[66px] items-center gap-4 border-b border-white/[0.07] bg-[#111111]/95 px-4 backdrop-blur sm:px-6">
+        <header className="sticky top-0 z-30 flex min-h-[68px] items-center gap-3 border-b border-white/[0.07] bg-[#111111]/95 px-4 backdrop-blur sm:px-6 md:px-8">
           <button
             type="button"
-            onClick={() =>
-              setMobileOpen(true)
-            }
-            className="text-white/60 lg:hidden"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open admin navigation"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/10 text-white/65 transition hover:border-[#C8A35A]/35 hover:text-[#E0C48A] lg:hidden"
           >
-            <Menu size={18} />
+            <Menu size={20} />
           </button>
 
-          <div className="relative hidden w-full max-w-[360px] sm:block">
+          <div className="relative hidden w-full max-w-[420px] sm:block">
             <Search
-              size={13}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/25"
+              size={17}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"
             />
-
             <input
               type="text"
               placeholder="Search nuggets, users, topics..."
-              className="h-9 w-full rounded-md border border-white/10 bg-[#080808] pl-9 pr-4 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+              className="h-11 w-full rounded-lg border border-white/10 bg-[#080808] pl-10 pr-4 text-[14px] text-white outline-none placeholder:text-white/25 focus:border-[#C8A35A]/45"
             />
           </div>
 
-          <div className="ml-auto flex items-center gap-4">
+          <div className="ml-auto flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
-              className="text-[9px] text-white/35 transition hover:text-[#C8A35A]"
+              className="inline-flex min-h-11 items-center rounded-lg px-2 text-[14px] text-white/45 transition hover:text-[#E0C48A] sm:px-3"
             >
               View Site
             </Link>
 
-            <div className="h-6 w-px bg-white/[0.07]" />
+            <div className="hidden h-7 w-px bg-white/[0.07] sm:block" />
 
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#C8A35A]/20 text-[9px] font-semibold text-[#C8A35A]">
-              AD
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C8A35A]/15 text-[13px] font-semibold text-[#C8A35A]">
+              {user?.name?.slice(0, 2).toUpperCase() || "AD"}
             </div>
           </div>
         </header>
