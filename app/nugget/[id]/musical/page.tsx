@@ -3,11 +3,16 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import MusicalView from "@/components/MusicalView";
+import PremiumNuggetGate from "@/components/PremiumNuggetGate";
 
 import {
   getNuggetBySlugFromApi,
   getPublishedNuggets,
+  PremiumRequiredError,
 } from "@/lib/nuggets-api";
+import {
+  getServerMemberToken,
+} from "@/lib/server-member-token";
 
 import type { Nugget } from "@/types/nugget";
 
@@ -26,6 +31,8 @@ export default async function MusicalPage({
   }>;
 }) {
   const { id } = await params;
+  const token =
+    await getServerMemberToken();
 
   let nugget: MusicalNugget | null =
     null;
@@ -35,8 +42,13 @@ export default async function MusicalPage({
   try {
     const [current, all] =
       await Promise.all([
-        getNuggetBySlugFromApi(id),
-        getPublishedNuggets(),
+        getNuggetBySlugFromApi(
+          id,
+          token,
+        ),
+        getPublishedNuggets(
+          token,
+        ),
       ]);
 
     nugget =
@@ -45,6 +57,15 @@ export default async function MusicalPage({
     nuggets =
       all as MusicalNugget[];
   } catch (error) {
+    if (
+      error instanceof
+      PremiumRequiredError
+    ) {
+      return (
+        <PremiumNuggetGate />
+      );
+    }
+
     console.error(
       "Could not load Musical:",
       error,
