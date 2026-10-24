@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -75,6 +76,35 @@ export class RolesAccessService {
       permissions:
         await getAdminPermissionMatrix(),
     };
+  }
+
+  async getPromotableUsers() {
+    const users =
+      await db.orm.public.User.all();
+
+    return users
+      .filter(
+        (user) =>
+          user.role === "user" &&
+          user.accountStatus ===
+            "active",
+      )
+      .map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        membershipTier:
+          user.membershipTier,
+        accountStatus:
+          user.accountStatus,
+        createdAt:
+          user.createdAt,
+      }))
+      .sort((a, b) =>
+        a.name.localeCompare(
+          b.name,
+        ),
+      );
   }
 
   /* =========================================
@@ -152,7 +182,7 @@ export class RolesAccessService {
   }
 
   /* =========================================
-     ADD ADMIN
+     ADD NEW ADMIN ACCOUNT
   ========================================= */
 
   async createAdmin(
@@ -196,6 +226,15 @@ export class RolesAccessService {
     ) {
       throw new BadRequestException(
         "Invalid admin role",
+      );
+    }
+
+    if (
+      data.adminRole ===
+      "super-admin"
+    ) {
+      throw new BadRequestException(
+        "Create the account with a standard admin role, then promote it to Super Admin from Roles & Access",
       );
     }
 
@@ -254,6 +293,99 @@ export class RolesAccessService {
   }
 
   /* =========================================
+     PROMOTE REGISTERED USER
+  ========================================= */
+
+  async promoteUser(
+    id: number,
+    adminRole: AdminRole,
+    actorIsSuperAdmin: boolean,
+  ) {
+    if (
+      !this.allowedRoles.includes(
+        adminRole,
+      )
+    ) {
+      throw new BadRequestException(
+        "Invalid admin role",
+      );
+    }
+
+    if (
+      adminRole ===
+        "super-admin" &&
+      !actorIsSuperAdmin
+    ) {
+      throw new ForbiddenException(
+        "Only a Super Admin can assign the Super Admin role",
+      );
+    }
+
+    const user =
+      await db.orm.public.User
+        .where({ id })
+        .first();
+
+    if (!user) {
+      throw new NotFoundException(
+        "User not found",
+      );
+    }
+
+    if (
+      user.role === "admin" ||
+      user.role === "owner"
+    ) {
+      throw new ConflictException(
+        "User already has admin access",
+      );
+    }
+
+    if (
+      user.role !== "user"
+    ) {
+      throw new BadRequestException(
+        "Only standard user accounts can be promoted",
+      );
+    }
+
+    if (
+      user.accountStatus !==
+      "active"
+    ) {
+      throw new BadRequestException(
+        "Only active users can be promoted to admin",
+      );
+    }
+
+    const updated =
+      await db.orm.public.User
+        .where({ id })
+        .update({
+          role: "admin",
+          adminRole,
+        });
+
+    if (!updated) {
+      throw new NotFoundException(
+        "User not found",
+      );
+    }
+
+    const {
+      passwordHash:
+        _passwordHash,
+      ...safeAdmin
+    } = updated;
+
+    return {
+      message:
+        "User promoted to admin successfully",
+      admin: safeAdmin,
+    };
+  }
+
+  /* =========================================
      UPDATE ADMIN
   ========================================= */
 
@@ -266,6 +398,7 @@ export class RolesAccessService {
         | "active"
         | "suspended";
     },
+    actorIsSuperAdmin: boolean,
   ) {
     const user =
       await db.orm.public.User
@@ -298,6 +431,16 @@ export class RolesAccessService {
     }
 
     if (
+      user.adminRole ===
+        "super-admin" &&
+      !actorIsSuperAdmin
+    ) {
+      throw new ForbiddenException(
+        "Only a Super Admin can modify another Super Admin",
+      );
+    }
+
+    if (
       data.adminRole &&
       !this.allowedRoles.includes(
         data.adminRole,
@@ -305,6 +448,16 @@ export class RolesAccessService {
     ) {
       throw new BadRequestException(
         "Invalid admin role",
+      );
+    }
+
+    if (
+      data.adminRole ===
+        "super-admin" &&
+      !actorIsSuperAdmin
+    ) {
+      throw new ForbiddenException(
+        "Only a Super Admin can assign the Super Admin role",
       );
     }
 
@@ -354,5 +507,77 @@ export class RolesAccessService {
     } = updated;
 
     return safeAdmin;
+  }
+
+  /* =========================================
+     REMOVE ADMIN ACCESS
+  ========================================= */
+
+  async demoteAdmin(
+    id: number,
+    actorIsSuperAdmin: boolean,
+  ) {
+    const user =
+      await db.orm.public.User
+        .where({ id })
+        .first();
+
+    if (!user) {
+      throw new NotFoundException(
+        "Admin not found",
+      );
+    }
+
+    if (
+      user.role === "owner"
+    ) {
+      throw new ForbiddenException(
+        "The owner account cannot be demoted",
+      );
+    }
+
+    if (
+      user.role !== "admin"
+    ) {
+      throw new BadRequestException(
+        "User is not an admin",
+      );
+    }
+
+    if (
+      user.adminRole ===
+        "super-admin" &&
+      !actorIsSuperAdmin
+    ) {
+      throw new ForbiddenException(
+        "Only a Super Admin can remove another Super Admin",
+      );
+    }
+
+    const updated =
+      await db.orm.public.User
+        .where({ id })
+        .update({
+          role: "user",
+          adminRole: null,
+        });
+
+    if (!updated) {
+      throw new NotFoundException(
+        "Admin not found",
+      );
+    }
+
+    const {
+      passwordHash:
+        _passwordHash,
+      ...safeUser
+    } = updated;
+
+    return {
+      message:
+        "Admin access removed successfully",
+      user: safeUser,
+    };
   }
 }
