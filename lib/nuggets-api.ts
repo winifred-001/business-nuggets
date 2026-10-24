@@ -30,15 +30,55 @@ export class PremiumRequiredError extends Error {
   }
 }
 
+function resolveToken(
+  token?: string | null,
+) {
+  if (token !== undefined) {
+    return token;
+  }
+
+  if (
+    typeof window !==
+    "undefined"
+  ) {
+    return localStorage.getItem(
+      "token",
+    );
+  }
+
+  return null;
+}
+
 function authHeaders(
   token?: string | null,
 ) {
-  return token
+  const resolvedToken =
+    resolveToken(token);
+
+  return resolvedToken
     ? {
         Authorization:
-          `Bearer ${token}`,
+          `Bearer ${resolvedToken}`,
       }
     : undefined;
+}
+
+function normalizeFeed(
+  data: unknown[],
+  premium: boolean,
+) {
+  return data
+    .filter(isNugget)
+    .map(
+      (nugget) =>
+        premium
+          ? {
+              ...nugget,
+              isGold: false,
+              locked: false,
+            }
+          : nugget,
+    );
 }
 
 /* =========================================================
@@ -88,7 +128,10 @@ export async function getPublishedNuggets(
     await response.json();
 
   if (Array.isArray(result)) {
-    return result.filter(isNugget);
+    return normalizeFeed(
+      result,
+      false,
+    );
   }
 
   if (
@@ -96,12 +139,19 @@ export async function getPublishedNuggets(
     result !== null &&
     "data" in result
   ) {
-    const data = (
-      result as NuggetsApiResponse
-    ).data;
+    const envelope =
+      result as NuggetsApiResponse;
+
+    const data =
+      envelope.data;
 
     if (Array.isArray(data)) {
-      return data.filter(isNugget);
+      return normalizeFeed(
+        data,
+        envelope.access
+          ?.premium ===
+          true,
+      );
     }
   }
 
