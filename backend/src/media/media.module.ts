@@ -12,6 +12,10 @@ import {
 } from "./media.controller";
 
 import {
+  CloudinaryStorageService,
+} from "./cloudinary-storage.service";
+
+import {
   MediaService,
 } from "./media.service";
 
@@ -27,6 +31,7 @@ import {
 
   providers: [
     MediaService,
+    CloudinaryStorageService,
   ],
 
   exports: [
