@@ -95,6 +95,7 @@ export class MediaService {
                 ? `/media/cloudinary/${asset.id}`
                 : asset.url,
           }),
+        ),
 
       folders: [...folders].sort(
         (
