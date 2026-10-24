@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
+import { getServerMemberToken } from "@/lib/server-member-token";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import NuggetCard from "@/components/NuggetCard";
@@ -13,8 +14,9 @@ export default async function SearchPage({
   const params = await searchParams;
   const rawQuery = Array.isArray(params.q) ? params.q[0] : params.q;
   const query = (rawQuery ?? "").trim();
+  const token = await getServerMemberToken();
 
-  const apiNuggets = await getPublishedNuggets();
+  const apiNuggets = await getPublishedNuggets(token);
   const results = filterNuggets({ query }, apiNuggets);
 
   return (
