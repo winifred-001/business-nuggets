@@ -15,9 +15,15 @@ import {
 } from "lucide-react";
 
 import Navbar from "@/components/navbar";
+import PremiumNuggetGate from "@/components/PremiumNuggetGate";
 import NuggetAnalyticsTracker from "@/components/analytics/NuggetAnalyticsTracker";
-import { getNuggetBySlug } from "@/lib/nuggets";
-import { getNuggetBySlugFromApi } from "@/lib/nuggets-api";
+import {
+  getNuggetBySlugFromApi,
+  PremiumRequiredError,
+} from "@/lib/nuggets-api";
+import {
+  getServerMemberToken,
+} from "@/lib/server-member-token";
 
 export default async function NuggetDetailPage({
   params,
@@ -25,17 +31,28 @@ export default async function NuggetDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const token =
+    await getServerMemberToken();
 
   let nugget = null;
 
   try {
-    nugget = await getNuggetBySlugFromApi(id);
-  } catch {
-    nugget = null;
-  }
+    nugget =
+      await getNuggetBySlugFromApi(
+        id,
+        token,
+      );
+  } catch (error) {
+    if (
+      error instanceof
+      PremiumRequiredError
+    ) {
+      return (
+        <PremiumNuggetGate />
+      );
+    }
 
-  if (!nugget) {
-    nugget = getNuggetBySlug(id);
+    throw error;
   }
 
   if (!nugget) {
