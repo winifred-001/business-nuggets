@@ -7,6 +7,7 @@ import {
   Patch,
   Request,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 
 import {
@@ -27,6 +28,10 @@ import {
 } from "../admin/admin-ip-allow-list.guard";
 
 import {
+  AdminAuditInterceptor,
+} from "../audit-logs/admin-audit.interceptor";
+
+import {
   RolesAccessService,
 } from "./roles-access.service";
 
@@ -42,11 +47,24 @@ import type {
   AdminPermissionGuard,
   AdminIpAllowListGuard,
 )
+@UseInterceptors(
+  AdminAuditInterceptor,
+)
 export class RolesAccessController {
   constructor(
     private readonly rolesAccessService:
       RolesAccessService,
   ) {}
+
+  private isSuperAdmin(
+    user: any,
+  ) {
+    return (
+      user?.role === "owner" ||
+      user?.adminRole ===
+        "super-admin"
+    );
+  }
 
   @Get()
   @RequireAdminPermission(
@@ -54,6 +72,14 @@ export class RolesAccessController {
   )
   getAdminRoles() {
     return this.rolesAccessService.getAdminTeam();
+  }
+
+  @Get("promotable-users")
+  @RequireAdminPermission(
+    "manageAdmins",
+  )
+  getPromotableUsers() {
+    return this.rolesAccessService.getPromotableUsers();
   }
 
   @Patch("permissions")
@@ -71,13 +97,11 @@ export class RolesAccessController {
       enabled: boolean;
     },
   ) {
-    const isSuperAdmin =
-      req.user?.role ===
-        "owner" ||
-      req.user?.adminRole ===
-        "super-admin";
-
-    if (!isSuperAdmin) {
+    if (
+      !this.isSuperAdmin(
+        req.user,
+      )
+    ) {
       throw new ForbiddenException(
         "Only a Super Admin can change role permissions",
       );
@@ -88,11 +112,39 @@ export class RolesAccessController {
     );
   }
 
+  @Patch("users/:id/promote")
+  @RequireAdminPermission(
+    "manageAdmins",
+  )
+  promoteUser(
+    @Request()
+    req: any,
+
+    @Param("id")
+    id: string,
+
+    @Body()
+    body: {
+      adminRole: AdminRole;
+    },
+  ) {
+    return this.rolesAccessService.promoteUser(
+      Number(id),
+      body.adminRole,
+      this.isSuperAdmin(
+        req.user,
+      ),
+    );
+  }
+
   @Patch("admins/:id")
   @RequireAdminPermission(
     "manageAdmins",
   )
   updateAdmin(
+    @Request()
+    req: any,
+
     @Param("id")
     id: string,
 
@@ -104,9 +156,57 @@ export class RolesAccessController {
         | "suspended";
     },
   ) {
+    const adminId =
+      Number(id);
+
+    if (
+      Number(
+        req.user?.sub,
+      ) === adminId
+    ) {
+      throw new ForbiddenException(
+        "You cannot modify your own admin access",
+      );
+    }
+
     return this.rolesAccessService.updateAdmin(
-      Number(id),
+      adminId,
       body,
+      this.isSuperAdmin(
+        req.user,
+      ),
+    );
+  }
+
+  @Patch("admins/:id/demote")
+  @RequireAdminPermission(
+    "manageAdmins",
+  )
+  demoteAdmin(
+    @Request()
+    req: any,
+
+    @Param("id")
+    id: string,
+  ) {
+    const adminId =
+      Number(id);
+
+    if (
+      Number(
+        req.user?.sub,
+      ) === adminId
+    ) {
+      throw new ForbiddenException(
+        "You cannot remove your own admin access",
+      );
+    }
+
+    return this.rolesAccessService.demoteAdmin(
+      adminId,
+      this.isSuperAdmin(
+        req.user,
+      ),
     );
   }
 }
