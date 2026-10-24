@@ -10,6 +10,8 @@ import {
   Loader2,
   LockKeyhole,
   Plus,
+  ShieldOff,
+  UserPlus,
   X,
 } from "lucide-react";
 
@@ -42,6 +44,15 @@ type AdminUser = {
   adminRole: AdminRole;
   accountStatus: string;
   lastLoginAt: string | null;
+  createdAt: string;
+};
+
+type PromotableUser = {
+  id: number;
+  name: string;
+  email: string;
+  membershipTier: string;
+  accountStatus: string;
   createdAt: string;
 };
 
@@ -178,6 +189,13 @@ export default function AdminRolesPage() {
     setCanEditPermissions,
   ] = useState(false);
 
+  const [
+    currentAdminId,
+    setCurrentAdminId,
+  ] = useState<number | null>(
+    null,
+  );
+
   const [error, setError] =
     useState("");
 
@@ -186,6 +204,35 @@ export default function AdminRolesPage() {
 
   const [addOpen, setAddOpen] =
     useState(false);
+
+  const [
+    promoteOpen,
+    setPromoteOpen,
+  ] = useState(false);
+
+  const [
+    promotableUsers,
+    setPromotableUsers,
+  ] = useState<PromotableUser[]>(
+    [],
+  );
+
+  const [
+    promotableLoading,
+    setPromotableLoading,
+  ] = useState(false);
+
+  const [
+    promoteUserId,
+    setPromoteUserId,
+  ] = useState("");
+
+  const [
+    promoteRole,
+    setPromoteRole,
+  ] = useState<AdminRole>(
+    "editor",
+  );
 
   const [
     editingAdmin,
@@ -254,12 +301,20 @@ export default function AdminRolesPage() {
             rawUser,
           ) as Partial<AdminUser>;
 
+        setCurrentAdminId(
+          typeof user.id ===
+          "number"
+            ? user.id
+            : null,
+        );
+
         setCanEditPermissions(
           user.role === "owner" ||
             user.adminRole ===
               "super-admin",
         );
       } catch {
+        setCurrentAdminId(null);
         setCanEditPermissions(
           false,
         );
@@ -326,6 +381,65 @@ export default function AdminRolesPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function loadPromotableUsers() {
+    const token = getToken();
+
+    if (!token) {
+      return;
+    }
+
+    setPromotableLoading(true);
+
+    try {
+      const response =
+        await fetch(
+          `${API_URL}/admin/roles/promotable-users`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          },
+        );
+
+      const data =
+        await response
+          .json()
+          .catch(() => []);
+
+      if (!response.ok) {
+        setError(
+          messageFrom(
+            data,
+            "Could not load users available for promotion.",
+          ),
+        );
+        return;
+      }
+
+      setPromotableUsers(
+        Array.isArray(data)
+          ? data
+          : [],
+      );
+    } catch {
+      setError(
+        "Could not connect to the server.",
+      );
+    } finally {
+      setPromotableLoading(false);
+    }
+  }
+
+  async function openPromotion() {
+    setError("");
+    setSuccess("");
+    setPromoteUserId("");
+    setPromoteRole("editor");
+    setPromoteOpen(true);
+    await loadPromotableUsers();
   }
 
   async function togglePermission(
@@ -502,11 +616,91 @@ export default function AdminRolesPage() {
     }
   }
 
+  async function promoteExistingUser() {
+    if (!promoteUserId) {
+      setError(
+        "Select a registered user to promote.",
+      );
+      return;
+    }
+
+    const token = getToken();
+
+    if (!token) {
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response =
+        await fetch(
+          `${API_URL}/admin/roles/users/${promoteUserId}/promote`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type":
+                "application/json",
+              Authorization:
+                `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              adminRole:
+                promoteRole,
+            }),
+          },
+        );
+
+      const data =
+        await response
+          .json()
+          .catch(() => ({}));
+
+      if (!response.ok) {
+        setError(
+          messageFrom(
+            data,
+            "Could not promote user.",
+          ),
+        );
+        return;
+      }
+
+      const promoted =
+        promotableUsers.find(
+          (user) =>
+            String(user.id) ===
+            promoteUserId,
+        );
+
+      setPromoteOpen(false);
+      setPromoteUserId("");
+      setPromoteRole("editor");
+      setSuccess(
+        promoted
+          ? `${promoted.name} is now ${ROLE_LABELS[promoteRole]}.`
+          : "User promoted to admin successfully.",
+      );
+
+      await loadRoles();
+    } catch {
+      setError(
+        "Could not connect to the server.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function openEdit(
     admin: AdminUser,
   ) {
     if (
-      admin.role === "owner"
+      admin.role === "owner" ||
+      admin.id ===
+        currentAdminId
     ) {
       return;
     }
@@ -591,6 +785,76 @@ export default function AdminRolesPage() {
     }
   }
 
+  async function removeAdminAccess() {
+    if (!editingAdmin) {
+      return;
+    }
+
+    const confirmed =
+      window.confirm(
+        `Remove admin access from ${editingAdmin.name}? Their normal user account and existing data will remain.`,
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const token = getToken();
+
+    if (!token) {
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response =
+        await fetch(
+          `${API_URL}/admin/roles/admins/${editingAdmin.id}/demote`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          },
+        );
+
+      const data =
+        await response
+          .json()
+          .catch(() => ({}));
+
+      if (!response.ok) {
+        setError(
+          messageFrom(
+            data,
+            "Could not remove admin access.",
+          ),
+        );
+        return;
+      }
+
+      const name =
+        editingAdmin.name;
+
+      setEditingAdmin(null);
+      setSuccess(
+        `${name} no longer has admin access.`,
+      );
+
+      await loadRoles();
+    } catch {
+      setError(
+        "Could not connect to the server.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <AdminShell>
       <main className="px-4 py-6 sm:px-6 lg:px-7">
@@ -600,20 +864,33 @@ export default function AdminRolesPage() {
               Roles & Access
             </h1>
             <p className="mt-2 text-[14px] text-white/40">
-              Control what each admin role can see and do.
+              Control admin access, promote registered users, and manage what each role can do.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() =>
-              setAddOpen(true)
-            }
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[14px] font-semibold text-[#080808] hover:bg-[#E0C48A]"
-          >
-            <Plus size={15} />
-            Add Admin
-          </button>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() =>
+                void openPromotion()
+              }
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#C8A35A]/40 px-4 text-[14px] font-semibold text-[#E0C48A] transition hover:bg-[#C8A35A]/10"
+            >
+              <UserPlus size={16} />
+              Promote User
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setAddOpen(true)
+              }
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[14px] font-semibold text-[#080808] hover:bg-[#E0C48A]"
+            >
+              <Plus size={15} />
+              Add New Admin
+            </button>
+          </div>
         </section>
 
         {error && (
@@ -639,6 +916,9 @@ export default function AdminRolesPage() {
             <h2 className="font-serif text-[28px]">
               Admin Team
             </h2>
+            <p className="mt-1 text-[14px] text-white/35">
+              Existing users keep their account data when promoted. Removing admin access returns them to a standard user account.
+            </p>
           </div>
 
           <div className="overflow-x-auto">
@@ -684,51 +964,63 @@ export default function AdminRolesPage() {
                   )
                 ) : admins.length > 0 ? (
                   admins.map(
-                    (admin) => (
-                      <tr
-                        key={
-                          admin.id
-                        }
-                        onClick={() =>
-                          openEdit(
-                            admin,
-                          )
-                        }
-                        className={`border-b border-white/[0.05] last:border-0 ${
-                          admin.role !==
-                          "owner"
-                            ? "cursor-pointer hover:bg-white/[0.02]"
-                            : ""
-                        }`}
-                      >
-                        <td className="px-5 py-4 text-[14px] text-white/70">
-                          {admin.name}
-                        </td>
-                        <td className="px-4 py-4 text-[14px] text-white/45">
-                          {admin.email}
-                        </td>
-                        <td className="px-4 py-4 text-[14px] text-white/55">
-                          {
-                            ROLE_LABELS[
-                              admin.adminRole
-                            ]
+                    (admin) => {
+                      const editable =
+                        admin.role !==
+                          "owner" &&
+                        admin.id !==
+                          currentAdminId;
+
+                      return (
+                        <tr
+                          key={
+                            admin.id
                           }
-                        </td>
-                        <td className="px-4 py-4">
-                          <StatusBadge
-                            status={
-                              admin.accountStatus
+                          onClick={() =>
+                            openEdit(
+                              admin,
+                            )
+                          }
+                          className={`border-b border-white/[0.05] last:border-0 ${
+                            editable
+                              ? "cursor-pointer hover:bg-white/[0.02]"
+                              : ""
+                          }`}
+                        >
+                          <td className="px-5 py-4 text-[14px] text-white/70">
+                            {admin.name}
+                            {admin.id ===
+                              currentAdminId && (
+                              <span className="ml-2 text-[12px] text-[#C8A35A]">
+                                You
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-4 text-[14px] text-white/45">
+                            {admin.email}
+                          </td>
+                          <td className="px-4 py-4 text-[14px] text-white/55">
+                            {
+                              ROLE_LABELS[
+                                admin.adminRole
+                              ]
                             }
-                          />
-                        </td>
-                        <td className="px-4 py-4 text-[14px] text-white/45">
-                          {formatLastLogin(
-                            admin.lastLoginAt,
-                          )}
-                        </td>
-                      </tr>
-                    ),
-                  )
+                          </td>
+                          <td className="px-4 py-4">
+                            <StatusBadge
+                              status={
+                                admin.accountStatus
+                              }
+                            />
+                          </td>
+                          <td className="px-4 py-4 text-[14px] text-white/45">
+                            {formatLastLogin(
+                              admin.lastLoginAt,
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
                 ) : (
                   <tr>
                     <td
@@ -883,15 +1175,127 @@ export default function AdminRolesPage() {
           </div>
         </section>
 
+        {promoteOpen && (
+          <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 px-5">
+            <div className="w-full max-w-[500px] rounded-[10px] border border-white/10 bg-[#111111] p-6">
+              <ModalHeader
+                title="Promote Existing User"
+                onClose={() =>
+                  setPromoteOpen(false)
+                }
+              />
+
+              <p className="mt-2 text-[14px] leading-6 text-white/40">
+                Promote an existing active Business Nuggets user. Their password, membership, saved content and profile stay unchanged.
+              </p>
+
+              <div className="mt-6 space-y-4">
+                <div>
+                  <label className="block text-[14px] text-white/45">
+                    Registered User
+                  </label>
+
+                  <select
+                    value={
+                      promoteUserId
+                    }
+                    onChange={(event) =>
+                      setPromoteUserId(
+                        event.target.value,
+                      )
+                    }
+                    disabled={
+                      promotableLoading
+                    }
+                    className="mt-2 min-h-11 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[14px] text-white/70 outline-none focus:border-[#C8A35A]/40"
+                  >
+                    <option value="">
+                      {promotableLoading
+                        ? "Loading users..."
+                        : "Select a user"}
+                    </option>
+                    {promotableUsers.map(
+                      (user) => (
+                        <option
+                          key={user.id}
+                          value={user.id}
+                        >
+                          {user.name} · {user.email}
+                        </option>
+                      ),
+                    )}
+                  </select>
+
+                  {!promotableLoading &&
+                    promotableUsers.length ===
+                      0 && (
+                      <p className="mt-2 text-[13px] text-white/30">
+                        There are no active standard users available for promotion.
+                      </p>
+                    )}
+                </div>
+
+                <RoleSelect
+                  value={promoteRole}
+                  onChange={
+                    setPromoteRole
+                  }
+                  allowSuperAdmin={
+                    canEditPermissions
+                  }
+                />
+
+                {promoteRole ===
+                  "super-admin" && (
+                  <div className="rounded-md border border-[#B7791F]/30 bg-[#B7791F]/10 px-4 py-3 text-[13px] leading-5 text-[#E0C48A]">
+                    Super Admin has full administrative authority. Only an existing Super Admin can assign this role.
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPromoteOpen(false)
+                  }
+                  className="min-h-11 rounded-md border border-white/10 px-4 text-[14px] text-white/50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={
+                    saving ||
+                    !promoteUserId
+                  }
+                  onClick={() =>
+                    void promoteExistingUser()
+                  }
+                  className="min-h-11 rounded-md bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] disabled:opacity-50"
+                >
+                  {saving
+                    ? "Promoting..."
+                    : "Promote User"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {addOpen && (
           <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 px-5">
             <div className="w-full max-w-[470px] rounded-[10px] border border-white/10 bg-[#111111] p-6">
               <ModalHeader
-                title="Add Admin"
+                title="Add New Admin"
                 onClose={() =>
                   setAddOpen(false)
                 }
               />
+
+              <p className="mt-2 text-[14px] leading-6 text-white/40">
+                Use this only for a person who does not already have a Business Nuggets account. Existing users should be promoted instead.
+              </p>
 
               <div className="mt-6 space-y-4">
                 <Field
@@ -915,16 +1319,17 @@ export default function AdminRolesPage() {
                   onChange={
                     setNewRole
                   }
+                  allowSuperAdmin={false}
                 />
               </div>
 
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={() =>
                     setAddOpen(false)
                   }
-                  className="h-10 rounded-md border border-white/10 px-4 text-[14px] text-white/50"
+                  className="min-h-11 rounded-md border border-white/10 px-4 text-[14px] text-white/50"
                 >
                   Cancel
                 </button>
@@ -934,7 +1339,7 @@ export default function AdminRolesPage() {
                   onClick={() =>
                     void addAdmin()
                   }
-                  className="h-10 rounded-md bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] disabled:opacity-50"
+                  className="min-h-11 rounded-md bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] disabled:opacity-50"
                 >
                   {saving
                     ? "Creating..."
@@ -968,6 +1373,9 @@ export default function AdminRolesPage() {
                   onChange={
                     setEditRole
                   }
+                  allowSuperAdmin={
+                    canEditPermissions
+                  }
                 />
 
                 <div>
@@ -988,7 +1396,7 @@ export default function AdminRolesPage() {
                           | "suspended",
                       )
                     }
-                    className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[14px] text-white/70 outline-none"
+                    className="mt-2 min-h-11 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[14px] text-white/70 outline-none"
                   >
                     <option value="active">
                       Active
@@ -1000,7 +1408,24 @@ export default function AdminRolesPage() {
                 </div>
               </div>
 
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="mt-6 border-t border-white/[0.07] pt-5">
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() =>
+                    void removeAdminAccess()
+                  }
+                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-[#B54A4A]/35 bg-[#B54A4A]/[0.06] px-4 text-[14px] font-medium text-red-300 transition hover:bg-[#B54A4A]/10 disabled:opacity-50"
+                >
+                  <ShieldOff size={16} />
+                  Remove Admin Access
+                </button>
+                <p className="mt-2 text-[12px] leading-5 text-white/25">
+                  This does not delete the person. Their account returns to a standard user account.
+                </p>
+              </div>
+
+              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={() =>
@@ -1008,7 +1433,7 @@ export default function AdminRolesPage() {
                       null,
                     )
                   }
-                  className="h-10 rounded-md border border-white/10 px-4 text-[14px] text-white/50"
+                  className="min-h-11 rounded-md border border-white/10 px-4 text-[14px] text-white/50"
                 >
                   Cancel
                 </button>
@@ -1018,7 +1443,7 @@ export default function AdminRolesPage() {
                   onClick={() =>
                     void saveAdmin()
                   }
-                  className="h-10 rounded-md bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] disabled:opacity-50"
+                  className="min-h-11 rounded-md bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] disabled:opacity-50"
                 >
                   {saving
                     ? "Saving..."
@@ -1059,7 +1484,7 @@ function Field({
             event.target.value,
           )
         }
-        className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[14px] text-white outline-none focus:border-[#C8A35A]/30"
+        className="mt-2 min-h-11 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[14px] text-white outline-none focus:border-[#C8A35A]/30"
       />
     </div>
   );
@@ -1068,12 +1493,23 @@ function Field({
 function RoleSelect({
   value,
   onChange,
+  allowSuperAdmin = true,
 }: {
   value: AdminRole;
   onChange: (
     value: AdminRole,
   ) => void;
+  allowSuperAdmin?: boolean;
 }) {
+  const roles =
+    allowSuperAdmin
+      ? ROLES
+      : ROLES.filter(
+          (role) =>
+            role !==
+            "super-admin",
+        );
+
   return (
     <div>
       <label className="block text-[14px] text-white/45">
@@ -1087,9 +1523,9 @@ function RoleSelect({
               .value as AdminRole,
           )
         }
-        className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[14px] text-white/70 outline-none"
+        className="mt-2 min-h-11 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[14px] text-white/70 outline-none"
       >
-        {ROLES.map(
+        {roles.map(
           (role) => (
             <option
               key={role}
