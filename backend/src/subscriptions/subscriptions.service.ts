@@ -25,8 +25,123 @@ type UpdatePlanInput = {
   active?: boolean;
 };
 
+type SubscriptionPlanRow = Awaited<
+  ReturnType<
+    typeof db.orm.public.SubscriptionPlan.all
+  >
+>[number];
+
 @Injectable()
 export class SubscriptionsService {
+  /* =========================================
+     CURRENCY NORMALIZATION
+  ========================================= */
+
+  private normalizeCurrencyCode(
+    value: string | null | undefined,
+    fallback = "USD",
+  ) {
+    const raw =
+      (value ?? "")
+        .trim()
+        .toUpperCase();
+
+    const aliases: Record<string, string> = {
+      NAIRA: "NGN",
+      NIARA: "NGN",
+      "NIGERIAN NAIRA": "NGN",
+      NIGERIAN_NAIRA: "NGN",
+      "₦": "NGN",
+      DOLLAR: "USD",
+      DOLLARS: "USD",
+      "US DOLLAR": "USD",
+      "US DOLLARS": "USD",
+    };
+
+    const currency =
+      aliases[raw] ??
+      raw ??
+      fallback;
+
+    const candidate =
+      currency ||
+      fallback;
+
+    try {
+      new Intl.NumberFormat(
+        "en-US",
+        {
+          style: "currency",
+          currency:
+            candidate,
+        },
+      ).format(0);
+
+      return candidate;
+    } catch {
+      return fallback;
+    }
+  }
+
+  private requireCurrencyCode(
+    value: string | null | undefined,
+  ) {
+    const normalized =
+      this.normalizeCurrencyCode(
+        value,
+        "",
+      );
+
+    if (!normalized) {
+      throw new BadRequestException(
+        "Use a valid currency code such as NGN or USD.",
+      );
+    }
+
+    return normalized;
+  }
+
+  private async repairPlanCurrencies(
+    plans: readonly SubscriptionPlanRow[],
+  ) {
+    return Promise.all(
+      plans.map(
+        async (plan) => {
+          const normalizedCurrency =
+            this.normalizeCurrencyCode(
+              plan.currency,
+              "USD",
+            );
+
+          if (
+            normalizedCurrency ===
+            plan.currency
+          ) {
+            return plan;
+          }
+
+          const updated =
+            await db.orm.public.SubscriptionPlan
+              .where({
+                id: plan.id,
+              })
+              .update({
+                currency:
+                  normalizedCurrency,
+              });
+
+          return (
+            updated ?? {
+              ...plan,
+              currency:
+                normalizedCurrency,
+            }
+          );
+        },
+      ),
+    );
+  }
+
   /* =========================================
      DEFAULT PLANS FROM THE ADMIN DESIGN
   ========================================= */
@@ -92,8 +207,13 @@ export class SubscriptionsService {
   async getOverview() {
     await this.ensureDefaultPlans();
 
-    const plans =
+    const rawPlans =
       await db.orm.public.SubscriptionPlan.all();
+
+    const plans =
+      await this.repairPlanCurrencies(
+        rawPlans,
+      );
 
     const users =
       await db.orm.public.User.all();
@@ -132,6 +252,12 @@ export class SubscriptionsService {
           return {
             ...transaction,
 
+            currency:
+              this.normalizeCurrencyCode(
+                transaction.currency,
+                "USD",
+              ),
+
             member:
               user?.name ||
               "Unknown Member",
@@ -168,8 +294,13 @@ export class SubscriptionsService {
   async getPublicPlans() {
     await this.ensureDefaultPlans();
 
-    const plans =
+    const rawPlans =
       await db.orm.public.SubscriptionPlan.all();
+
+    const plans =
+      await this.repairPlanCurrencies(
+        rawPlans,
+      );
 
     return plans
       .filter(
@@ -197,6 +328,12 @@ export class SubscriptionsService {
 
     const name =
       input.name.trim();
+
+    const currency =
+      this.requireCurrencyCode(
+        input.currency ??
+          "USD",
+      );
 
     if (!slug || !name) {
       throw new BadRequestException(
@@ -236,9 +373,7 @@ export class SubscriptionsService {
       priceCents:
         input.priceCents,
 
-      currency:
-        input.currency ??
-        "USD",
+      currency,
 
       billingCycle:
         input.billingCycle,
@@ -285,6 +420,14 @@ export class SubscriptionsService {
       );
     }
 
+    const currency =
+      input.currency !==
+      undefined
+        ? this.requireCurrencyCode(
+            input.currency,
+          )
+        : undefined;
+
     const updated =
       await db.orm.public.SubscriptionPlan
         .where({
@@ -303,10 +446,9 @@ export class SubscriptionsService {
               input.priceCents,
           }),
 
-          ...(input.currency !==
+          ...(currency !==
             undefined && {
-            currency:
-              input.currency,
+            currency,
           }),
 
           ...(input.billingCycle !==
