@@ -57,6 +57,9 @@ export default function PaymentCallbackContent() {
       return;
     }
 
+    const paymentReference = reference;
+    const authToken = token;
+
     let mounted = true;
 
     async function verify() {
@@ -64,12 +67,12 @@ export default function PaymentCallbackContent() {
         const response =
           await fetch(
             `${API_URL}/payments/verify/${encodeURIComponent(
-              reference,
+              paymentReference,
             )}`,
             {
               headers: {
                 Authorization:
-                  `Bearer ${token}`,
+                  `Bearer ${authToken}`,
               },
             },
           );
