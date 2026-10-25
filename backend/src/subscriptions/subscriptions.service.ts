@@ -162,6 +162,28 @@ export class SubscriptionsService {
   }
 
   /* =========================================
+     PUBLIC ACTIVE PLANS
+  ========================================= */
+
+  async getPublicPlans() {
+    await this.ensureDefaultPlans();
+
+    const plans =
+      await db.orm.public.SubscriptionPlan.all();
+
+    return plans
+      .filter(
+        (plan) =>
+          plan.active,
+      )
+      .sort(
+        (a, b) =>
+          a.displayOrder -
+          b.displayOrder,
+      );
+  }
+
+  /* =========================================
      CREATE PLAN
   ========================================= */
 
