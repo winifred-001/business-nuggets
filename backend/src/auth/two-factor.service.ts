@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from "@nestjs/common";
 
@@ -45,8 +46,8 @@ export class TwoFactorService {
         .TWO_FACTOR_ENCRYPTION_KEY;
 
     if (!key) {
-      throw new Error(
-        "TWO_FACTOR_ENCRYPTION_KEY is not configured",
+      throw new ServiceUnavailableException(
+        "Admin two-factor authentication is not configured on the server. Set TWO_FACTOR_ENCRYPTION_KEY in the backend environment.",
       );
     }
 
@@ -55,8 +56,8 @@ export class TwoFactorService {
         key,
       )
     ) {
-      throw new Error(
-        "TWO_FACTOR_ENCRYPTION_KEY must be a 32-byte hexadecimal key",
+      throw new ServiceUnavailableException(
+        "TWO_FACTOR_ENCRYPTION_KEY must contain exactly 64 hexadecimal characters.",
       );
     }
 
@@ -118,15 +119,23 @@ export class TwoFactorService {
   ========================================================= */
 
   private decryptSecret(
-    encryptedValue: string,
+    storedValue: string,
   ) {
+    /*
+      Compatibility with any older records that stored the TOTP
+      secret directly before encrypted secrets were introduced.
+    */
+    if (!storedValue.startsWith("v1:")) {
+      return storedValue;
+    }
+
     const [
       version,
       ivValue,
       authTagValue,
       encryptedValueBase64,
     ] =
-      encryptedValue.split(
+      storedValue.split(
         ":",
       );
 
@@ -136,44 +145,57 @@ export class TwoFactorService {
       !authTagValue ||
       !encryptedValueBase64
     ) {
-      throw new Error(
-        "Invalid encrypted 2FA secret",
+      throw new ServiceUnavailableException(
+        "The stored two-factor authentication secret is invalid. Reconfigure 2FA for this administrator.",
       );
     }
 
-    const decipher =
-      createDecipheriv(
-        this.algorithm,
-        this.getEncryptionKey(),
+    try {
+      const decipher =
+        createDecipheriv(
+          this.algorithm,
+          this.getEncryptionKey(),
 
+          Buffer.from(
+            ivValue,
+            "base64",
+          ),
+        );
+
+      decipher.setAuthTag(
         Buffer.from(
-          ivValue,
+          authTagValue,
           "base64",
         ),
       );
 
-    decipher.setAuthTag(
-      Buffer.from(
-        authTagValue,
-        "base64",
-      ),
-    );
-
-    const decrypted =
-      Buffer.concat([
-        decipher.update(
-          Buffer.from(
-            encryptedValueBase64,
-            "base64",
+      const decrypted =
+        Buffer.concat([
+          decipher.update(
+            Buffer.from(
+              encryptedValueBase64,
+              "base64",
+            ),
           ),
-        ),
 
-        decipher.final(),
-      ]);
+          decipher.final(),
+        ]);
 
-    return decrypted.toString(
-      "utf8",
-    );
+      return decrypted.toString(
+        "utf8",
+      );
+    } catch (error) {
+      if (
+        error instanceof
+        ServiceUnavailableException
+      ) {
+        throw error;
+      }
+
+      throw new ServiceUnavailableException(
+        "The server cannot decrypt this administrator's two-factor secret. Ensure TWO_FACTOR_ENCRYPTION_KEY is the same key that was used when 2FA was configured, or reset and configure 2FA again.",
+      );
+    }
   }
 
   /* =========================================================
@@ -364,7 +386,6 @@ export class TwoFactorService {
         "Two-factor authentication setup started",
 
       secret,
-
       otpauthUrl,
     };
   }
