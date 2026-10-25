@@ -6,9 +6,6 @@ import {
   useState,
 } from "react";
 import {
-  useSearchParams,
-} from "next/navigation";
-import {
   CheckCircle2,
   LoaderCircle,
   XCircle,
@@ -17,9 +14,6 @@ import {
 import { API_URL } from "@/lib/api";
 
 export default function PaymentCallbackContent() {
-  const params =
-    useSearchParams();
-
   const [status, setStatus] =
     useState<
       | "verifying"
@@ -33,13 +27,14 @@ export default function PaymentCallbackContent() {
     );
 
   useEffect(() => {
-    const reference =
-      params.get(
-        "reference",
-      ) ||
-      params.get(
-        "trxref",
+    const params =
+      new URLSearchParams(
+        window.location.search,
       );
+
+    const reference =
+      params.get("reference") ||
+      params.get("trxref");
 
     const token =
       localStorage.getItem(
@@ -101,9 +96,7 @@ export default function PaymentCallbackContent() {
           ),
         );
 
-        setStatus(
-          "success",
-        );
+        setStatus("success");
         setMessage(
           "Payment verified. Premium access is now active on your account.",
         );
@@ -126,29 +119,26 @@ export default function PaymentCallbackContent() {
     return () => {
       mounted = false;
     };
-  }, [params]);
+  }, []);
 
   return (
     <main className="mx-auto flex w-full max-w-[760px] flex-1 items-center px-5 py-16 sm:px-8">
       <section className="w-full rounded-[12px] border border-white/10 bg-[#111111] p-7 text-center sm:p-10">
-        {status ===
-          "verifying" && (
+        {status === "verifying" && (
           <LoaderCircle
             size={34}
             className="mx-auto animate-spin text-[#C8A35A]"
           />
         )}
 
-        {status ===
-          "success" && (
+        {status === "success" && (
           <CheckCircle2
             size={36}
             className="mx-auto text-emerald-400"
           />
         )}
 
-        {status ===
-          "error" && (
+        {status === "error" && (
           <XCircle
             size={36}
             className="mx-auto text-red-400"
@@ -156,11 +146,9 @@ export default function PaymentCallbackContent() {
         )}
 
         <h1 className="mt-5 font-serif text-[32px] leading-tight text-[#FAF9F6]">
-          {status ===
-          "verifying"
+          {status === "verifying"
             ? "Verifying Payment"
-            : status ===
-                "success"
+            : status === "success"
               ? "Premium Unlocked"
               : "Payment Verification"}
         </h1>
@@ -169,8 +157,7 @@ export default function PaymentCallbackContent() {
           {message}
         </p>
 
-        {status ===
-          "success" && (
+        {status === "success" && (
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link
               href="/library"
@@ -188,8 +175,7 @@ export default function PaymentCallbackContent() {
           </div>
         )}
 
-        {status ===
-          "error" && (
+        {status === "error" && (
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link
               href="/membership"
