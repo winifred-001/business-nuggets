@@ -8,11 +8,6 @@ import {
   NestFactory,
 } from "@nestjs/core";
 
-import {
-  DocumentBuilder,
-  SwaggerModule,
-} from "@nestjs/swagger";
-
 import helmet from "helmet";
 
 import {
@@ -54,75 +49,6 @@ async function bootstrap() {
     expressApp.set(
       "trust proxy",
       trustedProxyHops,
-    );
-  }
-
-  /* =========================================================
-     SWAGGER / OPENAPI
-  ========================================================= */
-
-  const swaggerEnabled =
-    process.env.SWAGGER_ENABLED !==
-    "false";
-
-  if (swaggerEnabled) {
-    const swaggerConfig =
-      new DocumentBuilder()
-        .setTitle(
-          "Business Nuggets API",
-        )
-        .setDescription(
-          "Interactive API documentation for the Business Nuggets backend.",
-        )
-        .setVersion("1.0")
-        .addBearerAuth(
-          {
-            type: "http",
-            scheme: "bearer",
-            bearerFormat: "JWT",
-            description:
-              "Paste the JWT access token returned by login.",
-          },
-          "JWT-auth",
-        )
-        .addSecurityRequirements(
-          "JWT-auth",
-        )
-        .build();
-
-    const documentFactory = () =>
-      SwaggerModule.createDocument(
-        app,
-        swaggerConfig,
-        {
-          operationIdFactory:
-            (
-              _controllerKey,
-              methodKey,
-            ) => methodKey,
-        },
-      );
-
-    SwaggerModule.setup(
-      "docs",
-      app,
-      documentFactory,
-      {
-        customSiteTitle:
-          "Business Nuggets API Docs",
-        jsonDocumentUrl:
-          "docs/openapi.json",
-        yamlDocumentUrl:
-          "docs/openapi.yaml",
-        swaggerOptions: {
-          persistAuthorization:
-            true,
-          displayRequestDuration:
-            true,
-          tryItOutEnabled:
-            true,
-        },
-      },
     );
   }
 
@@ -234,11 +160,9 @@ async function bootstrap() {
     `Business Nuggets API running on port ${port}`,
   );
 
-  if (swaggerEnabled) {
-    console.log(
-      `Swagger docs available at /docs`,
-    );
-  }
+  console.log(
+    "API docs available at /docs",
+  );
 }
 
 void bootstrap();
