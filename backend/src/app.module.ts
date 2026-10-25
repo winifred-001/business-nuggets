@@ -91,6 +91,10 @@ import {
   PushNotificationsModule,
 } from "./push-notifications/push-notifications.module";
 
+import {
+  PaymentsModule,
+} from "./payments/payments.module";
+
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -120,6 +124,7 @@ import {
     AnalyticsModule,
     MobileAppModule,
     AppSettingsModule,
+    PaymentsModule,
 
     AdminModule,
   ],
