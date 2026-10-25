@@ -340,12 +340,20 @@ async function bootstrap() {
       .map((origin) => origin.trim()),
   ].filter(Boolean) as string[];
 
+  const apiOrigins = [
+    process.env.RENDER_EXTERNAL_URL,
+    process.env.BACKEND_URL,
+    process.env.API_URL,
+  ].filter(Boolean) as string[];
+
   const allowedOrigins = new Set([
     "http://localhost:3000",
     "https://business-nuggets-theta.vercel.app",
     "https://business-nuggets-chioms.vercel.app",
     "https://business-nuggets-git-main-chioms.vercel.app",
+    "https://business-nuggets-api.onrender.com",
     ...configuredOrigins,
+    ...apiOrigins,
   ]);
 
   const businessNuggetsDeploymentOrigin =
