@@ -95,6 +95,10 @@ import {
   PaymentsModule,
 } from "./payments/payments.module";
 
+import {
+  DocsController,
+} from "./docs/docs.controller";
+
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -131,6 +135,7 @@ import {
 
   controllers: [
     AppController,
+    DocsController,
   ],
 
   providers: [
