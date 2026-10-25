@@ -489,7 +489,7 @@ export class PaymentsService {
         expiresAt.getTime() >
           paymentDate.getTime()
           ? new Date(
-              expiresAt,
+              expiresAt.getTime(),
             )
           : paymentDate;
 
@@ -575,7 +575,7 @@ export class PaymentsService {
   ) {
     const result =
       new Date(
-        baseDate,
+        baseDate.getTime(),
       );
 
     if (
