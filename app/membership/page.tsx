@@ -209,6 +209,9 @@ export default function MembershipPage() {
               isPremium={Boolean(
                 isPremium,
               )}
+              currentPlan={
+                user?.subscriptionPlan
+              }
             />
           )}
 
