@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from "@nestjs/common";
 
@@ -168,10 +169,25 @@ async register(
         .trim()
         .toLowerCase();
 
-    const user =
-      await this.usersService.findByEmail(
-        normalizedEmail,
+    let user: Awaited<
+      ReturnType<UsersService["findByEmail"]>
+    >;
+
+    try {
+      user =
+        await this.usersService.findByEmail(
+          normalizedEmail,
+        );
+    } catch (error) {
+      console.error(
+        "Login failed at user lookup:",
+        error,
       );
+
+      throw new InternalServerErrorException(
+        "Login failed while reading the user account. Check the production database schema and connection.",
+      );
+    }
 
     if (!user) {
       throw new UnauthorizedException(
@@ -179,11 +195,24 @@ async register(
       );
     }
 
-    const passwordMatches =
-      await bcrypt.compare(
-        password,
-        user.passwordHash,
+    let passwordMatches = false;
+
+    try {
+      passwordMatches =
+        await bcrypt.compare(
+          password,
+          user.passwordHash,
+        );
+    } catch (error) {
+      console.error(
+        "Login failed at password verification:",
+        error,
       );
+
+      throw new InternalServerErrorException(
+        "Login failed while validating the password.",
+      );
+    }
 
     if (!passwordMatches) {
       throw new UnauthorizedException(
@@ -211,8 +240,25 @@ async register(
       );
 
     if (isAdmin) {
-      const settings =
-        await db.orm.public.AppSettings.all();
+      let settings: Awaited<
+        ReturnType<
+          typeof db.orm.public.AppSettings.all
+        >
+      >;
+
+      try {
+        settings =
+          await db.orm.public.AppSettings.all();
+      } catch (error) {
+        console.error(
+          "Login failed at admin security settings lookup:",
+          error,
+        );
+
+        throw new InternalServerErrorException(
+          "Login failed while reading administrator security settings.",
+        );
+      }
 
       const twoFactorAdminsRequired =
         settings[0]
@@ -230,23 +276,42 @@ async register(
           !user.twoFactorEnabled ||
           !user.twoFactorSecret
         ) {
-          const setupToken =
-            await this.jwtService.signAsync(
-              {
-                sub:
-                  user.id,
-
-                email:
-                  user.email,
-
-                purpose:
-                  "2fa-setup",
-              },
-              {
-                expiresIn:
-                  "10m",
-              },
+          if (!process.env.JWT_SECRET) {
+            throw new InternalServerErrorException(
+              "Login cannot create the 2FA setup token because JWT_SECRET is not configured on the backend.",
             );
+          }
+
+          let setupToken: string;
+
+          try {
+            setupToken =
+              await this.jwtService.signAsync(
+                {
+                  sub:
+                    user.id,
+
+                  email:
+                    user.email,
+
+                  purpose:
+                    "2fa-setup",
+                },
+                {
+                  expiresIn:
+                    "10m",
+                },
+              );
+          } catch (error) {
+            console.error(
+              "Login failed while creating 2FA setup token:",
+              error,
+            );
+
+            throw new InternalServerErrorException(
+              "Login failed while creating the 2FA setup token.",
+            );
+          }
 
           return {
             message:
@@ -285,49 +350,49 @@ async register(
         ===================================================== */
 
         if (
-  !twoFactorToken &&
-  !recoveryCode
-) {
-  throw new UnauthorizedException(
-    "Two-factor authentication code or recovery code required",
-  );
-}
+          !twoFactorToken &&
+          !recoveryCode
+        ) {
+          throw new UnauthorizedException(
+            "Two-factor authentication code or recovery code required",
+          );
+        }
 
-/* =====================================================
-   AUTHENTICATOR CODE LOGIN
-===================================================== */
+        /* =====================================================
+           AUTHENTICATOR CODE LOGIN
+        ===================================================== */
 
-if (twoFactorToken) {
-  const validTwoFactorCode =
-    await this.twoFactorService.verifyCode(
-      user.id,
-      twoFactorToken,
-    );
+        if (twoFactorToken) {
+          const validTwoFactorCode =
+            await this.twoFactorService.verifyCode(
+              user.id,
+              twoFactorToken,
+            );
 
-  if (!validTwoFactorCode) {
-    throw new UnauthorizedException(
-      "Invalid two-factor authentication code",
-    );
-  }
-}
+          if (!validTwoFactorCode) {
+            throw new UnauthorizedException(
+              "Invalid two-factor authentication code",
+            );
+          }
+        }
 
-/* =====================================================
-   RECOVERY CODE LOGIN
-===================================================== */
+        /* =====================================================
+           RECOVERY CODE LOGIN
+        ===================================================== */
 
-else if (recoveryCode) {
-  const validRecoveryCode =
-    await this.twoFactorService.verifyRecoveryCode(
-      user.id,
-      recoveryCode,
-    );
+        else if (recoveryCode) {
+          const validRecoveryCode =
+            await this.twoFactorService.verifyRecoveryCode(
+              user.id,
+              recoveryCode,
+            );
 
-  if (!validRecoveryCode) {
-    throw new UnauthorizedException(
-      "Invalid or already used recovery code",
-    );
-  }
-}
+          if (!validRecoveryCode) {
+            throw new UnauthorizedException(
+              "Invalid or already used recovery code",
+            );
+          }
+        }
       }
     }
 
@@ -335,9 +400,20 @@ else if (recoveryCode) {
        LOGIN SUCCESS
     ========================================================= */
 
-    await this.usersService.markLastLogin(
-      user.id,
-    );
+    try {
+      await this.usersService.markLastLogin(
+        user.id,
+      );
+    } catch (error) {
+      console.error(
+        "Login failed at lastLoginAt update:",
+        error,
+      );
+
+      throw new InternalServerErrorException(
+        "Login failed while updating lastLoginAt. The production User table may be missing the lastLoginAt column.",
+      );
+    }
 
     const adminRole =
       user.role === "owner"
@@ -345,31 +421,65 @@ else if (recoveryCode) {
         : user.adminRole ??
           null;
 
-    const session =
-      await this.sessionsService.createSession(
-        user.id,
-        requestInfo,
+    let session: Awaited<
+      ReturnType<SessionsService["createSession"]>
+    >;
+
+    try {
+      session =
+        await this.sessionsService.createSession(
+          user.id,
+          requestInfo,
+        );
+    } catch (error) {
+      console.error(
+        "Login failed at session creation:",
+        error,
       );
 
-    const token =
-      await this.jwtService.signAsync({
-        sub:
-          user.id,
+      throw new InternalServerErrorException(
+        "Login failed while creating a user session. The production database may be missing the UserSession migration.",
+      );
+    }
 
-        email:
-          user.email,
+    if (!process.env.JWT_SECRET) {
+      throw new InternalServerErrorException(
+        "Login cannot create an access token because JWT_SECRET is not configured on the backend.",
+      );
+    }
 
-        role:
-          user.role,
+    let token: string;
 
-        adminRole,
+    try {
+      token =
+        await this.jwtService.signAsync({
+          sub:
+            user.id,
 
-        accountStatus:
-          user.accountStatus,
+          email:
+            user.email,
 
-        sessionId:
-          session.id,
-      });
+          role:
+            user.role,
+
+          adminRole,
+
+          accountStatus:
+            user.accountStatus,
+
+          sessionId:
+            session.id,
+        });
+    } catch (error) {
+      console.error(
+        "Login failed at JWT token creation:",
+        error,
+      );
+
+      throw new InternalServerErrorException(
+        "Login failed while creating the access token. Check JWT_SECRET on the backend.",
+      );
+    }
 
     return {
       message:
