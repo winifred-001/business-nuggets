@@ -42,16 +42,32 @@ body {
   background: var(--bnb-obsidian);
   color: var(--bnb-ivory);
   font-family: var(--font-inter), Inter, Arial, Helvetica, sans-serif;
-  font-size: 16px;
-  line-height: 1.625;
+  font-size: 17px;
+  line-height: 1.65;
   text-rendering: optimizeLegibility;
 }
 
 h1,
 h2,
+h3,
 .font-serif,
 .bnb-display {
   font-family: var(--font-eb-garamond), "EB Garamond", Georgia, "Times New Roman", serif;
+}
+
+h1 {
+  font-size: 44px;
+  line-height: 1.08;
+}
+
+h2 {
+  font-size: 32px;
+  line-height: 1.15;
+}
+
+h3 {
+  font-size: 24px;
+  line-height: 1.2;
 }
 
 button,
@@ -104,6 +120,53 @@ td {
 :focus-visible {
   outline: 2px solid var(--bnb-soft-gold);
   outline-offset: 2px;
+}
+
+/* =========================================================
+   GLOBAL BUSINESS NUGGETS TYPOGRAPHY
+   Inter stays the UI/body font; EB Garamond stays the display font.
+   These rules prevent older hard-coded micro text classes from
+   making the product look undersized on desktop and tablet.
+========================================================= */
+
+[class~="text-[6px]"],
+[class~="text-[7px]"],
+[class~="text-[8px]"],
+[class~="text-[9px]"] {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+[class~="text-[10px]"],
+[class~="text-[11px]"],
+[class~="text-[12px]"] {
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+}
+
+[class~="text-[13px]"],
+[class~="text-[14px]"] {
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+
+p[class~="text-[10px]"],
+p[class~="text-[11px]"],
+p[class~="text-[12px]"],
+p[class~="text-[13px]"],
+p[class~="text-[14px]"] {
+  font-size: 16px !important;
+  line-height: 1.65 !important;
+}
+
+.text-xs {
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.text-sm {
+  font-size: 15px !important;
+  line-height: 1.55 !important;
 }
 
 /* =========================================================
@@ -250,7 +313,7 @@ td {
 
 @media (min-width: 768px) and (max-width: 1023px) {
   h1 {
-    font-size: min(40px, 6vw) !important;
+    font-size: min(42px, 6vw) !important;
     line-height: 1.15 !important;
   }
 
@@ -260,7 +323,7 @@ td {
   }
 
   h2 {
-    font-size: min(30px, 4vw) !important;
+    font-size: min(32px, 4vw) !important;
     line-height: 1.2 !important;
   }
 
