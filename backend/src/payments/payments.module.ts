@@ -5,6 +5,7 @@ import {
 import { AuthModule } from "../auth/auth.module";
 import { SubscriptionsModule } from "../subscriptions/subscriptions.module";
 import { PaymentsController } from "./payments.controller";
+import { PaystackCallbackController } from "./paystack-callback.controller";
 import { PaymentsService } from "./payments.service";
 
 @Module({
@@ -15,6 +16,7 @@ import { PaymentsService } from "./payments.service";
 
   controllers: [
     PaymentsController,
+    PaystackCallbackController,
   ],
 
   providers: [
