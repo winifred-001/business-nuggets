@@ -5,7 +5,6 @@ import Link from "next/link";
 
 import {
   Crown,
-  Headphones,
   Library,
   Mail,
 } from "lucide-react";
@@ -18,6 +17,7 @@ import {
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import AuthRouteGuard from "@/components/AuthRouteGuard";
+import PremiumCheckout from "@/components/PremiumCheckout";
 
 import { API_URL } from "@/lib/api";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
@@ -29,12 +29,12 @@ type User = {
   name: string;
   email: string;
   role?: string;
-
-  /*
-   * This will start working automatically
-   * once we add it to the backend/admin side.
-   */
   membershipTier?: string;
+  subscriptionPlan?: string;
+  subscriptionStatus?: string;
+  subscriptionExpiresAt?:
+    | string
+    | null;
 };
 
 export default function MembershipPage() {
@@ -53,10 +53,6 @@ export default function MembershipPage() {
 
   const [error, setError] =
     useState("");
-
-  /* =========================================
-     LOAD USER + PREMIUM TEACHINGS
-  ========================================= */
 
   useEffect(() => {
     async function loadMembership() {
@@ -85,7 +81,9 @@ export default function MembershipPage() {
             },
           ),
 
-          getPublishedNuggets(),
+          getPublishedNuggets(
+            token,
+          ),
         ]);
 
         const userData =
@@ -121,7 +119,7 @@ export default function MembershipPage() {
       }
     }
 
-    loadMembership();
+    void loadMembership();
   }, []);
 
   const isPremium =
@@ -135,8 +133,6 @@ export default function MembershipPage() {
         <Navbar />
 
         <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
-          {/* BACK */}
-
           <Link
             href="/workspace"
             className="text-[10px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
@@ -144,22 +140,15 @@ export default function MembershipPage() {
             ← My Wisdom Workspace
           </Link>
 
-          {/* HEADER */}
-
           <section className="mt-3">
             <h1 className="font-serif text-[40px] leading-tight">
               Your BNB Premium Membership
             </h1>
 
             <p className="mt-3 text-[13px] leading-6 text-white/40">
-              Understand your
-              current access and the
-              GOLD labels throughout
-              the archive.
+              Manage your current access, Premium plan and billing.
             </p>
           </section>
-
-          {/* ERROR */}
 
           {error && (
             <div className="mt-7 rounded-md border border-red-500/20 bg-red-500/[0.05] px-4 py-3">
@@ -168,8 +157,6 @@ export default function MembershipPage() {
               </p>
             </div>
           )}
-
-          {/* MEMBERSHIP SUMMARY */}
 
           {!loading &&
             !error && (
@@ -193,17 +180,36 @@ export default function MembershipPage() {
 
                 <p className="mt-5 max-w-[850px] text-[11px] leading-6 text-white/40">
                   {isPremium
-                    ? "Your account currently has BNB Premium access to full-length scripture commentary and premium teachings marked GOLD."
-                    : "Your account currently has Free Access. You can explore the library, follow topics and discover teachings that are available without GOLD access."}
+                    ? "Your account has full access to every published Business Nugget, including Reader, Audio and Musical experiences."
+                    : "Your account currently has Free Access. You can open the 10 free Nuggets selected by the admin and upgrade to unlock the complete library."}
                 </p>
+
+                {isPremium && (
+                  <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-[9px] text-white/35">
+                    <span>
+                      Plan: {user?.subscriptionPlan || "Premium"}
+                    </span>
+
+                    <span>
+                      Status: {user?.subscriptionStatus || "active"}
+                    </span>
+
+                    {user?.subscriptionExpiresAt && (
+                      <span>
+                        Access until: {new Date(
+                          user.subscriptionExpiresAt,
+                        ).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href="/library/account"
                     className="inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 bg-[#080808] px-4 text-[10px] font-medium text-white/70 transition hover:border-[#C8A35A]/35 hover:text-white"
                   >
-                    Billing &amp;
-                    Membership Help →
+                    Billing &amp; Membership Help →
                   </Link>
 
                   <a
@@ -220,11 +226,16 @@ export default function MembershipPage() {
               </section>
             )}
 
-          {/* ACCESS CARDS */}
+          {!loading &&
+            !error && (
+              <PremiumCheckout
+                isPremium={Boolean(
+                  isPremium,
+                )}
+              />
+            )}
 
-          <section className="mt-6 grid gap-5 lg:grid-cols-2">
-            {/* FREE */}
-
+          <section className="mt-8 grid gap-5 lg:grid-cols-2">
             <article className="rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-6">
               <div className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-[#181818] text-white/50">
                 <Library
@@ -237,13 +248,7 @@ export default function MembershipPage() {
               </h2>
 
               <p className="mt-4 text-[11px] leading-6 text-white/40">
-                Explore the library,
-                core topics,
-                challenges and
-                scripture index.
-                Discover teachings
-                that are not marked
-                GOLD.
+                The admin selects up to 10 published Nuggets that Free members can open. The rest of the library remains visible but locked for Free accounts.
               </p>
 
               <Link
@@ -253,8 +258,6 @@ export default function MembershipPage() {
                 Browse All Nuggets →
               </Link>
             </article>
-
-            {/* PREMIUM */}
 
             <article className="rounded-[10px] border border-[#C8A35A]/45 bg-[#111111] p-5 sm:p-6">
               <div className="flex h-9 w-9 items-center justify-center rounded-md border border-[#C8A35A]/25 bg-[#C8A35A]/[0.06] text-[#C8A35A]">
@@ -268,133 +271,102 @@ export default function MembershipPage() {
               </h2>
 
               <p className="mt-4 text-[11px] leading-6 text-white/40">
-                Access full-length
-                scripture commentary,
-                including premium
-                teachings marked
-                GOLD. Continue
-                building your
-                personal study
-                workspace.
+                Premium unlocks the complete published library. Once payment is verified, all Nuggets open normally without Gold lock messaging.
               </p>
 
               <Link
                 href="/library"
                 className="mt-5 inline-block text-[10px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
               >
-                Explore GOLD Teachings →
+                Explore Full Library →
               </Link>
             </article>
           </section>
 
-          {/* PREMIUM TEACHINGS */}
+          {!isPremium && (
+            <section className="mt-10">
+              <h2 className="font-serif text-[28px] leading-tight">
+                Premium Teachings
+              </h2>
 
-          <section className="mt-10">
-            <h2 className="font-serif text-[28px] leading-tight">
-              Recognize Premium Teachings
-            </h2>
+              <p className="mt-3 text-[11px] leading-6 text-white/35">
+                Free members will see Gold identification on locked Nuggets.
+              </p>
 
-            <p className="mt-3 text-[11px] leading-6 text-white/35">
-              Teachings marked GOLD
-              belong to the premium
-              collection.
-            </p>
-
-            {loading && (
-              <div className="mt-6 space-y-4">
-                {[1, 2].map(
-                  (item) => (
-                    <div
-                      key={
-                        item
-                      }
-                      className="h-[88px] animate-pulse rounded-[10px] border border-white/10 bg-[#111111]"
-                    />
-                  ),
-                )}
-              </div>
-            )}
-
-            {!loading &&
-              goldNuggets.length ===
-                0 && (
-                <div className="mt-6 rounded-[10px] border border-white/10 bg-[#111111] p-6">
-                  <p className="text-[11px] leading-6 text-white/35">
-                    No published
-                    GOLD teachings
-                    are available
-                    yet.
-                  </p>
-                </div>
-              )}
-
-            {!loading &&
-              goldNuggets.length >
-                0 && (
+              {loading && (
                 <div className="mt-6 space-y-4">
-                  {goldNuggets.map(
-                    (
-                      nugget,
-                    ) => (
-                      <Link
-                        key={
-                          nugget.id
-                        }
-                        href={`/nugget/${nugget.slug}`}
-                        className="group flex items-center gap-4 rounded-[10px] border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/40"
-                      >
-                        <div className="relative h-[58px] w-[72px] shrink-0 overflow-hidden rounded-md bg-[#181818]">
-                          <Image
-                            src={
-                              nugget.image
-                            }
-                            alt={
-                              nugget.title
-                            }
-                            fill
-                            sizes="72px"
-                            className="object-cover"
-                          />
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="font-serif text-[15px] leading-5 text-white/90 transition group-hover:text-[#C8A35A]">
-                              {
-                                nugget.title
-                              }
-                            </h3>
-
-                            <span className="rounded-sm bg-[#C8A35A]/15 px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
-                              Gold
-                            </span>
-                          </div>
-
-                          <p className="mt-1 text-[9px] text-white/30">
-                            {
-                              nugget.scriptureRef
-                            }
-
-                            {nugget.topic &&
-                              ` • ${nugget.topic}`}
-
-                            {nugget.duration &&
-                              ` • ${nugget.duration}`}
-                          </p>
-                        </div>
-
-                        <span className="hidden shrink-0 text-[9px] font-medium text-[#C8A35A] sm:block">
-                          Listen &amp;
-                          Read →
-                        </span>
-                      </Link>
+                  {[1, 2].map(
+                    (item) => (
+                      <div
+                        key={item}
+                        className="h-[88px] animate-pulse rounded-[10px] border border-white/10 bg-[#111111]"
+                      />
                     ),
                   )}
                 </div>
               )}
-          </section>
 
-          {/* MEMBERSHIP QUESTIONS */}
+              {!loading &&
+                goldNuggets.length ===
+                  0 && (
+                  <div className="mt-6 rounded-[10px] border border-white/10 bg-[#111111] p-6">
+                    <p className="text-[11px] leading-6 text-white/35">
+                      No published Gold teachings are available yet.
+                    </p>
+                  </div>
+                )}
+
+              {!loading &&
+                goldNuggets.length >
+                  0 && (
+                  <div className="mt-6 space-y-4">
+                    {goldNuggets.map(
+                      (nugget) => (
+                        <Link
+                          key={nugget.id}
+                          href={`/nugget/${nugget.slug}`}
+                          className="group flex items-center gap-4 rounded-[10px] border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/40"
+                        >
+                          <div className="relative h-[58px] w-[72px] shrink-0 overflow-hidden rounded-md bg-[#181818]">
+                            <Image
+                              src={nugget.image}
+                              alt={nugget.title}
+                              fill
+                              sizes="72px"
+                              className="object-cover"
+                            />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="font-serif text-[15px] leading-5 text-white/90 transition group-hover:text-[#C8A35A]">
+                                {nugget.title}
+                              </h3>
+
+                              <span className="rounded-sm bg-[#C8A35A]/15 px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+                                Gold
+                              </span>
+                            </div>
+
+                            <p className="mt-1 text-[9px] text-white/30">
+                              {nugget.scriptureRef}
+                              {nugget.topic &&
+                                ` • ${nugget.topic}`}
+                              {nugget.duration &&
+                                ` • ${nugget.duration}`}
+                            </p>
+                          </div>
+
+                          <span className="hidden shrink-0 text-[9px] font-medium text-[#C8A35A] sm:block">
+                            Unlock →
+                          </span>
+                        </Link>
+                      ),
+                    )}
+                  </div>
+                )}
+            </section>
+          )}
 
           <section className="mt-8 rounded-[8px] border border-[#C8A35A]/20 bg-[#C8A35A]/[0.14] px-5 py-4">
             <p className="text-[10px] font-semibold text-[#E0C48A]">
@@ -402,15 +374,7 @@ export default function MembershipPage() {
             </p>
 
             <p className="mt-2 text-[10px] leading-5 text-white/35">
-              For billing details or
-              changes to your
-              membership, use
-              Support. No price,
-              renewal date or
-              payment schedule is
-              shown here until the
-              membership system
-              provides those details.
+              Plan prices are controlled from the Admin Subscriptions page. Payments are verified by the backend before Premium access is activated.
             </p>
           </section>
         </main>
