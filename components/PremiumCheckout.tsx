@@ -26,14 +26,16 @@ type SubscriptionPlan = {
 
 export default function PremiumCheckout({
   isPremium,
+  currentPlan,
 }: {
   isPremium: boolean;
+  currentPlan?: string | null;
 }) {
   const [plans, setPlans] =
     useState<SubscriptionPlan[]>([]);
 
   const [loading, setLoading] =
-    useState(!isPremium);
+    useState(true);
 
   const [payingSlug, setPayingSlug] =
     useState<string | null>(null);
@@ -42,11 +44,6 @@ export default function PremiumCheckout({
     useState("");
 
   useEffect(() => {
-    if (isPremium) {
-      setLoading(false);
-      return;
-    }
-
     let mounted = true;
 
     async function loadPlans() {
@@ -108,7 +105,7 @@ export default function PremiumCheckout({
     return () => {
       mounted = false;
     };
-  }, [isPremium]);
+  }, []);
 
   async function startCheckout(
     planSlug: string,
@@ -166,10 +163,6 @@ export default function PremiumCheckout({
     }
   }
 
-  if (isPremium) {
-    return null;
-  }
-
   return (
     <section className="mt-10 rounded-[14px] border border-[#C8A35A]/35 bg-[#111111] p-5 sm:p-7 lg:p-8">
       <div className="flex items-start gap-4">
@@ -179,17 +172,23 @@ export default function PremiumCheckout({
 
         <div>
           <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
-            Upgrade to Premium
+            {isPremium
+              ? "Manage Premium Plan"
+              : "Upgrade to Premium"}
           </p>
 
           <h2 className="mt-1 font-serif text-[34px] leading-tight sm:text-[38px]">
-            Unlock the complete Business Nuggets library
+            {isPremium
+              ? "Choose how you want to continue your Premium access"
+              : "Unlock the complete Business Nuggets library"}
           </h2>
         </div>
       </div>
 
       <p className="mt-4 max-w-[820px] text-[16px] leading-7 text-white/55">
-        Choose a plan below and pay securely with Paystack. Your Premium access is activated only after the backend verifies the successful payment.
+        {isPremium
+          ? "Your current plan stays active. You can view the available paid plans below and upgrade to Annual whenever you want."
+          : "Choose a plan below and pay securely with Paystack. Your Premium access is activated only after the backend verifies the successful payment."}
       </p>
 
       {error && (
@@ -213,64 +212,90 @@ export default function PremiumCheckout({
             No paid plan is available yet
           </h3>
           <p className="mt-2 text-[16px] leading-7 text-white/50">
-            The payment area is working, but there is currently no active paid subscription plan returned by the backend. Check Admin → Subscriptions and make sure at least one Premium plan is active with a price above zero.
+            There is currently no active paid subscription plan returned by the backend. Check Admin → Subscriptions and make sure at least one Premium plan is active with a price above zero.
           </p>
         </div>
       ) : (
         <div className="mt-7 grid gap-5 md:grid-cols-2">
-          {plans.map((plan) => (
-            <article
-              key={plan.id}
-              className="rounded-[12px] border border-[#C8A35A]/30 bg-[#080808] p-5 sm:p-6"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="font-serif text-[26px] leading-tight">
-                    {plan.name}
-                  </h3>
+          {plans.map((plan) => {
+            const isCurrentPlan =
+              isPremium &&
+              currentPlan === plan.slug;
 
-                  <p className="mt-2 text-[14px] font-medium uppercase tracking-[0.08em] text-white/40">
-                    {plan.billingCycle}
+            return (
+              <article
+                key={plan.id}
+                className={`rounded-[12px] border bg-[#080808] p-5 sm:p-6 ${
+                  isCurrentPlan
+                    ? "border-[#C8A35A]/65"
+                    : "border-[#C8A35A]/30"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-serif text-[26px] leading-tight">
+                        {plan.name}
+                      </h3>
+
+                      {isCurrentPlan && (
+                        <span className="rounded-full bg-[#C8A35A]/15 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+                          Current Plan
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="mt-2 text-[14px] font-medium uppercase tracking-[0.08em] text-white/40">
+                      {plan.billingCycle}
+                    </p>
+                  </div>
+
+                  <p className="font-serif text-[30px] leading-none text-[#C8A35A]">
+                    {formatMoney(
+                      plan.priceCents,
+                      plan.currency,
+                    )}
                   </p>
                 </div>
 
-                <p className="font-serif text-[30px] leading-none text-[#C8A35A]">
-                  {formatMoney(
-                    plan.priceCents,
-                    plan.currency,
-                  )}
-                </p>
-              </div>
+                <div className="mt-6 space-y-3">
+                  {plan.features.map((feature) => (
+                    <p
+                      key={feature}
+                      className="flex items-start gap-3 text-[15px] leading-6 text-white/60"
+                    >
+                      <Check
+                        size={16}
+                        className="mt-1 shrink-0 text-[#C8A35A]"
+                      />
+                      {feature}
+                    </p>
+                  ))}
+                </div>
 
-              <div className="mt-6 space-y-3">
-                {plan.features.map((feature) => (
-                  <p
-                    key={feature}
-                    className="flex items-start gap-3 text-[15px] leading-6 text-white/60"
-                  >
-                    <Check
-                      size={16}
-                      className="mt-1 shrink-0 text-[#C8A35A]"
-                    />
-                    {feature}
-                  </p>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                disabled={payingSlug !== null}
-                onClick={() =>
-                  startCheckout(plan.slug)
-                }
-                className="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {payingSlug === plan.slug
-                  ? "Opening Paystack..."
-                  : `Pay for ${plan.name}`}
-              </button>
-            </article>
-          ))}
+                <button
+                  type="button"
+                  disabled={
+                    payingSlug !== null ||
+                    isCurrentPlan
+                  }
+                  onClick={() =>
+                    startCheckout(plan.slug)
+                  }
+                  className="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isCurrentPlan
+                    ? "Current Plan"
+                    : payingSlug === plan.slug
+                      ? "Opening Paystack..."
+                      : isPremium &&
+                          plan.billingCycle === "annual"
+                        ? `Upgrade to ${plan.name}`
+                        : `Pay for ${plan.name}`}
+                </button>
+              </article>
+            );
+          })}
         </div>
       )}
     </section>
