@@ -1,7 +1,5 @@
 "use client";
 
-import { API_URL } from "@/lib/api";
-import { syncMemberTokenCookie } from "@/lib/auth-cookie";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/navbar";
@@ -36,7 +34,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/auth/register`, {
+      const response = await fetch("/api/member/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,7 +46,7 @@ export default function RegisterPage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         setError(
@@ -59,9 +57,14 @@ export default function RegisterPage() {
         return;
       }
 
+      if (!data.token || !data.user) {
+        setError("The server did not return a complete member session.");
+        return;
+      }
+
+      // This is a harmless session marker, not the real JWT.
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      syncMemberTokenCookie(data.token);
       window.dispatchEvent(new Event("auth-change"));
       router.push("/home");
     } catch {
@@ -106,6 +109,7 @@ export default function RegisterPage() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Nehemiah Vance"
                 required
+                autoComplete="name"
                 className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
               />
             </div>
@@ -120,6 +124,7 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. builder@jerusalemcorp.org"
                 required
+                autoComplete="email"
                 className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
               />
             </div>
@@ -135,7 +140,8 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Secure password"
                   required
-                  minLength={6}
+                  minLength={8}
+                  autoComplete="new-password"
                   className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
                 />
               </div>
@@ -150,6 +156,8 @@ export default function RegisterPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter password"
                   required
+                  minLength={8}
+                  autoComplete="new-password"
                   className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
                 />
               </div>
