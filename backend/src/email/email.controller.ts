@@ -25,7 +25,15 @@ export class EmailController {
       ttl: 60_000,
     },
   })
-  getEmailStatus() {
-    return this.emailService.getDeliveryStatus();
+  async getEmailStatus() {
+    const status =
+      await this.emailService.getDeliveryStatus();
+
+    return {
+      status:
+        status.connected
+          ? "ok"
+          : "degraded",
+    };
   }
 }
