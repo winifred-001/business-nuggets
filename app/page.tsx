@@ -183,7 +183,7 @@ export default async function HomePage() {
             className="object-cover object-center"
           />
 
-          <div className="absolute inset-0 bg-[#080808]/50" />
+          <div className="absolute inset-0 bg-[#080808]/40" />
 
           <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-[#080808]/90" />
 
