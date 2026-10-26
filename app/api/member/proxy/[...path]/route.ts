@@ -26,7 +26,49 @@ const blockedRoots =
   new Set([
     "admin",
     "docs",
+    "health",
+    "callback",
   ]);
+
+const allowedAuthRoots =
+  new Set([
+    "logout",
+    "sessions",
+  ]);
+
+function isBlockedPath(
+  path: string[],
+) {
+  const root =
+    path[0]?.toLowerCase() ??
+    "";
+
+  if (
+    blockedRoots.has(root)
+  ) {
+    return true;
+  }
+
+  if (
+    root === "auth" &&
+    !allowedAuthRoots.has(
+      path[1]?.toLowerCase() ??
+        "",
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    root === "payments" &&
+    path[1]?.toLowerCase() ===
+      "webhook"
+  ) {
+    return true;
+  }
+
+  return false;
+}
 
 function isSameOriginMutation(
   request: NextRequest,
@@ -121,9 +163,7 @@ async function proxyRequest(
         segment === "." ||
         segment === "..",
     ) ||
-    blockedRoots.has(
-      path[0]?.toLowerCase(),
-    )
+    isBlockedPath(path)
   ) {
     return NextResponse.json(
       {
