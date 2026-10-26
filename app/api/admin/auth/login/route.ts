@@ -65,11 +65,20 @@ export async function POST(
   const keepSignedIn =
     body.keepSignedIn === true;
 
+  /*
+   * Temporary compatibility switch while existing admin pages
+   * are migrated away from browser-stored bearer tokens.
+   * Remove this switch as soon as the migration is complete.
+   */
+  const legacyBridge =
+    body.legacyBridge === true;
+
   const upstreamBody = {
     ...body,
   };
 
   delete upstreamBody.keepSignedIn;
+  delete upstreamBody.legacyBridge;
 
   let upstream: Response;
 
@@ -157,6 +166,9 @@ export async function POST(
     NextResponse.json({
       ...safeData,
       authenticated: true,
+      ...(legacyBridge
+        ? { token }
+        : {}),
     });
 
   response.cookies.set(
