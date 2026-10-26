@@ -135,9 +135,14 @@ export default function AuthCookieSync() {
           return;
         }
 
+        const sessionUrl =
+          token
+            ? "/api/member/auth/session"
+            : "/api/member/auth/session?upgradeLegacy=1";
+
         const response =
           await fetch(
-            "/api/member/auth/session",
+            sessionUrl,
             {
               cache:
                 "no-store",
