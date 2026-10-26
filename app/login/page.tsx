@@ -1,5 +1,7 @@
 "use client";
 
+import { postAuthDestination } from "@/lib/auth-return";
+import AuthContinueLink from "@/components/AuthContinueLink";
 import { useState } from "react";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
@@ -55,7 +57,7 @@ export default function LoginPage() {
       localStorage.setItem("user", JSON.stringify(data.user));
       window.dispatchEvent(new Event("auth-change"));
 
-      router.push("/home");
+      router.push(postAuthDestination());
     } catch {
       setError("Could not connect to the server");
     } finally {
@@ -175,12 +177,12 @@ export default function LoginPage() {
 
           <p className="mt-7 text-center text-[14px] leading-6 text-white/50">
             New to the platform?{" "}
-            <Link
+            <AuthContinueLink
               href="/register"
               className="font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
             >
               Create an account
-            </Link>
+            </AuthContinueLink>
           </p>
         </section>
       </main>

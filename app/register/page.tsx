@@ -1,10 +1,11 @@
 "use client";
 
+import { postAuthDestination } from "@/lib/auth-return";
+import AuthContinueLink from "@/components/AuthContinueLink";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
-import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -66,7 +67,7 @@ export default function RegisterPage() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       window.dispatchEvent(new Event("auth-change"));
-      router.push("/home");
+      router.push(postAuthDestination());
     } catch {
       setError("Could not connect to the server");
     } finally {
@@ -192,12 +193,12 @@ export default function RegisterPage() {
 
           <p className="mt-7 text-center text-[14px] leading-6 text-white/50">
             Already have an account?{" "}
-            <Link
+            <AuthContinueLink
               href="/login"
               className="font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
             >
               Sign in
-            </Link>
+            </AuthContinueLink>
           </p>
         </section>
       </main>

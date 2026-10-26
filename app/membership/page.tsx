@@ -16,10 +16,8 @@ import {
 
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
-import AuthRouteGuard from "@/components/AuthRouteGuard";
 import PremiumCheckout from "@/components/PremiumCheckout";
 
-import { API_URL } from "@/lib/api";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 
 import type { Nugget } from "@/types/nugget";
@@ -50,44 +48,13 @@ export default function MembershipPage() {
 
   useEffect(() => {
     async function loadMembership() {
-      const token =
-        localStorage.getItem("token");
-
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        const [userResponse, nuggets] =
-          await Promise.all([
-            fetch(
-              `${API_URL}/users/me`,
-              {
-                headers: {
-                  Authorization:
-                    `Bearer ${token}`,
-                },
-              },
-            ),
-            getPublishedNuggets(token),
-          ]);
-
-        const userData =
-          await userResponse
-            .json()
-            .catch(() => ({}));
-
-        if (!userResponse.ok) {
-          setError(
-            userData.message ||
-              "Could not load membership information.",
-          );
-          return;
-        }
-
-        setUser(userData);
-
+        const response = await fetch("/api/member/auth/session", { cache: "no-store" });
+        if (response.status === 401) return;
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !data?.user) throw new Error("Could not load your membership details. You can still view the available plans below.");
+        setUser(data.user);
+        const nuggets = await getPublishedNuggets(localStorage.getItem("token")).catch(() => []);
         setGoldNuggets(
           nuggets
             .filter(
@@ -98,7 +65,7 @@ export default function MembershipPage() {
         );
       } catch {
         setError(
-          "Could not connect to the server.",
+          "Could not load membership details. Please refresh to retry.",
         );
       } finally {
         setLoading(false);
@@ -114,7 +81,7 @@ export default function MembershipPage() {
     "premium";
 
   return (
-    <AuthRouteGuard type="protected">
+    <>
       <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
         <Navbar />
 
@@ -145,7 +112,7 @@ export default function MembershipPage() {
           )}
 
           {!loading &&
-            !error && (
+            !error && user && (
               <section className="mt-8 rounded-[12px] border border-[#C8A35A]/55 bg-[#111111] p-5 sm:p-6">
                 <h2 className="font-serif text-[28px]">
                   {user?.name ||
@@ -351,6 +318,6 @@ export default function MembershipPage() {
 
         <Footer />
       </div>
-    </AuthRouteGuard>
+    </>
   );
 }

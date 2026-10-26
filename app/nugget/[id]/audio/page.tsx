@@ -42,7 +42,7 @@ export default async function AudioPlayerPage({
       ),
       getPublishedNuggets(
         token,
-      ),
+      ).catch(() => []),
     ]);
 
     nugget = current as AudioNugget;
@@ -85,8 +85,8 @@ export default async function AudioPlayerPage({
   ].slice(0, 3);
 
   const audioSrc =
-    nugget.commentaryAudioUrl ??
-    nugget.audioUrl ??
+    nugget.commentaryAudioUrl ||
+    nugget.audioUrl ||
     null;
 
   return (
@@ -94,6 +94,7 @@ export default async function AudioPlayerPage({
       <Navbar />
 
       <FullAudioPlayer
+        key={nugget.slug}
         nugget={nugget}
         queue={queue}
         audioSrc={audioSrc}

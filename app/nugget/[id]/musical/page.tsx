@@ -48,7 +48,7 @@ export default async function MusicalPage({
         ),
         getPublishedNuggets(
           token,
-        ),
+        ).catch(() => []),
       ]);
 
     nugget =
@@ -89,8 +89,8 @@ export default async function MusicalPage({
     .slice(0, 3);
 
   const audioSrc =
-    nugget.musicalAudioUrl ??
-    nugget.audioUrl ??
+    nugget.musicalAudioUrl ||
+    nugget.audioUrl ||
     null;
 
   return (
@@ -98,6 +98,7 @@ export default async function MusicalPage({
       <Navbar />
 
       <MusicalView
+        key={nugget.slug}
         nugget={nugget}
         related={related}
         audioSrc={audioSrc}

@@ -1,18 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  Bookmark,
-  ListPlus,
-  Share2,
-  Shuffle,
-  SkipBack,
-  SkipForward,
-  Play,
-  Repeat2,
-  Volume2,
-  Maximize2,
-} from "lucide-react";
+import { Share2 } from "lucide-react";
+import NuggetLibraryActions from "@/components/NuggetLibraryActions";
+import AudioBar from "@/components/AudioBar";
 
 import Navbar from "@/components/navbar";
 import PremiumNuggetGate from "@/components/PremiumNuggetGate";
@@ -131,12 +122,7 @@ export default async function NuggetDetailPage({
                  Listen Commentary
                 </Link>
 
-                <button
-                  type="button"
-                  className="shrink-0 pb-4 text-[13px] text-white/45 transition hover:text-white"
-                >
-                  Listen Commentary
-                </button>
+
               </div>
 
               {/* KEY PRINCIPLE */}
@@ -201,29 +187,7 @@ export default async function NuggetDetailPage({
               </h2>
 
               <div className="mt-5 space-y-2">
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[14px] text-white/65 transition hover:bg-white/[0.04] hover:text-[#E0C48A]"
-                >
-                  <Bookmark
-                    size={16}
-                    className="text-[#C8A35A]"
-                  />
-
-                  Save to Library
-                </button>
-
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[14px] text-white/65 transition hover:bg-white/[0.04] hover:text-[#E0C48A]"
-                >
-                  <ListPlus
-                    size={16}
-                    className="text-[#C8A35A]"
-                  />
-
-                  Add to Playlist
-                </button>
+                <NuggetLibraryActions key={nugget.slug} id={nugget.id} slug={nugget.slug} />
 
                 <Link
   href={`/share-nugget/${nugget.slug}`}
@@ -242,123 +206,7 @@ export default async function NuggetDetailPage({
         </section>
       </main>
 
-      {/* FIXED AUDIO PLAYER */}
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[#111111]">
-        <div className="mx-auto flex min-h-[84px] max-w-[1440px] items-center gap-5 px-4 sm:px-6 lg:px-10">
-          {/* TRACK INFO */}
-          <div className="flex min-w-0 items-center gap-3 sm:w-[270px]">
-            <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md">
-              <Image
-                src="/images/musical.png"
-                alt=""
-                fill
-                sizes="44px"
-                className="object-cover"
-              />
-            </div>
-
-            <div className="min-w-0">
-              <p className="truncate font-serif text-[13px] text-[#FAF9F6]">
-                The Joseph Storage Blueprint
-              </p>
-
-              <p className="mt-1 truncate text-[11px] text-white/35">
-                Genesis 41 · Strategic Reserve
-              </p>
-            </div>
-          </div>
-
-          {/* CENTER PLAYER */}
-          <div className="hidden min-w-0 flex-1 flex-col items-center md:flex">
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                aria-label="Shuffle"
-                className="text-white/40 hover:text-white"
-              >
-                <Shuffle size={14} />
-              </button>
-
-              <button
-                type="button"
-                aria-label="Previous track"
-                className="text-white/55 hover:text-white"
-              >
-                <SkipBack size={15} />
-              </button>
-
-              <button
-                type="button"
-                aria-label="Play"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#C8A35A] text-[#080808]"
-              >
-                <Play
-                  size={14}
-                  fill="currentColor"
-                />
-              </button>
-
-              <button
-                type="button"
-                aria-label="Next track"
-                className="text-white/55 hover:text-white"
-              >
-                <SkipForward size={15} />
-              </button>
-
-              <button
-                type="button"
-                aria-label="Repeat"
-                className="text-white/40 hover:text-white"
-              >
-                <Repeat2 size={14} />
-              </button>
-            </div>
-
-            <div className="mt-2 flex w-full max-w-[520px] items-center gap-3">
-              <span className="text-[10px] text-white/30">
-                01:45
-              </span>
-
-              <div className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/10">
-                <div className="h-full w-[38%] rounded-full bg-[#C8A35A]" />
-              </div>
-
-              <span className="text-[10px] text-white/30">
-                {nugget.duration || "06:42"}
-              </span>
-            </div>
-          </div>
-
-          {/* MOBILE PLAY */}
-          <button
-            type="button"
-            aria-label="Play"
-            className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C8A35A] text-[#080808] md:hidden"
-          >
-            <Play
-              size={15}
-              fill="currentColor"
-            />
-          </button>
-
-          {/* RIGHT CONTROLS */}
-          <div className="hidden items-center justify-end gap-4 sm:w-[180px] md:flex">
-            <Volume2
-              size={15}
-              className="text-white/55"
-            />
-
-            <button
-              type="button"
-              aria-label="Full screen"
-              className="text-white/55 hover:text-white"
-            >
-              <Maximize2 size={15} />
-            </button>
-          </div>
-        </div>
-      </div>
+      <AudioBar key={nugget.slug} title={nugget.title} subtitle={`${nugget.scriptureRef} · ${nugget.topic}`} audioSrc={nugget.audioUrl || null} slug={nugget.slug} />
     </div>
   );
 }

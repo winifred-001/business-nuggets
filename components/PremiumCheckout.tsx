@@ -10,6 +10,7 @@ import {
   Crown,
 } from "lucide-react";
 
+import { loginFor } from "@/lib/auth-return";
 import { API_URL } from "@/lib/api";
 
 type SubscriptionPlan = {
@@ -31,6 +32,7 @@ export default function PremiumCheckout({
   isPremium: boolean;
   currentPlan?: string | null;
 }) {
+  const [retryCount, setRetryCount] = useState(0);
   const [plans, setPlans] =
     useState<SubscriptionPlan[]>([]);
 
@@ -105,7 +107,7 @@ export default function PremiumCheckout({
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [retryCount]);
 
   async function startCheckout(
     planSlug: string,
@@ -114,7 +116,7 @@ export default function PremiumCheckout({
       localStorage.getItem("token");
 
     if (!token) {
-      window.location.href = "/login";
+      window.location.assign(loginFor(`/membership?plan=${encodeURIComponent(planSlug)}#plans`));
       return;
     }
 
@@ -140,6 +142,10 @@ export default function PremiumCheckout({
         .json()
         .catch(() => ({}));
 
+      if (response.status === 401) {
+        window.location.assign(loginFor(`/membership?plan=${encodeURIComponent(planSlug)}#plans`));
+        return;
+      }
       if (
         !response.ok ||
         !data.authorizationUrl
@@ -164,7 +170,7 @@ export default function PremiumCheckout({
   }
 
   return (
-    <section className="mt-10 rounded-[14px] border border-[#C8A35A]/35 bg-[#111111] p-5 sm:p-7 lg:p-8">
+    <section id="plans" className="mt-10 rounded-[14px] border border-[#C8A35A]/35 bg-[#111111] p-5 sm:p-7 lg:p-8">
       <div className="flex items-start gap-4">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-[#C8A35A]/25 bg-[#C8A35A]/10 text-[#C8A35A]">
           <Crown size={20} />
@@ -192,10 +198,12 @@ export default function PremiumCheckout({
       </p>
 
       {error && (
-        <div className="mt-6 rounded-md border border-red-500/25 bg-red-500/[0.06] px-4 py-3 text-[15px] leading-6 text-red-300">
+        <div role="alert" className="mt-6 rounded-md border border-red-500/25 bg-red-500/[0.06] px-4 py-3 text-[15px] leading-6 text-red-300">
           {error}
         </div>
       )}
+
+      {!loading && (error || plans.length === 0) && <button type="button" onClick={() => setRetryCount(value => value + 1)} className="mt-4 rounded border border-[#cda762]/40 px-4 py-3 text-[#ead2a0]">Retry Loading Plans</button>}
 
       {loading ? (
         <div className="mt-7 grid gap-5 md:grid-cols-2">
@@ -212,7 +220,7 @@ export default function PremiumCheckout({
             No paid plan is available yet
           </h3>
           <p className="mt-2 text-[16px] leading-7 text-white/50">
-            There is currently no active paid subscription plan returned by the backend. Check Admin → Subscriptions and make sure at least one Premium plan is active with a price above zero.
+            Membership plans are temporarily unavailable. Please try again shortly.
           </p>
         </div>
       ) : (

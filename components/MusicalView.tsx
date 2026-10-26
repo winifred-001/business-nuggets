@@ -9,10 +9,7 @@ import {
   SkipForward,
 } from "lucide-react";
 
-import {
-  useRef,
-  useState,
-} from "react";
+import { useAudioPlayback } from "@/lib/use-audio-playback";
 
 import type { Nugget } from "@/types/nugget";
 
@@ -31,55 +28,7 @@ export default function MusicalView({
   audioSrc: string | null;
   coverImage: string;
 }) {
-  const audioRef =
-    useRef<HTMLAudioElement>(null);
-
-  const [playing, setPlaying] =
-    useState(false);
-
-  const [message, setMessage] =
-    useState("");
-
-  async function togglePlay() {
-    if (!audioSrc) {
-      setMessage(
-        "No Musical audio has been attached to this Nugget yet.",
-      );
-
-      return;
-    }
-
-    const audio = audioRef.current;
-
-    if (!audio) return;
-
-    if (audio.paused) {
-      await audio.play();
-
-      setPlaying(true);
-    } else {
-      audio.pause();
-
-      setPlaying(false);
-    }
-  }
-
-  function seek(amount: number) {
-    const audio =
-      audioRef.current;
-
-    if (!audio) return;
-
-    audio.currentTime =
-      Math.max(
-        0,
-        Math.min(
-          audio.duration || 0,
-          audio.currentTime +
-            amount,
-        ),
-      );
-  }
+  const { audioRef, audioProps, playing, audioError: message, togglePlay, seek, duration } = useAudioPlayback(audioSrc);
 
   const principleLines =
     nugget.keyPrinciple
@@ -89,13 +38,7 @@ export default function MusicalView({
 
   return (
     <>
-      <audio
-        ref={audioRef}
-        src={audioSrc ?? undefined}
-        onEnded={() =>
-          setPlaying(false)
-        }
-      />
+      <audio ref={audioRef} {...audioProps} />
 
       <main className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10">
         <div className="grid gap-10 lg:grid-cols-[340px_minmax(0,1fr)]">
@@ -129,6 +72,8 @@ export default function MusicalView({
               <div className="mt-5 flex items-center justify-center gap-5">
                 <button
                   type="button"
+                  aria-label="Back 10 seconds"
+                  disabled={!duration}
                   onClick={() =>
                     seek(-10)
                   }
@@ -141,6 +86,8 @@ export default function MusicalView({
 
                 <button
                   type="button"
+                  aria-label={playing ? "Pause" : "Play"}
+                  disabled={!audioSrc}
                   onClick={togglePlay}
                   className="flex h-11 w-11 items-center justify-center rounded-full bg-[#C8A35A] text-[#080808]"
                 >
@@ -159,6 +106,8 @@ export default function MusicalView({
 
                 <button
                   type="button"
+                  aria-label="Forward 10 seconds"
+                  disabled={!duration}
                   onClick={() =>
                     seek(10)
                   }
@@ -170,9 +119,9 @@ export default function MusicalView({
                 </button>
               </div>
 
-              {message && (
+              {(message || !audioSrc) && (
                 <p className="mt-4 text-[13px] text-[#C8A35A]">
-                  {message}
+                  {message || "No Musical audio has been attached to this Nugget yet."}
                 </p>
               )}
             </div>
