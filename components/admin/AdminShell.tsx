@@ -33,7 +33,9 @@ import {
   X,
 } from "lucide-react";
 
-import { API_URL } from "@/lib/api";
+import {
+  clearAdminSession,
+} from "@/lib/admin-auth";
 
 type AdminUser = {
   id: number;
@@ -74,21 +76,13 @@ export default function AdminShell({
 
   useEffect(() => {
     async function verifyAdmin() {
-      const token =
-        localStorage.getItem("adminToken") ||
-        sessionStorage.getItem("adminToken");
-
-      if (!token) {
-        router.replace("/admin/login");
-        return;
-      }
-
       try {
-        const response = await fetch(`${API_URL}/admin/test`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const response = await fetch(
+          "/api/admin/auth/session",
+          {
+            cache: "no-store",
           },
-        });
+        );
 
         if (!response.ok) {
           throw new Error("Invalid admin session");
@@ -102,10 +96,7 @@ export default function AdminShell({
           setUser(JSON.parse(storedUser));
         }
       } catch {
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminUser");
-        sessionStorage.removeItem("adminToken");
-        sessionStorage.removeItem("adminUser");
+        clearAdminSession();
         router.replace("/admin/login");
       } finally {
         setChecking(false);
@@ -119,12 +110,18 @@ export default function AdminShell({
     setMobileOpen(false);
   }, [pathname]);
 
-  function signOut() {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminUser");
-    sessionStorage.removeItem("adminToken");
-    sessionStorage.removeItem("adminUser");
-    router.replace("/admin/login");
+  async function signOut() {
+    try {
+      await fetch(
+        "/api/admin/auth/logout",
+        {
+          method: "POST",
+        },
+      );
+    } finally {
+      clearAdminSession();
+      router.replace("/admin/login");
+    }
   }
 
   if (checking) {
