@@ -14,6 +14,31 @@ type ModerationStatus =
 
 @Injectable()
 export class ModerationService {
+  private commentReportsTableReady = false;
+
+  private async ensureCommentReportsTable() {
+    if (this.commentReportsTableReady) {
+      return;
+    }
+
+    await db.runtime().execute(
+      db.raw.sql`
+        CREATE TABLE IF NOT EXISTS "CommentReport" (
+          "commentId" integer NOT NULL,
+          "userId" integer NOT NULL,
+          "createdAt" timestamptz NOT NULL DEFAULT now(),
+          PRIMARY KEY ("commentId", "userId"),
+          FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE CASCADE,
+          FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE
+        )
+      `
+        .affectedCount()
+        .build(),
+    );
+
+    this.commentReportsTableReady = true;
+  }
+
   /* =========================================================
      MEMBER: CREATE COMMENT
   ========================================================= */
@@ -127,6 +152,7 @@ export class ModerationService {
 
   async reportComment(
     id: number,
+    userId: number,
   ) {
     const comment =
       await db.orm.public.Comment
@@ -141,19 +167,74 @@ export class ModerationService {
       );
     }
 
+    const user =
+      await db.orm.public.User
+        .where({
+          id: userId,
+        })
+        .first();
+
+    if (!user) {
+      throw new NotFoundException(
+        "User not found",
+      );
+    }
+
+    await this.ensureCommentReportsTable();
+
+    const inserted =
+      await db.runtime().query(
+        db.raw.sql`
+          INSERT INTO "CommentReport" (
+            "commentId",
+            "userId"
+          )
+          VALUES (
+            ${id},
+            ${userId}
+          )
+          ON CONFLICT (
+            "commentId",
+            "userId"
+          )
+          DO NOTHING
+          RETURNING "commentId"
+        `
+          .returnsRow({
+            commentId:
+              "pg/int4@1",
+          })
+          .build(),
+      );
+
+    if (inserted.length === 0) {
+      return {
+        ...comment,
+        alreadyReported: true,
+        message:
+          "You have already reported this comment",
+      };
+    }
+
+    await db.runtime().execute(
+      db.raw.sql`
+        UPDATE "Comment"
+        SET
+          "reportCount" = "reportCount" + 1,
+          "status" = 'flagged',
+          "updatedAt" = now()
+        WHERE "id" = ${id}
+      `
+        .affectedCount()
+        .build(),
+    );
+
     const updated =
       await db.orm.public.Comment
         .where({
           id,
         })
-        .update({
-          reportCount:
-            comment.reportCount +
-            1,
-
-          status:
-            "flagged",
-        });
+        .first();
 
     if (!updated) {
       throw new NotFoundException(
@@ -161,7 +242,10 @@ export class ModerationService {
       );
     }
 
-    return updated;
+    return {
+      ...updated,
+      alreadyReported: false,
+    };
   }
 
   /* =========================================================
@@ -212,10 +296,10 @@ export class ModerationService {
             new Date(
               b.createdAt,
             ).getTime() -
-            new Date(
-              a.createdAt,
-            ).getTime(),
-        );
+          new Date(
+            a.createdAt,
+          ).getTime(),
+      );
 
     const counts = {
       pending:
