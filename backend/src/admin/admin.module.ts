@@ -1,6 +1,9 @@
 import {
   Module,
 } from "@nestjs/common";
+import {
+  APP_INTERCEPTOR,
+} from "@nestjs/core";
 
 import {
   AdminController,
@@ -22,15 +25,36 @@ import {
 
 import { ScheduleModule } from "../schedule/schedule.module";
 import { UsersModule } from "../users/users.module";
-import {SubscriptionsModule,} from "../subscriptions/subscriptions.module";
-import {ModerationModule,} from "../moderation/moderation.module";
-import {AnalyticsModule,} from "../analytics/analytics.module";
-import {MobileAppModule,} from "../mobile-app/mobile-app.module";
-import {NotificationsModule,} from "../notifications/notifications.module";
-import {RolesAccessModule,} from "../roles-access/roles-access.module";
-import {AuditLogsModule,} from "../audit-logs/audit-logs.module";
-import {AppSettingsModule,} from "../app-settings/app-settings.module";
-import {AdminIpAllowListGuard,} from "./admin-ip-allow-list.guard";
+import {
+  SubscriptionsModule,
+} from "../subscriptions/subscriptions.module";
+import {
+  ModerationModule,
+} from "../moderation/moderation.module";
+import {
+  AnalyticsModule,
+} from "../analytics/analytics.module";
+import {
+  MobileAppModule,
+} from "../mobile-app/mobile-app.module";
+import {
+  NotificationsModule,
+} from "../notifications/notifications.module";
+import {
+  RolesAccessModule,
+} from "../roles-access/roles-access.module";
+import {
+  AuditLogsModule,
+} from "../audit-logs/audit-logs.module";
+import {
+  AppSettingsModule,
+} from "../app-settings/app-settings.module";
+import {
+  AdminIpAllowListGuard,
+} from "./admin-ip-allow-list.guard";
+import {
+  AdminRequestValidationInterceptor,
+} from "./admin-request-validation.interceptor";
 import { EmailModule } from "../email/email.module";
 
 @Module({
@@ -57,8 +81,11 @@ import { EmailModule } from "../email/email.module";
   ],
 
   providers: [
-  AdminIpAllowListGuard,
-],
-
+    AdminIpAllowListGuard,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AdminRequestValidationInterceptor,
+    },
+  ],
 })
 export class AdminModule {}
