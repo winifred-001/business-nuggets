@@ -40,7 +40,7 @@ export default function Footer() {
           </div>
         </Link>
 
-          <p className="mt-3 text-[18px] italics leading-6 text-white/50 sm:text-[14px]">
+          <p className="mt-3 font-serif text-[18px] italics leading-6 text-white/50 sm:text-[14px]">
             Timeless Biblical Wisdom for Today&apos;s Marketplace.
           </p>
         </div>
