@@ -19,6 +19,10 @@ import {
   docsHtml,
 } from "./docs/openapi";
 
+import {
+  applyOpenApiSupplement,
+} from "./docs/openapi-supplement";
+
 async function bootstrap() {
   const app =
     await NestFactory.create(
@@ -161,12 +165,15 @@ async function bootstrap() {
   expressApp.get(
     "/docs/openapi.json",
     (_req: any, res: any) => {
+      const document =
+        applyOpenApiSupplement(
+          createOpenApiDocument(),
+        );
+
       res
         .status(200)
         .type("application/json")
-        .send(
-          createOpenApiDocument(),
-        );
+        .send(document);
     },
   );
 
