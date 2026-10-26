@@ -7,27 +7,27 @@ const backendApiUrl =
   ).replace(/\/$/, "");
 
 /*
- * Admin pages historically call the Render API directly with a bearer
- * token from browser storage. While those pages are being kept intact,
- * route only backend /admin/* requests through our same-origin Next.js
- * proxy. The proxy injects the real HttpOnly admin session server-side.
+ * Legacy client pages still construct Authorization headers from browser
+ * storage. The browser value is now only a harmless marker. Authenticated
+ * requests are transparently rerouted through same-origin proxies where
+ * the real JWT is read from an HttpOnly cookie server-side.
  */
 if (
-  typeof window !== "undefined" &&
-  window.location.pathname.startsWith(
-    "/admin/",
-  )
+  typeof window !== "undefined"
 ) {
   const clientWindow =
     window as Window & {
-      __bnAdminApiProxyInstalled?: boolean;
+      __bnSecureApiProxyInstalled?: boolean;
     };
 
   if (
-    !clientWindow.__bnAdminApiProxyInstalled
+    !clientWindow.__bnSecureApiProxyInstalled
   ) {
     const nativeFetch =
       window.fetch.bind(window);
+
+    const backendPrefix =
+      `${backendApiUrl}/`;
 
     const adminApiPrefix =
       `${backendApiUrl}/admin/`;
@@ -44,7 +44,23 @@ if (
                 ? input.url
                 : "";
 
+        const headers =
+          new Headers(
+            init?.headers ??
+              (input instanceof Request
+                ? input.headers
+                : undefined),
+          );
+
+        const isAdminPage =
+          window.location.pathname ===
+            "/admin" ||
+          window.location.pathname.startsWith(
+            "/admin/",
+          );
+
         if (
+          isAdminPage &&
           requestUrl.startsWith(
             adminApiPrefix,
           )
@@ -54,22 +70,41 @@ if (
               adminApiPrefix.length,
             );
 
-          const headers =
-            new Headers(
-              init?.headers ??
-                (input instanceof Request
-                  ? input.headers
-                  : undefined),
-            );
-
-          // Never forward the browser's legacy bearer header.
-          // The proxy reads the real token from an HttpOnly cookie.
           headers.delete(
             "Authorization",
           );
 
           return nativeFetch(
             `/api/admin/proxy/${relativePath}`,
+            {
+              ...init,
+              headers,
+              credentials:
+                "same-origin",
+            },
+          );
+        }
+
+        if (
+          !isAdminPage &&
+          requestUrl.startsWith(
+            backendPrefix,
+          ) &&
+          headers.has(
+            "Authorization",
+          )
+        ) {
+          const relativePath =
+            requestUrl.slice(
+              backendPrefix.length,
+            );
+
+          headers.delete(
+            "Authorization",
+          );
+
+          return nativeFetch(
+            `/api/member/proxy/${relativePath}`,
             {
               ...init,
               headers,
@@ -88,7 +123,7 @@ if (
     window.fetch =
       patchedFetch;
 
-    clientWindow.__bnAdminApiProxyInstalled =
+    clientWindow.__bnSecureApiProxyInstalled =
       true;
   }
 }
