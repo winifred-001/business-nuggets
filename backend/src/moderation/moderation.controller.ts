@@ -42,6 +42,12 @@ export class ModerationController {
   @UseGuards(
     JwtAuthGuard,
   )
+  @Throttle({
+    default: {
+      limit: 10,
+      ttl: 60_000,
+    },
+  })
   createComment(
     @Request()
     req: any,
