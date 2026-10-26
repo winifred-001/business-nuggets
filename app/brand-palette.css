@@ -1,0 +1,42 @@
+/* Business Nuggets global palette — navy, warm cream, muted gold.
+   This file changes colours only; layout, spacing and component structure stay unchanged. */
+
+:root {
+  --bnb-navy: #2F4B62;
+  --bnb-blue: #CFA43A;
+  --bnb-mist: #E6DDC8;
+  --bnb-white: #F8F3E7;
+  --bnb-teal: #DFC27A;
+
+  --bnb-obsidian: var(--bnb-navy);
+  --bnb-charcoal: color-mix(in srgb, var(--bnb-navy) 90%, #172734 10%);
+  --bnb-gold: var(--bnb-blue);
+  --bnb-soft-gold: var(--bnb-teal);
+  --bnb-parchment: var(--bnb-mist);
+  --bnb-ivory: var(--bnb-white);
+  --bnb-slate: color-mix(in srgb, var(--bnb-mist) 68%, var(--bnb-navy) 32%);
+
+  --background: var(--bnb-navy);
+  --foreground: var(--bnb-white);
+}
+
+/* Light surfaces become warm cream without changing component structure. */
+[class~="bg-white"] {
+  background-color: var(--bnb-white) !important;
+}
+
+[class~="bg-gray-50"],
+[class~="bg-neutral-50"] {
+  background-color: color-mix(in srgb, var(--bnb-white) 94%, var(--bnb-mist) 6%) !important;
+}
+
+[class~="bg-gray-100"],
+[class~="bg-neutral-100"] {
+  background-color: var(--bnb-mist) !important;
+}
+
+[class~="text-gray-700"],
+[class~="text-gray-800"],
+[class~="text-gray-900"] {
+  color: var(--bnb-navy) !important;
+}
