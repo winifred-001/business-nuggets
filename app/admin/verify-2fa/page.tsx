@@ -16,7 +16,6 @@ import {
 
 type LoginResponse = {
   message?: string | string[];
-  token?: string;
   authenticated?: boolean;
   user?: AdminUser;
 };
@@ -78,7 +77,6 @@ export default function AdminVerifyTwoFactorPage() {
           email: pending.email,
           password: pending.password,
           keepSignedIn: pending.keepSignedIn,
-          legacyBridge: true,
           ...(useRecoveryCode
             ? { recoveryCode: normalizedCode.toUpperCase() }
             : { twoFactorToken: normalizedCode }),
@@ -87,7 +85,7 @@ export default function AdminVerifyTwoFactorPage() {
 
       const data: LoginResponse = await response.json().catch(() => ({}));
 
-      if (!response.ok || !data.token || !data.user) {
+      if (!response.ok || !data.authenticated || !data.user) {
         setError(
           responseMessage(
             data,
@@ -117,9 +115,7 @@ export default function AdminVerifyTwoFactorPage() {
         return;
       }
 
-      // Temporary legacy storage while remaining admin pages
-      // are moved behind the HttpOnly-cookie proxy.
-      storeAdminSession(data.token, data.user, pending.keepSignedIn);
+      storeAdminSession("", data.user, pending.keepSignedIn);
       clearPendingAdminLogin();
       router.replace("/admin/dashboard");
     } catch {
