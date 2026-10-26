@@ -41,11 +41,16 @@ async function bootstrap() {
       .getHttpAdapter()
       .getInstance();
 
+  const defaultTrustedProxyHops =
+    process.env.RENDER_EXTERNAL_URL
+      ? "1"
+      : "0";
+
   const trustedProxyHops =
     Number.parseInt(
       process.env
         .TRUST_PROXY_HOPS ??
-        "0",
+        defaultTrustedProxyHops,
       10,
     );
 
