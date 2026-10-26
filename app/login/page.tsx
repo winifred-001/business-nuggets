@@ -78,7 +78,7 @@ export default function LoginPage() {
               Business Nuggets
             </p>
 
-            <h1 className="font-serif text-[40px] font-semibold leading-tight text-[#FAF9F6]">
+            <h1 className="font-serif text-[45px]! font-semibold leading-tight text-[#FAF9F6]">
               Welcome Back
             </h1>
 
