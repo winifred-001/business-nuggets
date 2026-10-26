@@ -1,6 +1,9 @@
 export const ADMIN_SESSION_COOKIE =
   "bn_admin_session";
 
+export const ADMIN_BROWSER_SESSION_MARKER =
+  "bn_admin_http_only_session";
+
 export const ADMIN_SESSION_MAX_AGE_SECONDS =
   7 * 24 * 60 * 60;
 
