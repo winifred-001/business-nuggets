@@ -167,34 +167,40 @@ async function bootstrap() {
      API DOCS
   ========================================================= */
 
-  expressApp.get(
-    "/docs/openapi.json",
-    (_req: any, res: any) => {
-      const document =
-        applyOpenApiSupplement(
-          createOpenApiDocument(),
-        );
+  const apiDocsEnabled =
+    process.env.NODE_ENV !== "production" ||
+    process.env.ENABLE_API_DOCS === "true";
 
-      res
-        .status(200)
-        .type("application/json")
-        .send(document);
-    },
-  );
+  if (apiDocsEnabled) {
+    expressApp.get(
+      "/docs/openapi.json",
+      (_req: any, res: any) => {
+        const document =
+          applyOpenApiSupplement(
+            createOpenApiDocument(),
+          );
 
-  expressApp.get(
-    "/docs",
-    (_req: any, res: any) => {
-      res
-        .status(200)
-        .set(
-          "Content-Security-Policy",
-          "default-src 'self'; style-src 'self' 'unsafe-inline' https://unpkg.com; script-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https:; font-src 'self' data: https://unpkg.com; connect-src 'self'",
-        )
-        .type("html")
-        .send(docsHtml);
-    },
-  );
+        res
+          .status(200)
+          .type("application/json")
+          .send(document);
+      },
+    );
+
+    expressApp.get(
+      "/docs",
+      (_req: any, res: any) => {
+        res
+          .status(200)
+          .set(
+            "Content-Security-Policy",
+            "default-src 'self'; style-src 'self' 'unsafe-inline' https://unpkg.com; script-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https:; font-src 'self' data: https://unpkg.com; connect-src 'self'",
+          )
+          .type("html")
+          .send(docsHtml);
+      },
+    );
+  }
 
   /* =========================================================
      SERVER
@@ -216,7 +222,9 @@ async function bootstrap() {
   );
 
   console.log(
-    "API docs available at /docs",
+    apiDocsEnabled
+      ? "API docs available at /docs"
+      : "API docs disabled",
   );
 }
 
