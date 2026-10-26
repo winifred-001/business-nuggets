@@ -3,6 +3,7 @@ import { Inter, Geist_Mono, EB_Garamond } from "next/font/google";
 import AuthCookieSync from "@/components/AuthCookieSync";
 import "./globals.css";
 import "./corporate-theme.css";
+import "./brand-palette.css";
 import "./dropdowns.css";
 import "./subscription-modal.css";
 
