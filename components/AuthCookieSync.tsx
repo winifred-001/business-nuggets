@@ -8,89 +8,200 @@ import {
 } from "next/navigation";
 
 import {
-  clearMemberTokenCookie,
-  MEMBER_TOKEN_COOKIE_NAME,
-  syncMemberTokenCookie,
-} from "@/lib/auth-cookie";
+  MEMBER_BROWSER_SESSION_MARKER,
+} from "@/lib/member-session";
 
-function readCookie(
-  name: string,
-) {
-  const prefix =
-    `${name}=`;
-
-  const match =
-    document.cookie
-      .split("; ")
-      .find((entry) =>
-        entry.startsWith(
-          prefix,
-        ),
-      );
-
-  return match
-    ? decodeURIComponent(
-        match.slice(
-          prefix.length,
-        ),
-      )
-    : null;
+function clearLocalMemberSession() {
+  localStorage.removeItem(
+    "token",
+  );
+  localStorage.removeItem(
+    "user",
+  );
 }
 
 export default function AuthCookieSync() {
   const router = useRouter();
 
   useEffect(() => {
-    function sync() {
-      const token =
-        localStorage.getItem(
-          "token",
-        );
+    if (
+      window.location.pathname ===
+        "/admin" ||
+      window.location.pathname.startsWith(
+        "/admin/",
+      )
+    ) {
+      return;
+    }
 
-      const cookieToken =
-        readCookie(
-          MEMBER_TOKEN_COOKIE_NAME,
-        );
+    let cancelled = false;
+    let syncing = false;
 
-      if (token) {
-        if (
-          cookieToken !== token
-        ) {
-          syncMemberTokenCookie(
-            token,
-          );
-          router.refresh();
-        }
+    async function sync() {
+      if (
+        cancelled ||
+        syncing
+      ) {
         return;
       }
 
-      if (cookieToken) {
-        clearMemberTokenCookie();
-        router.refresh();
+      syncing = true;
+
+      try {
+        const token =
+          localStorage.getItem(
+            "token",
+          );
+
+        if (
+          token &&
+          token !==
+            MEMBER_BROWSER_SESSION_MARKER
+        ) {
+          const response =
+            await fetch(
+              "/api/member/auth/migrate",
+              {
+                method:
+                  "POST",
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
+                body:
+                  JSON.stringify({
+                    token,
+                  }),
+              },
+            );
+
+          const data =
+            await response
+              .json()
+              .catch(() => ({}));
+
+          if (
+            !response.ok ||
+            !data.authenticated
+          ) {
+            clearLocalMemberSession();
+            window.dispatchEvent(
+              new Event(
+                "auth-change",
+              ),
+            );
+            router.refresh();
+            return;
+          }
+
+          localStorage.setItem(
+            "token",
+            MEMBER_BROWSER_SESSION_MARKER,
+          );
+
+          if (data.user) {
+            localStorage.setItem(
+              "user",
+              JSON.stringify(
+                data.user,
+              ),
+            );
+          }
+
+          window.dispatchEvent(
+            new Event(
+              "auth-change",
+            ),
+          );
+          router.refresh();
+          return;
+        }
+
+        const response =
+          await fetch(
+            "/api/member/auth/session",
+            {
+              cache:
+                "no-store",
+            },
+          );
+
+        if (!response.ok) {
+          if (token) {
+            clearLocalMemberSession();
+            window.dispatchEvent(
+              new Event(
+                "auth-change",
+              ),
+            );
+            router.refresh();
+          }
+          return;
+        }
+
+        const data =
+          await response
+            .json()
+            .catch(() => ({}));
+
+        const hadMarker =
+          token ===
+          MEMBER_BROWSER_SESSION_MARKER;
+
+        localStorage.setItem(
+          "token",
+          MEMBER_BROWSER_SESSION_MARKER,
+        );
+
+        if (data.user) {
+          localStorage.setItem(
+            "user",
+            JSON.stringify(
+              data.user,
+            ),
+          );
+        }
+
+        if (!hadMarker) {
+          window.dispatchEvent(
+            new Event(
+              "auth-change",
+            ),
+          );
+          router.refresh();
+        }
+      } finally {
+        syncing = false;
       }
     }
 
-    sync();
+    void sync();
+
+    const handleSync = () => {
+      void sync();
+    };
 
     window.addEventListener(
       "auth-change",
-      sync,
+      handleSync,
     );
 
     window.addEventListener(
       "storage",
-      sync,
+      handleSync,
     );
 
     return () => {
+      cancelled = true;
+
       window.removeEventListener(
         "auth-change",
-        sync,
+        handleSync,
       );
 
       window.removeEventListener(
         "storage",
-        sync,
+        handleSync,
       );
     };
   }, [router]);
