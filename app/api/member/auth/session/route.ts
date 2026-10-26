@@ -2,19 +2,21 @@ import {
   cookies,
 } from "next/headers";
 import {
+  NextRequest,
   NextResponse,
 } from "next/server";
 
 import { API_URL } from "@/lib/api";
 import {
   MEMBER_SESSION_COOKIE,
-  MEMBER_SESSION_MAX_AGE_SECONDS,
 } from "@/lib/member-session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(
+  request: NextRequest,
+) {
   const cookieStore =
     await cookies();
 
@@ -96,22 +98,29 @@ export async function GET() {
       user,
     });
 
-  // Reissue a valid legacy cookie with HttpOnly so an existing signed-in
-  // member is upgraded even if localStorage was already cleared.
-  response.cookies.set(
-    MEMBER_SESSION_COOKIE,
-    token,
-    {
-      httpOnly: true,
-      secure:
-        process.env.NODE_ENV ===
-        "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge:
-        MEMBER_SESSION_MAX_AGE_SECONDS,
-    },
-  );
+  /*
+   * Only reissue when the browser has a cookie but no local session marker.
+   * This upgrades old JavaScript-readable cookies to HttpOnly without
+   * changing the persistence of normal new login sessions.
+   */
+  if (
+    request.nextUrl.searchParams.get(
+      "upgradeLegacy",
+    ) === "1"
+  ) {
+    response.cookies.set(
+      MEMBER_SESSION_COOKIE,
+      token,
+      {
+        httpOnly: true,
+        secure:
+          process.env.NODE_ENV ===
+          "production",
+        sameSite: "lax",
+        path: "/",
+      },
+    );
+  }
 
   response.headers.set(
     "Cache-Control",
