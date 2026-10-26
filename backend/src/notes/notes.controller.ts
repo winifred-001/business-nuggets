@@ -13,36 +13,33 @@ import {
 
 import { NotesService } from "./notes.service";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { CreateNoteDto } from "./dto/create-note.dto";
+import { UpdateNoteDto } from "./dto/update-note.dto";
 
 @Controller("notes")
 @UseGuards(JwtAuthGuard)
 export class NotesController {
   constructor(
-    private readonly notesService: NotesService
+    private readonly notesService: NotesService,
   ) {}
 
   @Post()
   createNote(
     @Request() req: any,
-    @Body()
-    body: {
-      title?: string;
-      content: string;
-      nuggetId?: string;
-    }
+    @Body() body: CreateNoteDto,
   ) {
     return this.notesService.createNote(
       req.user.sub,
       body.title,
       body.content,
-      body.nuggetId
+      body.nuggetId,
     );
   }
 
   @Get()
   getNotes(@Request() req: any) {
     return this.notesService.getNotes(
-      req.user.sub
+      req.user.sub,
     );
   }
 
@@ -50,28 +47,23 @@ export class NotesController {
   updateNote(
     @Request() req: any,
     @Param("id", ParseIntPipe) id: number,
-    @Body()
-    body: {
-      title?: string;
-      content?: string;
-      nuggetId?: string;
-    }
+    @Body() body: UpdateNoteDto,
   ) {
     return this.notesService.updateNote(
       req.user.sub,
       id,
-      body
+      body,
     );
   }
 
   @Delete(":id")
   deleteNote(
     @Request() req: any,
-    @Param("id", ParseIntPipe) id: number
+    @Param("id", ParseIntPipe) id: number,
   ) {
     return this.notesService.deleteNote(
       req.user.sub,
-      id
+      id,
     );
   }
 }
