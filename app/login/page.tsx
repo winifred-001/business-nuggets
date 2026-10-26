@@ -1,7 +1,5 @@
 "use client";
 
-import { API_URL } from "@/lib/api";
-import { syncMemberTokenCookie } from "@/lib/auth-cookie";
 import { useState } from "react";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
@@ -14,6 +12,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +22,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch("/api/member/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,19 +30,29 @@ export default function LoginPage() {
         body: JSON.stringify({
           email,
           password,
+          rememberMe,
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setError(data.message || "Login failed");
+        setError(
+          Array.isArray(data.message)
+            ? data.message.join(", ")
+            : data.message || "Login failed",
+        );
         return;
       }
 
+      if (!data.token || !data.user) {
+        setError("The server did not return a complete member session.");
+        return;
+      }
+
+      // This is a harmless session marker, not the real JWT.
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      syncMemberTokenCookie(data.token);
       window.dispatchEvent(new Event("auth-change"));
 
       router.push("/home");
@@ -94,6 +103,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. solomon@kingdomventures.com"
                 required
+                autoComplete="email"
                 className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
               />
             </div>
@@ -114,6 +124,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
+                  autoComplete="current-password"
                   className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 pr-12 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
                 />
 
@@ -132,6 +143,8 @@ export default function LoginPage() {
               <label className="flex cursor-pointer items-center gap-2 text-white/50">
                 <input
                   type="checkbox"
+                  checked={rememberMe}
+                  onChange={(event) => setRememberMe(event.target.checked)}
                   className="h-4 w-4 shrink-0 cursor-pointer"
                 />
                 <span>Remember me</span>
