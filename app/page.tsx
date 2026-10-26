@@ -183,12 +183,12 @@ export default async function HomePage() {
             className="object-cover object-center"
           />
 
-          <div className="absolute inset-0 bg-[#080808]/75" />
+          <div className="absolute inset-0 bg-[#080808]/50" />
 
-          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-[#080808]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-[#080808]/90" />
 
           <div className="relative mx-auto flex min-h-[600px] max-w-[1280px] items-center justify-center px-5 py-20 sm:px-8 lg:min-h-[650px] lg:px-12">
-            <div className="mx-auto w-full max-w-[850px] text-center">
+            <div className="mx-auto w-full max-w-[850px] translate-y-[30px] text-center">
               <p className="text-[13px] font-semibold uppercase tracking-[0.24em] text-[#C8A35A]">
                 Timeless Biblical Wisdom for
                 Today&apos;s Marketplace
