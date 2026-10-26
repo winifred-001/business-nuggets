@@ -7,146 +7,117 @@ import {
 } from "@nestjs/common";
 
 import * as bcrypt from "bcrypt";
+import { createHash } from "crypto";
+import { JwtService } from "@nestjs/jwt";
 
-import {
-  createHash,
-} from "crypto";
-
-import {
-  JwtService,
-} from "@nestjs/jwt";
-
-import {
-  UsersService,
-} from "../users/users.service";
-
-import {
-  SessionsService,
-} from "./sessions.service";
-
-import {
-  TwoFactorService,
-} from "./two-factor.service";
-
-import {
-  RegisterDto,
-} from "./dto/register.dto";
-
-import {
-  db,
-} from "../prisma/db";
-
+import { UsersService } from "../users/users.service";
+import { SessionsService } from "./sessions.service";
+import { TwoFactorService } from "./two-factor.service";
+import { RegisterDto } from "./dto/register.dto";
+import { db } from "../prisma/db";
 import { EmailService } from "../email/email.service";
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService:
-      UsersService,
-
-    private readonly jwtService:
-      JwtService,
-
-    private readonly sessionsService:
-      SessionsService,
-
-    private readonly twoFactorService:
-      TwoFactorService,
-
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+    private readonly sessionsService: SessionsService,
+    private readonly twoFactorService: TwoFactorService,
     private readonly emailService: EmailService,
   ) {}
 
-  /* =========================================================
-   REGISTER
-========================================================= */
-
-async register(
-  dto: RegisterDto,
-  requestInfo: {
-    userAgent?: string;
-    ipAddress?: string;
-  },
-) {
-  const existingUser =
-    await this.usersService.findByEmail(
-      dto.email,
-    );
-
-  if (existingUser) {
-    throw new ConflictException(
-      "Email already registered",
+  private authenticationUnavailable() {
+    return new InternalServerErrorException(
+      "Authentication service temporarily unavailable",
     );
   }
 
-  const passwordHash =
-    await bcrypt.hash(
-      dto.password,
-      10,
-    );
-
-  const user =
-    await this.usersService.createUser(
-      dto.name,
-      dto.email,
-      passwordHash,
-    );
-
   /* =========================================================
-     WELCOME EMAIL
+     REGISTER
   ========================================================= */
 
-  try {
-    await this.emailService.sendWelcomeEmail(
-      user.email,
-      user.name,
-    );
-  } catch (error) {
-    console.error(
-      "Failed to send welcome email:",
-      error,
-    );
-  }
-
-  const adminRole =
-    user.role === "owner"
-      ? "super-admin"
-      : user.adminRole ?? null;
-
-  const session =
-    await this.sessionsService.createSession(
-      user.id,
-      requestInfo,
-    );
-
-  const token =
-    await this.jwtService.signAsync({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      adminRole,
-      accountStatus:
-        user.accountStatus,
-      sessionId:
-        session.id,
-    });
-
-  return {
-    message:
-      "Account created successfully",
-
-    token,
-
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      adminRole,
-      accountStatus:
-        user.accountStatus,
+  async register(
+    dto: RegisterDto,
+    requestInfo: {
+      userAgent?: string;
+      ipAddress?: string;
     },
-  };
-}
+  ) {
+    const existingUser =
+      await this.usersService.findByEmail(
+        dto.email,
+      );
+
+    if (existingUser) {
+      throw new ConflictException(
+        "Email already registered",
+      );
+    }
+
+    const passwordHash =
+      await bcrypt.hash(
+        dto.password,
+        10,
+      );
+
+    const user =
+      await this.usersService.createUser(
+        dto.name,
+        dto.email,
+        passwordHash,
+      );
+
+    try {
+      await this.emailService.sendWelcomeEmail(
+        user.email,
+        user.name,
+      );
+    } catch (error) {
+      console.error(
+        "Failed to send welcome email:",
+        error,
+      );
+    }
+
+    const adminRole =
+      user.role === "owner"
+        ? "super-admin"
+        : user.adminRole ?? null;
+
+    const session =
+      await this.sessionsService.createSession(
+        user.id,
+        requestInfo,
+      );
+
+    const token =
+      await this.jwtService.signAsync({
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+        adminRole,
+        accountStatus:
+          user.accountStatus,
+        sessionId:
+          session.id,
+      });
+
+    return {
+      message:
+        "Account created successfully",
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        adminRole,
+        accountStatus:
+          user.accountStatus,
+      },
+    };
+  }
 
   /* =========================================================
      LOGIN
@@ -155,19 +126,15 @@ async register(
   async login(
     email: string,
     password: string,
-
     requestInfo: {
       userAgent?: string;
       ipAddress?: string;
     },
-
     twoFactorToken?: string,
     recoveryCode?: string,
   ) {
     const normalizedEmail =
-      email
-        .trim()
-        .toLowerCase();
+      email.trim().toLowerCase();
 
     let user: Awaited<
       ReturnType<UsersService["findByEmail"]>
@@ -183,10 +150,7 @@ async register(
         "Login failed at user lookup:",
         error,
       );
-
-      throw new InternalServerErrorException(
-        "Login failed while reading the user account. Check the production database schema and connection.",
-      );
+      throw this.authenticationUnavailable();
     }
 
     if (!user) {
@@ -208,10 +172,7 @@ async register(
         "Login failed at password verification:",
         error,
       );
-
-      throw new InternalServerErrorException(
-        "Login failed while validating the password.",
-      );
+      throw this.authenticationUnavailable();
     }
 
     if (!passwordMatches) {
@@ -229,15 +190,9 @@ async register(
       );
     }
 
-    /* =========================================================
-       ADMIN 2FA CHECK
-    ========================================================= */
-
     const isAdmin =
       user.role === "owner" ||
-      Boolean(
-        user.adminRole,
-      );
+      Boolean(user.adminRole);
 
     if (isAdmin) {
       let settings: Awaited<
@@ -254,32 +209,22 @@ async register(
           "Login failed at admin security settings lookup:",
           error,
         );
-
-        throw new InternalServerErrorException(
-          "Login failed while reading administrator security settings.",
-        );
+        throw this.authenticationUnavailable();
       }
 
       const twoFactorAdminsRequired =
-        settings[0]
-          ?.twoFactorAdmins ??
-        false;
+        settings[0]?.twoFactorAdmins ?? false;
 
-      if (
-        twoFactorAdminsRequired
-      ) {
-        /* =====================================================
-           FIRST-TIME ADMIN 2FA SETUP
-        ===================================================== */
-
+      if (twoFactorAdminsRequired) {
         if (
           !user.twoFactorEnabled ||
           !user.twoFactorSecret
         ) {
           if (!process.env.JWT_SECRET) {
-            throw new InternalServerErrorException(
-              "Login cannot create the 2FA setup token because JWT_SECRET is not configured on the backend.",
+            console.error(
+              "Login failed: JWT_SECRET is not configured for 2FA setup token creation",
             );
+            throw this.authenticationUnavailable();
           }
 
           let setupToken: string;
@@ -288,18 +233,12 @@ async register(
             setupToken =
               await this.jwtService.signAsync(
                 {
-                  sub:
-                    user.id,
-
-                  email:
-                    user.email,
-
-                  purpose:
-                    "2fa-setup",
+                  sub: user.id,
+                  email: user.email,
+                  purpose: "2fa-setup",
                 },
                 {
-                  expiresIn:
-                    "10m",
+                  expiresIn: "10m",
                 },
               );
           } catch (error) {
@@ -307,47 +246,26 @@ async register(
               "Login failed while creating 2FA setup token:",
               error,
             );
-
-            throw new InternalServerErrorException(
-              "Login failed while creating the 2FA setup token.",
-            );
+            throw this.authenticationUnavailable();
           }
 
           return {
             message:
               "Two-factor authentication setup is required",
-
-            requiresTwoFactorSetup:
-              true,
-
+            requiresTwoFactorSetup: true,
             setupToken,
-
             user: {
-              id:
-                user.id,
-
-              name:
-                user.name,
-
-              email:
-                user.email,
-
-              role:
-                user.role,
-
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
               adminRole:
-                user.role ===
-                "owner"
+                user.role === "owner"
                   ? "super-admin"
-                  : user.adminRole ??
-                    null,
+                  : user.adminRole ?? null,
             },
           };
         }
-
-        /* =====================================================
-           EXISTING ADMIN 2FA
-        ===================================================== */
 
         if (
           !twoFactorToken &&
@@ -358,34 +276,44 @@ async register(
           );
         }
 
-        /* =====================================================
-           AUTHENTICATOR CODE LOGIN
-        ===================================================== */
-
         if (twoFactorToken) {
-          const validTwoFactorCode =
-            await this.twoFactorService.verifyCode(
-              user.id,
-              twoFactorToken,
+          let validTwoFactorCode = false;
+
+          try {
+            validTwoFactorCode =
+              await this.twoFactorService.verifyCode(
+                user.id,
+                twoFactorToken,
+              );
+          } catch (error) {
+            console.error(
+              "Login failed during two-factor verification:",
+              error,
             );
+            throw this.authenticationUnavailable();
+          }
 
           if (!validTwoFactorCode) {
             throw new UnauthorizedException(
               "Invalid two-factor authentication code",
             );
           }
-        }
+        } else if (recoveryCode) {
+          let validRecoveryCode = false;
 
-        /* =====================================================
-           RECOVERY CODE LOGIN
-        ===================================================== */
-
-        else if (recoveryCode) {
-          const validRecoveryCode =
-            await this.twoFactorService.verifyRecoveryCode(
-              user.id,
-              recoveryCode,
+          try {
+            validRecoveryCode =
+              await this.twoFactorService.verifyRecoveryCode(
+                user.id,
+                recoveryCode,
+              );
+          } catch (error) {
+            console.error(
+              "Login failed during recovery-code verification:",
+              error,
             );
+            throw this.authenticationUnavailable();
+          }
 
           if (!validRecoveryCode) {
             throw new UnauthorizedException(
@@ -396,10 +324,6 @@ async register(
       }
     }
 
-    /* =========================================================
-       LOGIN SUCCESS
-    ========================================================= */
-
     try {
       await this.usersService.markLastLogin(
         user.id,
@@ -409,17 +333,13 @@ async register(
         "Login failed at lastLoginAt update:",
         error,
       );
-
-      throw new InternalServerErrorException(
-        "Login failed while updating lastLoginAt. The production User table may be missing the lastLoginAt column.",
-      );
+      throw this.authenticationUnavailable();
     }
 
     const adminRole =
       user.role === "owner"
         ? "super-admin"
-        : user.adminRole ??
-          null;
+        : user.adminRole ?? null;
 
     let session: Awaited<
       ReturnType<SessionsService["createSession"]>
@@ -436,16 +356,14 @@ async register(
         "Login failed at session creation:",
         error,
       );
-
-      throw new InternalServerErrorException(
-        "Login failed while creating a user session. The production database may be missing the UserSession migration.",
-      );
+      throw this.authenticationUnavailable();
     }
 
     if (!process.env.JWT_SECRET) {
-      throw new InternalServerErrorException(
-        "Login cannot create an access token because JWT_SECRET is not configured on the backend.",
+      console.error(
+        "Login failed: JWT_SECRET is not configured for access token creation",
       );
+      throw this.authenticationUnavailable();
     }
 
     let token: string;
@@ -453,20 +371,12 @@ async register(
     try {
       token =
         await this.jwtService.signAsync({
-          sub:
-            user.id,
-
-          email:
-            user.email,
-
-          role:
-            user.role,
-
+          sub: user.id,
+          email: user.email,
+          role: user.role,
           adminRole,
-
           accountStatus:
             user.accountStatus,
-
           sessionId:
             session.id,
         });
@@ -475,33 +385,18 @@ async register(
         "Login failed at JWT token creation:",
         error,
       );
-
-      throw new InternalServerErrorException(
-        "Login failed while creating the access token. Check JWT_SECRET on the backend.",
-      );
+      throw this.authenticationUnavailable();
     }
 
     return {
-      message:
-        "Login successful",
-
+      message: "Login successful",
       token,
-
       user: {
-        id:
-          user.id,
-
-        name:
-          user.name,
-
-        email:
-          user.email,
-
-        role:
-          user.role,
-
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
         adminRole,
-
         accountStatus:
           user.accountStatus,
       },
@@ -532,10 +427,7 @@ async register(
       );
     }
 
-    if (
-      payload.purpose !==
-      "2fa-setup"
-    ) {
+    if (payload.purpose !== "2fa-setup") {
       throw new UnauthorizedException(
         "Invalid two-factor setup token",
       );
@@ -544,10 +436,7 @@ async register(
     const user =
       await db.orm.public.User
         .where({
-          id:
-            Number(
-              payload.sub,
-            ),
+          id: Number(payload.sub),
         })
         .first();
 
@@ -557,10 +446,7 @@ async register(
       );
     }
 
-    if (
-      user.email !==
-      payload.email
-    ) {
+    if (user.email !== payload.email) {
       throw new UnauthorizedException(
         "Invalid two-factor setup token",
       );
@@ -577,9 +463,7 @@ async register(
 
     const isAdmin =
       user.role === "owner" ||
-      Boolean(
-        user.adminRole,
-      );
+      Boolean(user.adminRole);
 
     if (!isAdmin) {
       throw new UnauthorizedException(
@@ -587,118 +471,83 @@ async register(
       );
     }
 
-    if (
-      user.twoFactorEnabled
-    ) {
+    if (user.twoFactorEnabled) {
       throw new BadRequestException(
         "Two-factor authentication is already enabled",
       );
     }
 
     return {
-      userId:
-        user.id,
-
-      email:
-        user.email,
+      userId: user.id,
+      email: user.email,
     };
   }
-
-  /* =========================================================
-     PASSWORD RESET HELPERS
-  ========================================================= */
 
   private passwordFingerprint(
     passwordHash: string,
   ) {
-    return createHash(
-      "sha256",
-    )
-      .update(
-        passwordHash,
-      )
-      .digest(
-        "hex",
-      );
+    return createHash("sha256")
+      .update(passwordHash)
+      .digest("hex");
   }
 
   /* =========================================================
-   REQUEST PASSWORD RESET
-========================================================= */
+     REQUEST PASSWORD RESET
+  ========================================================= */
 
-async requestPasswordReset(
-  email: string,
-) {
-  const normalizedEmail =
-    email
-      .trim()
-      .toLowerCase();
+  async requestPasswordReset(
+    email: string,
+  ) {
+    const normalizedEmail =
+      email.trim().toLowerCase();
 
-  const user =
-    await this.usersService.findByEmail(
-      normalizedEmail,
+    const user =
+      await this.usersService.findByEmail(
+        normalizedEmail,
+      );
+
+    const message =
+      "If an account exists for that email, a password reset link has been prepared.";
+
+    if (!user) {
+      return { message };
+    }
+
+    const token =
+      await this.jwtService.signAsync(
+        {
+          sub: user.id,
+          email: user.email,
+          purpose: "password-reset",
+          fingerprint:
+            this.passwordFingerprint(
+              user.passwordHash,
+            ),
+        },
+        {
+          expiresIn: "15m",
+        },
+      );
+
+    const frontendUrl =
+      (
+        process.env.FRONTEND_URL ||
+        "http://localhost:3000"
+      ).replace(/\/$/, "");
+
+    const resetUrl =
+      `${frontendUrl}/reset-password?token=${encodeURIComponent(
+        token,
+      )}`;
+
+    await this.emailService.sendPasswordResetEmail(
+      user.email,
+      resetUrl,
     );
 
-  const message =
-    "If an account exists for that email, a password reset link has been prepared.";
-
-  /*
-    Keep the same generic response whether the email exists
-    or not so attackers cannot discover registered accounts.
-  */
-  if (!user) {
-    return {
-      message,
-    };
+    return { message };
   }
 
-  const token =
-    await this.jwtService.signAsync(
-      {
-        sub:
-          user.id,
-
-        email:
-          user.email,
-
-        purpose:
-          "password-reset",
-
-        fingerprint:
-          this.passwordFingerprint(
-            user.passwordHash,
-          ),
-      },
-      {
-        expiresIn:
-          "15m",
-      },
-    );
-
-  const frontendUrl =
-    (
-      process.env
-        .FRONTEND_URL ||
-      "http://localhost:3000"
-    ).replace(
-      /\/$/,
-      "",
-    );
-
-  const resetUrl =
-    `${frontendUrl}/reset-password?token=${encodeURIComponent(
-      token,
-    )}`;
-
-  await this.emailService.sendPasswordResetEmail(
-    user.email,
-    resetUrl,
-  );
-
-  return {
-    message,
-  };
-}
   /* =========================================================
      RESET PASSWORD
   ========================================================= */
@@ -734,10 +583,7 @@ async requestPasswordReset(
       );
     }
 
-    if (
-      payload.purpose !==
-      "password-reset"
-    ) {
+    if (payload.purpose !== "password-reset") {
       throw new BadRequestException(
         "Invalid password reset link.",
       );
@@ -775,32 +621,28 @@ async requestPasswordReset(
       );
 
     await this.usersService.updatePasswordHash(
-  user.id,
-  passwordHash,
-);
+      user.id,
+      passwordHash,
+    );
 
-await this.sessionsService.revokeAllSessions(
-  user.id,
-);
+    await this.sessionsService.revokeAllSessions(
+      user.id,
+    );
 
-/* =========================================================
-   PASSWORD CHANGED EMAIL
-========================================================= */
+    try {
+      await this.emailService.sendPasswordChangedEmail(
+        user.email,
+      );
+    } catch (error) {
+      console.error(
+        "Failed to send password changed email:",
+        error,
+      );
+    }
 
-try {
-  await this.emailService.sendPasswordChangedEmail(
-    user.email,
-  );
-} catch (error) {
-  console.error(
-    "Failed to send password changed email:",
-    error,
-  );
-}
-
-return {
-  message:
-    "Password reset successfully",
-};
+    return {
+      message:
+        "Password reset successfully",
+    };
   }
 }
