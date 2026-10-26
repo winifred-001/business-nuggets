@@ -4,6 +4,7 @@ import {
 
 import {
   APP_GUARD,
+  APP_INTERCEPTOR,
 } from "@nestjs/core";
 
 import {
@@ -95,6 +96,10 @@ import {
   PaymentsModule,
 } from "./payments/payments.module";
 
+import {
+  AdminRequestValidationInterceptor,
+} from "./admin/admin-request-validation.interceptor";
+
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -142,6 +147,14 @@ import {
 
       useClass:
         ThrottlerGuard,
+    },
+
+    {
+      provide:
+        APP_INTERCEPTOR,
+
+      useClass:
+        AdminRequestValidationInterceptor,
     },
   ],
 })
