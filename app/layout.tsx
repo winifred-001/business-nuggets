@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono, EB_Garamond } from "next/font/google";
 import AuthCookieSync from "@/components/AuthCookieSync";
 import "./globals.css";
+import "./dropdowns.css";
 import "./subscription-modal.css";
 
 const inter = Inter({
