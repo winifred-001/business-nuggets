@@ -45,6 +45,9 @@ import {
 import {
   MediaService,
 } from "./media.service";
+import {
+  CreateMediaFolderDto,
+} from "./dto/create-media-folder.dto";
 
 const legacyUploadDirectory =
   join(
@@ -138,9 +141,7 @@ export class AdminMediaController {
   @Post("folders")
   createFolder(
     @Body()
-    body: {
-      name: string;
-    },
+    body: CreateMediaFolderDto,
   ) {
     return this.mediaService.createFolder(
       body.name,
