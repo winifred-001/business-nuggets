@@ -23,6 +23,7 @@ import {
 
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
+import PageEyebrow from "@/components/PageEyebrow";
 
 import {
   collections,
@@ -573,8 +574,9 @@ function LibraryContent() {
     <main>
       {/* PAGE HEADER */}
       <section className="border-b border-white/[0.06]">
-        <div className="mx-auto max-w-[1280px] px-5 pt-14 sm:px-8 lg:px-10 lg:pt-16">
-          <h1 className="font-serif text-[40px] leading-tight text-[#FAF9F6]">
+        <div className="mx-auto w-[calc(100%-38px)] max-w-[1190px] pt-16 sm:pt-24 lg:w-[calc(100%-64px)]">
+          <PageEyebrow>Library</PageEyebrow>
+          <h1 className="mt-[27px] font-serif text-[45px]! leading-tight text-[#FAF9F6]">
             The Wisdom Archive
           </h1>
 
