@@ -4,6 +4,10 @@ import {
   ForbiddenException,
   Injectable,
 } from "@nestjs/common";
+import {
+  createHmac,
+  timingSafeEqual,
+} from "crypto";
 
 import {
   AppSettingsService,
@@ -39,6 +43,69 @@ export class AdminIpAllowListGuard
     return ip;
   }
 
+  private signedProxyIp(
+    request: any,
+  ) {
+    const secret =
+      process.env.ADMIN_PROXY_SECRET;
+
+    if (!secret) {
+      return "";
+    }
+
+    const rawIp =
+      String(
+        request.headers?.[
+          "x-bn-client-ip"
+        ] ?? "",
+      ).trim();
+
+    const signature =
+      String(
+        request.headers?.[
+          "x-bn-client-ip-signature"
+        ] ?? "",
+      ).trim();
+
+    if (
+      !rawIp ||
+      !signature
+    ) {
+      return "";
+    }
+
+    const expected =
+      createHmac(
+        "sha256",
+        secret,
+      )
+        .update(rawIp)
+        .digest("hex");
+
+    if (
+      signature.length !==
+      expected.length
+    ) {
+      return "";
+    }
+
+    const valid =
+      timingSafeEqual(
+        Buffer.from(
+          signature,
+          "utf8",
+        ),
+        Buffer.from(
+          expected,
+          "utf8",
+        ),
+      );
+
+    return valid
+      ? this.normalizeIp(rawIp)
+      : "";
+  }
+
   async canActivate(
     context:
       ExecutionContext,
@@ -58,6 +125,9 @@ export class AdminIpAllowListGuard
         .getRequest();
 
     const requestIp =
+      this.signedProxyIp(
+        request,
+      ) ||
       this.normalizeIp(
         request.ip,
       );
