@@ -1,0 +1,146 @@
+/* =========================================================
+   BUSINESS NUGGETS — OPTION 1: CORPORATE EXCELLENCE
+   Project-wide compatibility layer for screens that still use
+   the previous black/gold Tailwind utility values.
+========================================================= */
+
+/* Dark surfaces -> Deep Navy */
+[class~="bg-[#080808]"],
+[class~="bg-[#0B0B0B]"],
+[class~="bg-[#0D0D0D]"] {
+  background-color: var(--bnb-navy) !important;
+}
+
+[class~="bg-[#111111]"],
+[class~="bg-[#151515]"],
+[class~="bg-[#171717]"],
+[class~="bg-[#181818]"] {
+  background-color: var(--bnb-charcoal) !important;
+}
+
+/* Previous warm active surfaces -> Royal Blue tint */
+[class~="bg-[#2A2418]"],
+[class~="bg-[#2B2417]"],
+[class~="bg-[#251F14]"] {
+  background-color: color-mix(in srgb, var(--bnb-blue) 22%, var(--bnb-navy)) !important;
+}
+
+/* Navy transparency variants */
+[class~="bg-[#080808]/95"] { background-color: color-mix(in srgb, var(--bnb-navy) 95%, transparent) !important; }
+[class~="bg-[#080808]/90"] { background-color: color-mix(in srgb, var(--bnb-navy) 90%, transparent) !important; }
+[class~="bg-[#080808]/80"] { background-color: color-mix(in srgb, var(--bnb-navy) 80%, transparent) !important; }
+[class~="bg-[#080808]/75"] { background-color: color-mix(in srgb, var(--bnb-navy) 75%, transparent) !important; }
+[class~="bg-[#080808]/60"] { background-color: color-mix(in srgb, var(--bnb-navy) 60%, transparent) !important; }
+[class~="bg-[#080808]/50"] { background-color: color-mix(in srgb, var(--bnb-navy) 50%, transparent) !important; }
+[class~="bg-[#080808]/45"] { background-color: color-mix(in srgb, var(--bnb-navy) 45%, transparent) !important; }
+[class~="bg-[#080808]/30"] { background-color: color-mix(in srgb, var(--bnb-navy) 30%, transparent) !important; }
+[class~="bg-[#080808]/20"] { background-color: color-mix(in srgb, var(--bnb-navy) 20%, transparent) !important; }
+[class~="bg-[#080808]/15"] { background-color: color-mix(in srgb, var(--bnb-navy) 15%, transparent) !important; }
+[class~="bg-[#080808]/10"] { background-color: color-mix(in srgb, var(--bnb-navy) 10%, transparent) !important; }
+
+[class~="bg-[#111111]/95"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 95%, transparent) !important; }
+[class~="bg-[#111111]/90"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 90%, transparent) !important; }
+[class~="bg-[#111111]/80"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 80%, transparent) !important; }
+[class~="bg-[#111111]/60"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 60%, transparent) !important; }
+[class~="bg-[#111111]/50"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 50%, transparent) !important; }
+[class~="bg-[#111111]/30"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 30%, transparent) !important; }
+
+/* Previous gold actions -> Royal Blue */
+[class~="bg-[#C8A35A]"],
+[class~="bg-[#D0A85C]"],
+[class~="bg-[#9A7839]"] {
+  background-color: var(--bnb-blue) !important;
+}
+
+[class~="bg-[#C8A35A]/50"] { background-color: color-mix(in srgb, var(--bnb-blue) 50%, transparent) !important; }
+[class~="bg-[#C8A35A]/40"] { background-color: color-mix(in srgb, var(--bnb-blue) 40%, transparent) !important; }
+[class~="bg-[#C8A35A]/30"] { background-color: color-mix(in srgb, var(--bnb-blue) 30%, transparent) !important; }
+[class~="bg-[#C8A35A]/20"] { background-color: color-mix(in srgb, var(--bnb-blue) 20%, transparent) !important; }
+[class~="bg-[#C8A35A]/15"] { background-color: color-mix(in srgb, var(--bnb-blue) 15%, transparent) !important; }
+[class~="bg-[#C8A35A]/10"] { background-color: color-mix(in srgb, var(--bnb-blue) 10%, transparent) !important; }
+[class~="bg-[#C8A35A]/5"] { background-color: color-mix(in srgb, var(--bnb-blue) 5%, transparent) !important; }
+
+/* Previous soft gold -> Teal accent */
+[class~="bg-[#E0C48A]"] {
+  background-color: var(--bnb-teal) !important;
+}
+
+[class~="bg-[#E0C48A]/20"] { background-color: color-mix(in srgb, var(--bnb-teal) 20%, transparent) !important; }
+[class~="bg-[#E0C48A]/10"] { background-color: color-mix(in srgb, var(--bnb-teal) 10%, transparent) !important; }
+
+[class~="hover:bg-[#C8A35A]"]:hover,
+[class~="hover:bg-[#D0A85C]"]:hover,
+[class~="hover:bg-[#E0C48A]"]:hover {
+  background-color: var(--bnb-teal) !important;
+}
+
+/* Brand text */
+[class~="text-[#C8A35A]"],
+[class~="text-[#D0A85C]"],
+[class~="text-[#9A7839]"] {
+  color: var(--bnb-blue) !important;
+}
+
+[class~="text-[#E0C48A]"] {
+  color: var(--bnb-teal) !important;
+}
+
+[class~="text-[#FAF9F6]"],
+[class~="text-[#F7F3E8]"] {
+  color: var(--bnb-white) !important;
+}
+
+[class~="text-[#8A8781]"] {
+  color: var(--bnb-mist) !important;
+}
+
+[class~="hover:text-[#C8A35A]"]:hover,
+[class~="hover:text-[#E0C48A]"]:hover {
+  color: var(--bnb-teal) !important;
+}
+
+/* Borders, rings and focus states */
+[class~="border-[#C8A35A]"],
+[class~="border-[#D0A85C]"] {
+  border-color: var(--bnb-blue) !important;
+}
+
+[class~="border-[#C8A35A]/60"] { border-color: color-mix(in srgb, var(--bnb-blue) 60%, transparent) !important; }
+[class~="border-[#C8A35A]/50"] { border-color: color-mix(in srgb, var(--bnb-blue) 50%, transparent) !important; }
+[class~="border-[#C8A35A]/40"] { border-color: color-mix(in srgb, var(--bnb-blue) 40%, transparent) !important; }
+[class~="border-[#C8A35A]/30"] { border-color: color-mix(in srgb, var(--bnb-blue) 30%, transparent) !important; }
+[class~="border-[#C8A35A]/20"] { border-color: color-mix(in srgb, var(--bnb-blue) 20%, transparent) !important; }
+[class~="border-[#C8A35A]/10"] { border-color: color-mix(in srgb, var(--bnb-blue) 10%, transparent) !important; }
+
+[class~="focus:border-[#C8A35A]"]:focus {
+  border-color: var(--bnb-blue) !important;
+}
+
+[class~="focus:ring-[#C8A35A]"]:focus {
+  --tw-ring-color: var(--bnb-blue) !important;
+}
+
+/* Old gradient endpoints */
+[class~="to-[#080808]"] {
+  --tw-gradient-to: var(--bnb-navy) var(--tw-gradient-to-position) !important;
+}
+
+[class~="from-[#080808]"] {
+  --tw-gradient-from: var(--bnb-navy) var(--tw-gradient-from-position) !important;
+}
+
+[class~="via-[#080808]"] {
+  --tw-gradient-via: var(--bnb-navy) var(--tw-gradient-via-position) !important;
+}
+
+[class~="to-[#111111]"] {
+  --tw-gradient-to: var(--bnb-charcoal) var(--tw-gradient-to-position) !important;
+}
+
+[class~="from-[#C8A35A]"] {
+  --tw-gradient-from: var(--bnb-blue) var(--tw-gradient-from-position) !important;
+}
+
+[class~="to-[#C8A35A]"] {
+  --tw-gradient-to: var(--bnb-blue) var(--tw-gradient-to-position) !important;
+}
