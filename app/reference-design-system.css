@@ -1,0 +1,505 @@
+/* =========================================================
+   BUSINESS NUGGETS — GLOBAL REFERENCE DESIGN SYSTEM
+   Source of truth: uploaded visitor-home design.
+   This stylesheet standardizes visual language without changing
+   page content, routes, layout structure, or application behavior.
+========================================================= */
+
+:root {
+  --bn-ink: #10110f;
+  --bn-header: #12130f;
+  --bn-surface: #191b18;
+  --bn-surface-soft: #161713;
+  --bn-gold: #cda762;
+  --bn-gold-light: #ead2a0;
+  --bn-cream: #f6f2e9;
+  --bn-muted: #b4b2ab;
+  --bn-line: rgba(234, 210, 160, 0.19);
+  --bn-light-ink: #211f1b;
+  --bn-light-muted: #756f65;
+
+  /* Existing app aliases now resolve to the reference palette. */
+  --bnb-navy: var(--bn-ink);
+  --bnb-blue: var(--bn-gold);
+  --bnb-mist: var(--bn-cream);
+  --bnb-white: #f9f5ed;
+  --bnb-teal: var(--bn-gold-light);
+  --bnb-obsidian: var(--bn-ink);
+  --bnb-charcoal: var(--bn-surface);
+  --bnb-gold: var(--bn-gold);
+  --bnb-soft-gold: var(--bn-gold-light);
+  --bnb-parchment: var(--bn-cream);
+  --bnb-ivory: #f9f5ed;
+  --bnb-slate: var(--bn-muted);
+  --background: var(--bn-ink);
+  --foreground: #f9f5ed;
+}
+
+html,
+body {
+  background: var(--bn-ink) !important;
+  color: #f9f5ed;
+  font-family: var(--font-dm-sans), "DM Sans", Arial, Helvetica, sans-serif !important;
+}
+
+body {
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* Typography — exact family/weight language from the reference. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-serif,
+.bnb-display {
+  font-family: var(--font-playfair), "Playfair Display", Georgia, "Times New Roman", serif !important;
+  font-weight: 400 !important;
+}
+
+h1 {
+  font-size: clamp(42px, 5vw, 64px) !important;
+  line-height: 1.11 !important;
+  letter-spacing: -0.03em !important;
+}
+
+h2 {
+  font-size: clamp(32px, 4vw, 47px) !important;
+  line-height: 1.22 !important;
+  letter-spacing: -0.015em !important;
+}
+
+h3 {
+  font-size: 25px !important;
+  line-height: 1.3 !important;
+}
+
+strong,
+.font-bold,
+.font-semibold,
+button,
+[role="button"] {
+  font-family: var(--font-manrope), Manrope, var(--font-dm-sans), "DM Sans", sans-serif;
+}
+
+/* Restore the compact type scale used in the supplied design. */
+[class~="text-[8px]"] { font-size: 8px !important; line-height: 1.35 !important; }
+[class~="text-[9px]"] { font-size: 9px !important; line-height: 1.4 !important; }
+[class~="text-[10px]"] { font-size: 10px !important; line-height: 1.45 !important; }
+[class~="text-[11px]"] { font-size: 11px !important; line-height: 1.5 !important; }
+[class~="text-[12px]"] { font-size: 12px !important; line-height: 1.55 !important; }
+[class~="text-[13px]"] { font-size: 13px !important; line-height: 1.6 !important; }
+[class~="text-[14px]"] { font-size: 14px !important; line-height: 1.65 !important; }
+[class~="text-[15px]"] { font-size: 15px !important; line-height: 1.7 !important; }
+[class~="text-[16px]"] { font-size: 16px !important; line-height: 1.7 !important; }
+[class~="text-[17px]"] { font-size: 17px !important; line-height: 1.8 !important; }
+.text-xs { font-size: 12px !important; line-height: 1.5 !important; }
+.text-sm { font-size: 14px !important; line-height: 1.65 !important; }
+
+/* Core dark surfaces. */
+[class~="bg-black"],
+[class~="bg-[#080808]"],
+[class~="bg-[#0B0B0B]"],
+[class~="bg-[#0D0D0D]"],
+[class~="bg-gray-950"],
+[class~="bg-neutral-950"] {
+  background-color: var(--bn-ink) !important;
+}
+
+[class~="bg-[#111111]"],
+[class~="bg-[#151515]"],
+[class~="bg-[#171717]"],
+[class~="bg-[#181818]"],
+[class~="bg-gray-900"] {
+  background-color: var(--bn-surface) !important;
+}
+
+/* Light content surfaces follow the warm cream treatment. */
+[class~="bg-white"] {
+  background-color: #fff !important;
+}
+
+[class~="bg-gray-50"],
+[class~="bg-neutral-50"] {
+  background-color: var(--bn-cream) !important;
+}
+
+[class~="bg-gray-100"],
+[class~="bg-neutral-100"] {
+  background-color: #eee8dc !important;
+}
+
+/* Brand/accent compatibility: old gold + corporate blue -> reference gold. */
+[class~="bg-[#C8A35A]"],
+[class~="bg-[#D0A85C]"],
+[class~="bg-[#9A7839]"],
+[class~="bg-[#2463A6]"],
+[class~="bg-amber-300"],
+[class~="bg-amber-400"] {
+  background-color: var(--bn-gold) !important;
+  color: #17140e !important;
+}
+
+[class~="bg-[#E0C48A]"],
+[class~="bg-[#35A69A]"] {
+  background-color: var(--bn-gold-light) !important;
+  color: #17140e !important;
+}
+
+[class~="text-[#C8A35A]"],
+[class~="text-[#D0A85C]"],
+[class~="text-[#9A7839]"],
+[class~="text-[#2463A6]"],
+[class~="text-amber-300"],
+[class~="text-amber-400"] {
+  color: var(--bn-gold) !important;
+}
+
+[class~="text-[#E0C48A]"],
+[class~="text-[#35A69A]"] {
+  color: var(--bn-gold-light) !important;
+}
+
+[class~="text-[#FAF9F6]"],
+[class~="text-[#F7F3E8]"],
+[class~="text-white"] {
+  color: #f9f5ed !important;
+}
+
+[class~="text-[#8A8781]"],
+[class~="text-gray-400"],
+[class~="text-gray-500"] {
+  color: var(--bn-muted) !important;
+}
+
+[class~="border-[#C8A35A]"],
+[class~="border-[#D0A85C]"],
+[class~="border-[#2463A6]"],
+[class~="border-amber-300"] {
+  border-color: var(--bn-gold) !important;
+}
+
+[class~="border-white/10"],
+[class~="border-white/[0.07]"],
+[class~="border-white/[0.06]"],
+[class~="border-gray-700"],
+[class~="border-gray-800"] {
+  border-color: var(--bn-line) !important;
+}
+
+/* Inputs and form controls mirror the reference: restrained borders, square geometry. */
+input,
+textarea,
+select {
+  font-family: var(--font-dm-sans), "DM Sans", sans-serif !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  border-radius: 0 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+[class~="focus:border-[#C8A35A]"]:focus,
+[class~="focus:border-amber-500"]:focus {
+  border-color: var(--bn-gold) !important;
+  box-shadow: none !important;
+}
+
+::selection {
+  background: rgba(205, 167, 98, 0.35) !important;
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--bn-gold) !important;
+  outline-offset: 4px !important;
+}
+
+/* CTA/button language from the reference. Keep icon/profile controls round when explicitly requested. */
+button:not([class~="rounded-full"]),
+a[class*="bg-[#C8A35A]"] ,
+a[class*="bg-[#2463A6]"] ,
+a[class*="bg-amber"] {
+  border-radius: 0 !important;
+}
+
+button[class*="bg-[#C8A35A]"],
+button[class*="bg-[#2463A6]"],
+button[class*="bg-amber"],
+a[class*="bg-[#C8A35A]"],
+a[class*="bg-[#2463A6]"],
+a[class*="bg-amber"] {
+  border: 1px solid var(--bn-gold) !important;
+  background: var(--bn-gold) !important;
+  color: #17140e !important;
+  font-family: var(--font-manrope), Manrope, sans-serif !important;
+  font-weight: 700 !important;
+  transition: transform 0.2s ease, background 0.2s ease !important;
+}
+
+button[class*="bg-[#C8A35A]"]:hover,
+button[class*="bg-[#2463A6]"]:hover,
+button[class*="bg-amber"]:hover,
+a[class*="bg-[#C8A35A]"]:hover,
+a[class*="bg-[#2463A6]"]:hover,
+a[class*="bg-amber"]:hover {
+  background: #e0bf80 !important;
+  transform: translateY(-2px);
+}
+
+/* Remove overly-soft modern radii from content panels/cards while retaining circles. */
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl {
+  border-radius: 0 !important;
+}
+
+/* Shared public Navbar: same header language as the visitor homepage. */
+header[class~="z-50"][class~="bg-[#0B0B0B]"] {
+  height: 89px !important;
+  position: sticky !important;
+  top: 0 !important;
+  background: var(--bn-header) !important;
+  border-bottom: 1px solid var(--bn-line) !important;
+  z-index: 50;
+}
+
+header[class~="z-50"][class~="bg-[#0B0B0B]"]::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #6d4c1c, #e1be79, #6d4c1c);
+}
+
+header[class~="z-50"][class~="bg-[#0B0B0B]"] > div:first-child {
+  width: min(1190px, calc(100% - 64px));
+  max-width: none !important;
+  height: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+header[class~="z-50"][class~="bg-[#0B0B0B]"] > div:first-child > a:first-child {
+  min-width: 265px;
+  gap: 13px !important;
+}
+
+header[class~="z-50"][class~="bg-[#0B0B0B]"] > div:first-child > a:first-child > span {
+  width: 46px !important;
+  height: 46px !important;
+  border: 1px solid #d9b870 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #e5c98e !important;
+  font-family: var(--font-playfair), "Playfair Display", serif !important;
+  font-size: 26px !important;
+  font-weight: 400 !important;
+}
+
+header[class~="z-50"][class~="bg-[#0B0B0B]"] > div:first-child > a:first-child p:first-child {
+  font-family: var(--font-manrope), Manrope, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.13em !important;
+}
+
+header[class~="z-50"][class~="bg-[#0B0B0B]"] > div:first-child > a:first-child p:last-child {
+  font-family: var(--font-playfair), "Playfair Display", serif !important;
+  color: var(--bn-gold) !important;
+  font-size: 14px !important;
+  font-style: italic;
+}
+
+header[class~="z-50"][class~="bg-[#0B0B0B]"] nav[aria-label="Main navigation"] {
+  gap: 39px !important;
+}
+
+header[class~="z-50"][class~="bg-[#0B0B0B]"] nav[aria-label="Main navigation"] a {
+  font-size: 13px !important;
+  color: #c4c3be !important;
+}
+
+header[class~="z-50"][class~="bg-[#0B0B0B]"] nav[aria-label="Main navigation"] a:hover {
+  color: var(--bn-gold-light) !important;
+}
+
+header[class~="z-50"][class~="bg-[#0B0B0B]"] a[href="/register"] {
+  border-radius: 0 !important;
+  border: 1px solid var(--bn-gold) !important;
+  background: var(--bn-gold) !important;
+  color: #17140e !important;
+  padding: 15px 22px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+header[class~="z-50"][class~="bg-[#0B0B0B]"] a[href="/login"] {
+  font-size: 13px !important;
+  color: #bcbab4 !important;
+}
+
+/* Shared Footer adopts the same compact reference footer language. */
+.bnb-site-footer {
+  background: var(--bn-ink);
+  color: #b8b5aa;
+  padding: 48px 0 28px;
+  border-top: 1px solid var(--bn-line);
+}
+
+.bnb-footer-container {
+  width: min(1190px, calc(100% - 64px));
+  margin: 0 auto;
+}
+
+.bnb-footer-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 28px;
+  border-bottom: 1px solid var(--bn-line);
+  padding-bottom: 40px;
+}
+
+.bnb-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.bnb-footer-mark {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d9b870;
+  color: #e5c98e;
+  font-family: var(--font-playfair), "Playfair Display", serif;
+  font-size: 26px;
+}
+
+.bnb-footer-brand strong {
+  display: block;
+  font-family: var(--font-manrope), Manrope, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.13em;
+}
+
+.bnb-footer-brand em {
+  display: block;
+  color: var(--bn-gold);
+  font-family: var(--font-playfair), "Playfair Display", serif;
+  font-size: 14px;
+}
+
+.bnb-footer-copy {
+  max-width: 340px;
+  margin-top: 12px;
+  color: #96938b;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.bnb-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 26px;
+  font-size: 12px;
+  color: #b8b5aa;
+}
+
+.bnb-footer-links a:hover {
+  color: var(--bn-gold-light);
+}
+
+.bnb-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 24px;
+  color: #77776f;
+  font-size: 11px;
+}
+
+/* Admin typography follows the same family, weight, color and border system. */
+.admin-typography {
+  font-family: var(--font-dm-sans), "DM Sans", sans-serif !important;
+  color: #f9f5ed;
+}
+
+.admin-typography h1,
+.admin-typography h2,
+.admin-typography h3 {
+  font-family: var(--font-playfair), "Playfair Display", serif !important;
+  font-weight: 400 !important;
+}
+
+.admin-typography h1 { font-size: 40px !important; line-height: 1.15 !important; }
+.admin-typography h2 { font-size: 32px !important; line-height: 1.2 !important; }
+.admin-typography h3 { font-size: 25px !important; line-height: 1.3 !important; }
+.admin-typography p,
+.admin-typography span,
+.admin-typography label,
+.admin-typography button,
+.admin-typography a,
+.admin-typography li,
+.admin-typography th,
+.admin-typography td { font-size: 13px; }
+
+@media (max-width: 900px) {
+  header[class~="z-50"][class~="bg-[#0B0B0B]"] > div:first-child,
+  .bnb-footer-container {
+    width: min(calc(100% - 38px), 1190px);
+  }
+
+  header[class~="z-50"][class~="bg-[#0B0B0B]"] > div:first-child > a:first-child {
+    min-width: 0;
+  }
+
+  .bnb-footer-main,
+  .bnb-footer-bottom {
+    display: block;
+  }
+
+  .bnb-footer-links {
+    margin-top: 26px;
+  }
+
+  .bnb-footer-bottom > * + * {
+    display: block;
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  header[class~="z-50"][class~="bg-[#0B0B0B]"] {
+    height: 76px !important;
+  }
+
+  h1 {
+    font-size: 42px !important;
+    line-height: 1.12 !important;
+  }
+
+  h2 {
+    font-size: 32px !important;
+    line-height: 1.2 !important;
+  }
+
+  h3 {
+    font-size: 23px !important;
+  }
+
+  .bnb-site-footer {
+    padding-top: 38px;
+  }
+}
