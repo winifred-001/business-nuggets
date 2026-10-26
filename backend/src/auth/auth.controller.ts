@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Request,
   UnauthorizedException,
@@ -42,6 +43,14 @@ import {
   LoginDto,
 } from "./dto/login.dto";
 
+import {
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  TwoFactorConfirmRequiredDto,
+  TwoFactorSetupRequiredDto,
+  TwoFactorTokenDto,
+} from "./dto/auth-security.dto";
+
 @Controller("auth")
 export class AuthController {
   constructor(
@@ -75,10 +84,6 @@ export class AuthController {
     };
   }
 
-  /* =========================================================
-     REGISTER
-  ========================================================= */
-
   @Post("register")
   @Throttle({
     default: {
@@ -101,10 +106,6 @@ export class AuthController {
     );
   }
 
-  /* =========================================================
-     LOGIN
-  ========================================================= */
-
   @Post("login")
   @Throttle({
     default: {
@@ -125,14 +126,10 @@ export class AuthController {
       this.getRequestInfo(
         req,
       ),
-       dto.twoFactorToken,
+      dto.twoFactorToken,
       dto.recoveryCode,
     );
   }
-
-  /* =========================================================
-     LOGOUT
-  ========================================================= */
 
   @Post("logout")
   @UseGuards(
@@ -151,10 +148,6 @@ export class AuthController {
       ),
     );
   }
-
-  /* =========================================================
-     SESSIONS
-  ========================================================= */
 
   @Get("sessions")
   @UseGuards(
@@ -204,20 +197,19 @@ export class AuthController {
     @Request()
     req: any,
 
-    @Param("id")
-    id: string,
+    @Param(
+      "id",
+      ParseIntPipe,
+    )
+    id: number,
   ) {
     return this.sessionsService.revokeSession(
       Number(
         req.user.sub,
       ),
-      Number(id),
+      id,
     );
   }
-
-  /* =========================================================
-     ADMIN 2FA SETUP
-  ========================================================= */
 
   @Post("2fa/setup")
   @UseGuards(
@@ -235,10 +227,6 @@ export class AuthController {
     );
   }
 
-  /* =========================================================
-     ADMIN 2FA CONFIRM
-  ========================================================= */
-
   @Post("2fa/confirm")
   @UseGuards(
     JwtAuthGuard,
@@ -249,9 +237,7 @@ export class AuthController {
     req: any,
 
     @Body()
-    body: {
-      token: string;
-    },
+    body: TwoFactorTokenDto,
   ) {
     return this.twoFactorService.confirmSetup(
       Number(
@@ -261,66 +247,48 @@ export class AuthController {
     );
   }
 
-  /* =========================================================
-   FIRST-TIME ADMIN 2FA SETUP
-   Uses temporary setup token - NOT a login token
-========================================================= */
+  @Post("2fa/setup-required")
+  @Throttle({
+    default: {
+      limit: 5,
+      ttl: 10 * 60_000,
+    },
+  })
+  async setupRequiredTwoFactor(
+    @Body()
+    body: TwoFactorSetupRequiredDto,
+  ) {
+    const verified =
+      await this.authService.verifyTwoFactorSetupToken(
+        body.setupToken,
+      );
 
-@Post("2fa/setup-required")
-@Throttle({
-  default: {
-    limit: 5,
-    ttl: 10 * 60_000,
-  },
-})
-async setupRequiredTwoFactor(
-  @Body()
-  body: {
-    setupToken: string;
-  },
-) {
-  const verified =
-    await this.authService.verifyTwoFactorSetupToken(
-      body.setupToken,
+    return this.twoFactorService.beginSetup(
+      verified.userId,
     );
+  }
 
-  return this.twoFactorService.beginSetup(
-    verified.userId,
-  );
-}
+  @Post("2fa/confirm-required")
+  @Throttle({
+    default: {
+      limit: 5,
+      ttl: 10 * 60_000,
+    },
+  })
+  async confirmRequiredTwoFactor(
+    @Body()
+    body: TwoFactorConfirmRequiredDto,
+  ) {
+    const verified =
+      await this.authService.verifyTwoFactorSetupToken(
+        body.setupToken,
+      );
 
-/* =========================================================
-   FIRST-TIME ADMIN 2FA CONFIRM
-========================================================= */
-
-@Post("2fa/confirm-required")
-@Throttle({
-  default: {
-    limit: 5,
-    ttl: 10 * 60_000,
-  },
-})
-async confirmRequiredTwoFactor(
-  @Body()
-  body: {
-    setupToken: string;
-    token: string;
-  },
-) {
-  const verified =
-    await this.authService.verifyTwoFactorSetupToken(
-      body.setupToken,
+    return this.twoFactorService.confirmSetup(
+      verified.userId,
+      body.token,
     );
-
-  return this.twoFactorService.confirmSetup(
-    verified.userId,
-    body.token,
-  );
-}
-
-  /* =========================================================
-     ADMIN 2FA DISABLE
-  ========================================================= */
+  }
 
   @Post("2fa/disable")
   @UseGuards(
@@ -332,9 +300,7 @@ async confirmRequiredTwoFactor(
     req: any,
 
     @Body()
-    body: {
-      token: string;
-    },
+    body: TwoFactorTokenDto,
   ) {
     const userId =
       Number(
@@ -358,10 +324,6 @@ async confirmRequiredTwoFactor(
     );
   }
 
-  /* =========================================================
-     FORGOT PASSWORD
-  ========================================================= */
-
   @Post(
     "forgot-password",
   )
@@ -375,18 +337,12 @@ async confirmRequiredTwoFactor(
   })
   forgotPassword(
     @Body()
-    body: {
-      email: string;
-    },
+    body: ForgotPasswordDto,
   ) {
     return this.authService.requestPasswordReset(
       body.email,
     );
   }
-
-  /* =========================================================
-     RESET PASSWORD
-  ========================================================= */
 
   @Post(
     "reset-password",
@@ -401,10 +357,7 @@ async confirmRequiredTwoFactor(
   })
   resetPassword(
     @Body()
-    body: {
-      token: string;
-      newPassword: string;
-    },
+    body: ResetPasswordDto,
   ) {
     return this.authService.resetPassword(
       body.token,
