@@ -51,6 +51,18 @@ export default function Footer() {
             >
               Explore
             </Link>
+            <Link
+              href="/privacy-policy"
+              className="transition hover:text-[#ead2a0]"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="/terms-of-use"
+              className="transition hover:text-[#ead2a0]"
+            >
+              Terms of Use
+            </Link>
           </nav>
         </div>
 
