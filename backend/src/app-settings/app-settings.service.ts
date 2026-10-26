@@ -73,6 +73,8 @@ export class AppSettingsService {
       tagline:
         settings.tagline,
 
+      supportEmail: settings.supportEmail,
+
       timezone:
         settings.timezone,
 

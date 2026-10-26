@@ -42,15 +42,6 @@ export default function Footer() {
             <Link href="/library" className="transition hover:text-[#ead2a0]">
               Library
             </Link>
-            <Link href="/#approach" className="transition hover:text-[#ead2a0]">
-              Our Approach
-            </Link>
-            <Link
-              href="/library?tab=Topics+Index"
-              className="transition hover:text-[#ead2a0]"
-            >
-              Explore
-            </Link>
             <Link
               href="/privacy-policy"
               className="transition hover:text-[#ead2a0]"

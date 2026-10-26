@@ -1,3 +1,4 @@
+import { LegalPagesService } from "./legal-pages.service";
 import {
   Module,
 } from "@nestjs/common";
@@ -17,10 +18,12 @@ import {
 
   providers: [
     AppSettingsService,
+    LegalPagesService,
   ],
 
   exports: [
     AppSettingsService,
+    LegalPagesService,
   ],
 })
 export class AppSettingsModule {}

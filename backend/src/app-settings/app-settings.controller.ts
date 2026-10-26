@@ -1,3 +1,5 @@
+import { Param } from "@nestjs/common";
+import { LegalPagesService } from "./legal-pages.service";
 import {
   Controller,
   Get,
@@ -12,7 +14,13 @@ export class AppSettingsController {
   constructor(
     private readonly appSettingsService:
       AppSettingsService,
+    private readonly legalPagesService: LegalPagesService,
   ) {}
+
+  @Get("legal/:slug")
+  getLegalPage(@Param("slug") slug: string) {
+    return this.legalPagesService.getPage(slug);
+  }
 
   @Get("public")
   getPublicSettings() {

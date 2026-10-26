@@ -1,0 +1,96 @@
+{
+  "privacy-policy": {
+    "title": "Privacy Policy",
+    "introduction": "This Privacy Policy explains how Business Nuggets from the Bible may collect, use, store and protect information when you use the platform and your personal workspace.",
+    "notice": "",
+    "sections": [
+      {
+        "id": "information",
+        "title": "Information We Collect",
+        "body": "When you create an account, Business Nuggets may collect information such as your name, email address and account credentials.\n\nWhen you use your workspace, additional information may be associated with your account, including saved Nuggets, playlists, notes, followed topics, reading or listening history and progress.\n\nWe may also receive technical information necessary to operate the service, such as browser information, device type and basic service activity."
+      },
+      {
+        "id": "use",
+        "title": "How We Use Information",
+        "body": "Information may be used to provide and maintain your Business Nuggets account, load your personal workspace and make saved content available when you return.\n\nWe may also use information to improve platform reliability, provide customer support, protect accounts from unauthorized access and communicate important service or account updates.\n\nWhere optional personalization features are available, your selected interests, followed topics and activity may be used to help organize or personalize your experience."
+      },
+      {
+        "id": "workspace",
+        "title": "Workspace & Personal Content",
+        "body": "Your workspace may contain personal information you choose to create or save, including journal entries, notes, playlists and saved Nuggets.\n\nThese features are intended to support your personal study and organization. You should avoid entering highly sensitive information that is not necessary for your use of the platform.\n\nWorkspace content may remain associated with your account until you delete the relevant content or permanently delete your account, subject to any required technical or legal retention periods."
+      },
+      {
+        "id": "device",
+        "title": "Device & Local Storage",
+        "body": "Business Nuggets may use browser storage to remember information needed for your experience, such as your signed-in session and selected application preferences.\n\nSome interface preferences may be stored directly on the device you are using. This can include settings such as playback preferences, download preferences and notification choices.\n\nRemoving browser storage, signing out or using another device may cause some locally stored preferences to be reset."
+      },
+      {
+        "id": "sharing",
+        "title": "Service Providers & Sharing",
+        "body": "Business Nuggets may rely on third-party technology providers to operate parts of the service, including hosting, authentication, communications, storage and payment processing where applicable.\n\nInformation should only be shared with service providers to the extent reasonably necessary for them to provide their services or where disclosure is required by law.\n\nBusiness Nuggets does not grant other users access to your private account workspace simply because they also use the platform."
+      },
+      {
+        "id": "retention",
+        "title": "Data Retention & Account Deletion",
+        "body": "Account information may be retained while your account is active and for a reasonable period afterward where necessary for security, legal, operational or dispute purposes.\n\nWhere account deletion is available, deleting your account may permanently remove associated workspace data such as saved Nuggets, playlists, notes, history and followed topics.\n\nYou should use the Data Export feature before deleting your account if you want to keep a personal copy of eligible workspace information."
+      },
+      {
+        "id": "security",
+        "title": "Security",
+        "body": "Business Nuggets may use technical and organizational safeguards intended to protect account and workspace information against unauthorized access, loss or misuse.\n\nAccount passwords should be protected and should not be shared with other people. Users should also sign out when using a shared or public device.\n\nNo internet-based service can guarantee complete security, but reasonable steps should be taken to reduce foreseeable risks."
+      },
+      {
+        "id": "rights",
+        "title": "Your Choices & Rights",
+        "body": "Depending on the features available to your account, you may be able to review or update your profile information, change your password, manage notification preferences and unfollow topics through Account & Workspace Settings.\n\nYou may also be able to export eligible workspace data or request permanent account deletion through the settings area."
+      },
+      {
+        "id": "updates",
+        "title": "Privacy Policy Updates",
+        "body": "This Privacy Policy may be updated as Business Nuggets introduces new features, changes service providers or responds to legal and operational requirements.\n\nThe updated date displayed at the top of this page should indicate when material changes were last made.\n\nWhere appropriate, important privacy changes may also be communicated through the platform or another available communication channel."
+      }
+    ]
+  },
+  "terms-of-use": {
+    "title": "Terms of Use",
+    "introduction": "Product-specific legal release draft. No effective date has been assigned.",
+    "notice": "This document is currently presented as a product and legal draft. Final wording should be reviewed and approved before it is published as a binding agreement.",
+    "sections": [
+      {
+        "id": "product-scope",
+        "title": "Product Scope & Purpose",
+        "body": "Business Nuggets from the Bible provides access to scripture-based business commentary, cinematic audio teachings, written studies, playlists, reading features, saved content and related learning tools.\n\nThe platform is intended for educational and personal study purposes. Content is designed to support reflection on biblical principles and their possible application to modern marketplace situations."
+      },
+      {
+        "id": "account-access",
+        "title": "Account Access & Responsibility",
+        "body": "Account holders are responsible for maintaining the confidentiality of their login credentials and for activities performed through their account.\n\nUsers should provide accurate information when creating an account and must not use another person's account without permission."
+      },
+      {
+        "id": "fees",
+        "title": "Fees & Premium Content",
+        "body": "Certain content or platform features may be offered as premium services. Where payment is required, applicable pricing and access conditions should be displayed before a purchase is completed.\n\nAny future subscription, billing, cancellation or refund rules should be clearly stated before paid services are activated."
+      },
+      {
+        "id": "content-rights",
+        "title": "Content Rights & Personal Study",
+        "body": "Business Nuggets content, including written teachings, audio productions, visual assets and platform materials, is intended for personal study and permitted platform use.\n\nUsers should not reproduce, redistribute, resell or republish protected platform content outside the permissions provided by the service or applicable law."
+      },
+      {
+        "id": "returns",
+        "title": "Returns & Account Closure — Review Required",
+        "body": "Account closure, cancellation and any applicable return or refund process will depend on the type of service or purchase involved.\n\nFinal eligibility requirements, timelines and procedures should be confirmed before this section becomes part of the active Terms of Use."
+      },
+      {
+        "id": "processors",
+        "title": "Processors, Transfers & Security — Review Required",
+        "body": "The service may rely on hosting providers, authentication systems, payment providers and other technical services required to operate the platform.\n\nFinal terms should explain applicable data-processing, security and international-transfer arrangements together with the corresponding Privacy Policy."
+      },
+      {
+        "id": "legal-basis",
+        "title": "Legal Basis, Rights & Policy Updates — Review Required",
+        "body": "Final Terms of Use should identify the applicable legal framework, user rights, dispute procedures and the process used to communicate material changes to these terms.\n\nWhere updates materially affect users, the platform should provide reasonable notice before revised terms take effect."
+      }
+    ]
+  }
+}

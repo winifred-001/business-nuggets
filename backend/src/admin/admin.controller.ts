@@ -1,3 +1,5 @@
+import { LegalPagesService } from "../app-settings/legal-pages.service";
+import { UpdateLegalPageDto } from "../app-settings/legal-pages.dto";
 import {
   Body,
   Controller,
@@ -65,6 +67,7 @@ export class AdminController {
     private readonly rolesAccessService: RolesAccessService,
     private readonly auditLogsService: AuditLogsService,
     private readonly appSettingsService: AppSettingsService,
+    private readonly legalPagesService: LegalPagesService,
     private readonly emailService: EmailService,
   ) {}
 
@@ -752,6 +755,18 @@ async createAdminAccount(
   /* =========================================
      SETTINGS
   ========================================= */
+
+  @Get("settings/legal/:slug")
+  @RequireAdminPermission("settings")
+  getLegalPage(@Param("slug") slug: string) {
+    return this.legalPagesService.getPage(slug);
+  }
+
+  @Patch("settings/legal/:slug")
+  @RequireAdminPermission("settings")
+  updateLegalPage(@Param("slug") slug: string, @Body() body: UpdateLegalPageDto) {
+    return this.legalPagesService.updatePage(slug, body);
+  }
 
   @Get("settings")
   @RequireAdminPermission(

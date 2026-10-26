@@ -59,6 +59,7 @@ const navItems = [
   { label: "Notifications", href: "/admin/notifications", icon: Bell },
   { label: "Roles & Access", href: "/admin/roles", icon: UserCog },
   { label: "Audit Logs", href: "/admin/audit-logs", icon: FileText },
+  { label: "Legal Pages", href: "/admin/legal", icon: FileText },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
