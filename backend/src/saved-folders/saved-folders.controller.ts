@@ -12,6 +12,10 @@ import {
 
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { SavedFoldersService } from "./saved-folders.service";
+import {
+  CreateSavedFolderDto,
+  SavedFolderItemDto,
+} from "./dto/saved-folder.dto";
 
 @Controller("saved-folders")
 @UseGuards(JwtAuthGuard)
@@ -23,12 +27,7 @@ export class SavedFoldersController {
   @Post()
   createFolder(
     @Request() req: any,
-    @Body()
-    body: {
-      name: string;
-      description?: string;
-      nuggetIds?: string[];
-    },
+    @Body() body: CreateSavedFolderDto,
   ) {
     return this.savedFoldersService.createFolder(
       req.user.sub,
@@ -51,10 +50,7 @@ export class SavedFoldersController {
   addItem(
     @Request() req: any,
     @Param("id", ParseIntPipe) id: number,
-    @Body()
-    body: {
-      nuggetId: string;
-    },
+    @Body() body: SavedFolderItemDto,
   ) {
     return this.savedFoldersService.addItem(
       req.user.sub,
