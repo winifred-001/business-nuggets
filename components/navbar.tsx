@@ -295,11 +295,11 @@ export default function Navbar() {
           </span>
 
           <div className="hidden sm:block">
-            <p className="text-[11px] font-bold uppercase leading-none tracking-[0.04em] text-white">
+            <p className="text-[17px] font-bold uppercase leading-none tracking-[0.04em] text-white">
               Business Nuggets
             </p>
 
-            <p className="mt-1 font-serif text-[10px] italic leading-none text-[#C8A35A]">
+            <p className="mt-1 font-serif text-[14px] italic leading-none text-[#C8A35A]">
               from the Bible
             </p>
           </div>
