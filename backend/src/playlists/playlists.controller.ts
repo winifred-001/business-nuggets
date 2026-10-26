@@ -5,36 +5,41 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  Post,
   Patch,
+  Post,
   Request,
   UseGuards,
 } from "@nestjs/common";
+
 import { PlaylistsService } from "./playlists.service";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import {
+  PlaylistItemDto,
+  PlaylistNameDto,
+} from "./dto/playlist.dto";
 
 @Controller("playlists")
 @UseGuards(JwtAuthGuard)
 export class PlaylistsController {
   constructor(
-    private readonly playlistsService: PlaylistsService
+    private readonly playlistsService: PlaylistsService,
   ) {}
 
   @Post()
   createPlaylist(
     @Request() req: any,
-    @Body() body: { name: string }
+    @Body() body: PlaylistNameDto,
   ) {
     return this.playlistsService.createPlaylist(
       req.user.sub,
-      body.name
+      body.name,
     );
   }
 
   @Get()
   getPlaylists(@Request() req: any) {
     return this.playlistsService.getPlaylists(
-      req.user.sub
+      req.user.sub,
     );
   }
 
@@ -42,49 +47,49 @@ export class PlaylistsController {
   addItem(
     @Request() req: any,
     @Param("id", ParseIntPipe) id: number,
-    @Body() body: { nuggetId: string }
+    @Body() body: PlaylistItemDto,
   ) {
     return this.playlistsService.addItem(
       req.user.sub,
       id,
-      body.nuggetId
+      body.nuggetId,
     );
   }
-   
+
   @Patch(":id")
-updatePlaylist(
-  @Request() req: any,
-  @Param("id", ParseIntPipe) id: number,
-  @Body() body: { name: string }
-) {
-  return this.playlistsService.updatePlaylist(
-    req.user.sub,
-    id,
-    body.name
-  );
-}
+  updatePlaylist(
+    @Request() req: any,
+    @Param("id", ParseIntPipe) id: number,
+    @Body() body: PlaylistNameDto,
+  ) {
+    return this.playlistsService.updatePlaylist(
+      req.user.sub,
+      id,
+      body.name,
+    );
+  }
 
   @Delete(":id/items/:nuggetId")
   removeItem(
     @Request() req: any,
     @Param("id", ParseIntPipe) id: number,
-    @Param("nuggetId") nuggetId: string
+    @Param("nuggetId") nuggetId: string,
   ) {
     return this.playlistsService.removeItem(
       req.user.sub,
       id,
-      nuggetId
+      nuggetId,
     );
   }
 
   @Delete(":id")
   deletePlaylist(
     @Request() req: any,
-    @Param("id", ParseIntPipe) id: number
+    @Param("id", ParseIntPipe) id: number,
   ) {
     return this.playlistsService.deletePlaylist(
       req.user.sub,
-      id
+      id,
     );
   }
 }
