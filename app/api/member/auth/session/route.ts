@@ -8,6 +8,7 @@ import {
 import { API_URL } from "@/lib/api";
 import {
   MEMBER_SESSION_COOKIE,
+  MEMBER_SESSION_MAX_AGE_SECONDS,
 } from "@/lib/member-session";
 
 export const runtime = "nodejs";
@@ -94,6 +95,23 @@ export async function GET() {
       authenticated: true,
       user,
     });
+
+  // Reissue a valid legacy cookie with HttpOnly so an existing signed-in
+  // member is upgraded even if localStorage was already cleared.
+  response.cookies.set(
+    MEMBER_SESSION_COOKIE,
+    token,
+    {
+      httpOnly: true,
+      secure:
+        process.env.NODE_ENV ===
+        "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge:
+        MEMBER_SESSION_MAX_AGE_SECONDS,
+    },
+  );
 
   response.headers.set(
     "Cache-Control",
