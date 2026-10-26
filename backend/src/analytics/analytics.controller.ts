@@ -7,6 +7,9 @@ import {
 import {
   AnalyticsService,
 } from "./analytics.service";
+import {
+  RecordAnalyticsEventDto,
+} from "./dto/record-analytics-event.dto";
 
 @Controller("analytics")
 export class AnalyticsController {
@@ -18,22 +21,7 @@ export class AnalyticsController {
   @Post("events")
   recordEvent(
     @Body()
-    body: {
-      visitorId: string;
-
-      eventType:
-        | "view"
-        | "read"
-        | "share";
-
-      nuggetId?: string;
-
-      platform?: string;
-
-      durationSeconds?: number;
-
-      country?: string;
-    },
+    body: RecordAnalyticsEventDto,
   ) {
     return this.analyticsService.recordEvent(
       body,
