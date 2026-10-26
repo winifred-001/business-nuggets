@@ -1430,7 +1430,7 @@ function NuggetCard({
           </span>
         </div>
 
-        <h3 className="mt-3 font-serif text-[19px] leading-[1.25]">
+        <h3 className="mt-3 font-serif text-[20px]! leading-[1.25]">
           {nugget.title}
         </h3>
 
