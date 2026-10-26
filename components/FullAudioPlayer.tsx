@@ -14,9 +14,6 @@ import {
   RotateCw,
   Shuffle,
   X,
-  Repeat,
-  Volume2,
-  VolumeX,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAudioPlayback, audioTime as formatTime } from "@/lib/use-audio-playback";
@@ -45,7 +42,7 @@ export default function FullAudioPlayer({
 }: Props) {
   const [shuffledQueue, setShuffledQueue] = useState<Nugget[] | null>(null);
   const playbackQueue = shuffledQueue ?? queue;
-  const { audioRef, audioProps, playing, currentTime, duration, speed, audioError, togglePlay, seek, seekTo, changeSpeed, muted, toggleMute, repeat, toggleRepeat } = useAudioPlayback(audioSrc);
+  const { audioRef, audioProps, playing, currentTime, duration, speed, audioError, togglePlay, seek, seekTo, changeSpeed } = useAudioPlayback(audioSrc);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [playlistOpen, setPlaylistOpen] = useState(false);
@@ -362,11 +359,6 @@ export default function FullAudioPlayer({
               </button>
             </div>
 
-            <div className="mt-3 flex justify-center gap-4">
-              <button type="button" disabled={!audioSrc} onClick={toggleRepeat} aria-label="Repeat" aria-pressed={repeat} className={`flex h-11 items-center gap-2 ${repeat ? "text-[#cda762]" : "text-white/50"}`}><Repeat size={17} /> Repeat</button>
-              <button type="button" disabled={!audioSrc} onClick={toggleMute} aria-label={muted ? "Unmute" : "Mute"} className="flex h-11 items-center gap-2 text-white/50">{muted ? <VolumeX size={17} /> : <Volume2 size={17} />}{muted ? "Unmute" : "Mute"}</button>
-            </div>
-
             <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <PlayerAction
                 label={saved ? "Saved" : "Save"}
@@ -384,7 +376,7 @@ export default function FullAudioPlayer({
                 <NotebookPen size={18} />
               </PlayerAction>
 
-              <PlayerAction label={busy ? "Please wait…" : "Download"} onClick={downloadAudio} disabled={!audioSrc || busy}><Download size={18} /></PlayerAction>
+              <PlayerAction label="Offline" onClick={downloadAudio} disabled={!audioSrc || busy}><Download size={18} /></PlayerAction>
             </div>
 
             {(message || audioError || !audioSrc) && (
