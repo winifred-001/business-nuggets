@@ -12,7 +12,7 @@ const questions = [
 ];
 export default function FAQsPage() {
   return (
-    <InformationLayout title="Frequently Asked Questions" introduction="A few answers to help you find your way around Business Nuggets.">
+    <InformationLayout eyebrow="FAQs" title="Frequently Asked Questions" introduction="A few answers to help you find your way around Business Nuggets.">
       <div className="space-y-4">
         {questions.map(([question, answer]) => <details key={question} className="rounded-lg border border-[#ead2a0]/20 bg-[#191b18] p-5 sm:p-6"><summary className="cursor-pointer font-semibold text-[#ead2a0]">{question}</summary><p className="mt-4 max-w-3xl leading-7 text-[#b4b2ab]">{answer}</p></details>)}
       </div>

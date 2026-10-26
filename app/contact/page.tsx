@@ -13,7 +13,7 @@ export default async function ContactPage() {
     }
   } catch (error) { console.error("Could not load contact details", error); }
   return (
-    <InformationLayout title="Contact Us" introduction="Questions about Business Nuggets, your account or the library? Get in touch with our support team.">
+    <InformationLayout eyebrow="Contact" title="Contact Us" introduction="Questions about Business Nuggets, your account or the library? Get in touch with our support team.">
       <div className="grid gap-6 md:grid-cols-2">
         <section className="rounded-xl border border-[#ead2a0]/20 bg-[#191b18] p-6 sm:p-8">
           <h2 className="font-serif text-[30px]!">Email support</h2>

@@ -4,6 +4,7 @@ import { DM_Sans, Manrope, Playfair_Display } from "next/font/google";
 import VisitorOnly from "@/components/VisitorOnly";
 import VisitorHomeHeader from "@/components/VisitorHomeHeader";
 import VisitorHomeLibrary from "@/components/VisitorHomeLibrary";
+import PageEyebrow from "@/components/PageEyebrow";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 import type { Nugget } from "@/types/nugget";
 import styles from "./visitor-home.module.css";
@@ -128,7 +129,7 @@ export default async function HomePage() {
           <section className={styles.hero} id="home">
             <div className={`${styles.container} ${styles.heroInner}`}>
               <div>
-                <div className={styles.eyebrow}>Faith. Wisdom. Enterprise.</div>
+                <PageEyebrow>Faith. Wisdom. Enterprise.</PageEyebrow>
 
                 <h1>
                   Ancient Wisdom.

@@ -1,35 +1,14 @@
 import Link from "next/link";
 
-import Navbar from "@/components/navbar";
-import Footer from "@/components/Footer";
+import InformationLayout from "@/components/InformationLayout";
 
 export default function PhilosophyPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
-      <Navbar />
-
-      <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
-        {/* BACK */}
-
-        <Link
-          href="/"
-          className="text-[10px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
-        >
-          ← Home
-        </Link>
-
-        {/* HEADER */}
-
-        <section className="mt-3">
-          <h1 className="font-serif text-[40px] leading-tight">
-            Our Philosophy
-          </h1>
-
-          <p className="mt-3 text-[13px] leading-6 text-white/40">
-            Timeless Biblical Wisdom for Today&apos;s Marketplace.
-          </p>
-        </section>
-
+    <InformationLayout
+      eyebrow="About"
+      title="Our Philosophy"
+      introduction="Timeless Biblical Wisdom for Today's Marketplace."
+    >
         {/* HERO PHILOSOPHY */}
 
         <section className="mt-10">
@@ -165,9 +144,6 @@ export default function PhilosophyPage() {
             </Link>
           </div>
         </section>
-      </main>
-
-      <Footer />
-    </div>
+    </InformationLayout>
   );
 }
