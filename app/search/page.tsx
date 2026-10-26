@@ -25,7 +25,7 @@ export default async function SearchPage({
 
       <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-6 sm:py-12 md:px-8 lg:px-10 lg:py-14">
         <section className="max-w-3xl">
-          <h1 className="font-serif text-[40px] leading-tight text-[#FAF9F6]">
+          <h1 className="bn-hero-title font-serif text-[40px] leading-tight text-[#FAF9F6]">
             Search the Wisdom Library
           </h1>
 
@@ -73,7 +73,7 @@ export default async function SearchPage({
           {query && (
             <Link
               href="/search"
-              className="inline-flex min-h-11 items-center text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="bn-button inline-flex min-h-11 items-center text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
             >
               Clear search
             </Link>
@@ -98,7 +98,7 @@ export default async function SearchPage({
 
             <Link
               href="/search"
-              className="mt-6 inline-flex min-h-11 items-center justify-center rounded-lg bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button mt-6 inline-flex min-h-11 items-center justify-center rounded-lg bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
             >
               Clear search
             </Link>

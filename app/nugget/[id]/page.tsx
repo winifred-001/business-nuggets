@@ -88,7 +88,7 @@ export default async function NuggetDetailPage({
                 Nugget #{nugget.number} · {nugget.topic}
               </p>
 
-              <h1 className="mt-4 max-w-[1000px] font-serif text-[40px] leading-[1.08] text-[#FAF9F6]">
+              <h1 className="bn-hero-title mt-4 max-w-[1000px] font-serif text-[40px] leading-[1.08] text-[#FAF9F6]">
                 {nugget.title}
               </h1>
             </div>
@@ -227,7 +227,7 @@ export default async function NuggetDetailPage({
 
                 <Link
   href={`/share-nugget/${nugget.slug}`}
-  className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[14px] text-white/65 transition hover:bg-white/[0.04] hover:text-[#E0C48A]"
+  className="bn-button flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[14px] text-white/65 transition hover:bg-white/[0.04] hover:text-[#E0C48A]"
 >
   <Share2
     size={16}

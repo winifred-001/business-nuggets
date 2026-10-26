@@ -431,7 +431,7 @@ export default function SavedFolderDetailPage() {
                       Saved Folder
                     </p>
 
-                    <h1 className="mt-2 font-serif text-[40px] leading-tight">
+                    <h1 className="bn-hero-title mt-2 font-serif text-[40px] leading-tight">
                       {
                         folder.name
                       }
@@ -509,7 +509,7 @@ export default function SavedFolderDetailPage() {
 
                     <Link
                       href="/library/saved-nuggets"
-                      className="mt-5 rounded-md bg-[#C8A35A] px-5 py-2.5 text-[11px] font-semibold text-[#080808]"
+                      className="bn-button mt-5 rounded-md bg-[#C8A35A] px-5 py-2.5 text-[11px] font-semibold text-[#080808]"
                     >
                       Back to Saved
                       Nuggets

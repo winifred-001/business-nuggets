@@ -149,7 +149,7 @@ export default function HistoryPage() {
         {/* HEADER */}
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="font-serif text-3xl sm:text-4xl">
+            <h1 className="bn-hero-title font-serif text-3xl sm:text-4xl">
               Listening Activity & Logs
             </h1>
 
@@ -195,7 +195,7 @@ export default function HistoryPage() {
 
             <Link
               href="/library"
-              className="mt-5 inline-block rounded-md bg-amber-300 px-4 py-2.5 text-sm font-semibold text-black"
+              className="bn-button mt-5 inline-block rounded-md bg-amber-300 px-4 py-2.5 text-sm font-semibold text-black"
             >
               Explore Nuggets
             </Link>
@@ -290,7 +290,7 @@ export default function HistoryPage() {
 
                         <Link
                           href={`/nugget/${item.nugget.slug}/reader`}
-                          className="flex items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-[10px] text-white transition hover:border-white/20"
+                          className="bn-button flex items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-[10px] text-white transition hover:border-white/20"
                         >
                           <RotateCcw size={12} />
                           {completed ? "Replay" : "Resume"}

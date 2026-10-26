@@ -92,7 +92,7 @@ export default async function KingdomPrinciplesPage() {
                 </span>
               </div>
 
-              <h1 className="mt-7 font-serif text-4xl leading-[1.05] sm:text-5xl lg:text-7xl">
+              <h1 className="bn-hero-title mt-7 font-serif text-4xl leading-[1.05] sm:text-5xl lg:text-7xl">
                 Kingdom Principles
                 <span className="block text-[#C8A35A]">
                   for the Marketplace
@@ -109,7 +109,7 @@ export default async function KingdomPrinciplesPage() {
               <div className="mt-9 flex flex-wrap justify-center gap-3">
                 <Link
                   href="#principles"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#C8A35A] px-6 text-sm font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                  className="bn-button inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#C8A35A] px-6 text-sm font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
                 >
                   Explore the Principles
                   <ArrowRight size={16} />
@@ -117,7 +117,7 @@ export default async function KingdomPrinciplesPage() {
 
                 <Link
                   href="/scripture-index"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-white/15 px-6 text-sm text-[#FAF9F6]/80 transition hover:border-[#C8A35A]/60 hover:text-[#E0C48A]"
+                  className="bn-button inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-white/15 px-6 text-sm text-[#FAF9F6]/80 transition hover:border-[#C8A35A]/60 hover:text-[#E0C48A]"
                 >
                   <BookOpen size={16} />
                   Scripture Index
@@ -338,14 +338,14 @@ export default async function KingdomPrinciplesPage() {
                 <div className="mt-8 flex flex-wrap justify-center gap-3">
                   <Link
                     href="/library"
-                    className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/15 px-6 text-sm text-[#FAF9F6] transition hover:border-[#C8A35A]/60"
+                    className="bn-button inline-flex min-h-12 items-center justify-center rounded-lg border border-white/15 px-6 text-sm text-[#FAF9F6] transition hover:border-[#C8A35A]/60"
                   >
                     Explore Library
                   </Link>
 
                   <Link
                     href="/get-access"
-                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#C8A35A] px-6 text-sm font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                    className="bn-button inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#C8A35A] px-6 text-sm font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
                   >
                     Get Access
                     <ArrowRight size={15} />

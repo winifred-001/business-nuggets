@@ -478,7 +478,7 @@ export default function AdminNuggetsPage() {
 
             <Link
               href="/admin/nuggets/new"
-              className="inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
             >
               <Plus
                 size={12}
@@ -828,7 +828,7 @@ export default function AdminNuggetsPage() {
                             <div className="absolute right-4 top-[45px] z-30 w-[150px] overflow-hidden rounded-md border border-white/10 bg-[#181818] shadow-2xl">
                               <Link
                                 href={`/admin/nuggets/${nugget.id}/edit`}
-                                className="flex items-center gap-3 px-4 py-3 text-[9px] text-white/60 transition hover:bg-white/[0.04] hover:text-white"
+                                className="bn-button flex items-center gap-3 px-4 py-3 text-[9px] text-white/60 transition hover:bg-white/[0.04] hover:text-white"
                               >
                                 <Pencil
                                   size={
@@ -842,7 +842,7 @@ export default function AdminNuggetsPage() {
                               <Link
                                 href={`/nugget/${nugget.slug}`}
                                 target="_blank"
-                                className="flex items-center gap-3 px-4 py-3 text-[9px] text-white/60 transition hover:bg-white/[0.04] hover:text-white"
+                                className="bn-button flex items-center gap-3 px-4 py-3 text-[9px] text-white/60 transition hover:bg-white/[0.04] hover:text-white"
                               >
                                 <Eye
                                   size={

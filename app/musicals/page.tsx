@@ -133,7 +133,7 @@ export default async function MusicalsPage({
             ← Library
           </Link>
 
-          <h1 className="mt-5 font-serif text-[40px] leading-tight">
+          <h1 className="bn-hero-title mt-5 font-serif text-[40px] leading-tight">
             Wisdom Cinematic Musicals
           </h1>
 
@@ -193,7 +193,7 @@ export default async function MusicalsPage({
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href={`/nugget/${featured.slug}/musical`}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                    className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
                   >
                     Open Musical
                     <ArrowRight size={14} />
@@ -201,7 +201,7 @@ export default async function MusicalsPage({
 
                   <Link
                     href={`/nugget/${featured.slug}`}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 px-5 text-[13px] font-medium text-white/65 transition hover:border-[#C8A35A]/50 hover:text-white"
+                    className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 px-5 text-[13px] font-medium text-white/65 transition hover:border-[#C8A35A]/50 hover:text-white"
                   >
                     Read Exposition
                   </Link>

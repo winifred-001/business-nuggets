@@ -53,7 +53,7 @@ export default function ResetLinkSentPage() {
 
       <main className="flex flex-1 items-center justify-center px-5 py-10 sm:px-6 sm:py-14 md:px-8 lg:px-10 lg:py-16">
         <section className="w-full max-w-[520px] rounded-2xl border border-white/10 bg-[#111111] p-5 sm:p-8 md:p-10">
-          <h1 className="font-serif text-[40px] leading-tight">
+          <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
             Check Your Inbox
           </h1>
 
@@ -98,7 +98,7 @@ export default function ResetLinkSentPage() {
 
           <Link
             href="/login"
-            className="mt-3 flex min-h-12 w-full items-center justify-center rounded-lg border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/65 transition hover:border-[#C8A35A]/35 hover:text-[#E0C48A]"
+            className="bn-button mt-3 flex min-h-12 w-full items-center justify-center rounded-lg border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/65 transition hover:border-[#C8A35A]/35 hover:text-[#E0C48A]"
           >
             Back to Sign In
           </Link>

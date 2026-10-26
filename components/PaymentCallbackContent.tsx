@@ -148,7 +148,7 @@ export default function PaymentCallbackContent() {
           />
         )}
 
-        <h1 className="mt-5 font-serif text-[32px] leading-tight text-[#FAF9F6]">
+        <h1 className="bn-hero-title mt-5 font-serif text-[32px] leading-tight text-[#FAF9F6]">
           {status === "verifying"
             ? "Verifying Payment"
             : status === "success"
@@ -164,14 +164,14 @@ export default function PaymentCallbackContent() {
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link
               href="/library"
-              className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button inline-flex min-h-11 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
             >
               Open Full Library
             </Link>
 
             <Link
               href="/membership"
-              className="inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 px-5 text-[11px] text-white/60 transition hover:border-[#C8A35A]/40 hover:text-white"
+              className="bn-button inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 px-5 text-[11px] text-white/60 transition hover:border-[#C8A35A]/40 hover:text-white"
             >
               Membership
             </Link>
@@ -182,14 +182,14 @@ export default function PaymentCallbackContent() {
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link
               href="/membership"
-              className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button inline-flex min-h-11 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
             >
               Return to Membership
             </Link>
 
             <Link
               href="/login"
-              className="inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 px-5 text-[11px] text-white/60 transition hover:border-[#C8A35A]/40 hover:text-white"
+              className="bn-button inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 px-5 text-[11px] text-white/60 transition hover:border-[#C8A35A]/40 hover:text-white"
             >
               Log In
             </Link>

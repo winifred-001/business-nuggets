@@ -218,7 +218,7 @@ export default function CollectionProgressActions({
         {firstNuggetSlug ? (
           <Link
             href={`/nugget/${firstNuggetSlug}/reader`}
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+            className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
           >
             <Play
               size={14}

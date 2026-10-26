@@ -190,11 +190,11 @@ export default function AdminShell({
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`mb-1.5 flex min-h-11 items-center gap-3 rounded-lg px-3 text-[14px] transition ${
+                className={`bn-button ${`mb-1.5 flex min-h-11 items-center gap-3 rounded-lg px-3 text-[14px] transition ${
                   active
                     ? "bg-[#C8A35A]/15 text-[#E0C48A]"
                     : "text-white/55 hover:bg-white/[0.04] hover:text-white"
-                }`}
+                }`}`}
               >
                 <Icon size={18} strokeWidth={1.7} />
                 <span className="truncate">{item.label}</span>
@@ -254,7 +254,7 @@ export default function AdminShell({
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
-              className="inline-flex min-h-11 items-center rounded-lg px-2 text-[14px] text-white/45 transition hover:text-[#E0C48A] sm:px-3"
+              className="bn-button inline-flex min-h-11 items-center rounded-lg px-2 text-[14px] text-white/45 transition hover:text-[#E0C48A] sm:px-3"
             >
               View Site
             </Link>

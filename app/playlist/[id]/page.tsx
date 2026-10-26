@@ -358,7 +358,7 @@ export default function PlaylistDetailPage() {
 
         <main className="mx-auto max-w-[1280px] px-5 py-20 sm:px-8 lg:px-10">
           <div className="rounded-xl border border-white/10 bg-[#111111] p-10 text-center">
-            <h1 className="font-serif text-[28px]">
+            <h1 className="bn-hero-title font-serif text-[28px]">
               Playlist unavailable
             </h1>
 
@@ -368,7 +368,7 @@ export default function PlaylistDetailPage() {
 
             <Link
               href="/library"
-              className="mt-6 inline-flex rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
+              className="bn-button mt-6 inline-flex rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
             >
               Back to Library
             </Link>
@@ -408,7 +408,7 @@ export default function PlaylistDetailPage() {
                   Curated Personal Playlist
                 </p>
 
-                <h1 className="mt-3 font-serif text-[40px] leading-tight">
+                <h1 className="bn-hero-title mt-3 font-serif text-[40px] leading-tight">
                   {playlist.name}
                 </h1>
 
@@ -452,7 +452,7 @@ export default function PlaylistDetailPage() {
                   {firstNugget ? (
                     <Link
                       href={`/nugget/${firstNugget.slug}/audio?playlist=${playlist.id}`}
-                      className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                      className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
                     >
                       <Play
                         size={14}
@@ -697,7 +697,7 @@ export default function PlaylistDetailPage() {
 
                 <Link
                   href="/library"
-                  className="mt-6 inline-flex rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
+                  className="bn-button mt-6 inline-flex rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
                 >
                   Browse Library
                 </Link>

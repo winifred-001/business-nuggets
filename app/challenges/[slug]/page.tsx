@@ -149,7 +149,7 @@ export default async function ChallengeDetailPage({
                   I Need Wisdom About...
                 </p>
 
-                <h1 className="mt-3 font-serif text-[40px] leading-tight text-[#FAF9F6]">
+                <h1 className="bn-hero-title mt-3 font-serif text-[40px] leading-tight text-[#FAF9F6]">
                   {challenge}
                 </h1>
 
@@ -262,7 +262,7 @@ export default async function ChallengeDetailPage({
                   <Link
                     key={item.title}
                     href={`/challenges/${slugify(item.title)}`}
-                    className="group inline-flex items-center gap-3 rounded-lg border border-white/10 bg-[#111111] px-4 py-3 transition hover:border-[#C8A35A]/45"
+                    className="bn-button group inline-flex items-center gap-3 rounded-lg border border-white/10 bg-[#111111] px-4 py-3 transition hover:border-[#C8A35A]/45"
                   >
                     <span className="text-[13px] text-white/65 transition group-hover:text-white">
                       {item.title}

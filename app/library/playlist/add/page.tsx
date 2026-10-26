@@ -486,7 +486,7 @@ export default function AddToPlaylistPage() {
           <section className="w-full max-w-[760px] rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-7">
             {/* HEADER */}
 
-            <h1 className="font-serif text-[40px] leading-tight">
+            <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
               Add to Playlist
             </h1>
 
@@ -812,7 +812,7 @@ export default function AddToPlaylistPage() {
                     href={
                       cancelHref
                     }
-                    className="inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 px-4 text-[11px] text-white/55 transition hover:border-white/20 hover:text-white"
+                    className="bn-button inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 px-4 text-[11px] text-white/55 transition hover:border-white/20 hover:text-white"
                   >
                     Cancel
                   </Link>

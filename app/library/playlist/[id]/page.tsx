@@ -192,7 +192,7 @@ export default function PlaylistDetailPage() {
             <>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h1 className="font-serif text-3xl font-semibold sm:text-4xl">
+                  <h1 className="bn-hero-title font-serif text-3xl font-semibold sm:text-4xl">
                     {playlist.name}
                   </h1>
 
@@ -207,7 +207,7 @@ export default function PlaylistDetailPage() {
                 <div className="flex flex-wrap gap-3">
   <Link
     href={`/library/playlist/${playlist.id}/edit`}
-    className="rounded-md border border-[#C8A35A]/40 px-4 py-2 text-[11px] text-[#C8A35A] transition hover:bg-[#C8A35A]/10"
+    className="bn-button rounded-md border border-[#C8A35A]/40 px-4 py-2 text-[11px] text-[#C8A35A] transition hover:bg-[#C8A35A]/10"
   >
     Edit Playlist
   </Link>

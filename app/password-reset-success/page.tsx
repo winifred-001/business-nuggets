@@ -14,7 +14,7 @@ export default function PasswordResetSuccessPage() {
             <ShieldCheck size={21} />
           </div>
 
-          <h1 className="mt-5 font-serif text-[40px] leading-tight">
+          <h1 className="bn-hero-title mt-5 font-serif text-[40px] leading-tight">
             Password Reset Complete
           </h1>
 
@@ -28,7 +28,7 @@ export default function PasswordResetSuccessPage() {
 
           <Link
             href="/login"
-            className="mt-5 flex min-h-12 w-full items-center justify-center rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+            className="bn-button mt-5 flex min-h-12 w-full items-center justify-center rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
           >
             Sign In
           </Link>

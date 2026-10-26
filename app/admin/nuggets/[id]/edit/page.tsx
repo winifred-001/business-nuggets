@@ -596,7 +596,7 @@ export default function EditNuggetPage() {
 
           <Link
             href="/admin/nuggets"
-            className="inline-flex min-h-9 w-fit items-center justify-center rounded-md border border-white/10 px-4 text-[9px] text-white/55 transition hover:border-[#C8A35A]/30 hover:text-white"
+            className="bn-button inline-flex min-h-9 w-fit items-center justify-center rounded-md border border-white/10 px-4 text-[9px] text-white/55 transition hover:border-[#C8A35A]/30 hover:text-white"
           >
             Discard
           </Link>

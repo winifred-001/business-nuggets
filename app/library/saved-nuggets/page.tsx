@@ -420,7 +420,7 @@ export default function SavedNuggetsPage() {
           <section className="border-b border-white/[0.07] pb-10">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h1 className="font-serif text-[40px] leading-tight">
+                <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
                   Saved Nuggets
                 </h1>
 
@@ -693,7 +693,7 @@ export default function SavedNuggetsPage() {
 
                   <Link
                     href="/library"
-                    className="mt-5 inline-flex rounded-md bg-[#C8A35A] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                    className="bn-button mt-5 inline-flex rounded-md bg-[#C8A35A] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
                   >
                     Browse Library
                   </Link>
@@ -722,7 +722,7 @@ export default function SavedNuggetsPage() {
 
               <Link
                 href="/library/saved-nuggets/create-folder"
-                className="flex w-fit items-center gap-2 rounded-md bg-[#C8A35A] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                className="bn-button flex w-fit items-center gap-2 rounded-md bg-[#C8A35A] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
               >
                 <FolderPlus
                   size={15}
@@ -892,7 +892,7 @@ export default function SavedNuggetsPage() {
                   }}
                   className="text-[18px] text-white/30 transition hover:text-white"
                 >
-                  ×
+                  <span aria-hidden="true" data-button-icon="small">×</span>
                 </button>
               </div>
 
@@ -1029,7 +1029,7 @@ export default function SavedNuggetsPage() {
               <div className="mt-6 border-t border-white/[0.07] pt-5">
                 <Link
                   href="/library/saved-nuggets/create-folder"
-                  className="flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                  className="bn-button flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
                 >
                   <FolderPlus
                     size={14}

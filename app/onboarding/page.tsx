@@ -279,7 +279,7 @@ export default function InterestsPage() {
           {/* HEADING */}
 
           <div className="mt-8 text-center">
-            <h1 className="font-serif text-[28px] leading-tight text-white">
+            <h1 className="bn-hero-title font-serif text-[28px] leading-tight text-white">
               What interests you?
             </h1>
 

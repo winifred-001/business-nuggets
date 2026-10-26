@@ -205,7 +205,7 @@ export default function PersonalNotesPage() {
           {/* LEFT NOTES PANEL */}
           <aside className="h-fit rounded-xl border border-white/10 bg-[#101010] p-4">
             <div className="flex items-center justify-between">
-              <h1 className="font-serif text-xl font-semibold">
+              <h1 className="bn-hero-title font-serif text-xl font-semibold">
                 My Journal & Notes
               </h1>
 

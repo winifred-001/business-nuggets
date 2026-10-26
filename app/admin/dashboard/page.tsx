@@ -218,7 +218,7 @@ export default function AdminDashboardPage() {
 
             <Link
               href="/admin/nuggets/new"
-              className="inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
             >
               <Plus
                 size={12}
@@ -649,7 +649,7 @@ function ActionRow({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between gap-3 rounded-md border border-white/[0.07] bg-[#080808] px-4 py-3 transition hover:border-[#C8A35A]/25"
+      className="bn-button flex items-center justify-between gap-3 rounded-md border border-white/[0.07] bg-[#080808] px-4 py-3 transition hover:border-[#C8A35A]/25"
     >
       <span className="text-[9px] text-white/50">
         {label}

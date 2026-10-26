@@ -78,7 +78,7 @@ export default function LoginPage() {
               Business Nuggets
             </p>
 
-            <h1 className="font-serif text-[45px]! font-semibold leading-tight text-[#FAF9F6]">
+            <h1 className="bn-hero-title font-serif text-[45px]! font-semibold leading-tight text-[#FAF9F6]">
               Welcome Back
             </h1>
 
@@ -152,7 +152,7 @@ export default function LoginPage() {
 
               <Link
                 href="/forgot-password"
-                className="inline-flex min-h-11 items-center font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                className="bn-button inline-flex min-h-11 items-center font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
               >
                 Forgot password?
               </Link>

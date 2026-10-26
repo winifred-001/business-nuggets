@@ -20,7 +20,7 @@ export default function LibraryEmptyPage({
       <Navbar />
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="font-serif text-3xl sm:text-4xl">
+        <h1 className="bn-hero-title font-serif text-3xl sm:text-4xl">
           {title}
         </h1>
 
@@ -35,7 +35,7 @@ export default function LibraryEmptyPage({
 
           <Link
             href={actionHref}
-            className="mt-6 inline-block rounded bg-amber-300 px-5 py-3 text-sm font-medium text-black"
+            className="bn-button mt-6 inline-block rounded bg-amber-300 px-5 py-3 text-sm font-medium text-black"
           >
             {actionLabel}
           </Link>

@@ -117,7 +117,7 @@ export default function MusicalView({
                 Wisdom Cinematic Musical
               </p>
 
-              <h1 className="mt-2 font-serif text-[28px] leading-tight">
+              <h1 className="bn-hero-title mt-2 font-serif text-[28px] leading-tight">
                 {nugget.musicalTitle ??
                   nugget.title}
               </h1>
@@ -194,7 +194,7 @@ export default function MusicalView({
 
               <Link
                 href={`/nugget/${nugget.slug}`}
-                className="w-fit rounded-md bg-[#C8A35A]/20 px-4 py-2 text-[12px] font-medium text-[#C8A35A]"
+                className="bn-button w-fit rounded-md bg-[#C8A35A]/20 px-4 py-2 text-[12px] font-medium text-[#C8A35A]"
               >
                 Read Exposition
               </Link>

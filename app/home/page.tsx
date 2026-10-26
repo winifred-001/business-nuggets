@@ -32,7 +32,7 @@ export default async function HomePage() {
         <Navbar />
 
         <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
-          <h1 className="font-serif text-[34px] leading-tight sm:text-[40px]">
+          <h1 className="bn-hero-title font-serif text-[34px] leading-tight sm:text-[40px]">
             Your wisdom workspace
           </h1>
 
@@ -51,7 +51,7 @@ export default async function HomePage() {
 
             <Link
               href="/library"
-              className="mt-4 inline-flex min-h-11 items-center text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="bn-button mt-4 inline-flex min-h-11 items-center text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
             >
               Browse Nuggets to read →
             </Link>
@@ -79,7 +79,7 @@ export default async function HomePage() {
 
             <Link
               href="/library"
-              className="mt-6 inline-flex min-h-11 items-center text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="bn-button mt-6 inline-flex min-h-11 items-center text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
             >
               Explore the full library →
             </Link>

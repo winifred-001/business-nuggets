@@ -121,7 +121,7 @@ export default async function CollectionDetailPage({
                   Curated Learning Pathway
                 </p>
 
-                <h1 className="mt-3 max-w-[850px] font-serif text-[40px] leading-tight">
+                <h1 className="bn-hero-title mt-3 max-w-[850px] font-serif text-[40px] leading-tight">
                   {collection.title}
                 </h1>
 

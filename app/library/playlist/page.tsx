@@ -119,7 +119,7 @@ export default function PlaylistsPage() {
 
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="font-serif text-[40px] leading-tight text-white">
+            <h1 className="bn-hero-title font-serif text-[40px] leading-tight text-white">
               My Playlists
             </h1>
 
@@ -132,7 +132,7 @@ export default function PlaylistsPage() {
 
           <Link
             href="/library/playlist/create"
-            className="flex w-fit items-center gap-2 rounded-md bg-[#C8A35A] px-4 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+            className="bn-button flex w-fit items-center gap-2 rounded-md bg-[#C8A35A] px-4 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
           >
             <Plus size={14} />
 
@@ -191,7 +191,7 @@ export default function PlaylistsPage() {
 
               <Link
                 href="/library/playlist/create"
-                className="mt-5 flex items-center gap-2 rounded-md bg-[#C8A35A] px-4 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                className="bn-button mt-5 flex items-center gap-2 rounded-md bg-[#C8A35A] px-4 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
               >
                 <Plus
                   size={14}

@@ -99,7 +99,7 @@ export default async function ReaderViewPage({
               Nugget #{nugget.number} · {nugget.topic}
             </p>
 
-            <h1 className="mt-3 max-w-[800px] font-serif text-[40px] leading-[1.05] text-[#15120E]">
+            <h1 className="bn-hero-title mt-3 max-w-[800px] font-serif text-[40px] leading-[1.05] text-[#15120E]">
               {nugget.title}
             </h1>
 

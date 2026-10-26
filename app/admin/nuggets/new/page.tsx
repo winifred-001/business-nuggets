@@ -406,7 +406,7 @@ export default function NewNuggetPage() {
 
             <Link
               href="/admin/nuggets"
-              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 px-4 text-[14px] text-white/60 transition hover:border-[#C8A35A]/35 hover:text-[#E0C48A]"
+              className="bn-button inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 px-4 text-[14px] text-white/60 transition hover:border-[#C8A35A]/35 hover:text-[#E0C48A]"
             >
               <ArrowLeft size={16} />
               Back to Nuggets

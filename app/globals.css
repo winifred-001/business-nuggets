@@ -1,3 +1,4 @@
+@layer bn-typography-overrides;
 @import "tailwindcss";
 
 :root {
@@ -531,5 +532,40 @@ p[class~="text-[14px]"] {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* Shared sizes. This first layer gives these explicit sizes priority over
+   older global !important rules and responsive utility font sizes. */
+@layer bn-typography-overrides {
+  :root {
+    --bn-button-font-size: 13px;
+    --bn-hero-font-size: 45px;
+  }
+
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  .bn-button {
+    font-size: var(--bn-button-font-size) !important;
+  }
+
+  :is(button, [role="button"], .bn-button) :where(span, strong, em, p):not([data-button-icon]) {
+    font-size: inherit !important;
+  }
+
+  .bn-hero-title {
+    font-size: var(--bn-hero-font-size) !important;
+  }
+
+  [data-button-icon] {
+    font-size: 26px !important;
+  }
+
+  [data-button-icon="small"] {
+    font-size: 18px !important;
   }
 }

@@ -251,7 +251,7 @@ export default function AdminSetupTwoFactorPage() {
 
                     <a
                       href={otpauthUrl}
-                      className="mt-4 inline-flex rounded-md border border-[#C8A35A]/30 px-4 py-2.5 text-[10px] text-[#C8A35A] transition hover:bg-[#C8A35A]/10"
+                      className="bn-button mt-4 inline-flex rounded-md border border-[#C8A35A]/30 px-4 py-2.5 text-[10px] text-[#C8A35A] transition hover:bg-[#C8A35A]/10"
                     >
                       Open in authenticator app
                     </a>

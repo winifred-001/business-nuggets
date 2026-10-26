@@ -388,7 +388,7 @@ export default function RecommendationsPage() {
           {/* HEADER */}
 
           <section className="mt-3">
-            <h1 className="font-serif text-[40px] leading-tight">
+            <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
               Your Recommendation Guide
             </h1>
 
@@ -479,7 +479,7 @@ export default function RecommendationsPage() {
 
               <Link
                 href="/onboarding?edit=1"
-                className="mt-5 inline-flex items-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 py-2.5 text-[10px] text-white/65 transition hover:border-[#C8A35A]/30 hover:text-[#C8A35A]"
+                className="bn-button mt-5 inline-flex items-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 py-2.5 text-[10px] text-white/65 transition hover:border-[#C8A35A]/30 hover:text-[#C8A35A]"
               >
                 <SlidersHorizontal
                   size={13}

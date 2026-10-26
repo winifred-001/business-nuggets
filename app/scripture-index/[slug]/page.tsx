@@ -192,7 +192,7 @@ export default async function ScriptureIndexDetailPage({
                   Scripture Index Detail
                 </p>
 
-                <h1 className="mt-3 font-serif text-[40px] leading-tight text-[#FAF9F6]">
+                <h1 className="bn-hero-title mt-3 font-serif text-[40px] leading-tight text-[#FAF9F6]">
                   The Book of {book}
                 </h1>
 
@@ -362,7 +362,7 @@ export default async function ScriptureIndexDetailPage({
 
                       <Link
                         href={`/nugget/${nugget.slug}`}
-                        className="w-fit rounded border border-[#C8A35A]/50 px-3 py-1.5 text-[12px] font-medium text-[#C8A35A] transition hover:bg-[#C8A35A] hover:text-[#080808]"
+                        className="bn-button w-fit rounded border border-[#C8A35A]/50 px-3 py-1.5 text-[12px] font-medium text-[#C8A35A] transition hover:bg-[#C8A35A] hover:text-[#080808]"
                       >
                         Access
                       </Link>
@@ -397,7 +397,7 @@ export default async function ScriptureIndexDetailPage({
                       href={`/scripture-index/${slugify(
                         item.title,
                       )}`}
-                      className="inline-flex items-center gap-3 rounded-lg border border-white/10 bg-[#111111] px-4 py-3 text-[13px] text-white/55 transition hover:border-[#C8A35A]/45 hover:text-white"
+                      className="bn-button inline-flex items-center gap-3 rounded-lg border border-white/10 bg-[#111111] px-4 py-3 text-[13px] text-white/55 transition hover:border-[#C8A35A]/45 hover:text-white"
                     >
                       {
                         item.title

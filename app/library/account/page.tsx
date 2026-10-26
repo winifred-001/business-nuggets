@@ -1529,7 +1529,7 @@ export default function AccountSettingsPage() {
           </Link>
 
           <div className="mt-4">
-            <h1 className="font-serif text-[40px] leading-[1.05] text-[#FAF9F6]">
+            <h1 className="bn-hero-title font-serif text-[40px] leading-[1.05] text-[#FAF9F6]">
               Account &amp; Workspace
               Settings
             </h1>

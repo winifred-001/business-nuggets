@@ -281,7 +281,7 @@ export default function FullAudioPlayer({
                 {nugget.scriptureRef} · {nugget.topic}
               </p>
 
-              <h1 className="mt-3 font-serif text-[34px] leading-[1.12] sm:text-[40px]">
+              <h1 className="bn-hero-title mt-3 font-serif text-[34px] leading-[1.12] sm:text-[40px]">
                 {nugget.title}
               </h1>
 
@@ -388,7 +388,7 @@ export default function FullAudioPlayer({
                 <a
                   href={audioSrc}
                   download
-                  className="flex min-h-14 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 text-[14px] text-white/55 transition hover:border-[#C8A35A]/40 hover:text-[#C8A35A] sm:flex-col"
+                  className="bn-button flex min-h-14 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 text-[14px] text-white/55 transition hover:border-[#C8A35A]/40 hover:text-[#C8A35A] sm:flex-col"
                 >
                   <Download size={18} />
                   Offline
@@ -414,7 +414,7 @@ export default function FullAudioPlayer({
 
               <Link
                 href={`/nugget/${nugget.slug}/reader`}
-                className="inline-flex min-h-11 items-center text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                className="bn-button inline-flex min-h-11 items-center text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
               >
                 Open Full Reader View
               </Link>
@@ -492,11 +492,11 @@ function QueueRow({
   return (
     <Link
       href={`/nugget/${nugget.slug}/audio`}
-      className={`grid min-h-16 grid-cols-[24px_minmax(0,1fr)_56px] items-center gap-3 rounded-lg border px-3 py-3 transition sm:grid-cols-[28px_minmax(0,1fr)_70px] sm:px-4 sm:py-4 ${
+      className={`bn-button ${`grid min-h-16 grid-cols-[24px_minmax(0,1fr)_56px] items-center gap-3 rounded-lg border px-3 py-3 transition sm:grid-cols-[28px_minmax(0,1fr)_70px] sm:px-4 sm:py-4 ${
         active
           ? "border-[#C8A35A]/35 bg-[#111111]"
           : "border-white/10 bg-[#111111] hover:border-[#C8A35A]/35"
-      }`}
+      }`}`}
     >
       <span className="font-serif text-[15px] text-[#C8A35A]">
         {String(index).padStart(2, "0")}

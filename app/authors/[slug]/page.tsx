@@ -60,7 +60,7 @@ export default async function AuthorDetailsPage({
             }
           </p>
 
-          <h1 className="mt-3 font-serif text-[40px] leading-tight">
+          <h1 className="bn-hero-title mt-3 font-serif text-[40px] leading-tight">
             {author.name}
           </h1>
 

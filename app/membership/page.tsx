@@ -127,7 +127,7 @@ export default function MembershipPage() {
           </Link>
 
           <section className="mt-4">
-            <h1 className="font-serif text-[44px] leading-tight">
+            <h1 className="bn-hero-title font-serif text-[44px] leading-tight">
               Your BNB Premium Membership
             </h1>
 
@@ -188,14 +188,14 @@ export default function MembershipPage() {
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href="/library/account"
-                    className="inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/75 transition hover:border-[#C8A35A]/35 hover:text-white"
+                    className="bn-button inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/75 transition hover:border-[#C8A35A]/35 hover:text-white"
                   >
                     Billing &amp; Membership Help →
                   </Link>
 
                   <a
                     href="mailto:support@businessnuggets.example"
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                    className="bn-button inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
                   >
                     <Mail size={15} />
                     Contact Support →

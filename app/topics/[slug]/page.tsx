@@ -125,7 +125,7 @@ export default async function TopicDetailPage({
                     Core Wisdom Pathway
                   </p>
 
-                  <h1 className="mt-3 font-serif text-[40px] leading-tight text-white">
+                  <h1 className="bn-hero-title mt-3 font-serif text-[40px] leading-tight text-white">
                     {topic}
                   </h1>
 
@@ -191,7 +191,7 @@ export default async function TopicDetailPage({
                       <div className="mt-5 flex flex-wrap items-center gap-3">
                         <Link
                           href={`/nugget/${featured.slug}/audio`}
-                          className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                          className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
                         >
                           <Headphones size={15} />
                           Listen Audio
@@ -199,7 +199,7 @@ export default async function TopicDetailPage({
 
                         <Link
                           href={`/nugget/${featured.slug}`}
-                          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 px-5 text-[13px] font-medium text-white transition hover:border-[#C8A35A]/50"
+                          className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 px-5 text-[13px] font-medium text-white transition hover:border-[#C8A35A]/50"
                         >
                           Read Commentary
                           <ArrowRight size={14} />
@@ -217,11 +217,11 @@ export default async function TopicDetailPage({
                   <div className="mt-4 space-y-2">
                     <Link
                       href={`/topics/${slug}`}
-                      className={`block rounded-md border px-3 py-2.5 text-[13px] transition ${
+                      className={`bn-button ${`block rounded-md border px-3 py-2.5 text-[13px] transition ${
                         !selectedSegment
                           ? "border-[#C8A35A]/45 bg-[#C8A35A]/10 text-[#C8A35A]"
                           : "border-white/10 bg-[#161616] text-white/50 hover:border-[#C8A35A]/30"
-                      }`}
+                      }`}`}
                     >
                       All {topic}
                     </Link>
@@ -230,11 +230,11 @@ export default async function TopicDetailPage({
                       <Link
                         key={segment}
                         href={`/topics/${slug}?segment=${encodeURIComponent(segment)}`}
-                        className={`block rounded-md border px-3 py-2.5 text-[13px] transition ${
+                        className={`bn-button ${`block rounded-md border px-3 py-2.5 text-[13px] transition ${
                           selectedSegment === segment
                             ? "border-[#C8A35A]/45 bg-[#C8A35A]/10 text-[#C8A35A]"
                             : "border-white/10 bg-[#161616] text-white/50 hover:border-[#C8A35A]/30 hover:text-white"
-                        }`}
+                        }`}`}
                       >
                         {segment}
                       </Link>

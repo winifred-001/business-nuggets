@@ -131,7 +131,7 @@ export default async function HomePage() {
               <div>
                 <PageEyebrow>Faith. Wisdom. Enterprise.</PageEyebrow>
 
-                <h1>
+                <h1 className="bn-hero-title">
                   Ancient Wisdom.
                   <br />
                   <span>Extraordinary</span>
@@ -146,10 +146,10 @@ export default async function HomePage() {
                 </p>
 
                 <div className={styles.actions}>
-                  <a href="#library" className={styles.btn}>
+                  <a href="#library" className={`bn-button ${styles.btn}`}>
                     Explore the Nuggets <span>↗</span>
                   </a>
-                  <a href="#approach" className={`${styles.btn} ${styles.btnOutline}`}>
+                  <a href="#approach" className={`bn-button ${`${styles.btn} ${styles.btnOutline}`}`}>
                     Discover Our Vision <span>↗</span>
                   </a>
                 </div>
@@ -250,7 +250,7 @@ export default async function HomePage() {
                   <li>Translate wisdom into ethical business practice</li>
                   <li>Reflect, apply and grow with intention</li>
                 </ul>
-                <a href="#library" className={styles.btn}>
+                <a href="#library" className={`bn-button ${styles.btn}`}>
                   Begin Your Discovery ↗
                 </a>
               </div>
@@ -266,7 +266,7 @@ export default async function HomePage() {
                   marketplace.
                 </p>
               </div>
-              <a href="#library" className={styles.btn}>
+              <a href="#library" className={`bn-button ${styles.btn}`}>
                 Explore the Library ↗
               </a>
             </div>

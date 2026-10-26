@@ -45,7 +45,7 @@ export default function NuggetCard({
 
         <Link
           href={`/nugget/${nugget.slug}/reader`}
-          className="mt-auto inline-flex min-h-11 items-center pt-4 text-[14px] font-semibold text-[#C8A35A] transition hover:text-[#E0C48A]"
+          className="bn-button mt-auto inline-flex min-h-11 items-center pt-4 text-[14px] font-semibold text-[#C8A35A] transition hover:text-[#E0C48A]"
         >
           Read wisdom →
         </Link>

@@ -30,7 +30,7 @@ export default function AuthorsPage() {
         {/* HEADER */}
 
         <section className="mt-3">
-          <h1 className="font-serif text-[40px] leading-tight">
+          <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
             Authors &amp; Creators
           </h1>
 
@@ -127,7 +127,7 @@ export default function AuthorsPage() {
 
                 <Link
                   href={`/authors/${author.slug}`}
-                  className="mt-5 inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                  className="bn-button mt-5 inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
                 >
                   View{" "}
                   {author.name}

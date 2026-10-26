@@ -329,7 +329,7 @@ export default function CreateSavedFolderPage() {
           {/* HEADER */}
 
           <section className="mt-4">
-            <h1 className="font-serif text-[40px] leading-tight">
+            <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
               Create a Saved Folder
             </h1>
 
@@ -573,7 +573,7 @@ export default function CreateSavedFolderPage() {
               <div className="mt-6 flex flex-col-reverse gap-3 border-t border-white/[0.07] pt-5 sm:flex-row sm:justify-end">
                 <Link
                   href="/library/saved-nuggets"
-                  className="inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 px-4 text-[11px] text-white/55 transition hover:border-white/20 hover:text-white"
+                  className="bn-button inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 px-4 text-[11px] text-white/55 transition hover:border-white/20 hover:text-white"
                 >
                   Cancel - Saved
                   Nuggets

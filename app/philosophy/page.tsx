@@ -19,8 +19,8 @@ export default async function PhilosophyPage() {
       })}
     </div>
     <div className="mt-8 flex flex-wrap gap-4 text-sm">
-      <Link href="/library" className="inline-flex bg-[#cda762] px-5 py-3 font-semibold text-black">Explore the Wisdom Archive</Link>
-      <Link href="/library?tab=Scripture+Matrix" className="inline-flex items-center border border-white/20 px-5 py-3 text-[#ead2a0]">Browse Scripture Index</Link>
+      <Link href="/library" className="bn-button inline-flex bg-[#cda762] px-5 py-3 font-semibold text-black">Explore the Wisdom Archive</Link>
+      <Link href="/library?tab=Scripture+Matrix" className="bn-button inline-flex items-center border border-white/20 px-5 py-3 text-[#ead2a0]">Browse Scripture Index</Link>
     </div>
   </InformationLayout>;
 }

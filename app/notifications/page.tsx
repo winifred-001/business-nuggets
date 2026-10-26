@@ -232,7 +232,7 @@ export default function NotificationsPage() {
         <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="font-serif text-[40px] leading-tight text-[#FAF9F6]">
+              <h1 className="bn-hero-title font-serif text-[40px] leading-tight text-[#FAF9F6]">
                 Notification Centre
               </h1>
 

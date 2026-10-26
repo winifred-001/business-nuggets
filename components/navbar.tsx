@@ -218,7 +218,7 @@ export default function Navbar() {
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[11px] font-bold text-[#17140e] transition hover:bg-[#e0bf80]"
+                  className="bn-button inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[11px] font-bold text-[#17140e] transition hover:bg-[#e0bf80]"
                 >
                   Sign Up
                 </Link>
@@ -282,7 +282,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/register"
-                  className="inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[11px] font-bold text-[#17140e] transition hover:-translate-y-0.5 hover:bg-[#e0bf80]"
+                  className="bn-button inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[11px] font-bold text-[#17140e] transition hover:-translate-y-0.5 hover:bg-[#e0bf80]"
                 >
                   Sign Up
                 </Link>
@@ -380,7 +380,7 @@ export default function Navbar() {
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((value) => !value)}
             >
-              {mobileOpen ? "×" : "☰"}
+              <span aria-hidden="true" data-button-icon>{mobileOpen ? "×" : "☰"}</span>
             </button>
           </div>
         </div>
@@ -401,7 +401,7 @@ function ProfileLink({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 px-3 py-2.5 text-[12px] text-[#b8b5aa] transition hover:bg-[#28251e] hover:text-[#ead2a0]"
+      className="bn-button flex items-center gap-3 px-3 py-2.5 text-[12px] text-[#b8b5aa] transition hover:bg-[#28251e] hover:text-[#ead2a0]"
     >
       <span className="text-[#cda762]">{icon}</span>
       {children}

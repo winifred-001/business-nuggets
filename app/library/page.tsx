@@ -576,7 +576,7 @@ function LibraryContent() {
       <section className="border-b border-white/[0.06]">
         <div className="mx-auto w-[calc(100%-38px)] max-w-[1190px] pt-16 sm:pt-24 lg:w-[calc(100%-64px)]">
           <PageEyebrow>Library</PageEyebrow>
-          <h1 className="mt-[27px] font-serif text-[45px]! leading-tight text-[#FAF9F6]">
+          <h1 className="bn-hero-title mt-[27px] font-serif text-[45px]! leading-tight text-[#FAF9F6]">
             The Wisdom Archive
           </h1>
 
@@ -798,7 +798,7 @@ function LibraryContent() {
 
                     <Link
                       href="/library"
-                      className="mt-6 inline-flex rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
+                      className="bn-button mt-6 inline-flex rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
                     >
                       Clear filters
                     </Link>
@@ -1299,7 +1299,7 @@ function LibraryContent() {
 
                       <Link
                         href={`/collection/${collectionCards[0].slug}`}
-                        className="mt-5 w-fit rounded-md bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
+                        className="bn-button mt-5 w-fit rounded-md bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
                       >
                         Explore Collection
                         →

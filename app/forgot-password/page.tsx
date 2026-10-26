@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
               Business Nuggets
             </p>
 
-            <h1 className="font-serif text-[40px] font-semibold leading-tight text-[#FAF9F6]">
+            <h1 className="bn-hero-title font-serif text-[40px] font-semibold leading-tight text-[#FAF9F6]">
               Forgot Password?
             </h1>
 
