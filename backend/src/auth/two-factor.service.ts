@@ -122,10 +122,13 @@ export class TwoFactorService {
     storedValue: string,
   ) {
     /*
-      Compatibility with any older records that stored the TOTP
-      secret directly before encrypted secrets were introduced.
+      Compatibility with older records that stored the TOTP secret
+      directly before encrypted secrets were introduced. Even legacy
+      records require the server encryption key to be configured, and
+      they are migrated to encrypted storage after successful verification.
     */
     if (!storedValue.startsWith("v1:")) {
+      this.getEncryptionKey();
       return storedValue;
     }
 
@@ -337,6 +340,12 @@ export class TwoFactorService {
         userId,
       );
 
+    if (user.twoFactorEnabled) {
+      throw new BadRequestException(
+        "Two-factor authentication is already enabled. Disable the existing authenticator before starting setup again.",
+      );
+    }
+
     const secret =
       generateSecret();
 
@@ -403,6 +412,12 @@ export class TwoFactorService {
         userId,
       );
 
+    if (user.twoFactorEnabled) {
+      throw new BadRequestException(
+        "Two-factor authentication is already enabled",
+      );
+    }
+
     if (
       !user.twoFactorSecret
     ) {
@@ -427,10 +442,6 @@ export class TwoFactorService {
         "Invalid authentication code",
       );
     }
-
-    /* =======================================================
-       GENERATE ONE-TIME RECOVERY CODES
-    ======================================================= */
 
     const recoveryCodes =
       this.generateRecoveryCodes();
@@ -458,10 +469,6 @@ export class TwoFactorService {
           recoveryCodeHashes,
       });
 
-    /* =======================================================
-       2FA ENABLED SECURITY EMAIL
-    ======================================================= */
-
     try {
       await this.emailService.sendTwoFactorEnabledEmail(
         user.email,
@@ -472,12 +479,6 @@ export class TwoFactorService {
         error,
       );
     }
-
-    /*
-      IMPORTANT:
-      These plain recovery codes are returned only here.
-      The database contains only their hashes.
-    */
 
     return {
       message:
@@ -511,9 +512,12 @@ export class TwoFactorService {
       return false;
     }
 
+    const storedSecret =
+      user.twoFactorSecret;
+
     const secret =
       this.decryptSecret(
-        user.twoFactorSecret,
+        storedSecret,
       );
 
     const result =
@@ -521,6 +525,23 @@ export class TwoFactorService {
         secret,
         token,
       });
+
+    if (
+      result.valid &&
+      !storedSecret.startsWith("v1:")
+    ) {
+      await db.orm.public.User
+        .where({
+          id:
+            user.id,
+        })
+        .update({
+          twoFactorSecret:
+            this.encryptSecret(
+              secret,
+            ),
+        });
+    }
 
     return result.valid;
   }
@@ -573,11 +594,6 @@ export class TwoFactorService {
       return false;
     }
 
-    /*
-      Remove the used code immediately.
-      That makes every recovery code one-time use.
-    */
-
     const remainingCodes =
       user.twoFactorRecoveryCodes.filter(
         (
@@ -627,6 +643,18 @@ export class TwoFactorService {
         twoFactorRecoveryCodes:
           [],
       });
+
+    try {
+      await this.emailService.sendSecurityAlertEmail(
+        user.email,
+        "Two-factor authentication was disabled for your Business Nuggets administrator account. If you did not make this change, secure the account immediately.",
+      );
+    } catch (error) {
+      console.error(
+        "Failed to send 2FA disabled security alert:",
+        error,
+      );
+    }
 
     return {
       message:
