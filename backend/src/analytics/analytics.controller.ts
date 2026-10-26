@@ -3,6 +3,9 @@ import {
   Controller,
   Post,
 } from "@nestjs/common";
+import {
+  Throttle,
+} from "@nestjs/throttler";
 
 import {
   AnalyticsService,
@@ -19,6 +22,12 @@ export class AnalyticsController {
   ) {}
 
   @Post("events")
+  @Throttle({
+    default: {
+      limit: 120,
+      ttl: 60_000,
+    },
+  })
   recordEvent(
     @Body()
     body: RecordAnalyticsEventDto,
