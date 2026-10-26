@@ -5,12 +5,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { Eye, EyeOff, ShieldCheck } from "lucide-react";
 
-import { API_URL } from "@/lib/api";
 import {
   clearAdminSession,
   clearPendingAdminLogin,
   clearPendingAdminSetup,
-  getAdminToken,
   isAdminAccount,
   setPendingAdminLogin,
   setPendingAdminSetup,
@@ -21,6 +19,7 @@ import {
 type LoginResponse = {
   message?: string | string[];
   token?: string;
+  authenticated?: boolean;
   requiresTwoFactorSetup?: boolean;
   setupToken?: string;
   user?: AdminUser;
@@ -52,19 +51,13 @@ export default function AdminLoginPage() {
     let cancelled = false;
 
     async function checkExistingAdmin() {
-      const token = getAdminToken();
-
-      if (!token) {
-        if (!cancelled) setCheckingSession(false);
-        return;
-      }
-
       try {
-        const response = await fetch(`${API_URL}/admin/test`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const response = await fetch(
+          "/api/admin/auth/session",
+          {
+            cache: "no-store",
           },
-        });
+        );
 
         if (response.ok) {
           router.replace("/admin/dashboard");
@@ -95,17 +88,20 @@ export default function AdminLoginPage() {
       return false;
     }
 
-    const verifyResponse = await fetch(`${API_URL}/admin/test`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const verifyResponse = await fetch(
+      "/api/admin/auth/session",
+      {
+        cache: "no-store",
       },
-    });
+    );
 
     if (!verifyResponse.ok) {
       setError("Admin access could not be verified.");
       return false;
     }
 
+    // Temporary legacy storage while the remaining admin pages
+    // are migrated to the HttpOnly-cookie proxy.
     storeAdminSession(token, user, keepSignedIn);
     clearPendingAdminLogin();
     clearPendingAdminSetup();
@@ -128,7 +124,7 @@ export default function AdminLoginPage() {
     setError("");
 
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch("/api/admin/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -136,6 +132,8 @@ export default function AdminLoginPage() {
         body: JSON.stringify({
           email: normalizedEmail,
           password,
+          keepSignedIn,
+          legacyBridge: true,
         }),
       });
 
