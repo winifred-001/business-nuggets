@@ -1,5 +1,7 @@
 "use client";
 
+import AudioMediaInput from "@/components/AudioMediaInput";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -756,12 +758,7 @@ export default function NewNuggetPage() {
                 </div>
 
                 <Field label="Audio URL (optional)" className="lg:col-span-2">
-                  <input
-                    value={form.audioUrl}
-                    onChange={(event) => updateField("audioUrl", event.target.value)}
-                    placeholder="https://example.com/audio.mp3"
-                    className={inputClass}
-                  />
+                  <AudioMediaInput value={form.audioUrl} onChange={value => updateField("audioUrl", value)} />
                   <p className="mt-2 text-[12px] text-white/25">
                     Add a direct audio link when an audio version is available.
                   </p>

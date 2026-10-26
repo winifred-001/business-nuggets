@@ -1,5 +1,7 @@
 "use client";
 
+import AudioMediaInput from "@/components/AudioMediaInput";
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -1012,23 +1014,7 @@ export default function EditNuggetPage() {
                 Audio URL
               </FieldLabel>
 
-              <input
-                value={
-                  form.audioUrl
-                }
-                onChange={(
-                  event,
-                ) =>
-                  updateField(
-                    "audioUrl",
-                    event
-                      .target
-                      .value,
-                  )
-                }
-                placeholder="/audio/example.mp3"
-                className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
-              />
+              <AudioMediaInput value={form.audioUrl} onChange={value => updateField("audioUrl", value)} />
             </div>
 
             {/* BOTTOM BUTTONS */}

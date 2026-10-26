@@ -17,7 +17,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self' ${apiUrl}${
+  `connect-src 'self' https://api.cloudinary.com ${apiUrl}${
     isDevelopment
       ? " http://localhost:3001 ws://localhost:*"
       : ""

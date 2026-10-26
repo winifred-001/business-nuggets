@@ -1,951 +1,462 @@
 "use client";
-
+import Image from "next/image";
 import {
-  ChangeEvent,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
+  type ChangeEvent,
+  type FormEvent,
 } from "react";
-
-import {
-  Check,
-  Folder,
-  ImageIcon,
-  Trash2,
-  Upload,
-  X,
-} from "lucide-react";
-
+import { Music2, Upload } from "lucide-react";
 import AdminShell from "@/components/admin/AdminShell";
-
+import { adminApiFetch } from "@/lib/admin-api";
 import {
-  API_URL,
-} from "@/lib/api";
-
-type MediaFolder = {
-  id: number;
-  name: string;
-  createdAt?: string;
-};
-
-type MediaAsset = {
-  id: number;
-
-  filename: string;
-  originalName: string;
-
-  mimeType: string;
-
-  size: number;
-
-  width:
-    | number
-    | null;
-
-  height:
-    | number
-    | null;
-
-  folderId:
-    | number
-    | null;
-
-  url: string;
-
-  createdAt: string;
-};
-
-type LibraryResponse = {
+  formatMediaBytes,
+  MEDIA_ACCEPT,
+  mediaUrl,
+  readMediaResponse,
+  uploadMedia,
+  type MediaAsset,
+} from "@/lib/media-library";
+type Library = {
   assets: MediaAsset[];
-
-  folders: MediaFolder[];
-
-  storage: {
-    usedBytes: number;
-    limitBytes: number;
-  };
+  folders: { id: number; name: string }[];
+  storage: { usedBytes: number; limitBytes: number };
 };
-
+const URL_TYPES = {
+  "audio/mpeg": "MP3 / audio",
+  "audio/wav": "WAV",
+  "audio/mp4": "M4A",
+  "audio/ogg": "OGG",
+  "audio/flac": "FLAC",
+  "image/jpeg": "JPG",
+  "image/png": "PNG",
+  "image/webp": "WEBP",
+  "image/gif": "GIF",
+};
 export default function AdminMediaPage() {
-  const [
-    assets,
-    setAssets,
-  ] =
-    useState<MediaAsset[]>(
-      [],
-    );
-
-  const [
-    folders,
-    setFolders,
-  ] =
-    useState<
-      MediaFolder[]
-    >([]);
-
-  const [
-    storage,
-    setStorage,
-  ] = useState({
-    usedBytes: 0,
-    limitBytes: 0,
+  const [library, setLibrary] = useState<Library>({
+    assets: [],
+    folders: [],
+    storage: { usedBytes: 0, limitBytes: 0 },
   });
-
-  const [
-    loading,
-    setLoading,
-  ] =
-    useState(true);
-
-  const [
-    uploading,
-    setUploading,
-  ] =
-    useState(false);
-
-  const [
-    error,
-    setError,
-  ] = useState("");
-
-  const [
-    success,
-    setSuccess,
-  ] = useState("");
-
-  const [
-    activeFolderId,
-    setActiveFolderId,
-  ] = useState<
-    number | null
-  >(null);
-
-  const [
-    folderModalOpen,
-    setFolderModalOpen,
-  ] =
-    useState(false);
-
-  const [
-    folderName,
-    setFolderName,
-  ] = useState("");
-
-  const fileInputRef =
-    useRef<HTMLInputElement>(
-      null,
-    );
-
-  function getToken() {
-    return (
-      localStorage.getItem(
-        "adminToken",
-      ) ||
-      sessionStorage.getItem(
-        "adminToken",
-      )
-    );
-  }
-
-  /* =========================================
-     LOAD LIBRARY
-  ========================================= */
-
-  useEffect(() => {
-    loadLibrary();
-  }, []);
-
-  async function loadLibrary() {
-    const token =
-      getToken();
-
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
+  const [loading, setLoading] = useState(true),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState(""),
+    [success, setSuccess] = useState("");
+  const [folderId, setFolderId] = useState<number | null>(null),
+    [kind, setKind] = useState("all");
+  const [folderOpen, setFolderOpen] = useState(false),
+    [folderName, setFolderName] = useState("");
+  const [urlOpen, setUrlOpen] = useState(false),
+    [urlName, setUrlName] = useState(""),
+    [url, setUrl] = useState(""),
+    [mimeType, setMimeType] = useState("audio/mpeg");
+  const fileInput = useRef<HTMLInputElement>(null);
+  const load = useCallback(async (signal?: AbortSignal) => {
     try {
-      const response =
-        await fetch(
-          `${API_URL}/admin/media`,
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          },
+      const data = await readMediaResponse(
+        await adminApiFetch("/media", { cache: "no-store", signal }),
+      );
+      if (!signal?.aborted) setLibrary(data);
+    } catch (cause) {
+      if (!signal?.aborted)
+        setError(
+          cause instanceof Error ? cause.message : "Could not load media.",
         );
-
-      const data:
-        LibraryResponse =
-        await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          "Could not load media library.",
-        );
-      }
-
-      setAssets(
-        data.assets ||
-          [],
-      );
-
-      setFolders(
-        data.folders ||
-          [],
-      );
-
-      setStorage(
-        data.storage || {
-          usedBytes: 0,
-          limitBytes: 0,
-        },
-      );
-    } catch (
-      err
-    ) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Could not connect to the server.",
-      );
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  }
-
-  /* =========================================
-     FILTER
-  ========================================= */
-
-  const visibleAssets =
-    useMemo(() => {
-      if (
-        activeFolderId ===
-        null
-      ) {
-        return assets;
-      }
-
-      return assets.filter(
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    adminApiFetch("/media", { cache: "no-store", signal: controller.signal })
+      .then(readMediaResponse)
+      .then((data) => {
+        if (!controller.signal.aborted) setLibrary(data);
+      })
+      .catch((cause) => {
+        if (!controller.signal.aborted)
+          setError(
+            cause instanceof Error ? cause.message : "Could not load media.",
+          );
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+  const assets = useMemo(
+    () =>
+      library.assets.filter(
         (asset) =>
-          asset.folderId ===
-          activeFolderId,
-      );
-    }, [
-      assets,
-      activeFolderId,
-    ]);
-
-  /* =========================================
-     IMAGE DIMENSIONS
-  ========================================= */
-
-  function getImageDimensions(
-    file: File,
-  ) {
-    return new Promise<{
-      width: number;
-      height: number;
-    }>(
-      (
-        resolve,
-        reject,
-      ) => {
-        const url =
-          URL.createObjectURL(
-            file,
-          );
-
-        const image =
-          new Image();
-
-        image.onload = () => {
-          resolve({
-            width:
-              image.naturalWidth,
-
-            height:
-              image.naturalHeight,
-          });
-
-          URL.revokeObjectURL(
-            url,
-          );
-        };
-
-        image.onerror =
-          () => {
-            URL.revokeObjectURL(
-              url,
-            );
-
-            reject(
-              new Error(
-                "Could not read image dimensions",
-              ),
-            );
-          };
-
-        image.src =
-          url;
-      },
-    );
-  }
-
-  /* =========================================
-     UPLOAD
-  ========================================= */
-
-  async function handleUpload(
-    event:
-      ChangeEvent<HTMLInputElement>,
-  ) {
-    const file =
-      event.target
-        .files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    const token =
-      getToken();
-
-    if (!token) {
-      return;
-    }
-
-    setUploading(true);
+          (folderId === null || asset.folderId === folderId) &&
+          (kind === "all" || asset.mimeType.startsWith(`${kind}/`)),
+      ),
+    [library.assets, folderId, kind],
+  );
+  async function action(work: () => Promise<unknown>, message: string) {
+    setBusy(true);
     setError("");
     setSuccess("");
-
     try {
-      const {
-        width,
-        height,
-      } =
-        await getImageDimensions(
-          file,
-        );
-
-      const formData =
-        new FormData();
-
-      formData.append(
-        "file",
-        file,
-      );
-
-      formData.append(
-        "width",
-        String(width),
-      );
-
-      formData.append(
-        "height",
-        String(
-          height,
-        ),
-      );
-
-      if (
-        activeFolderId !==
-        null
-      ) {
-        formData.append(
-          "folderId",
-          String(
-            activeFolderId,
-          ),
-        );
-      }
-
-      const response =
-        await fetch(
-          `${API_URL}/admin/media/upload`,
-          {
-            method:
-              "POST",
-
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-
-            body:
-              formData,
-          },
-        );
-
-      const data =
-        await response
-          .json()
-          .catch(() => ({}));
-
-      if (!response.ok) {
-        setError(
-          data.message ||
-            "Upload failed.",
-        );
-
-        return;
-      }
-
-      setSuccess(
-        "Image uploaded successfully.",
-      );
-
-      await loadLibrary();
-    } catch {
+      await work();
+      setSuccess(message);
+      await load();
+    } catch (cause) {
       setError(
-        "Could not upload image.",
+        cause instanceof Error ? cause.message : "Media request failed.",
       );
     } finally {
-      setUploading(false);
-
-      if (
-        fileInputRef.current
-      ) {
-        fileInputRef.current.value =
-          "";
-      }
+      setBusy(false);
     }
   }
-
-  /* =========================================
-     CREATE FOLDER
-  ========================================= */
-
-  async function createFolder() {
-    if (
-      !folderName.trim()
-    ) {
-      setError(
-        "Enter a folder name.",
-      );
-
-      return;
-    }
-
-    const token =
-      getToken();
-
-    if (!token) {
-      return;
-    }
-
-    try {
-      const response =
-        await fetch(
-          `${API_URL}/admin/media/folders`,
-          {
-            method:
-              "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              Authorization:
-                `Bearer ${token}`,
-            },
-
-            body:
-              JSON.stringify({
-                name:
-                  folderName.trim(),
-              }),
-          },
-        );
-
-      const data =
-        await response
-          .json()
-          .catch(() => ({}));
-
-      if (!response.ok) {
-        setError(
-          data.message ||
-            "Could not create folder.",
-        );
-
-        return;
-      }
-
-      setFolderModalOpen(
-        false,
-      );
-
+  async function upload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    await action(
+      () => uploadMedia(file, folderId),
+      "File uploaded and saved to the library.",
+    );
+    if (fileInput.current) fileInput.current.value = "";
+  }
+  function post(path: string, body: unknown) {
+    return adminApiFetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).then(readMediaResponse);
+  }
+  async function saveFolder(event: FormEvent) {
+    event.preventDefault();
+    await action(async () => {
+      await post("/media/folders", { name: folderName.trim() });
+      setFolderOpen(false);
       setFolderName("");
-
-      setSuccess(
-        "Folder created.",
-      );
-
-      await loadLibrary();
-    } catch {
-      setError(
-        "Could not connect to the server.",
-      );
-    }
+    }, "Folder created.");
   }
-
-  /* =========================================
-     DELETE MEDIA
-  ========================================= */
-
-  async function deleteAsset(
-    asset: MediaAsset,
-  ) {
-    const confirmed =
-      window.confirm(
-        `Delete "${asset.originalName}"?`,
-      );
-
-    if (!confirmed) {
+  async function saveUrl(event: FormEvent) {
+    event.preventDefault();
+    await action(async () => {
+      await post("/media/urls", {
+        name: urlName.trim(),
+        url: url.trim(),
+        mimeType,
+        ...(folderId ? { folderId } : {}),
+      });
+      setUrlOpen(false);
+      setUrlName("");
+      setUrl("");
+    }, "Media URL saved. The file remains with its original host.");
+  }
+  async function remove(asset: MediaAsset) {
+    if (
+      !window.confirm(
+        asset.filename.startsWith("external:")
+          ? `Remove the saved link "${asset.originalName}"? The original file stays with its host.`
+          : `Delete "${asset.originalName}" from storage and the library?`,
+      )
+    )
       return;
-    }
-
-    const token =
-      getToken();
-
-    if (!token) {
-      return;
-    }
-
+    await action(
+      () =>
+        adminApiFetch(`/media/${asset.id}`, { method: "DELETE" }).then(
+          readMediaResponse,
+        ),
+      "Media removed.",
+    );
+  }
+  async function copy(asset: MediaAsset) {
     try {
-      const response =
-        await fetch(
-          `${API_URL}/admin/media/${asset.id}`,
-          {
-            method:
-              "DELETE",
-
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          },
-        );
-
-      if (!response.ok) {
-        setError(
-          "Could not delete media.",
-        );
-
-        return;
-      }
-
-      setSuccess(
-        "Media deleted.",
-      );
-
-      await loadLibrary();
+      await navigator.clipboard.writeText(mediaUrl(asset.url));
+      setSuccess("Media URL copied. You can paste it into a Nugget.");
     } catch {
-      setError(
-        "Could not connect to the server.",
-      );
+      setError("Could not copy automatically. Use Open file to get the URL.");
     }
   }
-
-  /* =========================================
-     STORAGE
-  ========================================= */
-
-  const storagePercent =
-    storage.limitBytes >
-    0
-      ? Math.min(
-          100,
-          (storage.usedBytes /
-            storage.limitBytes) *
-            100,
-        )
-      : 0;
-
+  const button =
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/20 px-4 py-2 text-sm disabled:opacity-50";
+  const input =
+    "mt-2 w-full rounded-lg border border-white/20 bg-[#080808] px-4 py-3 text-sm text-white";
   return (
     <AdminShell>
-      <main className="px-4 py-6 sm:px-6 lg:px-7">
-        {/* HEADER */}
-
-        <section className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+      <main className="px-4 py-8 sm:px-6 lg:px-8">
+        <section className="flex flex-col justify-between gap-5 xl:flex-row xl:items-center">
           <div>
-            <h1 className="font-serif text-[32px]">
-              Media Library
-            </h1>
-
-            <p className="mt-2 text-[10px] text-white/35">
-              Images and assets
-              used across web and
-              mobile.
+            <h1 className="font-serif text-[37px]!">Media Library</h1>
+            <p className="mt-3 text-sm text-white/50">
+              Upload images (up to 10 MB), MP3 or WAV audio (up to 50 MB), or
+              save a direct HTTPS media URL.
             </p>
           </div>
-
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={() =>
-                setFolderModalOpen(
-                  true,
-                )
-              }
-              className="inline-flex h-9 items-center gap-2 rounded-md border border-white/10 px-4 text-[9px] text-white/55 transition hover:border-[#C8A35A]/30"
+              disabled={busy}
+              onClick={() => setFolderOpen((v) => !v)}
+              className={button}
             >
-              <Folder
-                size={
-                  12
-                }
-              />
-
               New Folder
             </button>
-
             <button
               type="button"
-              disabled={
-                uploading
-              }
-              onClick={() =>
-                fileInputRef.current?.click()
-              }
-              className="inline-flex h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:opacity-50"
+              disabled={busy}
+              onClick={() => setUrlOpen((v) => !v)}
+              className={button}
             >
-              <Upload
-                size={
-                  12
-                }
-              />
-
-              {uploading
-                ? "Uploading..."
-                : "Upload"}
+              Save URL
             </button>
-
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => fileInput.current?.click()}
+              className={`${button} border-[#cda762] bg-[#cda762] font-semibold text-black`}
+            >
+              <Upload size={16} />
+              {busy ? "Working…" : "Upload file"}
+            </button>
             <input
-              ref={
-                fileInputRef
-              }
+              ref={fileInput}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              onChange={
-                handleUpload
-              }
+              accept={MEDIA_ACCEPT}
+              onChange={upload}
               className="hidden"
             />
           </div>
         </section>
-
-        {/* MESSAGE */}
-
         {error && (
-          <div className="mt-5 rounded-md border border-red-500/20 bg-red-500/[0.05] px-4 py-3 text-[10px] text-red-400">
+          <p
+            role="alert"
+            className="mt-6 rounded-lg border border-red-400/25 p-4 text-red-300"
+          >
             {error}
-          </div>
+          </p>
         )}
-
         {success && (
-          <div className="mt-5 flex items-center gap-2 rounded-md border border-emerald-500/20 bg-emerald-500/[0.05] px-4 py-3">
-            <Check
-              size={12}
-              className="text-emerald-400"
-            />
-
-            <span className="text-[10px] text-emerald-400">
-              {success}
-            </span>
-          </div>
+          <p
+            role="status"
+            className="mt-6 rounded-lg border border-green-400/25 p-4 text-green-300"
+          >
+            {success}
+          </p>
         )}
-
-        {/* FOLDERS */}
-
-        {folders.length >
-          0 && (
-          <section className="mt-5 flex flex-wrap gap-2">
+        {folderOpen && (
+          <form
+            onSubmit={saveFolder}
+            className="mt-6 max-w-xl space-y-4 rounded-xl border border-white/20 bg-[#111111] p-5"
+          >
+            <label className="block">
+              Folder name
+              <input
+                required
+                maxLength={100}
+                value={folderName}
+                onChange={(e) => setFolderName(e.target.value)}
+                className={input}
+              />
+            </label>
+            <button disabled={busy} className={button}>
+              Create folder
+            </button>
             <button
               type="button"
-              onClick={() =>
-                setActiveFolderId(
-                  null,
+              disabled={busy}
+              onClick={() => setFolderOpen(false)}
+              className={`${button} ml-3`}
+            >
+              Cancel
+            </button>
+          </form>
+        )}
+        {urlOpen && (
+          <form
+            onSubmit={saveUrl}
+            className="mt-6 max-w-xl space-y-4 rounded-xl border border-white/20 bg-[#111111] p-5"
+          >
+            <p className="text-sm leading-6 text-white/50">
+              Use a direct file link, such as an R2 or Cloudinary audio URL.
+              This saves the link in the current folder; it does not copy the
+              file into your storage.
+            </p>
+            <label className="block">
+              Name
+              <input
+                required
+                maxLength={255}
+                value={urlName}
+                onChange={(e) => setUrlName(e.target.value)}
+                className={input}
+              />
+            </label>
+            <label className="block">
+              HTTPS media URL
+              <input
+                required
+                type="url"
+                maxLength={2048}
+                placeholder="https://example.com/audio.mp3"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className={input}
+              />
+            </label>
+            <label className="block">
+              File type
+              <select
+                value={mimeType}
+                onChange={(e) => setMimeType(e.target.value)}
+                className={input}
+              >
+                {Object.entries(URL_TYPES).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button disabled={busy} className={button}>
+              Save URL
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setUrlOpen(false)}
+              className={`${button} ml-3`}
+            >
+              Cancel
+            </button>
+          </form>
+        )}
+        <div className="mt-7 flex flex-wrap items-center gap-3">
+          <label className="text-sm">
+            Folder
+            <select
+              value={folderId ?? "all"}
+              onChange={(e) =>
+                setFolderId(
+                  e.target.value === "all" ? null : Number(e.target.value),
                 )
               }
-              className={`rounded-md border px-3 py-2 text-[8px] ${
-                activeFolderId ===
-                null
-                  ? "border-[#C8A35A]/40 bg-[#C8A35A]/10 text-[#E0C48A]"
-                  : "border-white/10 text-white/35"
-              }`}
+              className={`${input} ml-3 w-auto!`}
             >
-              All Media
-            </button>
-
-            {folders.map(
-              (folder) => (
-                <button
-                  key={
-                    folder.id
-                  }
-                  type="button"
-                  onClick={() =>
-                    setActiveFolderId(
-                      folder.id,
-                    )
-                  }
-                  className={`rounded-md border px-3 py-2 text-[8px] ${
-                    activeFolderId ===
-                    folder.id
-                      ? "border-[#C8A35A]/40 bg-[#C8A35A]/10 text-[#E0C48A]"
-                      : "border-white/10 text-white/35"
-                  }`}
-                >
-                  {
-                    folder.name
-                  }
-                </button>
-              ),
-            )}
-          </section>
-        )}
-
-        {/* GRID */}
-
+              <option value="all">All Media</option>
+              {library.folders.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm">
+            Show
+            <select
+              value={kind}
+              onChange={(e) => setKind(e.target.value)}
+              className={`${input} ml-3 w-auto!`}
+            >
+              <option value="all">All files</option>
+              <option value="image">Images</option>
+              <option value="audio">Audio</option>
+            </select>
+          </label>
+        </div>
         {loading ? (
-          <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({
-              length: 8,
-            }).map(
-              (
-                _,
-                index,
-              ) => (
-                <div
-                  key={
-                    index
-                  }
-                  className="h-[180px] animate-pulse rounded-[10px] border border-white/10 bg-[#111111]"
-                />
-              ),
-            )}
-          </section>
+          <p role="status" className="mt-8">
+            Loading media…
+          </p>
+        ) : assets.length === 0 ? (
+          <p className="mt-8 rounded-xl border border-white/15 p-8 text-center text-white/50">
+            No media here yet. Upload a file or save a URL.
+          </p>
         ) : (
-          <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {visibleAssets.map(
-              (asset) => (
-                <article
-                  key={
-                    asset.id
-                  }
-                  className="group overflow-hidden rounded-[10px] border border-white/10 bg-[#111111]"
-                >
-                  <div className="relative aspect-[16/9] overflow-hidden bg-[#17130A]">
-                    <img
-                      src={`${API_URL}${asset.url}`}
-                      alt={
-                        asset.originalName
-                      }
-                      className="h-full w-full object-cover"
+          <section className="mt-7 grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {assets.map((asset) => (
+              <article
+                key={asset.id}
+                className="min-w-0 overflow-hidden rounded-xl border border-white/15 bg-[#111111]"
+              >
+                {asset.mimeType.startsWith("audio/") ? (
+                  <div className="flex min-h-[180px] flex-col justify-center gap-4 bg-[#191b18] p-4">
+                    <Music2 size={32} className="mx-auto text-[#cda762]" />
+                    <audio
+                      controls
+                      preload="none"
+                      src={mediaUrl(asset.url)}
+                      className="w-full"
+                      aria-label={`Preview ${asset.originalName}`}
                     />
-
+                  </div>
+                ) : (
+                  <div className="aspect-video bg-[#191b18]">
+                    <Image
+                      unoptimized
+                      width={640}
+                      height={360}
+                      src={mediaUrl(asset.url)}
+                      alt={asset.originalName}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                <div className="p-4">
+                  <p className="break-words font-medium">
+                    {asset.originalName}
+                  </p>
+                  <p className="mt-2 text-xs text-white/45">
+                    {asset.mimeType} ·{" "}
+                    {asset.filename.startsWith("external:")
+                      ? "External link"
+                      : formatMediaBytes(asset.size)}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-3 text-sm">
                     <button
                       type="button"
-                      onClick={() =>
-                        deleteAsset(
-                          asset,
-                        )
-                      }
-                      className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-md bg-black/70 text-red-400 group-hover:flex"
-                      aria-label="Delete image"
+                      onClick={() => copy(asset)}
+                      className="text-[#ead2a0]"
                     >
-                      <Trash2
-                        size={
-                          12
-                        }
-                      />
+                      Copy URL
+                    </button>
+                    <a
+                      href={mediaUrl(asset.url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#ead2a0]"
+                    >
+                      Open file ↗
+                    </a>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => remove(asset)}
+                      className="text-red-300 disabled:opacity-50"
+                    >
+                      Delete
                     </button>
                   </div>
-
-                  <div className="p-3">
-                    <p className="truncate text-[9px] text-white/65">
-                      {
-                        asset.originalName
-                      }
-                    </p>
-
-                    <p className="mt-1 text-[7px] text-white/25">
-                      {asset.width &&
-                      asset.height
-                        ? `${asset.width}×${asset.height} · `
-                        : ""}
-                      {formatBytes(
-                        asset.size,
-                      )}
-                    </p>
-                  </div>
-                </article>
-              ),
-            )}
+                </div>
+              </article>
+            ))}
           </section>
         )}
-
-        {!loading &&
-          visibleAssets.length ===
-            0 && (
-            <div className="mt-6 rounded-[10px] border border-white/10 bg-[#111111] py-14 text-center">
-              <ImageIcon
-                size={24}
-                className="mx-auto text-white/15"
-              />
-
-              <p className="mt-3 text-[10px] text-white/30">
-                No media in this
-                folder yet.
-              </p>
-            </div>
-          )}
-
-        {/* STORAGE */}
-
-        <section className="mt-6 max-w-[340px]">
-          <p className="text-[8px] text-white/30">
-            Storage used:{" "}
-            {formatBytes(
-              storage.usedBytes,
-            )}{" "}
-            of{" "}
-            {formatBytes(
-              storage.limitBytes,
-            )}
+        <div className="mt-8 max-w-md">
+          <p className="text-sm text-white/45">
+            Uploaded storage: {formatMediaBytes(library.storage.usedBytes)} of{" "}
+            {formatMediaBytes(library.storage.limitBytes)}. External links use
+            no uploaded storage.
           </p>
-
-          <div className="mt-2 h-[4px] overflow-hidden rounded-full bg-white/[0.07]">
+          <div className="mt-3 h-1 overflow-hidden rounded bg-white/10">
             <div
-              className="h-full rounded-full bg-[#C8A35A]"
+              className="h-full bg-[#cda762]"
               style={{
-                width:
-                  `${storagePercent}%`,
+                width: `${library.storage.limitBytes ? Math.min(100, (library.storage.usedBytes / library.storage.limitBytes) * 100) : 0}%`,
               }}
             />
           </div>
-        </section>
-
-        {/* NEW FOLDER MODAL */}
-
-        {folderModalOpen && (
-          <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 px-5">
-            <div className="w-full max-w-[420px] rounded-[10px] border border-white/10 bg-[#111111] p-6">
-              <div className="flex items-center justify-between">
-                <h2 className="font-serif text-[24px]">
-                  New Folder
-                </h2>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFolderModalOpen(
-                      false,
-                    )
-                  }
-                  className="text-white/30 hover:text-white"
-                >
-                  <X
-                    size={
-                      16
-                    }
-                  />
-                </button>
-              </div>
-
-              <label className="mt-6 block text-[8px] text-white/35">
-                Folder Name
-              </label>
-
-              <input
-                value={
-                  folderName
-                }
-                onChange={(
-                  event,
-                ) =>
-                  setFolderName(
-                    event
-                      .target
-                      .value,
-                  )
-                }
-                placeholder="Nugget Covers"
-                className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20"
-              />
-
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFolderModalOpen(
-                      false,
-                    )
-                  }
-                  className="h-9 rounded-md border border-white/10 px-4 text-[9px] text-white/40"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="button"
-                  onClick={
-                    createFolder
-                  }
-                  className="h-9 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808]"
-                >
-                  Create Folder
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
       </main>
     </AdminShell>
   );
-}
-
-function formatBytes(
-  bytes: number,
-) {
-  if (!bytes) {
-    return "0 B";
-  }
-
-  const units = [
-    "B",
-    "KB",
-    "MB",
-    "GB",
-  ];
-
-  const index =
-    Math.min(
-      units.length -
-        1,
-
-      Math.floor(
-        Math.log(bytes) /
-          Math.log(
-            1024,
-          ),
-      ),
-    );
-
-  const value =
-    bytes /
-    Math.pow(
-      1024,
-      index,
-    );
-
-  return `${value.toFixed(
-    index === 0
-      ? 0
-      : 1,
-  )} ${units[index]}`;
 }
