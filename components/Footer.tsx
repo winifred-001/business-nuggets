@@ -22,7 +22,7 @@ export default function Footer() {
       <div className="mx-auto grid w-full max-w-[1280px] gap-10 px-5 py-10 sm:px-6 md:grid-cols-[1.1fr_1.9fr] md:gap-12 md:py-12 lg:px-8 xl:px-10">
         <div className="max-w-md">
           <Link
-          href={homeHref}
+          href="/"
           className="flex shrink-0 items-center gap-3"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-sm bg-[#C8A35A] text-[14px] font-bold text-[#080808]">
