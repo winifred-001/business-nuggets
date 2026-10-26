@@ -1,20 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --bnb-obsidian: #080808;
-  --bnb-charcoal: #111111;
-  --bnb-gold: #c8a35a;
-  --bnb-soft-gold: #e0c48a;
-  --bnb-parchment: #f5f0e8;
-  --bnb-ivory: #faf9f6;
-  --bnb-slate: #8a8781;
-  --bnb-success: #2f6b52;
+  /* Option 1 — Corporate Excellence */
+  --bnb-navy: #102A43;
+  --bnb-blue: #2463A6;
+  --bnb-mist: #E8EEF4;
+  --bnb-white: #FFFFFF;
+  --bnb-teal: #35A69A;
+
+  /* Legacy aliases keep older screens on the new brand system. */
+  --bnb-obsidian: var(--bnb-navy);
+  --bnb-charcoal: color-mix(in srgb, var(--bnb-navy) 88%, var(--bnb-white) 12%);
+  --bnb-gold: var(--bnb-blue);
+  --bnb-soft-gold: var(--bnb-teal);
+  --bnb-parchment: var(--bnb-mist);
+  --bnb-ivory: var(--bnb-white);
+  --bnb-slate: color-mix(in srgb, var(--bnb-mist) 72%, var(--bnb-navy) 28%);
+  --bnb-success: var(--bnb-teal);
   --bnb-warning: #b7791f;
   --bnb-error: #b54a4a;
-  --bnb-info: #3d6fa8;
+  --bnb-info: var(--bnb-blue);
 
-  --background: var(--bnb-obsidian);
-  --foreground: var(--bnb-ivory);
+  --background: var(--bnb-navy);
+  --foreground: var(--bnb-white);
 }
 
 @theme inline {
@@ -31,7 +39,7 @@
 
 html {
   min-width: 320px;
-  background: var(--bnb-obsidian);
+  background: var(--bnb-navy);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -39,8 +47,8 @@ html {
 body {
   min-width: 320px;
   overflow-x: clip;
-  background: var(--bnb-obsidian);
-  color: var(--bnb-ivory);
+  background: var(--bnb-navy);
+  color: var(--bnb-white);
   font-family: var(--font-inter), Inter, Arial, Helvetica, sans-serif;
   font-size: 17px;
   line-height: 1.65;
@@ -79,7 +87,7 @@ select {
 
 input[type="checkbox"],
 input[type="radio"] {
-  accent-color: var(--bnb-gold);
+  accent-color: var(--bnb-blue);
 }
 
 img,
@@ -113,12 +121,12 @@ td {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--bnb-gold) 38%, transparent);
-  color: var(--bnb-ivory);
+  background: color-mix(in srgb, var(--bnb-blue) 38%, transparent);
+  color: var(--bnb-white);
 }
 
 :focus-visible {
-  outline: 2px solid var(--bnb-soft-gold);
+  outline: 2px solid var(--bnb-teal);
   outline-offset: 2px;
 }
 
@@ -174,7 +182,7 @@ p[class~="text-[14px]"] {
 ========================================================= */
 
 [class~="bg-black"] {
-  background-color: var(--bnb-obsidian) !important;
+  background-color: var(--bnb-navy) !important;
 }
 
 [class~="bg-neutral-950"],
@@ -183,38 +191,38 @@ p[class~="text-[14px]"] {
 }
 
 [class~="bg-gray-900"] {
-  background-color: var(--bnb-obsidian) !important;
+  background-color: var(--bnb-navy) !important;
 }
 
 [class~="bg-amber-300"] {
-  background-color: var(--bnb-gold) !important;
+  background-color: var(--bnb-blue) !important;
 }
 
 [class~="hover:bg-amber-400"]:hover,
 [class~="hover:bg-amber-300"]:hover {
-  background-color: var(--bnb-soft-gold) !important;
+  background-color: var(--bnb-teal) !important;
 }
 
 [class~="text-white"] {
-  color: var(--bnb-ivory) !important;
+  color: var(--bnb-white) !important;
 }
 
 [class~="text-black"] {
-  color: var(--bnb-obsidian) !important;
+  color: var(--bnb-navy) !important;
 }
 
 [class~="text-amber-300"],
 [class~="text-amber-400"] {
-  color: var(--bnb-gold) !important;
+  color: var(--bnb-blue) !important;
 }
 
 [class~="hover:text-amber-300"]:hover,
 [class~="hover:text-amber-400"]:hover {
-  color: var(--bnb-soft-gold) !important;
+  color: var(--bnb-teal) !important;
 }
 
 [class~="text-gray-300"] {
-  color: color-mix(in srgb, var(--bnb-ivory) 78%, transparent) !important;
+  color: color-mix(in srgb, var(--bnb-mist) 86%, transparent) !important;
 }
 
 [class~="text-gray-400"],
@@ -224,12 +232,98 @@ p[class~="text-[14px]"] {
 
 [class~="border-gray-700"],
 [class~="border-gray-800"] {
-  border-color: rgb(250 249 246 / 0.1) !important;
+  border-color: color-mix(in srgb, var(--bnb-mist) 18%, transparent) !important;
 }
 
 [class~="border-amber-300"],
 [class~="focus:border-amber-500"]:focus {
-  border-color: var(--bnb-gold) !important;
+  border-color: var(--bnb-blue) !important;
+}
+
+/* =========================================================
+   OPTION 1 — CORPORATE EXCELLENCE COMPATIBILITY
+   Maps the old black/gold arbitrary utilities to the new brand
+   palette project-wide while screens are gradually cleaned up.
+========================================================= */
+
+[class~="bg-[#080808]"],
+[class~="bg-[#0B0B0B]"],
+[class~="bg-[#0D0D0D]"] {
+  background-color: var(--bnb-navy) !important;
+}
+
+[class~="bg-[#111111]"],
+[class~="bg-[#151515]"],
+[class~="bg-[#171717]"],
+[class~="bg-[#181818]"] {
+  background-color: var(--bnb-charcoal) !important;
+}
+
+[class~="bg-[#080808]/95"] { background-color: color-mix(in srgb, var(--bnb-navy) 95%, transparent) !important; }
+[class~="bg-[#080808]/90"] { background-color: color-mix(in srgb, var(--bnb-navy) 90%, transparent) !important; }
+[class~="bg-[#080808]/80"] { background-color: color-mix(in srgb, var(--bnb-navy) 80%, transparent) !important; }
+[class~="bg-[#080808]/75"] { background-color: color-mix(in srgb, var(--bnb-navy) 75%, transparent) !important; }
+[class~="bg-[#080808]/60"] { background-color: color-mix(in srgb, var(--bnb-navy) 60%, transparent) !important; }
+[class~="bg-[#080808]/50"] { background-color: color-mix(in srgb, var(--bnb-navy) 50%, transparent) !important; }
+[class~="bg-[#080808]/30"] { background-color: color-mix(in srgb, var(--bnb-navy) 30%, transparent) !important; }
+[class~="bg-[#080808]/20"] { background-color: color-mix(in srgb, var(--bnb-navy) 20%, transparent) !important; }
+[class~="bg-[#080808]/10"] { background-color: color-mix(in srgb, var(--bnb-navy) 10%, transparent) !important; }
+
+[class~="bg-[#111111]/95"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 95%, transparent) !important; }
+[class~="bg-[#111111]/90"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 90%, transparent) !important; }
+[class~="bg-[#111111]/80"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 80%, transparent) !important; }
+[class~="bg-[#111111]/60"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 60%, transparent) !important; }
+[class~="bg-[#111111]/50"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 50%, transparent) !important; }
+
+[class~="bg-[#C8A35A]"],
+[class~="bg-[#D0A85C]"],
+[class~="bg-[#9A7839]"] {
+  background-color: var(--bnb-blue) !important;
+}
+
+[class~="bg-[#E0C48A]"] {
+  background-color: var(--bnb-teal) !important;
+}
+
+[class~="hover:bg-[#C8A35A]"]:hover,
+[class~="hover:bg-[#D0A85C]"]:hover,
+[class~="hover:bg-[#E0C48A]"]:hover {
+  background-color: var(--bnb-teal) !important;
+}
+
+[class~="text-[#C8A35A]"],
+[class~="text-[#D0A85C]"],
+[class~="text-[#9A7839]"] {
+  color: var(--bnb-blue) !important;
+}
+
+[class~="text-[#E0C48A]"] {
+  color: var(--bnb-teal) !important;
+}
+
+[class~="text-[#FAF9F6]"],
+[class~="text-[#F7F3E8]"] {
+  color: var(--bnb-white) !important;
+}
+
+[class~="text-[#8A8781]"] {
+  color: var(--bnb-mist) !important;
+}
+
+[class~="border-[#C8A35A]"],
+[class~="border-[#D0A85C]"] {
+  border-color: var(--bnb-blue) !important;
+}
+
+[class~="focus:border-[#C8A35A]"]:focus,
+[class~="focus:ring-[#C8A35A]"]:focus {
+  border-color: var(--bnb-blue) !important;
+  --tw-ring-color: var(--bnb-blue) !important;
+}
+
+[class~="hover:text-[#C8A35A]"]:hover,
+[class~="hover:text-[#E0C48A]"]:hover {
+  color: var(--bnb-teal) !important;
 }
 
 /* =========================================================
