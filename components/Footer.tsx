@@ -21,11 +21,26 @@ export default function Footer() {
     <footer className="border-t border-white/[0.07] bg-[#111111] text-[#8A8781]">
       <div className="mx-auto grid w-full max-w-[1280px] gap-10 px-5 py-10 sm:px-6 md:grid-cols-[1.1fr_1.9fr] md:gap-12 md:py-12 lg:px-8 xl:px-10">
         <div className="max-w-md">
-          <p className="font-serif text-[24px] font-semibold leading-tight text-[#FAF9F6] sm:text-[28px]">
-            Business Nuggets
-          </p>
+          <Link
+          href={homeHref}
+          className="flex shrink-0 items-center gap-3"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-sm bg-[#C8A35A] text-[14px] font-bold text-[#080808]">
+            B
+          </span>
 
-          <p className="mt-3 text-[14px] leading-6 text-white/50 sm:text-[15px]">
+          <div className="hidden sm:block">
+            <p className="text-[17px] font-bold uppercase leading-none tracking-[0.04em] text-white">
+              Business Nuggets
+            </p>
+
+            <p className="mt-1 font-serif text-[14px] italic leading-none text-[#C8A35A]">
+              from the Bible
+            </p>
+          </div>
+        </Link>
+
+          <p className="mt-3 text-[18px] italics leading-6 text-white/50 sm:text-[14px]">
             Timeless Biblical Wisdom for Today&apos;s Marketplace.
           </p>
         </div>
@@ -44,7 +59,7 @@ export default function Footer() {
                 {group.title}
               </h2>
 
-              <ul className="space-y-2.5 text-[14px] leading-6">
+              <ul className="space-y-1 text-[14px] leading-6">
                 {group.links.map((link) => (
                   <li key={link.href}>
                     <Link
