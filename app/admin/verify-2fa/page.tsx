@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { KeyRound, ShieldCheck } from "lucide-react";
 
-import { API_URL } from "@/lib/api";
 import {
   clearPendingAdminLogin,
   getPendingAdminLogin,
@@ -18,6 +17,7 @@ import {
 type LoginResponse = {
   message?: string | string[];
   token?: string;
+  authenticated?: boolean;
   user?: AdminUser;
 };
 
@@ -69,7 +69,7 @@ export default function AdminVerifyTwoFactorPage() {
     setError("");
 
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch("/api/admin/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -77,6 +77,8 @@ export default function AdminVerifyTwoFactorPage() {
         body: JSON.stringify({
           email: pending.email,
           password: pending.password,
+          keepSignedIn: pending.keepSignedIn,
+          legacyBridge: true,
           ...(useRecoveryCode
             ? { recoveryCode: normalizedCode.toUpperCase() }
             : { twoFactorToken: normalizedCode }),
@@ -103,17 +105,20 @@ export default function AdminVerifyTwoFactorPage() {
         return;
       }
 
-      const verifyResponse = await fetch(`${API_URL}/admin/test`, {
-        headers: {
-          Authorization: `Bearer ${data.token}`,
+      const verifyResponse = await fetch(
+        "/api/admin/auth/session",
+        {
+          cache: "no-store",
         },
-      });
+      );
 
       if (!verifyResponse.ok) {
         setError("Admin access could not be verified.");
         return;
       }
 
+      // Temporary legacy storage while remaining admin pages
+      // are moved behind the HttpOnly-cookie proxy.
       storeAdminSession(data.token, data.user, pending.keepSignedIn);
       clearPendingAdminLogin();
       router.replace("/admin/dashboard");
