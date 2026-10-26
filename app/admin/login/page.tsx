@@ -18,7 +18,6 @@ import {
 
 type LoginResponse = {
   message?: string | string[];
-  token?: string;
   authenticated?: boolean;
   requiresTwoFactorSetup?: boolean;
   setupToken?: string;
@@ -80,7 +79,6 @@ export default function AdminLoginPage() {
   }, [router]);
 
   async function verifyAndStoreSession(
-    token: string,
     user: AdminUser,
   ) {
     if (!isAdminAccount(user)) {
@@ -100,9 +98,7 @@ export default function AdminLoginPage() {
       return false;
     }
 
-    // Temporary legacy storage while the remaining admin pages
-    // are migrated to the HttpOnly-cookie proxy.
-    storeAdminSession(token, user, keepSignedIn);
+    storeAdminSession("", user, keepSignedIn);
     clearPendingAdminLogin();
     clearPendingAdminSetup();
     router.replace("/admin/dashboard");
@@ -133,7 +129,6 @@ export default function AdminLoginPage() {
           email: normalizedEmail,
           password,
           keepSignedIn,
-          legacyBridge: true,
         }),
       });
 
@@ -181,12 +176,12 @@ export default function AdminLoginPage() {
         return;
       }
 
-      if (!data.token || !data.user) {
+      if (!data.authenticated || !data.user) {
         setError("The server did not return a complete admin session.");
         return;
       }
 
-      await verifyAndStoreSession(data.token, data.user);
+      await verifyAndStoreSession(data.user);
     } catch {
       setError("Could not connect to the server.");
     } finally {
