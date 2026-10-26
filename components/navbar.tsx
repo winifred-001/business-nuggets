@@ -187,11 +187,11 @@ export default function Navbar() {
           <div className={styles.navright}>
             {!isLoggedIn ? (
               <>
-                <Link href="/login" className={`${styles.login} ${styles.muted}`}>
-                  Login
+                <Link href="/library" className={`${styles.login} ${styles.muted}`}>
+                  Explore
                 </Link>
-                <Link href="/register" className={`${styles.btn} ${styles.signup}`}>
-                  Sign Up →
+                <Link href="/library" className={`${styles.btn} ${styles.signup}`}>
+                  Start Reading →
                 </Link>
               </>
             ) : (
