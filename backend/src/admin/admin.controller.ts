@@ -1,3 +1,5 @@
+import { UpdateBrandingDto } from "../app-settings/branding.dto";
+import { UpdateGeneralSettingsDto, UpdateSecuritySettingsDto, UpdateMaintenanceModeDto } from "./dto/admin-write.dto";
 import { LegalPagesService } from "../app-settings/legal-pages.service";
 import { UpdateLegalPageDto } from "../app-settings/legal-pages.dto";
 import {
@@ -758,8 +760,8 @@ async createAdminAccount(
 
   @Get(["settings/legal/:slug", "settings/pages/:slug"])
   @RequireAdminPermission("settings")
-  getLegalPage(@Param("slug") slug: string) {
-    return this.legalPagesService.getPage(slug);
+  async getLegalPage(@Param("slug") slug: string) {
+    return { document: await this.legalPagesService.getPage(slug) };
   }
 
   @Patch(["settings/legal/:slug", "settings/pages/:slug"])
@@ -767,6 +769,18 @@ async createAdminAccount(
   updateLegalPage(@Param("slug") slug: string, @Body() body: UpdateLegalPageDto) {
     return this.legalPagesService.updatePage(slug, body);
   }
+
+  @Get("settings/branding")
+  @RequireAdminPermission("settings")
+  getBranding() { return this.appSettingsService.getBranding(); }
+
+  @Patch("settings/branding")
+  @RequireAdminPermission("settings")
+  updateBranding(@Body() body: UpdateBrandingDto) { return this.appSettingsService.updateBranding(body); }
+
+  @Get("settings/connections")
+  @RequireAdminPermission("settings")
+  getConnections() { return this.appSettingsService.getConnections(); }
 
   @Get("settings")
   @RequireAdminPermission(
@@ -784,14 +798,7 @@ async createAdminAccount(
   )
   updateGeneralSettings(
     @Body()
-    body: {
-      siteName?: string;
-      tagline?: string;
-      supportEmail?: string;
-      timezone?: string;
-      defaultLanguage?: string;
-      dailyPublishTime?: string;
-    },
+    body: UpdateGeneralSettingsDto,
   ) {
     return this.appSettingsService.updateGeneral(
       body,
@@ -806,12 +813,7 @@ async createAdminAccount(
   )
   updateSecuritySettings(
     @Body()
-    body: {
-      twoFactorAdmins?: boolean;
-      sessionTimeoutMinutes?: number;
-      ipAllowListEnabled?: boolean;
-      ipAllowList?: string[];
-    },
+    body: UpdateSecuritySettingsDto,
   ) {
     return this.appSettingsService.updateSecurity(
       body,
@@ -826,9 +828,7 @@ async createAdminAccount(
   )
   updateMaintenanceMode(
     @Body()
-    body: {
-      enabled: boolean;
-    },
+    body: UpdateMaintenanceModeDto,
   ) {
     return this.appSettingsService.setMaintenanceMode(
       body.enabled,

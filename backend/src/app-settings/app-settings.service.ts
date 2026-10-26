@@ -8,6 +8,45 @@ import { db } from "../prisma/db";
 import { isIP } from "node:net";
 @Injectable()
 export class AppSettingsService {
+  private brandingTable?: Promise<void>;
+  private ensureBrandingTable() {
+    if (!this.brandingTable) this.brandingTable = db.runtime().execute(db.raw.sql`
+      CREATE TABLE IF NOT EXISTS "SiteBranding" (
+        "id" integer PRIMARY KEY CHECK ("id" = 1), "content" text NOT NULL
+      )
+    `.affectedCount().build()).then(() => undefined).catch(error => { this.brandingTable = undefined; throw error; });
+    return this.brandingTable;
+  }
+  async getBranding() {
+    await this.ensureBrandingTable();
+    const rows = await db.runtime().query(db.raw.sql`SELECT "content" FROM "SiteBranding" WHERE "id" = 1`
+      .returnsRow({ content: "pg/text@1" }).build());
+    return rows.length ? JSON.parse(rows[0].content) : { logoUrl: "", faviconUrl: "", socialImageUrl: "" };
+  }
+  async updateBranding(data: { logoUrl: string; faviconUrl: string; socialImageUrl: string }) {
+    for (const value of Object.values(data)) {
+      if (!value) continue;
+      let url: URL;
+      try { url = new URL(value); } catch { throw new BadRequestException("Use a valid HTTPS image URL"); }
+      if (url.protocol !== "https:" || url.username || url.password) throw new BadRequestException("Use a public HTTPS image URL without credentials");
+    }
+    const content = JSON.stringify({ logoUrl: data.logoUrl, faviconUrl: data.faviconUrl, socialImageUrl: data.socialImageUrl });
+    await this.ensureBrandingTable();
+    await db.runtime().execute(db.raw.sql`INSERT INTO "SiteBranding" ("id", "content") VALUES (1, ${content})
+      ON CONFLICT ("id") DO UPDATE SET "content" = EXCLUDED."content"`.affectedCount().build());
+    return this.getBranding();
+  }
+  getConnections() {
+    const configured = (...keys: string[]) => keys.every(key => Boolean(process.env[key]?.trim()));
+    const key = process.env.PAYSTACK_SECRET_KEY || "";
+    // Presence of credentials is configuration, not a live connection/health check.
+    return {
+      paystack: { configured: configured("PAYSTACK_SECRET_KEY"), mode: key.startsWith("sk_live_") ? "live" : key.startsWith("sk_test_") ? "test" : "unknown" },
+      email: { configured: configured("SMTP_HOST", "SMTP_USER", "SMTP_PASS") },
+      firebase: { configured: configured("FIREBASE_PROJECT_ID", "FIREBASE_CLIENT_EMAIL", "FIREBASE_PRIVATE_KEY") },
+      cloudinary: { configured: configured("CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET") },
+    };
+  }
   private async ensureSettings() {
     const settings =
       await db.orm.public.AppSettings.all();

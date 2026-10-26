@@ -22,6 +22,9 @@ export class AppSettingsController {
     return this.legalPagesService.getPage(slug);
   }
 
+  @Get("branding")
+  getBranding() { return this.appSettingsService.getBranding(); }
+
   @Get("public")
   getPublicSettings() {
     return this.appSettingsService.getPublicSettings();

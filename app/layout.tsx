@@ -1,3 +1,4 @@
+import { loadSiteBranding } from "@/lib/site-branding";
 import type { Metadata } from "next";
 import { DM_Sans, Manrope, Playfair_Display, Geist_Mono } from "next/font/google";
 import AuthCookieSync from "@/components/AuthCookieSync";
@@ -29,10 +30,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Business Nuggets",
-  description: "Biblical business wisdom for the marketplace.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const branding = await loadSiteBranding();
+  return {
+    title: "Business Nuggets",
+    description: "Biblical business wisdom for the marketplace.",
+    ...(branding.faviconUrl && { icons: { icon: branding.faviconUrl } }),
+    ...(branding.socialImageUrl && { openGraph: { images: [branding.socialImageUrl] }, twitter: { card: "summary_large_image", images: [branding.socialImageUrl] } }),
+  };
+}
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

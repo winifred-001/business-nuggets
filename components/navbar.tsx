@@ -1,5 +1,6 @@
 "use client";
 
+import BrandMark from "@/components/BrandMark";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
@@ -163,9 +164,7 @@ export default function Navbar() {
             className="flex min-w-0 items-center gap-[13px] lg:min-w-[265px]"
             aria-label="Business Nuggets home"
           >
-            <span className="grid h-[46px] w-[46px] shrink-0 place-items-center border border-[#d9b870] font-serif text-[26px] font-normal text-[#e5c98e]">
-              B
-            </span>
+            <BrandMark />
 
             <span className="block">
               <strong className="block text-[13px] font-bold tracking-[0.13em] text-[#f9f5ed] max-[600px]:text-[11px]">

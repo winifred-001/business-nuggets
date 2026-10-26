@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import AdminShell from "@/components/admin/AdminShell";
-import { adminApiFetch } from "@/lib/admin-api";
+import { adminApiFetch, readAdminJson } from "@/lib/admin-api";
 import { siteDefaults as defaults, sitePageLinks, type SiteSlug } from "@/lib/site-page-config";
 import type { LegalDocument } from "@/lib/legal-pages";
 
@@ -36,9 +36,9 @@ function SiteEditor({ slug, onDirtyChange, onSavingChange }: { slug: SiteSlug; o
     async function load() {
       try {
         const response = await adminApiFetch(`/settings/pages/${slug}`, { signal: controller.signal, cache: "no-store" });
-        if (!response.ok) throw new Error(response.status === 403 ? "You need Settings permission to edit site pages." : "Could not load this page. Please retry.");
-        const data = await response.json();
-        if (!controller.signal.aborted) setDocument(data ?? structuredClone(defaults[slug]));
+        const data = await readAdminJson<LegalDocument | { document: LegalDocument | null }>(response, { allowEmpty: true });
+        const saved = data && "document" in data ? data.document : data;
+        if (!controller.signal.aborted) setDocument(saved ?? structuredClone(defaults[slug]));
       } catch (cause) {
         if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Could not load page.");
       } finally { if (!controller.signal.aborted) setLoading(false); }
@@ -65,14 +65,14 @@ function SiteEditor({ slug, onDirtyChange, onSavingChange }: { slug: SiteSlug; o
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, introduction, notice, sections }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(Array.isArray(data.message) ? data.message.join("; ") : data.message || "Could not save page.");
+      const data = await readAdminJson<LegalDocument>(response);
+      if (!data) throw new Error("The page was not returned after saving. Please reload to check it.");
       setDocument(data); setDirty(false); onDirtyChange(false); setSuccess("Published successfully. The public page will show this content on its next load.");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not save page."); }
     finally { setSaving(false); onSavingChange(false); }
   }
 
-  const fieldClass = "mt-2 w-full rounded-lg border border-white/20 bg-[#111111] px-4 py-3 text-white outline-none focus:border-[#cda762]";
+  const fieldClass = "mt-2 w-full rounded-lg border border-white/20 bg-[var(--bn-surface)] px-4 py-3 text-white outline-none focus:border-[#cda762]";
   if (loading) return <p role="status">Loading site page…</p>;
   if (!document) return <p role="alert" className="text-red-300">{error}</p>;
   return <form onSubmit={save} className="space-y-6">

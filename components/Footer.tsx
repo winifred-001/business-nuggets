@@ -1,3 +1,4 @@
+import BrandMark from "@/components/BrandMark";
 import Link from "next/link";
 
 export default function Footer() {
@@ -13,9 +14,7 @@ export default function Footer() {
               className="flex items-center gap-[13px]"
               aria-label="Business Nuggets home"
             >
-              <span className="grid h-[46px] w-[46px] shrink-0 place-items-center border border-[#d9b870] font-serif text-[26px] font-normal text-[#e5c98e]">
-                B
-              </span>
+              <BrandMark />
 
               <span className="block">
                 <strong className="block text-[13px] font-bold tracking-[0.13em] text-[#f9f5ed] max-[600px]:text-[11px]">
