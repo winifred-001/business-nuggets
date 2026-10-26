@@ -14,6 +14,7 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { DeleteAccountDto } from "./dto/delete-account.dto";
+import { UpdatePreferencesDto } from "./dto/update-preferences.dto";
 import { SessionsService } from "../auth/sessions.service";
 import { EmailService } from "../email/email.service";
 
@@ -107,12 +108,7 @@ export class UsersController {
   @Patch("me/preferences")
   updatePreferences(
     @Request() req: any,
-
-    @Body()
-    body: {
-      interests?: string[];
-      wisdomNeeds?: string[];
-    },
+    @Body() body: UpdatePreferencesDto,
   ) {
     return this.usersService.updatePreferences(
       req.user.sub,
