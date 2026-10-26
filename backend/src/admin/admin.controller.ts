@@ -756,13 +756,13 @@ async createAdminAccount(
      SETTINGS
   ========================================= */
 
-  @Get("settings/legal/:slug")
+  @Get(["settings/legal/:slug", "settings/pages/:slug"])
   @RequireAdminPermission("settings")
   getLegalPage(@Param("slug") slug: string) {
     return this.legalPagesService.getPage(slug);
   }
 
-  @Patch("settings/legal/:slug")
+  @Patch(["settings/legal/:slug", "settings/pages/:slug"])
   @RequireAdminPermission("settings")
   updateLegalPage(@Param("slug") slug: string, @Body() body: UpdateLegalPageDto) {
     return this.legalPagesService.updatePage(slug, body);

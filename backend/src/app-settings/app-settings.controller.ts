@@ -17,7 +17,7 @@ export class AppSettingsController {
     private readonly legalPagesService: LegalPagesService,
   ) {}
 
-  @Get("legal/:slug")
+  @Get(["legal/:slug", "pages/:slug"])
   getLegalPage(@Param("slug") slug: string) {
     return this.legalPagesService.getPage(slug);
   }
