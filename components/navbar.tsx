@@ -225,18 +225,6 @@ export default function Navbar() {
             )}
 
             {isLoggedIn && (
-              <Link
-                href="/workspace"
-                onClick={() => setMobileOpen(false)}
-                className={`relative py-3 transition hover:text-[#ead2a0] lg:py-0 ${
-                  pathname.startsWith("/workspace") ? "text-[#ead2a0]" : ""
-                }`}
-              >
-                Workspace
-              </Link>
-            )}
-
-            {isLoggedIn && (
               <div className="mt-4 border-t border-[rgba(234,210,160,.19)] pt-4 lg:hidden">
                 <Link
                   href="/notifications"
@@ -339,9 +327,7 @@ export default function Navbar() {
                       </div>
 
                       <div className="p-2">
-                        <ProfileLink href="/workspace" icon={<UserCircle size={15} />}>
-                          My Workspace
-                        </ProfileLink>
+
                         <ProfileLink href="/library/saved-nuggets" icon={<Bookmark size={15} />}>
                           Saved Nuggets
                         </ProfileLink>

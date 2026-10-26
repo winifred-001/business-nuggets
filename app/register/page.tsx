@@ -1,5 +1,6 @@
 "use client";
 
+import PasswordInput from "@/components/PasswordInput";
 import { postAuthDestination } from "@/lib/auth-return";
 import AuthContinueLink from "@/components/AuthContinueLink";
 import { useState } from "react";
@@ -135,8 +136,9 @@ export default function RegisterPage() {
                 <label className="mb-2 block text-[14px] font-medium text-white/70">
                   Password
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
+                  visibilityLabel="password" aria-label="Password"
+
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Secure password"
@@ -151,8 +153,9 @@ export default function RegisterPage() {
                 <label className="mb-2 block text-[14px] font-medium text-white/70">
                   Confirm password
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
+                  visibilityLabel="confirm password" aria-label="Confirm password"
+
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter password"

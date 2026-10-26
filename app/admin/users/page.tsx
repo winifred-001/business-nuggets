@@ -1,5 +1,6 @@
 "use client";
 
+import PasswordInput from "@/components/PasswordInput";
 import {
   useEffect,
   useMemo,
@@ -1214,14 +1215,16 @@ function Field({
     ) => void;
   type?: string;
 }) {
+  const Input = type === "password" ? PasswordInput : "input";
+
   return (
     <div>
       <label className="block text-[8px] text-white/35">
         {label}
       </label>
 
-      <input
-        type={type}
+      <Input
+        {...(type === "password" ? { visibilityLabel: label.toLowerCase(), "aria-label": label } : { type })}
         value={value}
         onChange={(
           event,

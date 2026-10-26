@@ -2949,6 +2949,8 @@ export default function AccountSettingsPage() {
                                   !current,
                               )
                             }
+                            aria-label={showDeletePassword ? "Hide account password" : "Show account password"}
+                            aria-pressed={showDeletePassword}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-white/35"
                           >
                             {showDeletePassword ? (
@@ -3259,6 +3261,8 @@ function PasswordField({
         <button
           type="button"
           onClick={onShow}
+          aria-label={`${show ? "Hide" : "Show"} ${label.toLowerCase()}`}
+          aria-pressed={show}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/70"
         >
           {show ? (

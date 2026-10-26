@@ -1,5 +1,7 @@
 "use client";
 
+import PasswordInput from "@/components/PasswordInput";
+import { API_URL } from "@/lib/api";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -63,7 +65,7 @@ export default function AccountSecurityTab() {
       setLoading(true);
 
       const response = await fetch(
-        "http://localhost:3001/users/me/password",
+        `${API_URL}/users/me/password`,
         {
           method: "PATCH",
 
@@ -252,9 +254,9 @@ function PasswordField({
         {label}
       </label>
 
-      <input
+      <PasswordInput visibilityLabel={label.toLowerCase()} aria-label={label}
         required
-        type="password"
+
         value={value}
         onChange={(event) =>
           onChange(

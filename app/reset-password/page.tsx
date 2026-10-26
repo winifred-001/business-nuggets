@@ -1,5 +1,6 @@
 "use client";
 
+import PasswordInput from "@/components/PasswordInput";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -119,9 +120,10 @@ export default function ResetPasswordPage() {
                   New password
                 </label>
 
-                <input
+                <PasswordInput
+                  visibilityLabel="new password" aria-label="New password"
                   id="new-password"
-                  type="password"
+
                   autoComplete="new-password"
                   value={newPassword}
                   onChange={(event) => {
@@ -142,9 +144,10 @@ export default function ResetPasswordPage() {
                   Confirm new password
                 </label>
 
-                <input
+                <PasswordInput
+                  visibilityLabel="confirm password" aria-label="Confirm password"
                   id="confirm-password"
-                  type="password"
+
                   autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(event) => {
