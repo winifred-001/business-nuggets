@@ -5,6 +5,7 @@ import {
 
 import { API_URL } from "@/lib/api";
 import {
+  ADMIN_BROWSER_SESSION_MARKER,
   ADMIN_SESSION_COOKIE,
   ADMIN_SESSION_MAX_AGE_SECONDS,
   isAdminUser,
@@ -64,14 +65,6 @@ export async function POST(
 
   const keepSignedIn =
     body.keepSignedIn === true;
-
-  /*
-   * Temporary compatibility switch while existing admin pages
-   * are migrated away from browser-stored bearer tokens.
-   * Remove this switch as soon as the migration is complete.
-   */
-  const legacyBridge =
-    body.legacyBridge === true;
 
   const upstreamBody = {
     ...body,
@@ -166,9 +159,8 @@ export async function POST(
     NextResponse.json({
       ...safeData,
       authenticated: true,
-      ...(legacyBridge
-        ? { token }
-        : {}),
+      token:
+        ADMIN_BROWSER_SESSION_MARKER,
     });
 
   response.cookies.set(
