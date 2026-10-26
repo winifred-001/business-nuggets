@@ -206,6 +206,25 @@ export default function Navbar() {
               );
             })}
 
+            {!isLoggedIn && (
+              <div className="mt-4 flex items-center gap-[22px] border-t border-[rgba(234,210,160,.19)] pt-4 md:hidden">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="text-[#bcbab4] transition hover:text-[#ead2a0]"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileOpen(false)}
+                  className="inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[15px] font-bold text-[#17140e] transition hover:bg-[#e0bf80]"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
+
             {isLoggedIn && (
               <Link
                 href="/workspace"
@@ -258,14 +277,14 @@ export default function Navbar() {
           <div className="flex items-center gap-[22px] text-[13px]">
             {!isLoggedIn ? (
               <div className="hidden items-center gap-[22px] md:flex">
-                <Link href="/library" className="text-[#bcbab4] transition hover:text-[#ead2a0]">
-                  Explore
+                <Link href="/login" className="text-[#bcbab4] transition hover:text-[#ead2a0]">
+                  Login
                 </Link>
                 <Link
-                  href="/library"
+                  href="/register"
                   className="inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[15px] font-bold text-[#17140e] transition hover:-translate-y-0.5 hover:bg-[#e0bf80]"
                 >
-                  Start Reading →
+                  Sign Up
                 </Link>
               </div>
             ) : (
