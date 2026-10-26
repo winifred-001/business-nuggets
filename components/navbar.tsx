@@ -29,8 +29,9 @@ type StoredUser = {
 const landingLinks = [
   { href: "/", label: "Home" },
   { href: "/library", label: "The Library" },
-  { href: "/#approach", label: "Our Approach" },
-  { href: "/library?tab=Topics+Index", label: "Explore Topics" },
+  { href: "/philosophy", label: "About Us" },
+  { href: "/contact", label: "Contact" },
+  { href: "/faqs", label: "FAQs" },
 ];
 
 export default function Navbar() {
@@ -131,9 +132,7 @@ export default function Navbar() {
   );
 
   function isActive(href: string) {
-    if (href === "/" || href === "/home") return pathname === href;
-    if (href.startsWith("/#")) return false;
-    return pathname.startsWith(href.split("?")[0]);
+    return pathname === href;
   }
 
   function handleLogout() {
@@ -184,7 +183,7 @@ export default function Navbar() {
               mobileOpen
                 ? "absolute left-0 right-0 top-full flex"
                 : "hidden"
-            } z-40 flex-col gap-0 border-b border-[rgba(234,210,160,.19)] bg-[#151611] px-[30px] py-[25px] text-[13px] text-[#c4c3be] md:static md:flex md:flex-row md:items-center md:gap-[39px] md:border-0 md:bg-transparent md:p-0`}
+            } z-40 flex-col gap-0 border-b border-[rgba(234,210,160,.19)] bg-[#151611] px-[30px] py-[25px] text-[13px] text-[#c4c3be] lg:static lg:flex lg:flex-row lg:items-center lg:gap-[22px] lg:border-0 lg:bg-transparent lg:p-0`}
           >
             {links.map((link) => {
               const active = isActive(link.href);
@@ -193,21 +192,22 @@ export default function Navbar() {
                 <Link
                   key={link.label}
                   href={link.href}
+                  aria-current={active ? "page" : undefined}
                   onClick={() => setMobileOpen(false)}
-                  className={`relative py-3 transition md:py-0 ${
+                  className={`relative py-3 transition lg:py-0 ${
                     active ? "text-[#ead2a0]" : "hover:text-[#ead2a0]"
                   }`}
                 >
                   {link.label}
                   {active && (
-                    <span className="absolute bottom-1 left-0 h-px w-full bg-[#cda762] md:-bottom-[10px]" />
+                    <span className="absolute bottom-1 left-0 h-px w-full bg-[#cda762] lg:-bottom-[10px]" />
                   )}
                 </Link>
               );
             })}
 
             {!isLoggedIn && (
-              <div className="mt-4 flex items-center gap-[22px] border-t border-[rgba(234,210,160,.19)] pt-4 md:hidden">
+              <div className="mt-4 flex items-center gap-[22px] border-t border-[rgba(234,210,160,.19)] pt-4 lg:hidden">
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
@@ -229,7 +229,7 @@ export default function Navbar() {
               <Link
                 href="/workspace"
                 onClick={() => setMobileOpen(false)}
-                className={`relative py-3 transition hover:text-[#ead2a0] md:py-0 ${
+                className={`relative py-3 transition hover:text-[#ead2a0] lg:py-0 ${
                   pathname.startsWith("/workspace") ? "text-[#ead2a0]" : ""
                 }`}
               >
@@ -238,7 +238,7 @@ export default function Navbar() {
             )}
 
             {isLoggedIn && (
-              <div className="mt-4 border-t border-[rgba(234,210,160,.19)] pt-4 md:hidden">
+              <div className="mt-4 border-t border-[rgba(234,210,160,.19)] pt-4 lg:hidden">
                 <Link
                   href="/notifications"
                   onClick={() => setMobileOpen(false)}
@@ -276,7 +276,7 @@ export default function Navbar() {
 
           <div className="flex items-center gap-[22px] text-[13px]">
             {!isLoggedIn ? (
-              <div className="hidden items-center gap-[22px] md:flex">
+              <div className="hidden items-center gap-[22px] lg:flex">
                 <Link href="/login" className="text-[#bcbab4] transition hover:text-[#ead2a0]">
                   Login
                 </Link>
@@ -288,7 +288,7 @@ export default function Navbar() {
                 </Link>
               </div>
             ) : (
-              <div className="hidden items-center gap-3 md:flex">
+              <div className="hidden items-center gap-3 lg:flex">
                 <Link
                   href="/notifications"
                   aria-label={
@@ -375,7 +375,7 @@ export default function Navbar() {
 
             <button
               type="button"
-              className="border-0 bg-transparent text-[26px] leading-none text-[#cda762] md:hidden"
+              className="border-0 bg-transparent text-[26px] leading-none text-[#cda762] lg:hidden"
               aria-label={mobileOpen ? "Close navigation" : "Toggle navigation"}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((value) => !value)}
