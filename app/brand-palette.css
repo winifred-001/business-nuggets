@@ -1,5 +1,5 @@
 /* Business Nuggets reference palette.
-   Exact color language from the supplied visitor-home design. */
+   Exact color and font language from the supplied visitor-home design. */
 
 :root {
   --bnb-navy: #10110f;
@@ -15,6 +15,10 @@
   --bnb-parchment: #f6f2e9;
   --bnb-ivory: #f9f5ed;
   --bnb-slate: #b4b2ab;
+
+  /* Backward-compatible font aliases for existing utility rules. */
+  --font-inter: var(--font-dm-sans);
+  --font-eb-garamond: var(--font-playfair);
 
   --background: #10110f;
   --foreground: #f9f5ed;
