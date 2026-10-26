@@ -1,3 +1,7 @@
+import {
+  ADMIN_BROWSER_SESSION_MARKER,
+} from "@/lib/admin-session";
+
 export type AdminUser = {
   id: number;
   name: string;
@@ -21,8 +25,43 @@ export type PendingAdminSetup = {
 let pendingAdminLogin: PendingAdminLogin | null = null;
 let pendingAdminSetup: PendingAdminSetup | null = null;
 
-const ADMIN_SESSION_MARKER =
-  "http-only-session";
+function scrubLegacyToken(
+  storage: Storage,
+) {
+  const token =
+    storage.getItem(
+      "adminToken",
+    );
+
+  if (
+    token &&
+    token !==
+      ADMIN_BROWSER_SESSION_MARKER
+  ) {
+    storage.setItem(
+      "adminToken",
+      ADMIN_BROWSER_SESSION_MARKER,
+    );
+  }
+}
+
+function scrubLegacyAdminTokens() {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return;
+  }
+
+  scrubLegacyToken(
+    localStorage,
+  );
+  scrubLegacyToken(
+    sessionStorage,
+  );
+}
+
+scrubLegacyAdminTokens();
 
 export function isAdminAccount(user?: Partial<AdminUser> | null) {
   return user?.role === "admin" || user?.role === "owner";
@@ -54,12 +93,14 @@ export function clearPendingAdminSetup() {
 
 /*
  * Compatibility helper for legacy admin screens that only check whether
- * an admin session exists before fetching. The value is deliberately NOT
+ * an admin session exists before fetching. This value is deliberately NOT
  * a JWT. The real bearer token lives only in the HttpOnly cookie and is
  * injected by the same-origin admin API proxy.
  */
 export function getAdminToken() {
   if (typeof window === "undefined") return null;
+
+  scrubLegacyAdminTokens();
 
   return (
     localStorage.getItem("adminToken") ||
@@ -85,7 +126,7 @@ export function storeAdminSession(
 
   storage.setItem(
     "adminToken",
-    ADMIN_SESSION_MARKER,
+    ADMIN_BROWSER_SESSION_MARKER,
   );
   storage.setItem("adminUser", serializedUser);
 }
