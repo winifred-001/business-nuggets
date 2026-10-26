@@ -66,11 +66,15 @@ export class ModerationController {
     },
   })
   reportComment(
+    @Request()
+    req: any,
+
     @Param("id", ParseIntPipe)
     id: number,
   ) {
     return this.moderationService.reportComment(
       id,
+      req.user.sub,
     );
   }
 }
