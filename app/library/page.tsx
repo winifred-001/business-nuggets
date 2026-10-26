@@ -898,7 +898,7 @@ function LibraryContent() {
           <ArchivePanel>
             <BackLabel />
 
-            <h2 className="mt-5 font-serif text-[28px] leading-tight">
+            <h2 className="mt-5 font-serif text-[35px]! leading-tight">
               Browse by Core Topic
             </h2>
 
@@ -992,7 +992,7 @@ function LibraryContent() {
           <ArchivePanel>
             <BackLabel />
 
-            <h2 className="mt-5 font-serif text-[28px] leading-tight">
+            <h2 className="mt-5 font-serif text-[35px]! leading-tight">
               I Need Wisdom About...
             </h2>
 
@@ -1078,7 +1078,7 @@ function LibraryContent() {
           <ArchivePanel>
             <BackLabel />
 
-            <h2 className="mt-5 font-serif text-[28px] leading-tight">
+            <h2 className="mt-5 font-serif text-[35px]! leading-tight">
               Scripture Index
             </h2>
 
@@ -1229,7 +1229,7 @@ function LibraryContent() {
           <ArchivePanel>
             <BackLabel />
 
-            <h2 className="mt-5 font-serif text-[28px] leading-tight">
+            <h2 className="mt-5 font-serif text-[35px]! leading-tight">
               Curated Learning Pathways
             </h2>
 
