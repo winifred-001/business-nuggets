@@ -66,23 +66,44 @@ function isSameOriginMutation(
   return true;
 }
 
+function firstForwardedIp(
+  value: string | null,
+) {
+  return (value ?? "")
+    .split(",")[0]
+    .trim();
+}
+
 function clientIp(
   request: NextRequest,
 ) {
+  const vercelIp =
+    firstForwardedIp(
+      request.headers.get(
+        "x-vercel-forwarded-for",
+      ),
+    );
+
+  if (
+    process.env.NODE_ENV ===
+    "production"
+  ) {
+    return vercelIp;
+  }
+
   return (
-    request.headers.get(
-      "x-vercel-forwarded-for",
+    vercelIp ||
+    firstForwardedIp(
+      request.headers.get(
+        "x-forwarded-for",
+      ),
     ) ||
-    request.headers.get(
-      "x-forwarded-for",
-    ) ||
-    request.headers.get(
-      "x-real-ip",
-    ) ||
-    ""
-  )
-    .split(",")[0]
-    .trim();
+    firstForwardedIp(
+      request.headers.get(
+        "x-real-ip",
+      ),
+    )
+  );
 }
 
 async function proxyRequest(
