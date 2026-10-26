@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Bell,
   Bookmark,
@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
-import styles from "@/app/visitor-home.module.css";
 import { API_URL } from "@/lib/api";
 
 type StoredUser = {
@@ -26,6 +25,13 @@ type StoredUser = {
   avatar?: string | null;
   image?: string | null;
 };
+
+const landingLinks = [
+  { href: "/", label: "Home" },
+  { href: "/library", label: "The Library" },
+  { href: "/#approach", label: "Our Approach" },
+  { href: "/library?tab=Topics+Index", label: "Explore Topics" },
+];
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -80,6 +86,7 @@ export default function Navbar() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = response.ok ? await response.json().catch(() => ({})) : {};
+
         if (!cancelled) {
           setUnreadNotifications(
             typeof data.unreadCount === "number" ? Math.max(0, data.unreadCount) : 0,
@@ -119,12 +126,9 @@ export default function Navbar() {
   }, []);
 
   const homeHref = isLoggedIn ? "/home" : "/";
-  const navLinks = [
-    { href: homeHref, label: "Home" },
-    { href: "/library", label: "The Library" },
-    { href: "/#approach", label: "Our Approach" },
-    { href: "/library?tab=Topics+Index", label: "Explore Topics" },
-  ];
+  const links = landingLinks.map((link) =>
+    link.label === "Home" ? { ...link, href: homeHref } : link,
+  );
 
   function isActive(href: string) {
     if (href === "/" || href === "/home") return pathname === href;
@@ -151,51 +155,121 @@ export default function Navbar() {
 
   return (
     <>
-      <div className={styles.topline} />
-      <header className={styles.header}>
-        <div className={`${styles.container} ${styles.nav}`}>
-          <Link href={homeHref} className={styles.brand} aria-label="Business Nuggets home">
-            <div className={styles.brandmark}>B</div>
-            <div className={styles.brandtext}>
-              <strong>BUSINESS NUGGETS</strong>
-              <em>from the Bible</em>
-            </div>
+      <div className="h-1 bg-[linear-gradient(90deg,#6d4c1c,#e1be79,#6d4c1c)]" />
+
+      <header className="sticky top-0 z-50 h-[89px] border-b border-[rgba(234,210,160,.19)] bg-[#12130f] text-[#f9f5ed] max-[600px]:h-[76px]">
+        <div className="mx-auto flex h-full w-[calc(100%-38px)] max-w-[1190px] items-center justify-between gap-7 lg:w-[calc(100%-64px)]">
+          <Link
+            href={homeHref}
+            className="flex min-w-0 items-center gap-[13px] lg:min-w-[265px]"
+            aria-label="Business Nuggets home"
+          >
+            <span className="grid h-[46px] w-[46px] shrink-0 place-items-center border border-[#d9b870] font-serif text-[26px] font-normal text-[#e5c98e]">
+              B
+            </span>
+
+            <span className="block">
+              <strong className="block text-[13px] font-bold tracking-[0.13em] text-[#f9f5ed] max-[600px]:text-[11px]">
+                BUSINESS NUGGETS
+              </strong>
+              <em className="block font-serif text-[14px] font-normal text-[#cda762]">
+                from the Bible
+              </em>
+            </span>
           </Link>
 
           <nav
-            className={`${styles.navlinks} ${mobileOpen ? styles.navlinksOpen : ""}`}
             aria-label="Main navigation"
+            className={`${
+              mobileOpen
+                ? "absolute left-0 right-0 top-full flex"
+                : "hidden"
+            } z-40 flex-col gap-0 border-b border-[rgba(234,210,160,.19)] bg-[#151611] px-[30px] py-[25px] text-[13px] text-[#c4c3be] md:static md:flex md:flex-row md:items-center md:gap-[39px] md:border-0 md:bg-transparent md:p-0`}
           >
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={isActive(link.href) ? styles.active : undefined}
-                onClick={() => setMobileOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {links.map((link) => {
+              const active = isActive(link.href);
+
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`relative py-3 transition md:py-0 ${
+                    active ? "text-[#ead2a0]" : "hover:text-[#ead2a0]"
+                  }`}
+                >
+                  {link.label}
+                  {active && (
+                    <span className="absolute bottom-1 left-0 h-px w-full bg-[#cda762] md:-bottom-[10px]" />
+                  )}
+                </Link>
+              );
+            })}
 
             {isLoggedIn && (
-              <Link href="/workspace" onClick={() => setMobileOpen(false)}>
+              <Link
+                href="/workspace"
+                onClick={() => setMobileOpen(false)}
+                className={`relative py-3 transition hover:text-[#ead2a0] md:py-0 ${
+                  pathname.startsWith("/workspace") ? "text-[#ead2a0]" : ""
+                }`}
+              >
                 Workspace
               </Link>
             )}
+
+            {isLoggedIn && (
+              <div className="mt-4 border-t border-[rgba(234,210,160,.19)] pt-4 md:hidden">
+                <Link
+                  href="/notifications"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-between py-3 text-[#c4c3be]"
+                >
+                  <span>Notifications</span>
+                  {unreadNotifications > 0 && (
+                    <span className="bg-[#cda762] px-2 py-0.5 text-[9px] font-bold text-[#17140e]">
+                      {unreadNotifications > 9 ? "9+" : unreadNotifications}
+                    </span>
+                  )}
+                </Link>
+                <Link href="/library/saved-nuggets" className="block py-3" onClick={() => setMobileOpen(false)}>
+                  Saved Nuggets
+                </Link>
+                <Link href="/library/playlist" className="block py-3" onClick={() => setMobileOpen(false)}>
+                  Playlists
+                </Link>
+                <Link href="/library/personal-notes" className="block py-3" onClick={() => setMobileOpen(false)}>
+                  Notes
+                </Link>
+                <Link href="/library/account" className="block py-3" onClick={() => setMobileOpen(false)}>
+                  Account Settings
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full py-3 text-left text-[#d78484]"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </nav>
 
-          <div className={styles.navright}>
+          <div className="flex items-center gap-[22px] text-[13px]">
             {!isLoggedIn ? (
-              <>
-                <Link href="/library" className={`${styles.login} ${styles.muted}`}>
+              <div className="hidden items-center gap-[22px] md:flex">
+                <Link href="/library" className="text-[#bcbab4] transition hover:text-[#ead2a0]">
                   Explore
                 </Link>
-                <Link href="/library" className={`${styles.btn} ${styles.signup}`}>
+                <Link
+                  href="/library"
+                  className="inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[15px] font-bold text-[#17140e] transition hover:-translate-y-0.5 hover:bg-[#e0bf80]"
+                >
                   Start Reading →
                 </Link>
-              </>
+              </div>
             ) : (
-              <>
+              <div className="hidden items-center gap-3 md:flex">
                 <Link
                   href="/notifications"
                   aria-label={
@@ -203,7 +277,7 @@ export default function Navbar() {
                       ? `Notifications, ${unreadNotifications} unread`
                       : "Notifications"
                   }
-                  className="relative hidden h-10 w-10 items-center justify-center border border-[#61563c] text-[#ead2a0] transition hover:bg-[#28251e] sm:flex"
+                  className="relative grid h-[46px] w-[46px] place-items-center border border-[#61563c] text-[#ead2a0] transition hover:bg-[#28251e]"
                 >
                   <Bell size={18} strokeWidth={1.6} />
                   {unreadNotifications > 0 && (
@@ -233,7 +307,7 @@ export default function Navbar() {
                     )}
                     <ChevronDown
                       size={13}
-                      className={`hidden transition-transform sm:block ${profileOpen ? "rotate-180" : ""}`}
+                      className={`transition-transform ${profileOpen ? "rotate-180" : ""}`}
                     />
                   </button>
 
@@ -277,17 +351,17 @@ export default function Navbar() {
                     </div>
                   )}
                 </div>
-              </>
+              </div>
             )}
 
             <button
               type="button"
-              className={styles.menu}
-              aria-label="Toggle navigation"
+              className="border-0 bg-transparent text-[26px] leading-none text-[#cda762] md:hidden"
+              aria-label={mobileOpen ? "Close navigation" : "Toggle navigation"}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((value) => !value)}
             >
-              ☰
+              {mobileOpen ? "×" : "☰"}
             </button>
           </div>
         </div>
@@ -302,8 +376,8 @@ function ProfileLink({
   children,
 }: {
   href: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
+  icon: ReactNode;
+  children: ReactNode;
 }) {
   return (
     <Link
