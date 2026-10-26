@@ -218,7 +218,7 @@ export default function Navbar() {
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[15px] font-bold text-[#17140e] transition hover:bg-[#e0bf80]"
+                  className="inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[11px] font-bold text-[#17140e] transition hover:bg-[#e0bf80]"
                 >
                   Sign Up
                 </Link>
@@ -282,7 +282,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/register"
-                  className="inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[15px] font-bold text-[#17140e] transition hover:-translate-y-0.5 hover:bg-[#e0bf80]"
+                  className="inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[11px] font-bold text-[#17140e] transition hover:-translate-y-0.5 hover:bg-[#e0bf80]"
                 >
                   Sign Up
                 </Link>
