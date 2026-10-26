@@ -37,6 +37,24 @@ export default function AuthCookieSync() {
     let cancelled = false;
     let syncing = false;
 
+    async function logoutServerSession() {
+      try {
+        await fetch(
+          "/api/member/auth/logout",
+          {
+            method: "POST",
+          },
+        );
+      } catch {
+        // Local state is still cleared below.
+      }
+
+      if (!cancelled) {
+        clearLocalMemberSession();
+        router.refresh();
+      }
+    }
+
     async function sync() {
       if (
         cancelled ||
@@ -177,18 +195,41 @@ export default function AuthCookieSync() {
 
     void sync();
 
-    const handleSync = () => {
+    const handleAuthChange = () => {
+      if (
+        !localStorage.getItem(
+          "token",
+        )
+      ) {
+        void logoutServerSession();
+        return;
+      }
+
+      void sync();
+    };
+
+    const handleStorage = (
+      event: StorageEvent,
+    ) => {
+      if (
+        event.key === "token" &&
+        event.newValue === null
+      ) {
+        void logoutServerSession();
+        return;
+      }
+
       void sync();
     };
 
     window.addEventListener(
       "auth-change",
-      handleSync,
+      handleAuthChange,
     );
 
     window.addEventListener(
       "storage",
-      handleSync,
+      handleStorage,
     );
 
     return () => {
@@ -196,12 +237,12 @@ export default function AuthCookieSync() {
 
       window.removeEventListener(
         "auth-change",
-        handleSync,
+        handleAuthChange,
       );
 
       window.removeEventListener(
         "storage",
-        handleSync,
+        handleStorage,
       );
     };
   }, [router]);
