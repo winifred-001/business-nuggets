@@ -4,22 +4,29 @@ import {
   IsString,
   Length,
   Matches,
+  MaxLength,
   MinLength,
 } from "class-validator";
 
 export class LoginDto {
   @IsEmail()
-  email: string;
+  @MaxLength(254)
+  email!: string;
 
   @IsString()
   @MinLength(8)
-  password: string;
+  @MaxLength(128)
+  password!: string;
 
   @IsOptional()
   @IsString()
   @Length(6, 6)
+  @Matches(/^\d{6}$/, {
+    message:
+      "Authentication code must be 6 digits",
+  })
   twoFactorToken?: string;
-   
+
   @IsOptional()
   @IsString()
   @Matches(
