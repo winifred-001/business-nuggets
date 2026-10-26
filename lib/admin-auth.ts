@@ -21,6 +21,9 @@ export type PendingAdminSetup = {
 let pendingAdminLogin: PendingAdminLogin | null = null;
 let pendingAdminSetup: PendingAdminSetup | null = null;
 
+const ADMIN_SESSION_MARKER =
+  "http-only-session";
+
 export function isAdminAccount(user?: Partial<AdminUser> | null) {
   return user?.role === "admin" || user?.role === "owner";
 }
@@ -49,6 +52,12 @@ export function clearPendingAdminSetup() {
   pendingAdminSetup = null;
 }
 
+/*
+ * Compatibility helper for legacy admin screens that only check whether
+ * an admin session exists before fetching. The value is deliberately NOT
+ * a JWT. The real bearer token lives only in the HttpOnly cookie and is
+ * injected by the same-origin admin API proxy.
+ */
 export function getAdminToken() {
   if (typeof window === "undefined") return null;
 
@@ -59,7 +68,7 @@ export function getAdminToken() {
 }
 
 export function storeAdminSession(
-  token: string,
+  _token: string,
   user: AdminUser,
   keepSignedIn: boolean,
 ) {
@@ -74,7 +83,10 @@ export function storeAdminSession(
 
   const storage = keepSignedIn ? localStorage : sessionStorage;
 
-  storage.setItem("adminToken", token);
+  storage.setItem(
+    "adminToken",
+    ADMIN_SESSION_MARKER,
+  );
   storage.setItem("adminUser", serializedUser);
 }
 
