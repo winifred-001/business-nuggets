@@ -4,13 +4,13 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
-  Download,
   Pencil,
   Plus,
   Trash2,
   Upload,
   X,
 } from "lucide-react";
+import AdminImportDialog from "@/components/admin/AdminImportDialog";
 import AdminShell from "@/components/admin/AdminShell";
 import { adminApiFetch } from "@/lib/admin-api";
 
@@ -29,27 +29,13 @@ type Topic = BaseItem & {
   nuggetCount: number;
 };
 type Category = BaseItem & { topicCount: number };
-type Preview = {
-  categoriesToCreate: number;
-  topicsToCreate: number;
-  skipped: number;
-  rows: {
-    row: number;
-    type: Kind;
-    name: string;
-    category: string;
-    action: "create" | "skip";
-  }[];
-};
 type Editor = { kind: Kind; item: BaseItem | null };
 const primary =
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 py-2 font-semibold text-[#080808] hover:bg-[#E0C48A] disabled:opacity-40";
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 py-2 font-semibold text-[#080808] transition hover:bg-[#E0C48A] active:translate-y-px focus-visible:outline-2 focus-visible:outline-[#E0C48A] disabled:opacity-40 disabled:cursor-not-allowed";
 const secondary =
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#C8A35A]/35 px-4 py-2 text-[#E0C48A] hover:bg-white/[0.04] disabled:opacity-40";
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#C8A35A]/35 px-4 py-2 text-[#E0C48A] transition hover:bg-white/[0.08] active:translate-y-px focus-visible:outline-2 focus-visible:outline-[#E0C48A] disabled:opacity-40 disabled:cursor-not-allowed";
 const inputClass =
   "mt-2 w-full rounded-md border border-white/15 bg-[#080808] px-3 py-3 text-sm text-white outline-none focus:border-[#C8A35A]";
-const template =
-  'type,name,description,category,visible\r\ncategory,Leadership,Leadership and business wisdom,,true\r\ntopic,Integrity,Build trust through honest work,Leadership,true\r\ntopic,Planning,"Plan carefully, execute faithfully",Leadership,true\r\n';
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await adminApiFetch(path, init);
   const text = await response.text();
@@ -65,19 +51,29 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(
       response.status === 401
         ? "Your admin session expired. Please log in again."
-        : Array.isArray(data?.message)
-          ? data.message.join("; ")
-          : data?.message || "The request could not be completed.",
+        : response.status === 404 && path === "/categories"
+          ? "Categories are unavailable on the current API deployment. Retry after the backend finishes updating."
+          : Array.isArray(data?.message)
+            ? data.message.join("; ")
+            : data?.message || "The request could not be completed.",
     );
   if (data === null)
     throw new Error("The server returned an empty response. Please retry.");
   return data;
 }
-function fetchTaxonomy(signal?: AbortSignal) {
-  return Promise.all([
+async function fetchTaxonomy(signal?: AbortSignal) {
+  const [topics, categories] = await Promise.allSettled([
     request<Topic[]>("/topics", { signal, cache: "no-store" }),
     request<Category[]>("/categories", { signal, cache: "no-store" }),
   ]);
+  return {
+    topics: topics.status === "fulfilled" ? topics.value : null,
+    categories: categories.status === "fulfilled" ? categories.value : null,
+    error: [topics, categories]
+      .filter((result) => result.status === "rejected")
+      .map((result) => message((result as PromiseRejectedResult).reason))
+      .join(" "),
+  };
 }
 function jsonBody(value: unknown): RequestInit {
   return {
@@ -100,23 +96,23 @@ export default function AdminTopicsPage() {
     [description, setDescription] = useState(""),
     [visible, setVisible] = useState(true),
     [categoryId, setCategoryId] = useState("");
-  const [importOpen, setImportOpen] = useState(false),
-    [file, setFile] = useState<File | null>(null),
-    [preview, setPreview] = useState<Preview | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
   async function load(signal?: AbortSignal) {
-    const [loadedTopics, loadedCategories] = await fetchTaxonomy(signal);
+    const result = await fetchTaxonomy(signal);
     if (!signal?.aborted) {
-      setTopics(loadedTopics);
-      setCategories(loadedCategories);
+      if (result.topics) setTopics(result.topics);
+      if (result.categories) setCategories(result.categories);
+      setError(result.error);
     }
   }
   useEffect(() => {
     const controller = new AbortController();
     void fetchTaxonomy(controller.signal)
-      .then(([loadedTopics, loadedCategories]) => {
+      .then((result) => {
         if (!controller.signal.aborted) {
-          setTopics(loadedTopics);
-          setCategories(loadedCategories);
+          if (result.topics) setTopics(result.topics);
+          if (result.categories) setCategories(result.categories);
+          setError(result.error);
         }
       })
       .catch((cause) => {
@@ -216,57 +212,6 @@ export default function AdminTopicsPage() {
       setBusy(false);
     }
   }
-  function downloadTemplate() {
-    const url = URL.createObjectURL(
-      new Blob([template], { type: "text/csv;charset=utf-8" }),
-    );
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "topics-categories-template.csv";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-  async function importFile(confirm: boolean) {
-    if (!file || busy) return;
-    setBusy(true);
-    setError("");
-    setSuccess("");
-    if (!confirm) setPreview(null);
-    try {
-      if (!file.name.toLowerCase().endsWith(".csv"))
-        throw new Error("Choose a CSV file.");
-      if (file.size > 1024 * 1024)
-        throw new Error("CSV files must be 1 MB or smaller.");
-      const body = new FormData();
-      body.append("file", file);
-      if (confirm) {
-        const result = await request<{
-          categoriesCreated: number;
-          topicsCreated: number;
-          skipped: number;
-        }>("/topics/import", { method: "POST", body });
-        setSuccess(
-          `Imported ${quantity(result.categoriesCreated, "category")} and ${quantity(result.topicsCreated, "topic")}. ${result.skipped} existing rows skipped.`,
-        );
-        setImportOpen(false);
-        setPreview(null);
-        setFile(null);
-        await load();
-      } else
-        setPreview(
-          await request<Preview>("/topics/import/preview", {
-            method: "POST",
-            body,
-          }),
-        );
-    } catch (cause) {
-      setError(message(cause));
-    } finally {
-      setBusy(false);
-    }
-  }
   const shownTopics = topics.filter(
     (topic) =>
       filter === "all" ||
@@ -314,8 +259,6 @@ export default function AdminTopicsPage() {
               type="button"
               disabled={busy}
               onClick={() => {
-                setFile(null);
-                setPreview(null);
                 setError("");
                 setSuccess("");
                 setImportOpen(true);
@@ -323,7 +266,7 @@ export default function AdminTopicsPage() {
               className={secondary}
             >
               <Upload size={14} />
-              Import CSV
+              Import
             </button>
           </div>
         </section>
@@ -333,6 +276,16 @@ export default function AdminTopicsPage() {
             className="mt-5 rounded border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-300"
           >
             {error}
+            <button
+              type="button"
+              disabled={busy || loading}
+              className={`${secondary} ml-3`}
+              onClick={() =>
+                void load().catch((cause) => setError(message(cause)))
+              }
+            >
+              Retry Loading
+            </button>
           </p>
         )}
         {success && (
@@ -629,123 +582,20 @@ export default function AdminTopicsPage() {
           </Dialog>
         )}
         {importOpen && (
-          <Dialog
-            title="Import Topics & Categories"
-            busy={busy}
+          <AdminImportDialog
+            initialKind="topics"
             close={() => setImportOpen(false)}
-            wide
-          >
-            <p className="text-sm leading-6 text-white/55">
-              Upload a UTF-8 CSV file, up to 1 MB and 500 rows. Required
-              columns: <code>type,name</code>. Optional:{" "}
-              <code>description,category,visible</code>. Use topic or category
-              for type. Missing categories named by new topics are created
-              automatically. Existing names are skipped without changing them.
-            </p>
-            <button
-              type="button"
-              onClick={downloadTemplate}
-              className={`${secondary} mt-4`}
-            >
-              <Download size={14} />
-              Download CSV Template
-            </button>
-            <label className="mt-5 block text-sm text-white/55">
-              CSV File
-              <input
-                disabled={busy}
-                type="file"
-                accept=".csv,text/csv"
-                onChange={(event) => {
-                  setFile(event.target.files?.[0] || null);
-                  setPreview(null);
-                  setError("");
-                }}
-                className="mt-2 block max-w-full text-sm"
-              />
-            </label>
-            {error && (
-              <p role="alert" className="mt-4 text-sm text-red-300">
-                {error}
-              </p>
-            )}
-            {preview && (
-              <section className="mt-5">
-                <p className="text-sm text-[#E0C48A]">
-                  {quantity(preview.categoriesToCreate, "category")} and{" "}
-                  {quantity(preview.topicsToCreate, "topic")} will be created.{" "}
-                  {preview.skipped} existing rows will be skipped.
-                </p>
-                <div className="mt-3 max-h-64 overflow-auto rounded border border-white/10">
-                  <table className="w-full min-w-[420px] text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-white/10 text-white/50">
-                        <th className="p-3">Row</th>
-                        <th>Type</th>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {preview.rows.map((row) => (
-                        <tr
-                          key={row.row}
-                          className="border-b border-white/5 text-white/70"
-                        >
-                          <td className="p-3">{row.row}</td>
-                          <td>{row.type}</td>
-                          <td className="max-w-[200px] break-words">
-                            {row.name}
-                          </td>
-                          <td>{row.category || "—"}</td>
-                          <td>
-                            {row.action === "skip" ? "Skip existing" : "Create"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <p className="mt-3 text-sm text-white/40">
-                  All new items are saved together. Invalid rows stop the
-                  import.
-                </p>
-              </section>
-            )}
-            <div className="mt-6 flex flex-wrap justify-end gap-3">
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => setImportOpen(false)}
-                className={secondary}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={busy || !file}
-                onClick={() => void importFile(false)}
-                className={secondary}
-              >
-                {busy ? "Please wait…" : "Preview CSV"}
-              </button>
-              {preview && (
-                <button
-                  type="button"
-                  disabled={
-                    busy ||
-                    (!preview.categoriesToCreate && !preview.topicsToCreate)
-                  }
-                  onClick={() => void importFile(true)}
-                  className={primary}
-                >
-                  Import {preview.categoriesToCreate + preview.topicsToCreate}{" "}
-                  Items
-                </button>
-              )}
-            </div>
-          </Dialog>
+            completed={async (result) => {
+              setSuccess(result);
+              try {
+                await load();
+              } catch {
+                setError(
+                  "Import completed. Refresh the page to reload the list.",
+                );
+              }
+            }}
+          />
         )}
       </main>
     </AdminShell>

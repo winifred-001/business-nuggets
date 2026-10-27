@@ -19,6 +19,7 @@ import {
   Trash2,
 } from "lucide-react";
 
+import AdminImportDialog from "@/components/admin/AdminImportDialog";
 import AdminShell from "@/components/admin/AdminShell";
 import { API_URL } from "@/lib/api";
 
@@ -49,6 +50,8 @@ type AdminNugget = Omit<
 const PAGE_SIZE = 8;
 
 export default function AdminNuggetsPage() {
+  const [importOpen, setImportOpen] = useState(false);
+  const [importSuccess, setImportSuccess] = useState("");
   const [nuggets, setNuggets] =
     useState<AdminNugget[]>([]);
 
@@ -469,9 +472,8 @@ export default function AdminNuggetsPage() {
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              disabled
-              title="Bulk import is not connected to the backend yet."
-              className="min-h-9 rounded-md border border-white/10 px-4 text-[9px] text-white/35 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => setImportOpen(true)}
+              className="min-h-9 rounded-md border border-[#C8A35A]/40 px-4 text-[13px] text-[#E0C48A] transition hover:bg-white/[0.08] active:translate-y-px focus-visible:outline-2 focus-visible:outline-[#E0C48A]"
             >
               Import
             </button>
@@ -489,6 +491,7 @@ export default function AdminNuggetsPage() {
           </div>
         </section>
 
+        {importSuccess && <p role="status" className="mt-5 rounded border border-emerald-500/25 bg-emerald-500/5 p-4 text-sm text-emerald-300">{importSuccess}</p>}
         {/* ERROR */}
 
         {error && (
@@ -1013,6 +1016,10 @@ export default function AdminNuggetsPage() {
             </div>
           </div>
         </section>
+        {importOpen && <AdminImportDialog initialKind="nuggets" close={() => setImportOpen(false)} completed={async (message, kind) => {
+          setImportSuccess(message);
+          if (kind === "nuggets") await loadNuggets();
+        }} />}
       </main>
     </AdminShell>
   );

@@ -1,0 +1,94 @@
+.dialog {
+  margin: auto;
+  max-height: 90vh;
+  width: calc(100% - 32px);
+  max-width: 760px;
+  overflow-y: auto;
+  border: 1px solid #ffffff26;
+  border-radius: 10px;
+  background: #191b18;
+  color: #f9f5ed;
+  padding: 24px;
+  box-shadow: 0 20px 60px #0009;
+}
+.dialog::backdrop {
+  background: #000b;
+}
+.button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #cda76280;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #ead2a0;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    transform 0.1s,
+    box-shadow 0.15s;
+}
+.button:hover:not(:disabled) {
+  background: #cda76226;
+  border-color: #ead2a0;
+  box-shadow: 0 0 0 1px #cda76240;
+}
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+  background: #cda76240;
+}
+.button:focus-visible {
+  outline: 2px solid #ead2a0;
+  outline-offset: 3px;
+}
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.primary {
+  background: #cda762;
+  color: #10110f;
+  font-weight: 600;
+}
+.primary:hover:not(:disabled) {
+  background: #ead2a0;
+}
+.primary:active:not(:disabled) {
+  background: #bb9452;
+}
+.input {
+  display: block;
+  margin-top: 8px;
+  width: 100%;
+  border: 1px solid #ffffff26;
+  border-radius: 6px;
+  background: #10110f;
+  color: #f9f5ed;
+  padding: 12px;
+}
+.input:focus-visible {
+  outline: 2px solid #cda762;
+}
+.file {
+  display: block;
+  margin-top: 8px;
+  max-width: 100%;
+  font-size: 13px;
+}
+.file::file-selector-button {
+  margin-right: 12px;
+  padding: 8px 12px;
+  border: 1px solid #cda76280;
+  border-radius: 6px;
+  background: #10110f;
+  color: #ead2a0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.file::file-selector-button:hover {
+  background: #cda76226;
+}

@@ -1,3 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { Workbook } from 'exceljs';
+import { readImportFile } from '../imports/import-file';
+import { importNuggets, parseNuggets } from '../imports/nugget-import';
 import { Test } from '@nestjs/testing';
 import { UnauthorizedException, type INestApplication } from '@nestjs/common';
 import request from 'supertest';
@@ -39,6 +44,21 @@ jest.mock('../prisma/db', () => {
       ...builder(),
       where: (filter: Row) => builder(filter),
       create: async (data: Row) => {
+        if (key === 'Category') {
+          const allowed = [
+            'id',
+            'name',
+            'slug',
+            'description',
+            'visible',
+            'displayOrder',
+          ];
+          for (const field of Object.keys(data))
+            if (!allowed.includes(field))
+              throw new Error(`Unknown column "${field}" in table "Category"`);
+        }
+        if (key === 'Nugget' && failOnTopic === data.title)
+          throw new Error('Write failed');
         if (key === 'Topic' && failOnTopic === data.name)
           throw new Error('Write failed');
         const row = {
@@ -414,6 +434,87 @@ describe('CSV upload HTTP routes', () => {
       categoryName: 'Leadership',
     });
   });
+  it.each(['json', 'xlsx'])(
+    'imports category summaries from %s through multipart routes',
+    async (format) => {
+      let buffer: Buffer;
+      if (format === 'json')
+        buffer = Buffer.from(
+          JSON.stringify([
+            {
+              Category: 'Planning',
+              'Brief Description': 'Plan carefully',
+              'Number of Nuggets': 12,
+            },
+          ]),
+        );
+      else {
+        const workbook = new Workbook();
+        workbook.addWorksheet('Categories').addRows([
+          ['Category', 'Brief Description', 'Number of Nuggets'],
+          ['Planning', 'Plan carefully', 12],
+        ]);
+        buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+      }
+      const response = await request(app.getHttpServer())
+        .post('/admin/topics/import')
+        .set('Authorization', 'Bearer allowed')
+        .set('x-test-permission', 'manageNuggets')
+        .attach('file', buffer, `summary.${format}`)
+        .expect(201);
+      expect(response.body.categoriesCreated).toBe(1);
+      expect(state.Category[0]).toMatchObject({
+        name: 'Planning',
+        description: 'Plan carefully',
+      });
+    },
+  );
+  it('previews and imports Nuggets from the new authenticated endpoints', async () => {
+    const buffer = Buffer.from(
+      JSON.stringify([
+        {
+          number: 1001,
+          title: 'Integrity',
+          topic: 'Leadership',
+          songUrl: 'https://example.com/song.mp3',
+          nuggetUrl: 'https://example.com/nugget.mp3',
+          practicalActionPlan: ['Act'],
+          status: 'published',
+        },
+      ]),
+    );
+    await request(app.getHttpServer())
+      .post('/admin/nuggets/import')
+      .attach('file', buffer, 'nuggets.json')
+      .expect(401);
+    await request(app.getHttpServer())
+      .post('/admin/nuggets/import')
+      .set('Authorization', 'Bearer allowed')
+      .attach('file', buffer, 'nuggets.json')
+      .expect(403);
+    const preview = await request(app.getHttpServer())
+      .post('/admin/nuggets/import/preview')
+      .set('Authorization', 'Bearer allowed')
+      .set('x-test-permission', 'manageNuggets')
+      .attach('file', buffer, 'nuggets.json')
+      .expect(201);
+    expect(preview.body.nuggetsToCreate).toBe(1);
+    expect(state.Nugget).toEqual([]);
+    const saved = await request(app.getHttpServer())
+      .post('/admin/nuggets/import')
+      .set('Authorization', 'Bearer allowed')
+      .set('x-test-permission', 'manageNuggets')
+      .attach('file', buffer, 'nuggets.json')
+      .expect(201);
+    expect(saved.body.nuggetsCreated).toBe(1);
+    expect(state.Nugget[0]).toMatchObject({
+      status: 'draft',
+      publishedAt: null,
+      audioUrl: 'https://example.com/song.mp3',
+      nuggetAudioUrl: 'https://example.com/nugget.mp3',
+      practicalActionPlan: ['Act'],
+    });
+  });
   it('rejects non-CSV, invalid UTF-8 and oversized uploads', async () => {
     for (const [name, body] of [
       ['items.txt', Buffer.from(csv)],
@@ -451,5 +552,104 @@ describe('CSV upload HTTP routes', () => {
       .set('Authorization', 'Bearer allowed')
       .set('x-test-permission', 'manageNuggets')
       .expect(400);
+  });
+});
+
+describe('versatile imports and regression coverage', () => {
+  const uploaded = () =>
+    readFileSync(
+      join(__dirname, '../../test/fixtures/category-summary.csv'),
+      'utf8',
+    );
+  it('imports all 60 uploaded categories without writing row/type/count metadata', async () => {
+    const preview = await service().previewImport(uploaded());
+    expect(preview.categoriesToCreate).toBe(60);
+    expect(state.Category).toEqual([]);
+    const result = await service().importCsv(uploaded());
+    expect(result).toMatchObject({ categoriesCreated: 60, topicsCreated: 0 });
+    expect(state.Category).toHaveLength(60);
+    expect(state.Category[0].description).toContain('Explores work');
+    expect(Object.keys(state.Category[0])).not.toContain('row');
+    expect(await service().importCsv(uploaded())).toMatchObject({
+      categoriesCreated: 0,
+      skipped: 60,
+    });
+  });
+  it('rejects malformed JSON, corrupt XLSX, multiple populated sheets and formulas as 400 errors', async () => {
+    for (const [name, value] of [
+      ['broken.json', '{'],
+      ['broken.xlsx', 'not a workbook'],
+      ['object.json', '{}'],
+    ]) {
+      await expect(
+        readImportFile({
+          originalname: name,
+          buffer: Buffer.from(value),
+        } as Express.Multer.File),
+      ).rejects.toMatchObject({ status: 400 });
+    }
+    const workbook = new Workbook();
+    workbook.addWorksheet('One').addRows([
+      ['type', 'name'],
+      ['category', 'One'],
+    ]);
+    workbook.addWorksheet('Two').addRow(['name']);
+    await expect(
+      readImportFile({
+        originalname: 'two.xlsx',
+        buffer: Buffer.from(await workbook.xlsx.writeBuffer()),
+      } as Express.Multer.File),
+    ).rejects.toThrow('one populated');
+    workbook.removeWorksheet('Two');
+    workbook.worksheets[0].getCell('B2').value = { formula: '1+1', result: 2 };
+    await expect(
+      readImportFile({
+        originalname: 'formula.xlsx',
+        buffer: Buffer.from(await workbook.xlsx.writeBuffer()),
+      } as Express.Multer.File),
+    ).rejects.toThrow('plain values');
+  });
+  it('parses Nugget lists, normalizes field labels and always saves drafts', async () => {
+    const csv =
+      'Number,Title,Topic,Song URL,Nugget URL,Practical Action Plan,Challenges,isGold,status\n7,Wise Work,Work,https://example.com/song.mp3,https://example.com/talk.mp3,One|Two,Money|Work,yes,published';
+    expect(parseNuggets(csv)[0].data).toMatchObject({
+      number: 7,
+      practicalActionPlan: ['One', 'Two'],
+      challenges: ['Money', 'Work'],
+      isGold: true,
+      status: 'draft',
+    });
+    expect(await importNuggets(csv, true)).toMatchObject({
+      nuggetsToCreate: 1,
+    });
+    expect(state.Nugget).toEqual([]);
+    expect(await importNuggets(csv, false)).toMatchObject({
+      nuggetsCreated: 1,
+    });
+    expect(await importNuggets(csv, false)).toMatchObject({
+      nuggetsCreated: 0,
+      skipped: 1,
+    });
+  });
+  it.each([
+    'number,title,topic\n0,Title,Work',
+    'number,title,topic\n1,,Work',
+    'number,title,topic\n1,Title,Work\n1,Other,Work',
+    'number,title,topic,songUrl\n1,Title,Work,javascript:alert(1)',
+    'number,title,topic,isGold\n1,Title,Work,maybe',
+    'number,title,topic,unknown\n1,Title,Work,value',
+    'number,title,topic,practicalActionPlan\n1,Title,Work,[1]',
+  ])('rejects invalid Nuggets before writing: %s', async (csv) => {
+    await expect(importNuggets(csv, false)).rejects.toMatchObject({
+      status: 400,
+    });
+    expect(state.Nugget).toEqual([]);
+  });
+  it('rolls back all imported Nuggets if a later write fails', async () => {
+    failOnTopic = 'Fail';
+    await expect(
+      importNuggets('number,title,topic\n1,First,Work\n2,Fail,Work', false),
+    ).rejects.toThrow('Write failed');
+    expect(state.Nugget).toEqual([]);
   });
 });

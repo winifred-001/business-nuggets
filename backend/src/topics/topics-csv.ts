@@ -16,7 +16,7 @@ export const taxonomySlug = (value: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 /** RFC-style quoted fields, including embedded commas/newlines and escaped quotes. */
-export function parseTaxonomyCsv(csv: string): TaxonomyRow[] {
+export function parseCsvRecords(csv: string) {
   if (Buffer.byteLength(csv, 'utf8') > 1024 * 1024)
     throw new BadRequestException('CSV files must be 1 MB or smaller.');
   csv = csv.replace(/^\uFEFF/, '');
@@ -85,8 +85,37 @@ export function parseTaxonomyCsv(csv: string): TaxonomyRow[] {
     throw new BadRequestException(
       'CSV must contain a header and at least one data row.',
     );
-  const headers = records.shift()!.fields.map(taxonomyKey);
-  const allowed = ['type', 'name', 'description', 'category', 'visible'];
+  if (records.length > 501)
+    throw new BadRequestException('Import can contain at most 500 data rows.');
+  return records;
+}
+export function parseTaxonomyCsv(csv: string): TaxonomyRow[] {
+  const records = parseCsvRecords(csv);
+  const original = records.shift()!.fields.map(taxonomyKey);
+  const summary =
+    original.includes('category') &&
+    !original.includes('name') &&
+    !original.includes('type');
+  const headers = original.map((header) =>
+    header === 'brief description'
+      ? 'description'
+      : summary && header === 'category'
+        ? 'name'
+        : header,
+  );
+  if (summary) {
+    headers.push('type');
+    for (const record of records) record.fields.push('category');
+  }
+
+  const allowed = [
+    'type',
+    'name',
+    'description',
+    'category',
+    'visible',
+    'number of nuggets',
+  ];
   if (
     new Set(headers).size !== headers.length ||
     headers.some((name) => !allowed.includes(name)) ||
@@ -100,7 +129,9 @@ export function parseTaxonomyCsv(csv: string): TaxonomyRow[] {
     throw new BadRequestException('CSV can contain at most 500 data rows.');
   const seen = new Set<string>();
   return records.map((record) => {
-    rowLine = record.line;
+    const fail = (message: string): never => {
+      throw new BadRequestException(`CSV row ${record.line}: ${message}`);
+    };
     if (record.fields.length !== headers.length)
       fail(
         'The number of fields does not match the header. Quote text containing commas.',

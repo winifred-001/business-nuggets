@@ -143,6 +143,14 @@ export class AdminAuditInterceptor
     const cleanPath =
       path.split("?")[0];
 
+    const importPath = cleanPath.match(/^\/admin\/(nuggets|topics)\/import(\/preview)?$/);
+    if (method === "POST" && importPath) {
+      return {
+        action: importPath[2] ? "Previewed content import" : "Imported content",
+        target: importPath[1] === "nuggets" ? "Nuggets" : "Topics & Categories",
+      };
+    }
+
     /* NUGGETS */
 
     if (

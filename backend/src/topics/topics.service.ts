@@ -385,7 +385,8 @@ export class TopicsService {
         ) + 1;
       for (const [key, category] of plan.plannedCategories) {
         const created = await tx.orm.public.Category.create({
-          ...category,
+          name: category.name,
+          visible: category.visible,
           slug: taxonomySlug(category.name),
           description: category.description || null,
           displayOrder: categoryOrder++,

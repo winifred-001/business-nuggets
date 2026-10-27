@@ -1,3 +1,5 @@
+import { readImportFile } from "../imports/import-file";
+import { importNuggets } from "../imports/nugget-import";
 import { BadRequestException, ParseIntPipe, UploadedFile } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { CreateTopicDto, UpdateTopicDto, CreateCategoryDto, UpdateCategoryDto } from "../topics/topics.dto";
@@ -164,6 +166,16 @@ export class AdminController {
      TOPICS
   ========================================= */
 
+  @Post("nuggets/import/preview")
+  @RequireAdminPermission("manageNuggets")
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 1024 * 1024, files: 1 } }))
+  async previewNuggetsImport(@UploadedFile() file: Express.Multer.File) { return importNuggets(await readImportFile(file), true); }
+
+  @Post("nuggets/import")
+  @RequireAdminPermission("manageNuggets")
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 1024 * 1024, files: 1 } }))
+  async commitNuggetsImport(@UploadedFile() file: Express.Multer.File) { return importNuggets(await readImportFile(file), false); }
+
   @Get("topics")
   @RequireAdminPermission("manageNuggets")
   getTopics() { return this.topicsService.getAllTopics(); }
@@ -179,18 +191,12 @@ export class AdminController {
   @Post("topics/import/preview")
   @RequireAdminPermission("manageNuggets")
   @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 1024 * 1024, files: 1 } }))
-  previewTopicsCsv(@UploadedFile() file: Express.Multer.File) { return this.topicsService.previewImport(this.readTopicsCsv(file)); }
+  async previewTopicsCsv(@UploadedFile() file: Express.Multer.File) { return this.topicsService.previewImport(await readImportFile(file)); }
 
   @Post("topics/import")
   @RequireAdminPermission("manageNuggets")
   @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 1024 * 1024, files: 1 } }))
-  importTopicsCsv(@UploadedFile() file: Express.Multer.File) { return this.topicsService.importCsv(this.readTopicsCsv(file)); }
-
-  private readTopicsCsv(file: Express.Multer.File) {
-    if (!file || !file.originalname.toLowerCase().endsWith(".csv")) throw new BadRequestException("Choose a CSV file.");
-    try { return new TextDecoder("utf-8", { fatal: true }).decode(file.buffer); }
-    catch { throw new BadRequestException("Save the CSV file with UTF-8 encoding and retry."); }
-  }
+  async importTopicsCsv(@UploadedFile() file: Express.Multer.File) { return this.topicsService.importCsv(await readImportFile(file)); }
 
   @Patch("topics/:id")
   @RequireAdminPermission("manageNuggets")
