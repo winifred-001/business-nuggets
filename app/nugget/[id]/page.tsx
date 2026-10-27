@@ -116,13 +116,18 @@ export default async function NuggetDetailPage({
                 </Link>
 
                 <Link
-                 href={`/nugget/${nugget.slug}/audio`}
-                 className="shrink-0 pb-4 text-[13px] text-white/45 transition hover:text-[#C8A35A]"
+                  href={`/nugget/${nugget.slug}/musical`}
+                  className="shrink-0 pb-4 text-[13px] text-white/45 transition hover:text-[#C8A35A]"
                 >
-                 Listen Commentary
+                  Listen Musical
                 </Link>
 
-
+                <Link
+                  href={`/nugget/${nugget.slug}/audio`}
+                  className="shrink-0 pb-4 text-[13px] text-white/45 transition hover:text-[#C8A35A]"
+                >
+                  Listen Commentary
+                </Link>
               </div>
 
               {/* KEY PRINCIPLE */}
