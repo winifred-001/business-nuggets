@@ -1074,3 +1074,12 @@ describe('import upload token security', () => {
     }
   });
 });
+
+describe('Import Nugget Details', () => {
+  it.each(['nuggets', 'topics'] as const)('preserves multiline Details through the %s import', async (kind) => {
+    const headers = kind === 'topics' ? 'type,number,title,topic,details\n' : 'number,title,topic,details\n';
+    const row = (kind === 'topics' ? 'nugget,' : '') + '41,Wise Work,Integrity,"First line\nSecond<br>Third"';
+    await importHierarchy(headers + row, false, kind);
+    expect(state.Nugget[0]).toMatchObject({ details: 'First line\nSecond<br>Third' });
+  });
+});

@@ -6,3 +6,5 @@
 /* Allow the longer legal links to wrap cleanly at tablet and mobile widths. */
 .footerLinks { flex-wrap: wrap; row-gap: 12px; }
 .footerLinks a { white-space: nowrap; }
+
+.card .cardExcerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; overflow-wrap: anywhere; }

@@ -1,3 +1,4 @@
+import { nuggetText } from "@/lib/nugget-text";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -94,8 +95,8 @@ export default async function NuggetDetailPage({
               {/* SCRIPTURE */}
               {nugget.scriptureText && (
                 <blockquote className="rounded-xl border border-white/10 bg-[#111111] p-6">
-                  <p className="font-serif text-[18px] italic leading-8 text-[#FAF9F6]/80">
-                    “{nugget.scriptureText}”
+                  <p className="font-serif whitespace-pre-line break-words text-[18px] italic leading-8 text-[#FAF9F6]/80">
+                    “{nuggetText(nugget.scriptureText)}”
                   </p>
 
                   <p className="mt-4 text-[13px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
@@ -132,25 +133,32 @@ export default async function NuggetDetailPage({
 
               {/* KEY PRINCIPLE */}
               <section className="pt-8">
-                <h2 className="font-serif text-[28px] leading-tight text-[#FAF9F6]">
+                <h2 className="bn-nugget-section-title font-serif text-[22px] leading-tight text-[#FAF9F6]">
                   Key Principle
                 </h2>
 
-                <p className="mt-4 text-[14px] leading-7 text-white/50">
-                  {nugget.keyPrinciple ||
+                <p className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-white/50">
+                  {nuggetText(nugget.keyPrinciple) ||
                     "Commentary for this Nugget will be added soon."}
                 </p>
               </section>
 
+              {nugget.details && (
+                <section className="pt-9">
+                  <h2 className="bn-nugget-section-title font-serif text-[22px] leading-tight text-[#FAF9F6]">Details</h2>
+                  <p className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-white/50">{nuggetText(nugget.details)}</p>
+                </section>
+              )}
+
               {/* MARKETPLACE APPLICATION */}
               {nugget.marketplaceApplication && (
                 <section className="pt-9">
-                  <h2 className="font-serif text-[28px] leading-tight text-[#FAF9F6]">
+                  <h2 className="bn-nugget-section-title font-serif text-[22px] leading-tight text-[#FAF9F6]">
                     Marketplace Application
                   </h2>
 
-                  <p className="mt-4 text-[14px] leading-7 text-white/50">
-                    {nugget.marketplaceApplication}
+                  <p className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-white/50">
+                    {nuggetText(nugget.marketplaceApplication)}
                   </p>
                 </section>
               )}
@@ -159,7 +167,7 @@ export default async function NuggetDetailPage({
               {nugget.practicalActionPlan &&
                 nugget.practicalActionPlan.length > 0 && (
                   <section className="pt-9">
-                    <h2 className="font-serif text-[28px] leading-tight text-[#FAF9F6]">
+                    <h2 className="bn-nugget-section-title font-serif text-[22px] leading-tight text-[#FAF9F6]">
                       Practical Action Plan
                     </h2>
 
@@ -167,15 +175,15 @@ export default async function NuggetDetailPage({
                       {nugget.practicalActionPlan.map(
                         (action, index) => (
                           <div
-                            key={action}
+                            key={`${index}-${action}`}
                             className="flex gap-4 rounded-lg border border-white/[0.08] bg-[#111111] p-4"
                           >
                             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#C8A35A]/40 text-[13px] font-semibold text-[#C8A35A]">
                               {index + 1}
                             </span>
 
-                            <p className="text-[14px] leading-6 text-white/55">
-                              {action}
+                            <p className="whitespace-pre-line break-words text-[14px] leading-6 text-white/55">
+                              {nuggetText(action)}
                             </p>
                           </div>
                         ),

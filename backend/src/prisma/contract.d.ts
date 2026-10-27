@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'b79b8898358093361f3ace318273ab658c8f8cf83d1120ecbeaca50afdee5f81'>;
+  StorageHashBase<'49d7923478ba7c0f9de920943c5e3a547e2aa94d454c432f5d9feffe9735b132'>;
 export type ExecutionHash =
   ExecutionHashBase<'c3b6675d6b718f99391cba12df45076eaa712c6a00461fe8648f8471ed534615'>;
 export type ProfileHash =
@@ -394,6 +394,7 @@ export type FieldOutputTypes = {
       readonly book: CodecTypes['pg/text@1']['output'];
       readonly challenges: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly details: CodecTypes['pg/text@1']['output'] | null;
       readonly duration: CodecTypes['pg/text@1']['output'];
       readonly featured: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
@@ -708,6 +709,7 @@ export type FieldInputTypes = {
       readonly book: CodecTypes['pg/text@1']['input'];
       readonly challenges: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly details: CodecTypes['pg/text@1']['input'] | null;
       readonly duration: CodecTypes['pg/text@1']['input'];
       readonly featured: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -1022,6 +1024,7 @@ export type StorageColumnTypes = {
       readonly book: CodecTypes['pg/text@1']['output'];
       readonly challenges: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly details: CodecTypes['pg/text@1']['output'] | null;
       readonly duration: CodecTypes['pg/text@1']['output'];
       readonly featured: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
@@ -1336,6 +1339,7 @@ export type StorageColumnInputTypes = {
       readonly book: CodecTypes['pg/text@1']['input'];
       readonly challenges: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly details: CodecTypes['pg/text@1']['input'] | null;
       readonly duration: CodecTypes['pg/text@1']['input'];
       readonly featured: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -1669,6 +1673,7 @@ export namespace Models {
     book: CodecTypes['pg/text@1']['output'];
     challenges: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    details: CodecTypes['pg/text@1']['output'] | null;
     duration: CodecTypes['pg/text@1']['output'];
     featured: CodecTypes['pg/bool@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
@@ -3185,6 +3190,12 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-string@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly details: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly duration: {
@@ -5498,6 +5509,10 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-string@1';
                 };
               };
+              readonly details: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly duration: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -5592,6 +5607,7 @@ type ContractBase = Omit<
                 readonly book: { readonly column: 'book' };
                 readonly challenges: { readonly column: 'challenges' };
                 readonly createdAt: { readonly column: 'createdAt' };
+                readonly details: { readonly column: 'details' };
                 readonly duration: { readonly column: 'duration' };
                 readonly featured: { readonly column: 'featured' };
                 readonly id: { readonly column: 'id' };

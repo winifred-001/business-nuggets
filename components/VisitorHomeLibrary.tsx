@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { nuggetExcerpt } from "@/lib/nugget-text";
 import { useMemo, useState } from "react";
 import styles from "@/app/visitor-home.module.css";
 
@@ -105,7 +106,7 @@ export default function VisitorHomeLibrary({ nuggets }: { nuggets: HomeNugget[] 
               </div>
 
               <h3>{nugget.title}</h3>
-              <p>{nugget.keyPrinciple || nugget.marketplaceApplication}</p>
+              <p className={styles.cardExcerpt}>{nuggetExcerpt(nugget.keyPrinciple || nugget.marketplaceApplication)}</p>
 
               <div className={styles.cardfoot}>
                 <span>{nugget.scriptureRef}</span>

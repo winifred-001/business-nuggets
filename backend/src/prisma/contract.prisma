@@ -157,6 +157,7 @@ model Nugget {
   image                  String
 
   keyPrinciple           String
+  details                String?
   marketplaceApplication String
   practicalActionPlan    String[]
 

@@ -66,6 +66,7 @@ type FormState = {
   scriptureText: string;
   image: string;
   keyPrinciple: string;
+  details: string;
   marketplaceApplication: string;
   duration: string;
   isGold: boolean;
@@ -85,6 +86,7 @@ const initialForm: FormState = {
   scriptureText: "",
   image: "",
   keyPrinciple: "",
+  details: "",
   marketplaceApplication: "",
   duration: "5 min",
   isGold: false,
@@ -337,6 +339,7 @@ export default function NewNuggetPage() {
       scriptureText: form.scriptureText.trim(),
       image: form.image.trim(),
       keyPrinciple: form.keyPrinciple.trim(),
+      details: form.details.trim(),
       marketplaceApplication: form.marketplaceApplication.trim(),
       practicalActionPlan: actionSteps
         .map((item) => item.trim())
@@ -572,7 +575,7 @@ export default function NewNuggetPage() {
             <FormSection
               icon={<Lightbulb size={20} />}
               title="Core Insight"
-              description="Capture the teaching and how it applies in the marketplace."
+              description="Capture the teaching and how it applies in the marketplace. Press Enter for a new line, or leave a blank line between paragraphs. Basic <br> and <p> tags are also supported."
             >
               <div className="grid gap-5 lg:grid-cols-2">
                 <Field label="Key Principle" required>
@@ -583,6 +586,16 @@ export default function NewNuggetPage() {
                       updateField("keyPrinciple", event.target.value)
                     }
                     placeholder="Write the main principle or lesson from this Nugget..."
+                    className={textareaClass}
+                  />
+                </Field>
+
+                <Field label="Details">
+                  <textarea
+                    rows={7}
+                    value={form.details}
+                    onChange={(event) => updateField("details", event.target.value)}
+                    placeholder="Add the full explanation and supporting details. Press Enter for a new line."
                     className={textareaClass}
                   />
                 </Field>

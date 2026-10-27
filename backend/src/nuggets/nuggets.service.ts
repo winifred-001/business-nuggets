@@ -22,6 +22,7 @@ type LockedNuggetPreview<T> = Omit<
   | "isGold"
   | "scriptureText"
   | "keyPrinciple"
+  | "details"
   | "marketplaceApplication"
   | "practicalActionPlan"
   | "audioUrl"
@@ -31,6 +32,7 @@ type LockedNuggetPreview<T> = Omit<
   locked: true;
   scriptureText: string;
   keyPrinciple: string;
+  details: string;
   marketplaceApplication: string;
   practicalActionPlan: readonly string[];
   audioUrl: null;
@@ -148,6 +150,7 @@ export class NuggetsService {
       locked: true,
       scriptureText: "",
       keyPrinciple: "",
+      details: "",
       marketplaceApplication:
         "",
       practicalActionPlan: [],
@@ -602,6 +605,8 @@ export class NuggetsService {
 
       keyPrinciple:
         dto.keyPrinciple,
+
+      details: dto.details?.trim() || null,
 
       marketplaceApplication:
         dto.marketplaceApplication,

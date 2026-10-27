@@ -41,6 +41,10 @@ export class UpdateNuggetDto {
 
   @IsOptional()
   @IsString()
+  details?: string;
+
+  @IsOptional()
+  @IsString()
   marketplaceApplication?: string;
 
   @IsOptional()

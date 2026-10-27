@@ -9,6 +9,7 @@ const textFields = [
   'scriptureText',
   'image',
   'keyPrinciple',
+  'details',
   'marketplaceApplication',
   'duration',
   'book',

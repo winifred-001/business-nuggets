@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.Nugget.details",
+    "label": "Add column \"details\" to \"Nugget\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "details",
+        "table": "Nugget"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"details\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Nugget",
+          "details"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"details\"",
+        "sql": "ALTER TABLE \"public\".\"Nugget\" ADD COLUMN \"details\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"details\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Nugget",
+          "details"
+        ]
+      }
+    ]
+  }
+]

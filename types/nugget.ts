@@ -16,6 +16,7 @@ export type Nugget = {
   scriptureText: string;
   image: string;
   keyPrinciple: string;
+  details?: string | null;
   marketplaceApplication: string;
   practicalActionPlan: string[];
   duration: string;

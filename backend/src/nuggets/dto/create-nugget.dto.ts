@@ -34,6 +34,10 @@ export class CreateNuggetDto {
   @IsString()
   keyPrinciple: string;
 
+  @IsOptional()
+  @IsString()
+  details?: string;
+
   @IsString()
   marketplaceApplication: string;
 

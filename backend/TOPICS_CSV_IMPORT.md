@@ -108,3 +108,5 @@ also removes followed-topic entries. No bulk taxonomy deletion cascades to Nugge
 Each list includes item checkboxes, filtered Select All across pages, a selected
 count, Clear Selection, and available bulk actions. Filter changes clear selection.
 Bulk deletion shows the exact selected names and requires confirmation in the UI.
+
+The optional `details` Nugget field stores the full explanation separately from `keyPrinciple`. Both are shown on the detail and reader pages. Use newlines or basic `<br>` / `<p>` tags for line breaks; other HTML is displayed as text.

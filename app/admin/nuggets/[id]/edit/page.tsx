@@ -12,7 +12,6 @@ import {
 
 import {
   useParams,
-  useRouter,
 } from "next/navigation";
 
 import {
@@ -66,6 +65,7 @@ type FormState = {
   image: string;
 
   keyPrinciple: string;
+  details: string;
 
   marketplaceApplication: string;
 
@@ -101,9 +101,6 @@ const bibleSections: BibleSection[] =
   ];
 
 export default function EditNuggetPage() {
-  const router =
-    useRouter();
-
   const params =
     useParams<{
       id: string;
@@ -136,6 +133,7 @@ export default function EditNuggetPage() {
       image: "",
 
       keyPrinciple: "",
+      details: "",
 
       marketplaceApplication:
         "",
@@ -277,6 +275,8 @@ export default function EditNuggetPage() {
           keyPrinciple:
             nugget.keyPrinciple ||
             "",
+
+          details: nugget.details || "",
 
           marketplaceApplication:
             nugget.marketplaceApplication ||
@@ -463,6 +463,8 @@ export default function EditNuggetPage() {
 
               keyPrinciple:
                 form.keyPrinciple.trim(),
+
+              details: form.details.trim(),
 
               marketplaceApplication:
                 form.marketplaceApplication.trim(),
@@ -793,6 +795,19 @@ export default function EditNuggetPage() {
                 placeholder="Main biblical-business principle..."
                 className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
               />
+            </div>
+
+            <div className="mt-4">
+              <FieldLabel>Details</FieldLabel>
+              <textarea
+                aria-label="Details"
+                value={form.details}
+                onChange={(event) => updateField("details", event.target.value)}
+                rows={8}
+                placeholder="Add the full explanation and supporting details..."
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+              />
+              <p className="mt-2 text-[12px] text-white/45">Press Enter for a new line, or leave a blank line between paragraphs. Basic &lt;br&gt; and &lt;p&gt; tags are also supported.</p>
             </div>
 
             {/* MARKETPLACE */}

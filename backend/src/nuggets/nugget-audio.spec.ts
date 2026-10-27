@@ -44,3 +44,22 @@ describe('Separate song and Nugget audio', () => {
     expect(preview.audioUrl).toBeNull(); expect(preview.nuggetAudioUrl).toBeNull();
   });
 });
+
+describe('Nugget Details content', () => {
+  it('validates Details as optional text', async () => {
+    await expect(pipe.transform({ ...createInput(), details: 'First\nSecond<br>Third' }, { type: 'body', metatype: CreateNuggetDto })).resolves.toHaveProperty('details', 'First\nSecond<br>Third');
+    await expect(pipe.transform({ details: 42 }, { type: 'body', metatype: UpdateNuggetDto })).rejects.toThrow();
+  });
+  it('saves, reloads, preserves and clears Details independently of Key Principle', async () => {
+    const service = new NuggetsService();
+    expect(await service.createNugget(createInput())).toHaveProperty('details', null);
+    expect(await service.createNugget({ ...createInput(), details: 'First\nSecond<br>Third' })).toMatchObject({ details: 'First\nSecond<br>Third', keyPrinciple: 'Principle' });
+    expect(await service.updateNugget('nugget-1', { title: 'Updated' })).toHaveProperty('details', 'First\nSecond<br>Third');
+    expect(await service.updateNugget('nugget-1', { details: 'New details' })).toMatchObject({ details: 'New details', keyPrinciple: 'Principle' });
+    expect(await service.updateNugget('nugget-1', { details: '' })).toHaveProperty('details', '');
+  });
+  it('does not reveal Details in locked premium previews', () => {
+    const service = new NuggetsService() as unknown as { toLockedPreview: (data: unknown) => Record<string, unknown> };
+    expect(service.toLockedPreview({ ...createInput(), details: 'Private teaching' })).toHaveProperty('details', '');
+  });
+});

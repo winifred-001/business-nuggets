@@ -44,6 +44,7 @@ export function splitHierarchy(csv: string, kind: 'topics' | 'nuggets') {
     'scripturetext',
     'image',
     'keyprinciple',
+    'details',
     'marketplaceapplication',
     'practicalactionplan',
     'duration',
