@@ -1,3 +1,5 @@
+import { ImportUploadController } from "../imports/import-upload.controller";
+import { ImportTicketGuard } from "../imports/import-ticket";
 import {
   Module,
 } from "@nestjs/common";
@@ -78,10 +80,12 @@ import { EmailModule } from "../email/email.module";
 
   controllers: [
     AdminController,
+    ImportUploadController,
   ],
 
   providers: [
     AdminIpAllowListGuard,
+    ImportTicketGuard,
     {
       provide: APP_INTERCEPTOR,
       useClass: AdminRequestValidationInterceptor,

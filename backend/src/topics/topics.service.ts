@@ -276,7 +276,7 @@ export class TopicsService {
     });
     return this.getAllTopics();
   }
-  private async planImport(tx: Tx, rows: TaxonomyRow[]) {
+  async planImport(tx: Tx, rows: TaxonomyRow[]) {
     const [topics, categories] = await Promise.all([
       tx.orm.public.Topic.all(),
       tx.orm.public.Category.all(),
@@ -372,49 +372,55 @@ export class TopicsService {
     const rows = parseTaxonomyCsv(csv);
     return db.transaction(async (tx) => {
       const plan = await this.planImport(tx, rows);
-      const categoryIds = new Map(
-        plan.categories.map((category) => [
-          taxonomyKey(category.name),
-          category.id,
-        ]),
-      );
-      let categoryOrder =
-        Math.max(
-          -1,
-          ...plan.categories.map((category) => category.displayOrder),
-        ) + 1;
-      for (const [key, category] of plan.plannedCategories) {
-        const created = await tx.orm.public.Category.create({
-          name: category.name,
-          visible: category.visible,
-          slug: taxonomySlug(category.name),
-          description: category.description || null,
-          displayOrder: categoryOrder++,
-        });
-        if (!created)
-          throw new ConflictException(
-            'Could not create category. Refresh and retry.',
-          );
-        categoryIds.set(key, created.id);
-      }
-      let topicOrder =
-        Math.max(-1, ...plan.topics.map((topic) => topic.displayOrder)) + 1;
-      for (const topic of plan.plannedTopics)
-        await tx.orm.public.Topic.create({
-          name: topic.name,
-          slug: taxonomySlug(topic.name),
-          description: topic.description || null,
-          visible: topic.visible,
-          categoryId: topic.category
-            ? categoryIds.get(taxonomyKey(topic.category))!
-            : null,
-          displayOrder: topicOrder++,
-        });
-      return {
-        categoriesCreated: plan.plannedCategories.size,
-        topicsCreated: plan.plannedTopics.length,
-        skipped: plan.preview.skipped,
-      };
+      return this.saveImport(tx, plan);
     });
+  }
+  async saveImport(
+    tx: Tx,
+    plan: Awaited<ReturnType<TopicsService['planImport']>>,
+  ) {
+    const categoryIds = new Map(
+      plan.categories.map((category) => [
+        taxonomyKey(category.name),
+        category.id,
+      ]),
+    );
+    let categoryOrder =
+      Math.max(
+        -1,
+        ...plan.categories.map((category) => category.displayOrder),
+      ) + 1;
+    for (const [key, category] of plan.plannedCategories) {
+      const created = await tx.orm.public.Category.create({
+        name: category.name,
+        visible: category.visible,
+        slug: taxonomySlug(category.name),
+        description: category.description || null,
+        displayOrder: categoryOrder++,
+      });
+      if (!created)
+        throw new ConflictException(
+          'Could not create category. Refresh and retry.',
+        );
+      categoryIds.set(key, created.id);
+    }
+    let topicOrder =
+      Math.max(-1, ...plan.topics.map((topic) => topic.displayOrder)) + 1;
+    for (const topic of plan.plannedTopics)
+      await tx.orm.public.Topic.create({
+        name: topic.name,
+        slug: taxonomySlug(topic.name),
+        description: topic.description || null,
+        visible: topic.visible,
+        categoryId: topic.category
+          ? categoryIds.get(taxonomyKey(topic.category))!
+          : null,
+        displayOrder: topicOrder++,
+      });
+    return {
+      categoriesCreated: plan.plannedCategories.size,
+      topicsCreated: plan.plannedTopics.length,
+      skipped: plan.preview.skipped,
+    };
   }
 }

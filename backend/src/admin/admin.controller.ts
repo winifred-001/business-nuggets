@@ -1,5 +1,9 @@
 import { readImportFile } from "../imports/import-file";
-import { importNuggets } from "../imports/nugget-import";
+import { importHierarchy } from "../imports/hierarchy-import";
+import { IMPORT_LIMIT } from "../imports/import-limits";
+import { ImportTicketDto, issueImportTicket } from "../imports/import-ticket";
+import { BulkContentDto } from "./dto/bulk-content.dto";
+import { bulkContent } from "./bulk-content";
 import { BadRequestException, ParseIntPipe, UploadedFile } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { CreateTopicDto, UpdateTopicDto, CreateCategoryDto, UpdateCategoryDto } from "../topics/topics.dto";
@@ -166,15 +170,31 @@ export class AdminController {
      TOPICS
   ========================================= */
 
+  @Post("imports/ticket")
+  @RequireAdminPermission("manageNuggets")
+  createImportTicket(@Body() input:ImportTicketDto,@Request() request:any) {return issueImportTicket(input,request.user);}
+
+  @Post("nuggets/bulk")
+  @RequireAdminPermission("manageNuggets")
+  bulkNuggets(@Body() input:BulkContentDto) {return bulkContent("nuggets",input);}
+
+  @Post("topics/bulk")
+  @RequireAdminPermission("manageNuggets")
+  bulkTopics(@Body() input:BulkContentDto) {return bulkContent("topics",input);}
+
+  @Post("categories/bulk")
+  @RequireAdminPermission("manageNuggets")
+  bulkCategories(@Body() input:BulkContentDto) {return bulkContent("categories",input);}
+
   @Post("nuggets/import/preview")
   @RequireAdminPermission("manageNuggets")
-  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 1024 * 1024, files: 1 } }))
-  async previewNuggetsImport(@UploadedFile() file: Express.Multer.File) { return importNuggets(await readImportFile(file), true); }
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: IMPORT_LIMIT, files: 1 } }))
+  async previewNuggetsImport(@UploadedFile() file: Express.Multer.File) { return importHierarchy(await readImportFile(file), true, "nuggets", this.topicsService); }
 
   @Post("nuggets/import")
   @RequireAdminPermission("manageNuggets")
-  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 1024 * 1024, files: 1 } }))
-  async commitNuggetsImport(@UploadedFile() file: Express.Multer.File) { return importNuggets(await readImportFile(file), false); }
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: IMPORT_LIMIT, files: 1 } }))
+  async commitNuggetsImport(@UploadedFile() file: Express.Multer.File) { return importHierarchy(await readImportFile(file), false, "nuggets", this.topicsService); }
 
   @Get("topics")
   @RequireAdminPermission("manageNuggets")
@@ -190,13 +210,13 @@ export class AdminController {
 
   @Post("topics/import/preview")
   @RequireAdminPermission("manageNuggets")
-  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 1024 * 1024, files: 1 } }))
-  async previewTopicsCsv(@UploadedFile() file: Express.Multer.File) { return this.topicsService.previewImport(await readImportFile(file)); }
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: IMPORT_LIMIT, files: 1 } }))
+  async previewTopicsCsv(@UploadedFile() file: Express.Multer.File) { return importHierarchy(await readImportFile(file), true, "topics", this.topicsService); }
 
   @Post("topics/import")
   @RequireAdminPermission("manageNuggets")
-  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 1024 * 1024, files: 1 } }))
-  async importTopicsCsv(@UploadedFile() file: Express.Multer.File) { return this.topicsService.importCsv(await readImportFile(file)); }
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: IMPORT_LIMIT, files: 1 } }))
+  async importTopicsCsv(@UploadedFile() file: Express.Multer.File) { return importHierarchy(await readImportFile(file), false, "topics", this.topicsService); }
 
   @Patch("topics/:id")
   @RequireAdminPermission("manageNuggets")

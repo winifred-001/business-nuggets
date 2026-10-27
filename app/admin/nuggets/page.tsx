@@ -19,6 +19,9 @@ import {
   Trash2,
 } from "lucide-react";
 
+import BulkActions from "@/components/admin/BulkActions";
+import { useBulkSelection } from "@/components/admin/useBulkSelection";
+import { adminApiFetch } from "@/lib/admin-api";
 import AdminImportDialog from "@/components/admin/AdminImportDialog";
 import AdminShell from "@/components/admin/AdminShell";
 import { API_URL } from "@/lib/api";
@@ -410,6 +413,28 @@ export default function AdminNuggetsPage() {
       sortOrder,
     ]);
 
+  const selection = useBulkSelection(
+    JSON.stringify([searchQuery, topicFilter, statusFilter, activeTab]),
+    filteredNuggets.map((item) => item.id),
+  );
+  async function applyBulk(action: string, ids: string[]) {
+    setError("");
+    setImportSuccess("");
+    const response = await adminApiFetch("/nuggets/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, ids }),
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(Array.isArray(data?.message)
+        ? data.message.join("; ")
+        : data?.message || "Could not apply the bulk action. Please retry.");
+    }
+    setImportSuccess(`${data.affected} Nuggets updated (${action}).`);
+    await loadNuggets();
+  }
+
   /* =========================================
      PAGINATION
   ========================================= */
@@ -440,15 +465,28 @@ export default function AdminNuggetsPage() {
         PAGE_SIZE,
     );
 
-  useEffect(() => {
+
+  function changeSearchQuery(value: string) {
+    setSearchQuery(value);
     setCurrentPage(1);
-  }, [
-    searchQuery,
-    topicFilter,
-    statusFilter,
-    activeTab,
-    sortOrder,
-  ]);
+  }
+  function changeTopicFilter(value: string) {
+    setTopicFilter(value);
+    setCurrentPage(1);
+  }
+  function changeStatusFilter(value: string) {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  }
+  function changeSortOrder(value: "newest" | "oldest") {
+    setSortOrder(value);
+    setCurrentPage(1);
+  }
+  function changeActiveTab(value: "all" | "published" | "draft") {
+    setActiveTab(value);
+    setCurrentPage(1);
+  }
+
 
   return (
     <AdminShell>
@@ -523,7 +561,7 @@ export default function AdminNuggetsPage() {
               onChange={(
                 event,
               ) =>
-                setSearchQuery(
+                changeSearchQuery(
                   event
                     .target
                     .value,
@@ -543,7 +581,7 @@ export default function AdminNuggetsPage() {
             onChange={(
               event,
             ) =>
-              setTopicFilter(
+              changeTopicFilter(
                 event
                   .target
                   .value,
@@ -580,7 +618,7 @@ export default function AdminNuggetsPage() {
             onChange={(
               event,
             ) =>
-              setStatusFilter(
+              changeStatusFilter(
                 event
                   .target
                   .value,
@@ -610,7 +648,7 @@ export default function AdminNuggetsPage() {
             onChange={(
               event,
             ) =>
-              setSortOrder(
+              changeSortOrder(
                 event
                   .target
                   .value as
@@ -642,7 +680,7 @@ export default function AdminNuggetsPage() {
               "all"
             }
             onClick={() =>
-              setActiveTab(
+              changeActiveTab(
                 "all",
               )
             }
@@ -655,7 +693,7 @@ export default function AdminNuggetsPage() {
               "published"
             }
             onClick={() =>
-              setActiveTab(
+              changeActiveTab(
                 "published",
               )
             }
@@ -668,7 +706,7 @@ export default function AdminNuggetsPage() {
               "draft"
             }
             onClick={() =>
-              setActiveTab(
+              changeActiveTab(
                 "draft",
               )
             }
@@ -679,11 +717,29 @@ export default function AdminNuggetsPage() {
             TABLE
         ================================= */}
 
+        <BulkActions
+          noun="Nuggets"
+          ids={selection.ids}
+          total={filteredNuggets.length}
+          all={selection.all}
+          toggleAll={selection.toggleAll}
+          clear={selection.clear}
+          names={filteredNuggets.filter(item => selection.selected.has(item.id)).map(item => item.title)}
+          actions={[
+            { value: "delete", label: "Delete selected" },
+            { value: "publish", label: "Publish selected" },
+            { value: "draft", label: "Move to drafts" },
+            { value: "feature", label: "Feature selected" },
+            { value: "unfeature", label: "Remove featured" },
+          ]}
+          apply={applyBulk}
+        />
         <section className="mt-3 overflow-visible rounded-[10px] border border-white/10 bg-[#111111]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[850px] text-left">
               <thead>
                 <tr className="border-b border-white/[0.07] text-[7px] uppercase tracking-[0.07em] text-white/25">
+                  <th className="px-3 py-3"><input type="checkbox" aria-label="Select all filtered Nuggets" checked={selection.all} disabled={!filteredNuggets.length} onChange={selection.toggleAll} className="h-4 w-4 accent-[#cda762]" /></th>
                   <th className="px-5 py-3 font-medium">
                     Title
                   </th>
@@ -725,7 +781,7 @@ export default function AdminNuggetsPage() {
                       >
                         <td
                           colSpan={
-                            6
+                            7
                           }
                           className="px-5 py-4"
                         >
@@ -746,6 +802,7 @@ export default function AdminNuggetsPage() {
                         }
                         className="border-b border-white/[0.05] last:border-0"
                       >
+                        <td className="px-3 py-4"><input type="checkbox" aria-label={`Select ${nugget.title}`} checked={selection.selected.has(nugget.id)} onChange={()=>selection.toggle(nugget.id)} className="h-4 w-4 accent-[#cda762]" /></td>
                         {/* TITLE */}
 
                         <td className="max-w-[310px] px-5 py-4">

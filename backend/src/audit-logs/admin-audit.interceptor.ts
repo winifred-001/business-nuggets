@@ -143,13 +143,14 @@ export class AdminAuditInterceptor
     const cleanPath =
       path.split("?")[0];
 
+    const directImport = cleanPath.match(/^\/admin-imports\/(nuggets|topics)\/(preview|commit)$/);
     const importPath = cleanPath.match(/^\/admin\/(nuggets|topics)\/import(\/preview)?$/);
-    if (method === "POST" && importPath) {
-      return {
-        action: importPath[2] ? "Previewed content import" : "Imported content",
-        target: importPath[1] === "nuggets" ? "Nuggets" : "Topics & Categories",
-      };
+    if (method === "POST" && (importPath || directImport)) {
+      return { action: (directImport ? directImport[2] === "preview" : !!importPath?.[2]) ? "Previewed content import" : "Imported content", target: (directImport?.[1] || importPath?.[1]) === "nuggets" ? "Nuggets" : "Topics & Categories" };
     }
+    const bulkPath = cleanPath.match(/^\/admin\/(nuggets|topics|categories)\/bulk$/);
+    if (method === "POST" && bulkPath) return {action:`Bulk ${body.action || "content action"}`,target:`${bulkPath[1]} (${Array.isArray(body.ids) ? body.ids.length : 0} selected)`};
+    if (method === "POST" && cleanPath === "/admin/imports/ticket") return {action:"Authorized content upload",target:body.kind || "Content"};
 
     /* NUGGETS */
 

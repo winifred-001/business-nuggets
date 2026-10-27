@@ -1,3 +1,4 @@
+import { IMPORT_LIMIT } from "../imports/import-limits";
 import { BadRequestException } from '@nestjs/common';
 export type TaxonomyRow = {
   row: number;
@@ -17,8 +18,8 @@ export const taxonomySlug = (value: string) =>
     .replace(/^-+|-+$/g, '');
 /** RFC-style quoted fields, including embedded commas/newlines and escaped quotes. */
 export function parseCsvRecords(csv: string) {
-  if (Buffer.byteLength(csv, 'utf8') > 1024 * 1024)
-    throw new BadRequestException('CSV files must be 1 MB or smaller.');
+  if (Buffer.byteLength(csv, 'utf8') > IMPORT_LIMIT)
+    throw new BadRequestException('CSV files must be 5 MB or smaller.');
   csv = csv.replace(/^\uFEFF/, '');
   const records: { line: number; fields: string[] }[] = [];
   let fields: string[] = [],

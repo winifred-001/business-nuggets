@@ -1,7 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { Workbook } from 'exceljs';
 
-export const IMPORT_LIMIT = 1024 * 1024;
+import { IMPORT_LIMIT } from './import-limits';
+export { IMPORT_LIMIT } from './import-limits';
 export const csvCell = (value: unknown): string => {
   const text = Array.isArray(value)
     ? JSON.stringify(value)
@@ -15,7 +16,7 @@ export async function readImportFile(
   if (!file)
     throw new BadRequestException('Choose a CSV, Excel (.xlsx), or JSON file.');
   if (file.buffer.length > IMPORT_LIMIT)
-    throw new BadRequestException('Files must be 1 MB or smaller.');
+    throw new BadRequestException('Files must be 5 MB or smaller.');
   const extension = file.originalname.toLowerCase().split('.').pop();
   if (!['csv', 'xlsx', 'json'].includes(extension || ''))
     throw new BadRequestException('Choose a CSV, Excel (.xlsx), or JSON file.');
@@ -27,7 +28,7 @@ export async function readImportFile(
       for (let i = 0; i <= file.buffer.length - 46; i++) {
         if (file.buffer.readUInt32LE(i) !== 0x02014b50) continue;
         expanded += file.buffer.readUInt32LE(i + 24);
-        if (expanded > 16 * IMPORT_LIMIT)
+        if (expanded > 16 * 1024 * 1024)
           throw new BadRequestException(
             'Excel workbook is too large when expanded. Remove images and unused sheets.',
           );
@@ -115,6 +116,6 @@ export async function readImportFile(
     );
   }
   if (Buffer.byteLength(csv) > IMPORT_LIMIT)
-    throw new BadRequestException('Import data must be 1 MB or smaller.');
+    throw new BadRequestException('Import data must be 5 MB or smaller.');
   return csv;
 }

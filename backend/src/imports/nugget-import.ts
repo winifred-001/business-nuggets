@@ -1,8 +1,6 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
-import { db } from '../prisma/db';
+import { BadRequestException } from '@nestjs/common';
 import { parseCsvRecords, taxonomySlug } from '../topics/topics-csv';
 
-type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 const textFields = [
   'title',
   'topic',
@@ -28,6 +26,7 @@ export function parseNuggets(csv: string) {
   const records = parseCsvRecords(csv);
   const fields = [
     'number',
+    'category',
     'slug',
     ...textFields,
     ...listFields,
@@ -73,6 +72,13 @@ export function parseNuggets(csv: string) {
       values.topic.length > 120
     )
       fail('Title (up to 500 characters) and topic (up to 120) are required.');
+    if (!taxonomySlug(values.topic))
+      fail('Topic must contain letters or numbers.');
+    if (
+      (values.category || '').length > 120 ||
+      (values.category && !taxonomySlug(values.category))
+    )
+      fail('Category must be a valid name of at most 120 characters.');
     const slug = values.slug || taxonomySlug(values.title);
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 250)
       fail('Slug must contain lowercase letters, numbers and single hyphens.');
@@ -138,6 +144,7 @@ export function parseNuggets(csv: string) {
       fail('Status must be draft or published. Imports are saved as drafts.');
     return {
       row: record.line,
+      category: values.category || '',
       data: {
         ...text,
         ...lists,
@@ -153,49 +160,4 @@ export function parseNuggets(csv: string) {
       },
     };
   });
-}
-async function plan(tx: Tx, csv: string) {
-  const rows = parseNuggets(csv);
-  const existing = await tx.orm.public.Nugget.all();
-  return rows.map((row) => ({
-    ...row,
-    action: existing.some(
-      (item) =>
-        item.number === row.data.number ||
-        item.slug === row.data.slug ||
-        item.id === row.data.id,
-    )
-      ? ('skip' as const)
-      : ('create' as const),
-  }));
-}
-export async function importNuggets(csv: string, preview: boolean) {
-  try {
-    return await db.transaction(async (tx) => {
-      const rows = await plan(tx, csv);
-      const create = rows.filter((row) => row.action === 'create');
-      if (preview)
-        return {
-          nuggetsToCreate: create.length,
-          skipped: rows.length - create.length,
-          rows: rows.map((row) => ({
-            row: row.row,
-            name: row.data.title,
-            type: 'nugget',
-            action: row.action,
-          })),
-        };
-      for (const row of create) await tx.orm.public.Nugget.create(row.data);
-      return {
-        nuggetsCreated: create.length,
-        skipped: rows.length - create.length,
-      };
-    });
-  } catch (error) {
-    if (/unique constraint|duplicate key/i.test(String(error)))
-      throw new ConflictException(
-        'Another import changed these Nuggets. Preview the file again and retry. No items from this attempt were saved.',
-      );
-    throw error;
-  }
 }

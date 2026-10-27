@@ -2,13 +2,17 @@
 
 import { useRef, useState } from "react";
 import { Download, LoaderCircle, X } from "lucide-react";
-import { adminApiFetch } from "@/lib/admin-api";
+import {
+  ADMIN_IMPORT_LIMIT,
+  uploadAdminImport,
+} from "@/lib/admin-import-upload";
 import styles from "./AdminImportDialog.module.css";
 
 type Kind = "topics" | "nuggets";
 type Preview = {
   categoriesToCreate?: number;
   topicsToCreate?: number;
+  topicsToAssign?: number;
   nuggetsToCreate?: number;
   skipped: number;
   rows: {
@@ -16,46 +20,77 @@ type Preview = {
     type: string;
     name: string;
     category?: string;
+    topic?: string;
     action: string;
   }[];
 };
+const topicExample = [
+  {
+    type: "category",
+    name: "Stewardship",
+    description: "Manage resources wisely",
+  },
+  {
+    type: "topic",
+    name: "Money Management",
+    category: "Stewardship",
+    description: "Plan spending and savings",
+  },
+  {
+    type: "nugget",
+    number: 1001,
+    title: "Plan Wisely",
+    topic: "Money Management",
+    category: "Stewardship",
+    scriptureRef: "Proverbs 21:5",
+    keyPrinciple: "Plan diligently",
+    practicalActionPlan: ["Review the budget"],
+    songUrl: "",
+    nuggetUrl: "",
+  },
+];
+const nuggetExample = [
+  {
+    number: 1001,
+    title: "Plan Wisely",
+    topic: "Money Management",
+    category: "Stewardship",
+    scriptureRef: "Proverbs 21:5",
+    scriptureText: "",
+    keyPrinciple: "Plan diligently",
+    marketplaceApplication: "Review business spending",
+    practicalActionPlan: ["Review the budget"],
+    challenges: ["Money"],
+    tag: "Stewardship",
+    book: "Proverbs",
+    bibleSection: "Old Testament",
+    duration: "00:00",
+    image: "",
+    songUrl: "",
+    nuggetUrl: "",
+    isGold: false,
+    featured: false,
+  },
+];
+function makeTemplate(rows: object[]) {
+  const objects = rows as Record<string, unknown>[];
+  const headers = [...new Set(objects.flatMap((row) => Object.keys(row)))];
+  const cell = (value: unknown) =>
+    `"${String(Array.isArray(value) ? JSON.stringify(value) : (value ?? "")).replace(/"/g, '""')}"`;
+  return {
+    json: objects,
+    csv:
+      [
+        headers.map(cell).join(","),
+        ...objects.map((row) =>
+          headers.map((header) => cell(row[header])).join(","),
+        ),
+      ].join("\r\n") + "\r\n",
+  };
+}
 const templates: Record<Kind, { csv: string; json: unknown[] }> = {
-  topics: {
-    csv: "type,name,description,category,visible\r\ncategory,Leadership,Leadership and business wisdom,,true\r\ntopic,Integrity,Build trust through honest work,Leadership,true\r\n",
-    json: [
-      {
-        type: "category",
-        name: "Leadership",
-        description: "Leadership and business wisdom",
-        visible: true,
-      },
-      {
-        type: "topic",
-        name: "Integrity",
-        category: "Leadership",
-        visible: true,
-      },
-    ],
-  },
-  nuggets: {
-    csv: "number,title,topic,slug,scriptureRef,scriptureText,keyPrinciple,marketplaceApplication,practicalActionPlan,challenges,tag,book,bibleSection,duration,image,songUrl,nuggetUrl,isGold,featured\r\n1001,Work with Integrity,Integrity,work-with-integrity,Colossians 3:23,Work heartily,Serve with integrity,Be honest in business,Review your work|Choose one improvement,Leadership,Integrity,Colossians,New Testament,00:00,,,,false,false\r\n",
-    json: [
-      {
-        number: 1001,
-        title: "Work with Integrity",
-        topic: "Integrity",
-        scriptureRef: "Colossians 3:23",
-        scriptureText: "Work heartily",
-        keyPrinciple: "Serve with integrity",
-        marketplaceApplication: "Be honest in business",
-        practicalActionPlan: ["Review your work", "Choose one improvement"],
-        challenges: ["Leadership"],
-        songUrl: "",
-        nuggetUrl: "",
-        isGold: false,
-      },
-    ],
-  },
+  topics: makeTemplate(topicExample),
+  nuggets: makeTemplate(nuggetExample),
 };
 export default function AdminImportDialog({
   initialKind,
@@ -77,7 +112,8 @@ export default function AdminImportDialog({
   const count = preview
     ? (preview.categoriesToCreate || 0) +
       (preview.topicsToCreate || 0) +
-      (preview.nuggetsToCreate || 0)
+      (preview.nuggetsToCreate || 0) +
+      (preview.topicsToAssign || 0)
     : 0;
   function download(format: "csv" | "json") {
     const content =
@@ -106,13 +142,12 @@ export default function AdminImportDialog({
     try {
       if (!/\.(csv|xlsx|json)$/i.test(file.name))
         throw new Error("Choose a CSV, Excel (.xlsx), or JSON file.");
-      if (file.size > 1024 * 1024)
-        throw new Error("Files must be 1 MB or smaller.");
-      const body = new FormData();
-      body.append("file", file);
-      const response = await adminApiFetch(
-        `/${kind}/import${confirm ? "" : "/preview"}`,
-        { method: "POST", body },
+      if (file.size > ADMIN_IMPORT_LIMIT)
+        throw new Error("Files must be 5 MB or smaller.");
+      const response = await uploadAdminImport(
+        kind,
+        confirm ? "commit" : "preview",
+        file,
       );
       const raw = await response.text();
       let data;
@@ -141,10 +176,7 @@ export default function AdminImportDialog({
         setPreview(data);
         setNotice("Preview ready. Review the rows before importing.");
       } else {
-        const message =
-          kind === "topics"
-            ? `Imported ${data.categoriesCreated} categories and ${data.topicsCreated} topics. ${data.skipped} existing rows skipped.`
-            : `Imported ${data.nuggetsCreated} Nuggets as drafts. ${data.skipped} existing rows skipped.`;
+        const message = `Imported ${data.categoriesCreated || 0} categories, ${data.topicsCreated || 0} topics and ${data.nuggetsCreated || 0} Nuggets as drafts. ${data.topicsAssigned || 0} existing topics linked to categories. ${data.skipped} existing items skipped.`;
         // Keep the completed write distinct from a subsequent list refresh failure.
         setPreview(null);
         setFile(null);
@@ -207,7 +239,7 @@ export default function AdminImportDialog({
         </select>
       </label>
       <p className="mt-4 text-sm leading-6 text-white/60">
-        Upload CSV, Excel (.xlsx), or JSON, up to 1 MB and 500 rows. Excel files
+        Upload CSV, Excel (.xlsx), or JSON, up to 5 MB and 500 rows. Excel files
         must have one populated sheet with headers in the first row. JSON uses
         an array of row objects. Existing items are skipped without overwriting
         them.
@@ -215,17 +247,22 @@ export default function AdminImportDialog({
       <p className="mt-3 text-sm leading-6 text-white/60">
         {kind === "topics" ? (
           <>
-            Use <code>type,name</code>, with optional{" "}
-            <code>description,category,visible</code>. Category summaries with{" "}
-            <code>Category,Brief Description,Number of Nuggets</code> are also
-            supported. Counts are reference data and do not create Nuggets.
+            Import category/topic rows with{" "}
+            <code>type,name,description,category,visible</code>. To include
+            Nuggets in the same file, use <code>type=nugget</code> with{" "}
+            <code>number,title,topic,category</code> and optional Nugget fields.
+            Download the hierarchy template for an example. Category summaries
+            using <code>Category,Brief Description,Number of Nuggets</code>{" "}
+            still work; counts are reference data.
           </>
         ) : (
           <>
-            Required: <code>number,title,topic</code>. Other fields are
-            optional. All Nuggets are saved as drafts for review. Song URL and
-            Nugget URL are separate. For action plans and challenges, use JSON
-            lists or separate items with a line break or <code>|</code>.
+            Required: <code>number,title,topic</code>. Add <code>category</code>{" "}
+            to group the topic. Missing topics and categories are created and
+            linked automatically. Existing topics keep their current category;
+            conflicting category assignments stop the import. All Nuggets are
+            drafts. Song URL and Nugget URL are separate. Lists accept JSON
+            arrays, line breaks, or <code>|</code>.
           </>
         )}
       </p>
@@ -287,8 +324,11 @@ export default function AdminImportDialog({
       {preview && (
         <section className="mt-4">
           <p className="text-sm">
-            {count} new items will be created. {preview.skipped} existing rows
-            will be skipped.
+            {preview.categoriesToCreate || 0} categories,{" "}
+            {preview.topicsToCreate || 0} topics and{" "}
+            {preview.nuggetsToCreate || 0} Nuggets will be created.{" "}
+            {preview.topicsToAssign || 0} existing topics will be linked to
+            categories. {preview.skipped} existing items will be skipped.
             {kind === "nuggets" ? " New Nuggets will be drafts." : ""}
           </p>
           <div className="mt-3 max-h-64 overflow-auto rounded border border-white/15">
@@ -297,17 +337,25 @@ export default function AdminImportDialog({
                 <tr className="border-b border-white/15 text-white/55">
                   <th className="p-3">Row</th>
                   <th>Type</th>
-                  <th>Name</th>
+                  <th>Name / Topic / Category</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {preview.rows.map((row) => (
-                  <tr key={row.row} className="border-b border-white/10">
+                  <tr
+                    key={`${row.type}:${row.name}:${row.row}`}
+                    className="border-b border-white/10"
+                  >
                     <td className="p-3">{row.row}</td>
                     <td>{row.type}</td>
                     <td className="max-w-[240px] break-words pr-3">
                       {row.name}
+                      {row.topic && (
+                        <span className="block text-white/55">
+                          Topic: {row.topic}
+                        </span>
+                      )}
                       {row.category && (
                         <span className="block text-white/45">
                           {row.category}
@@ -315,7 +363,11 @@ export default function AdminImportDialog({
                       )}
                     </td>
                     <td>
-                      {row.action === "skip" ? "Skip existing" : "Create"}
+                      {row.action === "skip"
+                        ? "Skip existing"
+                        : row.action === "assign"
+                          ? "Link category"
+                          : "Create"}
                     </td>
                   </tr>
                 ))}

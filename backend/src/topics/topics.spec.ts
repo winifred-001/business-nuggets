@@ -1,8 +1,21 @@
+import { createHash } from 'node:crypto';
+import { JwtService } from '@nestjs/jwt';
+import { ImportUploadController } from '../imports/import-upload.controller';
+import {
+  ImportTicketGuard,
+  issueImportTicket,
+  verifyImportTicket,
+} from '../imports/import-ticket';
+import { SessionsService } from '../auth/sessions.service';
+import { AdminRequestValidationInterceptor } from '../admin/admin-request-validation.interceptor';
+import { bulkContent } from '../admin/bulk-content';
+import { importHierarchy } from '../imports/hierarchy-import';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Workbook } from 'exceljs';
 import { readImportFile } from '../imports/import-file';
-import { importNuggets, parseNuggets } from '../imports/nugget-import';
+import { importNuggets } from '../imports/hierarchy-import';
+import { parseNuggets } from '../imports/nugget-import';
 import { Test } from '@nestjs/testing';
 import { UnauthorizedException, type INestApplication } from '@nestjs/common';
 import request from 'supertest';
@@ -148,7 +161,9 @@ describe('CSV parsing', () => {
     expect(() => parseTaxonomyCsv(csv)).toThrow();
   });
   it('enforces file and row limits', () => {
-    expect(() => parseTaxonomyCsv('x'.repeat(1048577))).toThrow('1 MB');
+    expect(() => parseTaxonomyCsv('x'.repeat(5 * 1024 * 1024 + 1))).toThrow(
+      '5 MB',
+    );
     expect(() =>
       parseTaxonomyCsv(
         'type,name\n' +
@@ -328,17 +343,36 @@ it('validates DTO types, whitespace, length and unknown fields', async () => {
 
 describe('CSV upload HTTP routes', () => {
   let app: INestApplication;
+  const previousSecret = process.env.JWT_SECRET;
+  let revoked = false;
   beforeAll(async () => {
+    process.env.JWT_SECRET = 'test-import-signing-key';
     const params: unknown[] = Reflect.getMetadata(
       'design:paramtypes',
       AdminController,
     );
     const module = await Test.createTestingModule({
-      controllers: [AdminController],
-      providers: params.map((token) => ({
-        provide: token as never,
-        useValue: token === TopicsService ? service() : {},
-      })),
+      controllers: [AdminController, ImportUploadController],
+      providers: [
+        ...params.map((token) => ({
+          provide: token as never,
+          useValue: token === TopicsService ? service() : {},
+        })),
+        ImportTicketGuard,
+        {
+          provide: SessionsService,
+          useValue: {
+            validateSession: async () => {
+              if (revoked) throw new UnauthorizedException('Session revoked');
+            },
+            getAuthenticatedUser: async () => ({
+              id: 1,
+              role: 'owner',
+              email: 'owner@example.com',
+            }),
+          },
+        },
+      ],
     })
       .overrideGuard(JwtAuthGuard)
       .useValue({
@@ -352,6 +386,9 @@ describe('CSV upload HTTP routes', () => {
             'Bearer allowed'
           )
             throw new UnauthorizedException();
+          Object.assign(context.switchToHttp().getRequest(), {
+            user: { sub: 1, sessionId: 1 },
+          });
           return true;
         },
       })
@@ -383,10 +420,13 @@ describe('CSV upload HTTP routes', () => {
         forbidNonWhitelisted: true,
       }),
     );
+    app.useGlobalInterceptors(new AdminRequestValidationInterceptor());
     await app.init();
   });
   afterAll(async () => {
     await app.close();
+    if (previousSecret === undefined) delete process.env.JWT_SECRET;
+    else process.env.JWT_SECRET = previousSecret;
   });
   const csv =
     'type,name,category\ncategory,Leadership,\ntopic,Integrity,Leadership';
@@ -530,9 +570,114 @@ describe('CSV upload HTTP routes', () => {
       .post('/admin/topics/import')
       .set('Authorization', 'Bearer allowed')
       .set('x-test-permission', 'manageNuggets')
-      .attach('file', Buffer.alloc(1048577), 'large.csv')
+      .attach('file', Buffer.alloc(5 * 1024 * 1024 + 1), 'large.csv')
       .expect(413);
     expect(state.Topic).toEqual([]);
+  });
+  it('issues scoped upload authorization and accepts a full 5 MB file directly', async () => {
+    const source = JSON.stringify([
+      {
+        number: 900,
+        title: 'Five MB upload',
+        topic: 'New Topic',
+        category: 'New Category',
+      },
+    ]);
+    const file = Buffer.from(
+      source + ' '.repeat(5 * 1024 * 1024 - Buffer.byteLength(source)),
+    );
+    const sha256 = createHash('sha256').update(file).digest('hex');
+    const ticket = await request(app.getHttpServer())
+      .post('/admin/imports/ticket')
+      .set('Authorization', 'Bearer allowed')
+      .set('x-test-permission', 'manageNuggets')
+      .send({ kind: 'nuggets', stage: 'preview', size: file.length, sha256 })
+      .expect(201);
+    const response = await request(app.getHttpServer())
+      .post('/admin-imports/nuggets/preview')
+      .set('Authorization', `Bearer ${ticket.body.ticket}`)
+      .set('x-test-permission', 'manageNuggets')
+      .attach('file', file, 'five.json')
+      .expect(201);
+    expect(response.body).toMatchObject({
+      nuggetsToCreate: 1,
+      topicsToCreate: 1,
+      categoriesToCreate: 1,
+    });
+    expect(state.Nugget).toEqual([]);
+    await request(app.getHttpServer())
+      .post('/admin-imports/nuggets/commit')
+      .set('Authorization', `Bearer ${ticket.body.ticket}`)
+      .set('x-test-permission', 'manageNuggets')
+      .attach('file', file, 'five.json')
+      .expect(401);
+    await request(app.getHttpServer())
+      .post('/admin-imports/nuggets/preview')
+      .set('Authorization', `Bearer ${ticket.body.ticket}`)
+      .set('x-test-permission', 'manageNuggets')
+      .attach('file', Buffer.from('changed'), 'five.json')
+      .expect(400);
+    revoked = true;
+    await request(app.getHttpServer())
+      .post('/admin-imports/nuggets/preview')
+      .set('Authorization', `Bearer ${ticket.body.ticket}`)
+      .set('x-test-permission', 'manageNuggets')
+      .attach('file', file, 'five.json')
+      .expect(401);
+    revoked = false;
+    await request(app.getHttpServer())
+      .post('/admin-imports/nuggets/preview')
+      .set('Authorization', `Bearer ${ticket.body.ticket}`)
+      .set('x-test-permission', 'manageNuggets')
+      .attach('file', Buffer.alloc(5 * 1024 * 1024 + 1), 'large.json')
+      .expect(413);
+  });
+  it('protects direct uploads, rejects unauthorized tickets and validates bulk requests', async () => {
+    await request(app.getHttpServer())
+      .post('/admin-imports/topics/preview')
+      .attach('file', Buffer.from(csv), 'items.csv')
+      .expect(401);
+    await request(app.getHttpServer())
+      .post('/admin/imports/ticket')
+      .set('Authorization', 'Bearer allowed')
+      .send({
+        kind: 'topics',
+        stage: 'preview',
+        size: 10,
+        sha256: 'a'.repeat(64),
+      })
+      .expect(403);
+    await request(app.getHttpServer())
+      .post('/admin/imports/ticket')
+      .set('Authorization', 'Bearer allowed')
+      .set('x-test-permission', 'manageNuggets')
+      .send({
+        kind: 'nuggets',
+        stage: 'preview',
+        size: 5 * 1024 * 1024 + 1,
+        sha256: 'a'.repeat(64),
+      })
+      .expect(400);
+    await request(app.getHttpServer())
+      .post('/admin/categories/bulk')
+      .set('Authorization', 'Bearer allowed')
+      .set('x-test-permission', 'manageNuggets')
+      .send({ ids: ['1', '1'], action: 'delete' })
+      .expect(400);
+    state.Category.push(category());
+    await request(app.getHttpServer())
+      .post('/admin/categories/bulk')
+      .set('Authorization', 'Bearer allowed')
+      .set('x-test-permission', 'manageNuggets')
+      .send({ ids: ['1'], action: 'delete' })
+      .expect(201);
+    expect(state.Category).toEqual([]);
+    await request(app.getHttpServer())
+      .post('/admin/topics')
+      .set('Authorization', 'Bearer allowed')
+      .set('x-test-permission', 'manageNuggets')
+      .send({ name: 'Assigned', categoryId: null })
+      .expect(201);
   });
   it('validates category IDs and rejects unknown properties', async () => {
     await request(app.getHttpServer())
@@ -651,5 +796,281 @@ describe('versatile imports and regression coverage', () => {
       importNuggets('number,title,topic\n1,First,Work\n2,Fail,Work', false),
     ).rejects.toThrow('Write failed');
     expect(state.Nugget).toEqual([]);
+  });
+});
+
+describe('linked hierarchy imports', () => {
+  const hierarchy = async () =>
+    readImportFile({
+      originalname: 'hierarchy.json',
+      buffer: Buffer.from(
+        JSON.stringify([
+          {
+            type: 'category',
+            name: 'Stewardship',
+            description: 'Use resources wisely',
+          },
+          {
+            type: 'topic',
+            name: 'Budgeting',
+            category: 'Stewardship',
+            description: 'Plan spending',
+          },
+          {
+            type: 'nugget',
+            number: 701,
+            title: 'Plan carefully',
+            topic: 'Budgeting',
+            category: 'Stewardship',
+            songUrl: 'https://example.com/song.mp3',
+            nuggetUrl: 'https://example.com/talk.mp3',
+          },
+        ]),
+      ),
+    } as Express.Multer.File);
+  it('previews then atomically imports all three levels', async () => {
+    const csv = await hierarchy();
+    const preview = await importHierarchy(csv, true, 'topics');
+    expect(preview).toMatchObject({
+      categoriesToCreate: 1,
+      topicsToCreate: 1,
+      nuggetsToCreate: 1,
+    });
+    expect(state.Category).toEqual([]);
+    expect(state.Topic).toEqual([]);
+    expect(state.Nugget).toEqual([]);
+    const result = await importHierarchy(csv, false, 'topics');
+    expect(result).toMatchObject({
+      categoriesCreated: 1,
+      topicsCreated: 1,
+      nuggetsCreated: 1,
+    });
+    expect(state.Topic[0]).toMatchObject({
+      name: 'Budgeting',
+      categoryId: state.Category[0].id,
+    });
+    expect(state.Nugget[0]).toMatchObject({
+      topic: 'Budgeting',
+      status: 'draft',
+      audioUrl: 'https://example.com/song.mp3',
+      nuggetAudioUrl: 'https://example.com/talk.mp3',
+    });
+    expect(await importHierarchy(csv, false, 'topics')).toMatchObject({
+      categoriesCreated: 0,
+      topicsCreated: 0,
+      nuggetsCreated: 0,
+    });
+  });
+  it('creates missing categories/topics directly from a Nugget import', async () => {
+    await importNuggets(
+      'number,title,topic,category\n1,Wise Work,Integrity,Leadership',
+      false,
+    );
+    expect(state.Category[0].name).toBe('Leadership');
+    expect(state.Topic[0]).toMatchObject({
+      name: 'Integrity',
+      categoryId: state.Category[0].id,
+    });
+    expect(state.Nugget[0].topic).toBe('Integrity');
+  });
+  it('reuses canonical topic spelling and previews its existing category', async () => {
+    state.Category.push(category());
+    state.Topic.push(topic(1, 'Integrity', 1));
+    const preview = await importNuggets(
+      'number,title,topic\n1,Wise Work,integrity',
+      true,
+    );
+    expect(
+      'rows' in preview && preview.rows.find((row) => row.type === 'nugget'),
+    ).toMatchObject({ topic: 'Integrity', category: 'Leadership' });
+    await importNuggets('number,title,topic\n1,Wise Work,integrity', false);
+    expect(state.Nugget[0].topic).toBe('Integrity');
+    expect(state.Topic).toHaveLength(1);
+  });
+  it('links an uncategorized existing topic without overwriting its description or visibility', async () => {
+    state.Topic.push({ ...topic(), description: 'Keep this', visible: false });
+    const csv = 'number,title,topic,category\n1,Wise Work,Integrity,Leadership';
+    expect(await importNuggets(csv, true)).toMatchObject({
+      topicsToAssign: 1,
+      categoriesToCreate: 1,
+    });
+    expect(state.Topic[0].categoryId).toBeNull();
+    await importNuggets(csv, false);
+    expect(state.Topic[0]).toMatchObject({
+      categoryId: state.Category[0].id,
+      description: 'Keep this',
+      visible: false,
+    });
+  });
+  it('rejects category conflicts and rolls back every write', async () => {
+    state.Category.push(category());
+    state.Topic.push(topic(1, 'Integrity', 1));
+    await expect(
+      importNuggets(
+        'number,title,topic,category\n1,Wise Work,Integrity,Other',
+        false,
+      ),
+    ).rejects.toThrow('already belongs');
+    expect(state.Category).toHaveLength(1);
+    expect(state.Nugget).toEqual([]);
+    state.Category = [];
+    state.Topic = [];
+    failOnTopic = 'Plan carefully';
+    await expect(
+      importHierarchy(await hierarchy(), false, 'topics'),
+    ).rejects.toThrow('Write failed');
+    expect(state.Category).toEqual([]);
+    expect(state.Topic).toEqual([]);
+    expect(state.Nugget).toEqual([]);
+  });
+  it('does not create orphan taxonomy for skipped Nuggets', async () => {
+    state.Nugget.push({
+      id: 'nugget-1',
+      number: 1,
+      slug: 'old',
+      topic: 'Existing',
+    });
+    await importNuggets(
+      'number,title,topic,category\n1,Existing,New Topic,New Category',
+      false,
+    );
+    expect(state.Topic).toEqual([]);
+    expect(state.Category).toEqual([]);
+  });
+  it('supports hierarchy templates with Nugget columns even when only taxonomy rows remain', async () => {
+    await importHierarchy(
+      'type,name,category,number,title,topic\ncategory,Leadership,,,,\ntopic,Integrity,Leadership,,,',
+      false,
+      'topics',
+    );
+    expect(state.Category).toHaveLength(1);
+    expect(state.Topic).toHaveLength(1);
+    expect(state.Nugget).toEqual([]);
+  });
+});
+
+describe('bulk content actions', () => {
+  it('deletes only the selected empty categories, keeping unrelated data', async () => {
+    state.Category.push(category(), {
+      ...category(),
+      id: 2,
+      name: 'Keep',
+      slug: 'keep',
+    });
+    state.Topic.push(topic());
+    expect(
+      await bulkContent('categories', { ids: ['1'], action: 'delete' }),
+    ).toMatchObject({ affected: 1 });
+    expect(state.Category.map((row) => row.name)).toEqual(['Keep']);
+    expect(state.Topic).toHaveLength(1);
+  });
+  it('blocks a whole batch containing an in-use category or topic', async () => {
+    state.Category.push(category(), {
+      ...category(),
+      id: 2,
+      name: 'Empty',
+      slug: 'empty',
+    });
+    state.Topic.push(topic(1, 'Integrity', 1));
+    await expect(
+      bulkContent('categories', { ids: ['2', '1'], action: 'delete' }),
+    ).rejects.toThrow('Nothing was deleted');
+    expect(state.Category).toHaveLength(2);
+    state.Topic.push(topic(2, 'Empty'));
+    state.Nugget.push({ id: 'nugget-1', topic: 'integrity', status: 'draft' });
+    await expect(
+      bulkContent('topics', { ids: ['2', '1'], action: 'delete' }),
+    ).rejects.toThrow('Reassign');
+    expect(state.Topic).toHaveLength(2);
+  });
+  it('deletes unused topics and their follows, and changes visibility in batches', async () => {
+    state.Topic.push(topic(1, 'Integrity'), topic(2, 'Planning'));
+    state.FollowedTopic.push({ id: 1, userId: 1, topic: 'INTEGRITY' });
+    await bulkContent('topics', { ids: ['1', '2'], action: 'hide' });
+    expect(state.Topic.every((row) => row.visible === false)).toBe(true);
+    await bulkContent('topics', { ids: ['1', '2'], action: 'show' });
+    expect(state.Topic.every((row) => row.visible === true)).toBe(true);
+    await bulkContent('topics', { ids: ['1'], action: 'delete' });
+    expect(state.Topic.map((row) => row.id)).toEqual([2]);
+    expect(state.FollowedTopic).toEqual([]);
+  });
+  it('rolls back missing IDs and rejects duplicates, bad types and unsupported actions', async () => {
+    state.Category.push(category());
+    await expect(
+      bulkContent('categories', { ids: ['1', '99'], action: 'delete' }),
+    ).rejects.toThrow('no longer exists');
+    expect(state.Category).toHaveLength(1);
+    await expect(
+      bulkContent('categories', { ids: ['1', '1'], action: 'delete' }),
+    ).rejects.toThrow('distinct');
+    await expect(
+      bulkContent('categories', { ids: ['bad'], action: 'delete' }),
+    ).rejects.toThrow('Invalid');
+    await expect(
+      bulkContent('topics', { ids: ['1'], action: 'publish' }),
+    ).rejects.toThrow('not supported');
+  });
+  it('bulk publishes, features and drafts selected Nuggets and enforces the free limit', async () => {
+    state.Nugget.push(
+      { id: 'a', status: 'draft', isGold: false, publishedAt: null },
+      { id: 'b', status: 'published', isGold: true, publishedAt: '2026-01-01' },
+    );
+    await bulkContent('nuggets', { ids: ['a'], action: 'publish' });
+    expect(state.Nugget[0]).toMatchObject({ status: 'published' });
+    await bulkContent('nuggets', { ids: ['a', 'b'], action: 'feature' });
+    expect(state.Nugget.every((row) => row.featured === true)).toBe(true);
+    await bulkContent('nuggets', { ids: ['a'], action: 'draft' });
+    expect(state.Nugget[0]).toMatchObject({
+      status: 'draft',
+      publishedAt: null,
+    });
+    state.Nugget = Array.from({ length: 11 }, (_, i) => ({
+      id: `n-${i}`,
+      status: 'draft',
+      isGold: false,
+    }));
+    await expect(
+      bulkContent('nuggets', {
+        ids: state.Nugget.map((row) => String(row.id)),
+        action: 'publish',
+      }),
+    ).rejects.toThrow('Only 10');
+    expect(state.Nugget.every((row) => row.status === 'draft')).toBe(true);
+    await bulkContent('nuggets', { ids: ['n-1', 'n-2'], action: 'delete' });
+    expect(state.Nugget).toHaveLength(9);
+  });
+});
+
+describe('import upload token security', () => {
+  it('rejects tampering, expiry and ordinary JWT authentication', async () => {
+    const previous = process.env.JWT_SECRET;
+    process.env.JWT_SECRET = 'test-ticket-key';
+    try {
+      const token = issueImportTicket(
+        { kind: 'nuggets', stage: 'preview', size: 12, sha256: 'a'.repeat(64) },
+        { sub: 1, sessionId: 1 },
+      ).ticket;
+      expect(verifyImportTicket(token)).toMatchObject({
+        sub: 1,
+        sessionId: 1,
+        kind: 'nuggets',
+        stage: 'preview',
+      });
+      expect(() =>
+        verifyImportTicket(
+          token.slice(0, -1) + (token.endsWith('a') ? 'b' : 'a'),
+        ),
+      ).toThrow('invalid');
+      await expect(
+        new JwtService().verifyAsync(token, { secret: process.env.JWT_SECRET }),
+      ).rejects.toThrow();
+      const now = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(now + 6 * 60 * 1000);
+      expect(() => verifyImportTicket(token)).toThrow('expired');
+      jest.restoreAllMocks();
+    } finally {
+      if (previous === undefined) delete process.env.JWT_SECRET;
+      else process.env.JWT_SECRET = previous;
+    }
   });
 });

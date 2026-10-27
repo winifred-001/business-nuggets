@@ -15,7 +15,7 @@ import {
   UpdateNuggetDto,
 } from "./dto/update-nugget.dto";
 
-const FREE_NUGGET_LIMIT = 10;
+export const FREE_NUGGET_LIMIT = 10;
 
 type LockedNuggetPreview<T> = Omit<
   T,

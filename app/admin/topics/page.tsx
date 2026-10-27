@@ -10,6 +10,8 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import BulkActions from "@/components/admin/BulkActions";
+import { useBulkSelection } from "@/components/admin/useBulkSelection";
 import AdminImportDialog from "@/components/admin/AdminImportDialog";
 import AdminShell from "@/components/admin/AdminShell";
 import { adminApiFetch } from "@/lib/admin-api";
@@ -219,7 +221,28 @@ export default function AdminTopicsPage() {
         ? topic.categoryId === null
         : topic.categoryId === Number(filter)),
   );
-  const items = kind === "topic" ? shownTopics : categories;
+  const [search, setSearch] = useState("");
+  const items = (kind === "topic" ? shownTopics : categories).filter((item) =>
+    `${item.name} ${item.description || ""}`
+      .toLowerCase()
+      .includes(search.trim().toLowerCase()),
+  );
+  const selection = useBulkSelection(
+    JSON.stringify([kind, filter, search]),
+    items.map((item) => String(item.id)),
+  );
+  async function applyBulk(action: string, ids: string[]) {
+    setError("");
+    setSuccess("");
+    const result = await request<{ affected: number }>(
+      `/${kind === "topic" ? "topics" : "categories"}/bulk`,
+      { method: "POST", ...jsonBody({ action, ids }) },
+    );
+    setSuccess(
+      `${result.affected} ${kind === "topic" ? "topics" : "categories"} updated (${action}).`,
+    );
+    await load();
+  }
   const assigned = deleting?.item
     ? deleting.kind === "topic"
       ? (deleting.item as Topic).nuggetCount
@@ -338,6 +361,34 @@ export default function AdminTopicsPage() {
             </label>
           )}
         </div>
+        <label className="mt-4 block text-sm text-white/55">
+          Search {kind === "topic" ? "topics" : "categories"}
+          <input
+            aria-label="Search topics and categories"
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            className={inputClass}
+            placeholder="Search by name or description"
+          />
+        </label>
+        <BulkActions
+          noun={kind === "topic" ? "topics" : "categories"}
+          ids={selection.ids}
+          total={items.length}
+          all={selection.all}
+          toggleAll={selection.toggleAll}
+          clear={selection.clear}
+          names={items
+            .filter((item) => selection.selected.has(String(item.id)))
+            .map((item) => item.name)}
+          actions={[
+            { value: "delete", label: "Delete selected" },
+            { value: "show", label: "Make visible" },
+            { value: "hide", label: "Hide selected" },
+          ]}
+          apply={applyBulk}
+        />
         {loading ? (
           <p className="mt-6 text-sm text-white/40" role="status">
             Loading topics and categories…
@@ -353,6 +404,16 @@ export default function AdminTopicsPage() {
                 key={item.id}
                 className="flex min-h-[190px] flex-col rounded-[10px] border border-white/10 bg-[#111111] p-5"
               >
+                <label className="mb-3 inline-flex items-center gap-2 text-[13px] text-white/60">
+                  <input
+                    type="checkbox"
+                    aria-label={`Select ${item.name}`}
+                    checked={selection.selected.has(String(item.id))}
+                    onChange={() => selection.toggle(String(item.id))}
+                    className="h-4 w-4 accent-[#cda762]"
+                  />
+                  Select
+                </label>
                 <h2 className="font-serif">{item.name}</h2>
                 {item.description && (
                   <p className="mt-2 whitespace-pre-line text-sm text-white/40">
