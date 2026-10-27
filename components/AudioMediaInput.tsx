@@ -10,7 +10,9 @@ import {
 export default function AudioMediaInput({
   value,
   onChange,
+  label = "Audio URL",
 }: {
+  label?: string;
   value: string;
   onChange: (value: string) => void;
 }) {
@@ -19,7 +21,7 @@ export default function AudioMediaInput({
   return (
     <div className="space-y-3">
       <input
-        aria-label="Audio URL"
+        aria-label={label}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="https://example.com/audio.mp3"
@@ -38,7 +40,7 @@ export default function AudioMediaInput({
           preload="none"
           src={mediaUrl(value)}
           className="w-full"
-          aria-label="Selected audio preview"
+          aria-label={`${label} preview`}
         />
       )}
       {open && (

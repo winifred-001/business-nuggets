@@ -72,5 +72,9 @@ export class CreateNuggetDto {
 
   @IsOptional()
   @IsString()
+  nuggetAudioUrl?: string;
+
+  @IsOptional()
+  @IsString()
   publishedAt?: string;
 }

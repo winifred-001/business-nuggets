@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'b1df6bc073a3a9d51b79beb4ab7dfa61cd90e81f4108f57a8a39c7e604816675'>;
+  StorageHashBase<'13c171656d76a0c72b09bf97dd77e8d5201688678ca2e02b6e2a933381f9be67'>;
 export type ExecutionHash =
   ExecutionHashBase<'917ed3fa5ee6a658b322f650ff1b68b9703c31d0b5099dded5df325972edf468'>;
 export type ProfileHash =
@@ -391,6 +391,7 @@ export type FieldOutputTypes = {
       readonly isGold: CodecTypes['pg/bool@1']['output'];
       readonly keyPrinciple: CodecTypes['pg/text@1']['output'];
       readonly marketplaceApplication: CodecTypes['pg/text@1']['output'];
+      readonly nuggetAudioUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly number: CodecTypes['pg/int4@1']['output'];
       readonly practicalActionPlan: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
       readonly publishedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
@@ -693,6 +694,7 @@ export type FieldInputTypes = {
       readonly isGold: CodecTypes['pg/bool@1']['input'];
       readonly keyPrinciple: CodecTypes['pg/text@1']['input'];
       readonly marketplaceApplication: CodecTypes['pg/text@1']['input'];
+      readonly nuggetAudioUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly number: CodecTypes['pg/int4@1']['input'];
       readonly practicalActionPlan: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
       readonly publishedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
@@ -995,6 +997,7 @@ export type StorageColumnTypes = {
       readonly isGold: CodecTypes['pg/bool@1']['output'];
       readonly keyPrinciple: CodecTypes['pg/text@1']['output'];
       readonly marketplaceApplication: CodecTypes['pg/text@1']['output'];
+      readonly nuggetAudioUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly number: CodecTypes['pg/int4@1']['output'];
       readonly practicalActionPlan: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
       readonly publishedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
@@ -1297,6 +1300,7 @@ export type StorageColumnInputTypes = {
       readonly isGold: CodecTypes['pg/bool@1']['input'];
       readonly keyPrinciple: CodecTypes['pg/text@1']['input'];
       readonly marketplaceApplication: CodecTypes['pg/text@1']['input'];
+      readonly nuggetAudioUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly number: CodecTypes['pg/int4@1']['input'];
       readonly practicalActionPlan: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
       readonly publishedAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
@@ -1616,6 +1620,7 @@ export namespace Models {
     isGold: CodecTypes['pg/bool@1']['output'];
     keyPrinciple: CodecTypes['pg/text@1']['output'];
     marketplaceApplication: CodecTypes['pg/text@1']['output'];
+    nuggetAudioUrl: CodecTypes['pg/text@1']['output'] | null;
     number: CodecTypes['pg/int4@1']['output'];
     practicalActionPlan: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
     publishedAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
@@ -3099,6 +3104,12 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly nuggetAudioUrl: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly number: {
@@ -5288,6 +5299,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly nuggetAudioUrl: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly number: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -5357,6 +5372,7 @@ type ContractBase = Omit<
                 readonly isGold: { readonly column: 'isGold' };
                 readonly keyPrinciple: { readonly column: 'keyPrinciple' };
                 readonly marketplaceApplication: { readonly column: 'marketplaceApplication' };
+                readonly nuggetAudioUrl: { readonly column: 'nuggetAudioUrl' };
                 readonly number: { readonly column: 'number' };
                 readonly practicalActionPlan: { readonly column: 'practicalActionPlan' };
                 readonly publishedAt: { readonly column: 'publishedAt' };

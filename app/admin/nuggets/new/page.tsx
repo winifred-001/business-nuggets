@@ -73,6 +73,7 @@ type FormState = {
   bibleSection: string;
   featured: boolean;
   audioUrl: string;
+  nuggetAudioUrl: string;
 };
 
 const initialForm: FormState = {
@@ -91,6 +92,7 @@ const initialForm: FormState = {
   bibleSection: "",
   featured: false,
   audioUrl: "",
+  nuggetAudioUrl: "",
 };
 
 function slugify(value: string) {
@@ -349,6 +351,7 @@ export default function NewNuggetPage() {
       status,
       featured: form.featured,
       audioUrl: form.audioUrl.trim() || undefined,
+      nuggetAudioUrl: form.nuggetAudioUrl.trim() || undefined,
     };
 
     try {
@@ -757,11 +760,11 @@ export default function NewNuggetPage() {
                   </Field>
                 </div>
 
-                <Field label="Audio URL (optional)" className="lg:col-span-2">
-                  <AudioMediaInput value={form.audioUrl} onChange={value => updateField("audioUrl", value)} />
-                  <p className="mt-2 text-[12px] text-white/25">
-                    Add a direct audio link when an audio version is available.
-                  </p>
+                <Field label="Song URL (optional)" className="lg:col-span-2">
+                  <AudioMediaInput label="Song URL" value={form.audioUrl} onChange={value => updateField("audioUrl", value)} />
+                </Field>
+                <Field label="Nugget URL (optional)" className="lg:col-span-2">
+                  <AudioMediaInput label="Nugget URL" value={form.nuggetAudioUrl} onChange={value => updateField("nuggetAudioUrl", value)} />
                 </Field>
               </div>
             </FormSection>

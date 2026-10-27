@@ -206,7 +206,7 @@ export default async function NuggetDetailPage({
         </section>
       </main>
 
-      <AudioBar key={nugget.slug} title={nugget.title} subtitle={`${nugget.scriptureRef} · ${nugget.topic}`} audioSrc={nugget.audioUrl || null} slug={nugget.slug} />
+      <AudioBar key={nugget.slug} title={nugget.title} subtitle={`${nugget.scriptureRef} · ${nugget.topic}`} audioSrc={nugget.nuggetAudioUrl || nugget.audioUrl || null} slug={nugget.slug} />
     </div>
   );
 }

@@ -1578,6 +1578,13 @@
                   "kind": "scalar"
                 }
               },
+              "nuggetAudioUrl": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "number": {
                 "nullable": false,
                 "type": {
@@ -1697,6 +1704,9 @@
                 },
                 "marketplaceApplication": {
                   "column": "marketplaceApplication"
+                },
+                "nuggetAudioUrl": {
+                  "column": "nuggetAudioUrl"
                 },
                 "number": {
                   "column": "number"
@@ -4580,6 +4590,11 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
+                "nuggetAudioUrl": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "number": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
@@ -5973,7 +5988,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "b1df6bc073a3a9d51b79beb4ab7dfa61cd90e81f4108f57a8a39c7e604816675"
+    "storageHash": "13c171656d76a0c72b09bf97dd77e8d5201688678ca2e02b6e2a933381f9be67"
   },
   "execution": {
     "executionHash": "917ed3fa5ee6a658b322f650ff1b68b9703c31d0b5099dded5df325972edf468",

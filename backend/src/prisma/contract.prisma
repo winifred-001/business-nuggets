@@ -172,6 +172,7 @@ model Nugget {
   featured               Boolean @default(false)
 
   audioUrl               String?
+  nuggetAudioUrl         String?
 
   publishedAt TimestamptzString?
   createdAt   TimestamptzString @default(now())

@@ -85,6 +85,7 @@ export default async function AudioPlayerPage({
   ].slice(0, 3);
 
   const audioSrc =
+    nugget.nuggetAudioUrl ||
     nugget.commentaryAudioUrl ||
     nugget.audioUrl ||
     null;

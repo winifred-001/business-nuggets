@@ -44,6 +44,8 @@ type AdminNugget = Omit<
 
   featured?: boolean;
 
+  nuggetAudioUrl?: string | null;
+
   audioUrl?:
     | string
     | null;
@@ -82,6 +84,7 @@ type FormState = {
   challenges: string;
 
   audioUrl: string;
+  nuggetAudioUrl: string;
 
   status:
     | "draft"
@@ -153,6 +156,7 @@ export default function EditNuggetPage() {
       challenges: "",
 
       audioUrl: "",
+      nuggetAudioUrl: "",
 
       status: "draft",
     });
@@ -321,6 +325,7 @@ export default function EditNuggetPage() {
           audioUrl:
             nugget.audioUrl ||
             "",
+          nuggetAudioUrl: nugget.nuggetAudioUrl || "",
 
           status:
             nugget.status ||
@@ -484,8 +489,8 @@ export default function EditNuggetPage() {
               status,
 
               audioUrl:
-                form.audioUrl.trim() ||
-                undefined,
+                form.audioUrl.trim(),
+              nuggetAudioUrl: form.nuggetAudioUrl.trim(),
             }),
           },
         );
@@ -1011,10 +1016,15 @@ export default function EditNuggetPage() {
 
             <div className="mt-4">
               <FieldLabel>
-                Audio URL
+                Song URL
               </FieldLabel>
 
-              <AudioMediaInput value={form.audioUrl} onChange={value => updateField("audioUrl", value)} />
+              <AudioMediaInput label="Song URL" value={form.audioUrl} onChange={value => updateField("audioUrl", value)} />
+            </div>
+
+            <div className="mt-4">
+              <FieldLabel>Nugget URL</FieldLabel>
+              <AudioMediaInput label="Nugget URL" value={form.nuggetAudioUrl} onChange={value => updateField("nuggetAudioUrl", value)} />
             </div>
 
             {/* BOTTOM BUTTONS */}

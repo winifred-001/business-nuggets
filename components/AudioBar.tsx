@@ -14,7 +14,7 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
   const [shuffle, setShuffle] = useState(false);
   useEffect(() => {
     let active = true;
-    void getPublishedNuggets().then(data => { if (active) setTracks(data.filter(item => item.audioUrl && !item.locked)); }).catch(() => {});
+    void getPublishedNuggets().then(data => { if (active) setTracks(data.filter(item => (item.nuggetAudioUrl || item.audioUrl) && !item.locked)); }).catch(() => {});
     return () => { active = false; };
   }, []);
   function move(direction: number) {

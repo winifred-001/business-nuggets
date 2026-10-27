@@ -25,6 +25,7 @@ export type Nugget = {
   bibleSection: BibleSection;
   challenges: string[];
   audioUrl?: string | null;
+  nuggetAudioUrl?: string | null;
   publishedAt: string;
 };
 

@@ -80,4 +80,8 @@ export class UpdateNuggetDto {
   @IsOptional()
   @IsString()
   audioUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  nuggetAudioUrl?: string;
 }

@@ -25,6 +25,7 @@ type LockedNuggetPreview<T> = Omit<
   | "marketplaceApplication"
   | "practicalActionPlan"
   | "audioUrl"
+  | "nuggetAudioUrl"
 > & {
   isGold: true;
   locked: true;
@@ -33,6 +34,7 @@ type LockedNuggetPreview<T> = Omit<
   marketplaceApplication: string;
   practicalActionPlan: readonly string[];
   audioUrl: null;
+  nuggetAudioUrl: null;
 };
 
 @Injectable()
@@ -150,6 +152,7 @@ export class NuggetsService {
         "",
       practicalActionPlan: [],
       audioUrl: null,
+      nuggetAudioUrl: null,
     };
   }
 
@@ -626,9 +629,8 @@ export class NuggetsService {
         dto.featured ??
         false,
 
-      audioUrl:
-        dto.audioUrl ??
-        null,
+      audioUrl: dto.audioUrl?.trim() || null,
+      nuggetAudioUrl: dto.nuggetAudioUrl?.trim() || null,
 
       publishedAt:
         status ===
@@ -691,6 +693,8 @@ export class NuggetsService {
     const updates: any = {
       ...dto,
     };
+    if (dto.audioUrl !== undefined) updates.audioUrl = dto.audioUrl?.trim() || null;
+    if (dto.nuggetAudioUrl !== undefined) updates.nuggetAudioUrl = dto.nuggetAudioUrl?.trim() || null;
 
     if (
       dto.status ===
