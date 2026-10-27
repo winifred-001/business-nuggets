@@ -287,12 +287,12 @@ export default async function HomePage() {
                 <p>Biblical principles. Practical wisdom. Purposeful enterprise.</p>
               </div>
 
-              <div className={styles.footerLinks}>
+              <nav className={styles.footerLinks} aria-label="Footer navigation">
                 <Link href="/">Home</Link>
                 <Link href="/library">Library</Link>
-                <a href="#approach">Our Approach</a>
-                <a href="#discover">Explore</a>
-              </div>
+                <Link href="/privacy-policy">Privacy Policy</Link>
+                <Link href="/terms-of-use">Terms of Use</Link>
+              </nav>
             </div>
 
             <div className={styles.bottom}>
