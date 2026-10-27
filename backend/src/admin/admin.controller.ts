@@ -1,3 +1,7 @@
+import { BadRequestException, ParseIntPipe, UploadedFile } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { CreateTopicDto, UpdateTopicDto, CreateCategoryDto, UpdateCategoryDto } from "../topics/topics.dto";
+import { ReorderTopicsDto } from "./dto/admin-write.dto";
 import { UpdateBrandingDto } from "../app-settings/branding.dto";
 import { UpdateGeneralSettingsDto, UpdateSecuritySettingsDto, UpdateMaintenanceModeDto } from "./dto/admin-write.dto";
 import { LegalPagesService } from "../app-settings/legal-pages.service";
@@ -161,66 +165,56 @@ export class AdminController {
   ========================================= */
 
   @Get("topics")
-  @RequireAdminPermission(
-    "manageNuggets",
-  )
-  getTopics() {
-    return this.topicsService.getAllTopics();
-  }
+  @RequireAdminPermission("manageNuggets")
+  getTopics() { return this.topicsService.getAllTopics(); }
 
   @Post("topics")
-  @RequireAdminPermission(
-    "manageNuggets",
-  )
-  createTopic(
-    @Body()
-    body: {
-      name: string;
-      description?: string;
-      visible?: boolean;
-    },
-  ) {
-    return this.topicsService.createTopic(
-      body,
-    );
-  }
+  @RequireAdminPermission("manageNuggets")
+  createTopic(@Body() body: CreateTopicDto) { return this.topicsService.createTopic(body); }
 
   @Patch("topics/reorder")
-  @RequireAdminPermission(
-    "manageNuggets",
-  )
-  reorderTopics(
-    @Body()
-    body: {
-      ids: number[];
-    },
-  ) {
-    return this.topicsService.reorderTopics(
-      body.ids,
-    );
+  @RequireAdminPermission("manageNuggets")
+  reorderTopics(@Body() body: ReorderTopicsDto) { return this.topicsService.reorderTopics(body.ids); }
+
+  @Post("topics/import/preview")
+  @RequireAdminPermission("manageNuggets")
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 1024 * 1024, files: 1 } }))
+  previewTopicsCsv(@UploadedFile() file: Express.Multer.File) { return this.topicsService.previewImport(this.readTopicsCsv(file)); }
+
+  @Post("topics/import")
+  @RequireAdminPermission("manageNuggets")
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 1024 * 1024, files: 1 } }))
+  importTopicsCsv(@UploadedFile() file: Express.Multer.File) { return this.topicsService.importCsv(this.readTopicsCsv(file)); }
+
+  private readTopicsCsv(file: Express.Multer.File) {
+    if (!file || !file.originalname.toLowerCase().endsWith(".csv")) throw new BadRequestException("Choose a CSV file.");
+    try { return new TextDecoder("utf-8", { fatal: true }).decode(file.buffer); }
+    catch { throw new BadRequestException("Save the CSV file with UTF-8 encoding and retry."); }
   }
 
   @Patch("topics/:id")
-  @RequireAdminPermission(
-    "manageNuggets",
-  )
-  updateTopic(
-    @Param("id")
-    id: string,
+  @RequireAdminPermission("manageNuggets")
+  updateTopic(@Param("id", ParseIntPipe) id: number, @Body() body: UpdateTopicDto) { return this.topicsService.updateTopic(id, body); }
 
-    @Body()
-    body: {
-      name?: string;
-      description?: string;
-      visible?: boolean;
-      displayOrder?: number;
-    },
-  ) {
-    return this.topicsService.updateTopic(
-      Number(id),
-      body,
-    );
-  }
+  @Delete("topics/:id")
+  @RequireAdminPermission("manageNuggets")
+  deleteTopic(@Param("id", ParseIntPipe) id: number) { return this.topicsService.deleteTopic(id); }
+
+  @Get("categories")
+  @RequireAdminPermission("manageNuggets")
+  getCategories() { return this.topicsService.getCategories(); }
+
+  @Post("categories")
+  @RequireAdminPermission("manageNuggets")
+  createCategory(@Body() body: CreateCategoryDto) { return this.topicsService.createCategory(body); }
+
+  @Patch("categories/:id")
+  @RequireAdminPermission("manageNuggets")
+  updateCategory(@Param("id", ParseIntPipe) id: number, @Body() body: UpdateCategoryDto) { return this.topicsService.updateCategory(id, body); }
+
+  @Delete("categories/:id")
+  @RequireAdminPermission("manageNuggets")
+  deleteCategory(@Param("id", ParseIntPipe) id: number) { return this.topicsService.deleteCategory(id); }
 
   /* =========================================
      SCRIPTURE

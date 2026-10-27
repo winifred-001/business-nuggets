@@ -59,7 +59,7 @@ export class CreateTopicDto {
 export class ReorderTopicsDto {
   @IsArray()
   @ArrayMinSize(1)
-  @ArrayMaxSize(500)
+  @ArrayMaxSize(5000)
   @IsInt({ each: true })
   @Min(1, { each: true })
   ids!: number[];

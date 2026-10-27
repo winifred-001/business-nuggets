@@ -228,6 +228,22 @@ model Topic {
   visible      Boolean @default(true)
   displayOrder Int     @default(0)
 
+  categoryId Int?
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  @@index([categoryId])
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  name String @unique
+  slug String @unique
+  description String?
+  visible Boolean @default(true)
+  displayOrder Int @default(0)
+  topics Topic[]
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
 }
