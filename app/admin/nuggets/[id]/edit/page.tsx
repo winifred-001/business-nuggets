@@ -1,5 +1,7 @@
 "use client";
 
+import { BIBLE_BOOKS } from "@/lib/bible-books";
+
 import AudioMediaInput from "@/components/AudioMediaInput";
 
 import Image from "next/image";
@@ -933,23 +935,20 @@ export default function EditNuggetPage() {
                   Bible Book
                 </FieldLabel>
 
-                <input
-                  value={
-                    form.book
-                  }
-                  onChange={(
-                    event,
-                  ) =>
-                    updateField(
-                      "book",
-                      event
-                        .target
-                        .value,
-                    )
-                  }
-                  placeholder="Proverbs"
-                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
-                />
+                <select
+                  aria-label="Bible Book"
+                  value={form.book}
+                  onChange={(event) => updateField("book", event.target.value)}
+                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#C8A35A]/40"
+                >
+                  <option value="">Select a book</option>
+                  {form.book && !BIBLE_BOOKS.includes(form.book) && (
+                    <option value={form.book}>{form.book} (current value)</option>
+                  )}
+                  {BIBLE_BOOKS.map((book) => (
+                    <option key={book} value={book}>{book}</option>
+                  ))}
+                </select>
               </div>
 
               <div>

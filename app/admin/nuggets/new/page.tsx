@@ -32,6 +32,7 @@ import {
 
 import AdminShell from "@/components/admin/AdminShell";
 import { API_URL } from "@/lib/api";
+import { BIBLE_BOOKS } from "@/lib/bible-books";
 
 const bibleSections = [
   "The Pentateuch",
@@ -45,16 +46,6 @@ type Topic = {
   id: number;
   name: string;
   visible: boolean;
-};
-
-type ScriptureBook = {
-  id: number;
-  name: string;
-  visible: boolean;
-};
-
-type ScriptureResponse = {
-  books: ScriptureBook[];
 };
 
 type FormState = {
@@ -113,7 +104,6 @@ export default function NewNuggetPage() {
   const [actionSteps, setActionSteps] = useState(["", "", ""]);
   const [challenges, setChallenges] = useState([""]);
   const [topics, setTopics] = useState<Topic[]>([]);
-  const [books, setBooks] = useState<ScriptureBook[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState<"draft" | "published" | null>(null);
@@ -149,33 +139,17 @@ export default function NewNuggetPage() {
       }
 
       try {
-        const [topicsResponse, scriptureResponse] = await Promise.all([
-          fetch(`${API_URL}/admin/topics`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          fetch(`${API_URL}/admin/scripture`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-        ]);
+        const topicsResponse = await fetch(`${API_URL}/admin/topics`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         const topicsData = await topicsResponse.json().catch(() => []);
-        const scriptureData: ScriptureResponse = await scriptureResponse
-          .json()
-          .catch(() => ({ books: [] }));
-
         if (topicsResponse.ok) {
           setTopics(Array.isArray(topicsData) ? topicsData : []);
         }
 
-        if (scriptureResponse.ok) {
-          setBooks(scriptureData.books || []);
-        }
       } catch {
-        setError("Could not load Topics and Scripture options.");
+        setError("Could not load Topics.");
       } finally {
         setLoadingOptions(false);
       }
@@ -521,23 +495,16 @@ export default function NewNuggetPage() {
                   />
                 </Field>
 
-                <Field label="Book" required className="xl:col-span-4">
+                <Field label="Bible Book" required className="xl:col-span-4">
                   <select
                     value={form.book}
                     onChange={(event) => updateField("book", event.target.value)}
-                    disabled={loadingOptions}
                     className={inputClass}
                   >
-                    <option value="">
-                      {loadingOptions ? "Loading books..." : "Select a book"}
-                    </option>
-                    {books
-                      .filter((book) => book.visible)
-                      .map((book) => (
-                        <option key={book.id} value={book.name}>
-                          {book.name}
-                        </option>
-                      ))}
+                    <option value="">Select a book</option>
+                    {BIBLE_BOOKS.map((book) => (
+                      <option key={book} value={book}>{book}</option>
+                    ))}
                   </select>
                 </Field>
 
