@@ -542,6 +542,7 @@ p[class~="text-[14px]"] {
   :root {
     --bn-button-font-size: 13px;
     --bn-hero-font-size: 45px;
+    --bn-admin-heading-font-size: 20px;
   }
 
   button,
@@ -559,6 +560,11 @@ p[class~="text-[14px]"] {
 
   .bn-hero-title {
     font-size: var(--bn-hero-font-size) !important;
+  }
+
+  /* Keep every admin page/section heading compact, including module overrides. */
+  .admin-typography :is(h1, h2, h3, h4, h5, h6) {
+    font-size: var(--bn-admin-heading-font-size) !important;
   }
 
   [data-button-icon] {
