@@ -26,6 +26,21 @@ export function useBulkSelection(scope: string, visibleIds: string[]) {
         else if (visible.has(id)) next.add(id);
         return { scope, ids: [...next] };
       }),
+    toggleGroup: (groupIds: string[]) =>
+      setState((current) => {
+        const next = new Set(
+          current.scope === scope
+            ? current.ids.filter((id) => visible.has(id))
+            : [],
+        );
+        const group = groupIds.filter((id) => visible.has(id));
+        const allSelected = group.length > 0 && group.every((id) => next.has(id));
+        for (const id of group) {
+          if (allSelected) next.delete(id);
+          else next.add(id);
+        }
+        return { scope, ids: [...next] };
+      }),
     toggleAll: () =>
       setState({
         scope,

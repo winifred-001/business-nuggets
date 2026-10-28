@@ -466,6 +466,10 @@ export default function AdminNuggetsPage() {
     );
 
 
+  const pageIds = paginatedNuggets.map((nugget) => nugget.id);
+  const pageSelectedCount = pageIds.filter((id) => selection.selected.has(id)).length;
+  const allOnPageSelected = pageIds.length > 0 && pageSelectedCount === pageIds.length;
+
   function changeSearchQuery(value: string) {
     setSearchQuery(value);
     setCurrentPage(1);
@@ -736,12 +740,26 @@ export default function AdminNuggetsPage() {
           ]}
           apply={applyBulk}
         />
+        <p className="mt-2 text-[13px] text-white/45">The checkbox beside Title selects only the Nuggets on this page. Use Select all above for every filtered page.</p>
         <section className="mt-3 overflow-visible rounded-[10px] border border-white/10 bg-[#111111]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[850px] text-left">
               <thead>
                 <tr className="border-b border-white/[0.07] text-[7px] uppercase tracking-[0.07em] text-white/25">
-                  <th className="px-3 py-3"><input type="checkbox" aria-label="Select all filtered Nuggets" checked={selection.all} disabled={!filteredNuggets.length} onChange={selection.toggleAll} className="h-4 w-4 accent-[#cda762]" /></th>
+                  <th className="px-3 py-3">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select all ${pageIds.length} Nuggets on this page`}
+                      title="Select only this page"
+                      checked={allOnPageSelected}
+                      disabled={!pageIds.length}
+                      onChange={() => selection.toggleGroup(pageIds)}
+                      ref={(element) => {
+                        if (element) element.indeterminate = pageSelectedCount > 0 && !allOnPageSelected;
+                      }}
+                      className="h-4 w-4 accent-[#cda762]"
+                    />
+                  </th>
                   <th className="px-5 py-3 font-medium">
                     Title
                   </th>
