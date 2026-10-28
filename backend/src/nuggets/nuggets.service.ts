@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -14,8 +13,6 @@ import {
 import {
   UpdateNuggetDto,
 } from "./dto/update-nugget.dto";
-
-export const FREE_NUGGET_LIMIT = 10;
 
 type LockedNuggetPreview<T> = Omit<
   T,
@@ -65,63 +62,6 @@ export class NuggetsService {
       user.role === "owner" ||
       Boolean(user.adminRole)
     );
-  }
-
-  private getFreePublishedIds(
-    nuggets: Array<{
-      id: string;
-      number: number;
-      isGold: boolean;
-    }>,
-  ) {
-    return new Set(
-      nuggets
-        .filter(
-          (nugget) =>
-            !nugget.isGold,
-        )
-        .sort(
-          (a, b) =>
-            a.number -
-            b.number,
-        )
-        .slice(
-          0,
-          FREE_NUGGET_LIMIT,
-        )
-        .map(
-          (nugget) =>
-            nugget.id,
-        ),
-    );
-  }
-
-  private async assertFreePublishedSlotAvailable(
-    excludeId?: string,
-  ) {
-    const published =
-      await db.orm.public.Nugget
-        .where({
-          status: "published",
-        })
-        .all();
-
-    const freeCount =
-      published.filter(
-        (nugget) =>
-          !nugget.isGold &&
-          nugget.id !==
-            excludeId,
-      ).length;
-
-    if (
-      freeCount >=
-      FREE_NUGGET_LIMIT
-    ) {
-      throw new BadRequestException(
-        `Free members can access only ${FREE_NUGGET_LIMIT} published Nuggets. Mark another free Nugget as Gold before making this one free.`,
-      );
-    }
   }
 
   private toLockedPreview<
@@ -190,19 +130,12 @@ export class NuggetsService {
         userId,
       );
 
-    const freeIds =
-      this.getFreePublishedIds(
-        published,
-      );
-
     let nuggets =
       published.map(
         (nugget) => {
           if (
             premium ||
-            freeIds.has(
-              nugget.id,
-            )
+            !nugget.isGold
           ) {
             return {
               ...nugget,
@@ -464,8 +397,7 @@ export class NuggetsService {
 
       access: {
         premium,
-        freeLimit:
-          FREE_NUGGET_LIMIT,
+        freeLimit: null,
       },
 
       pagination: {
@@ -512,33 +444,12 @@ export class NuggetsService {
         userId,
       );
 
-    if (!premium) {
-      const published =
-        await db.orm.public.Nugget
-          .where({
-            status:
-              "published",
-          })
-          .all();
-
-      const freeIds =
-        this.getFreePublishedIds(
-          published,
-        );
-
-      if (
-        !freeIds.has(
-          nugget.id,
-        )
-      ) {
-        throw new ForbiddenException({
-          statusCode: 403,
-          code:
-            "PREMIUM_REQUIRED",
-          message:
-            "This Business Nugget is available to Premium members.",
-        });
-      }
+    if (!premium && nugget.isGold) {
+      throw new ForbiddenException({
+        statusCode: 403,
+        code: "PREMIUM_REQUIRED",
+        message: "This Business Nugget is available to Premium members.",
+      });
     }
 
     return nugget;
@@ -566,14 +477,6 @@ export class NuggetsService {
     const isGold =
       dto.isGold ??
       false;
-
-    if (
-      status ===
-        "published" &&
-      !isGold
-    ) {
-      await this.assertFreePublishedSlotAvailable();
-    }
 
     return db.orm.public.Nugget.create({
       id:
@@ -665,33 +568,6 @@ export class NuggetsService {
     if (!existing) {
       throw new NotFoundException(
         "Nugget not found",
-      );
-    }
-
-    const finalStatus =
-      dto.status ??
-      existing.status;
-
-    const finalIsGold =
-      dto.isGold ??
-      existing.isGold;
-
-    const wasFreePublished =
-      existing.status ===
-        "published" &&
-      !existing.isGold;
-
-    const willBeFreePublished =
-      finalStatus ===
-        "published" &&
-      !finalIsGold;
-
-    if (
-      willBeFreePublished &&
-      !wasFreePublished
-    ) {
-      await this.assertFreePublishedSlotAvailable(
-        id,
       );
     }
 

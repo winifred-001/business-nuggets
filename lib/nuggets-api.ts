@@ -5,7 +5,7 @@ type NuggetsApiResponse = {
   data?: Nugget[];
   access?: {
     premium: boolean;
-    freeLimit: number;
+    freeLimit: number | null;
   };
   pagination?: {
     page: number;

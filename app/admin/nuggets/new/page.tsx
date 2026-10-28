@@ -781,8 +781,7 @@ export default function NewNuggetPage() {
                 <div className="rounded-lg border border-white/10 bg-[#080808] p-4">
                   <p className="text-[13px] font-medium text-white/70">Status</p>
                   <p className="mt-2 text-[12px] leading-5 text-white/30">
-                    Choose Save as Draft or Publish Nugget below. Published free
-                    Nuggets still follow the 10-free-Nugget limit.
+                    Choose Save as Draft or Publish Nugget below. You can publish as many free or Gold Nuggets as you choose.
                   </p>
                 </div>
               </div>

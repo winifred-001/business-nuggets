@@ -27,6 +27,8 @@ import { AdminIpAllowListGuard } from '../admin/admin-ip-allow-list.guard';
 import { AdminAuditInterceptor } from '../audit-logs/admin-audit.interceptor';
 import 'reflect-metadata';
 import { ValidationPipe } from '@nestjs/common';
+import { NuggetsService } from '../nuggets/nuggets.service';
+import { CreateNuggetDto } from '../nuggets/dto/create-nugget.dto';
 import { TopicsService } from './topics.service';
 import { parseTaxonomyCsv } from './topics-csv';
 import { CreateTopicDto } from './topics.dto';
@@ -1010,7 +1012,7 @@ describe('bulk content actions', () => {
       bulkContent('topics', { ids: ['1'], action: 'publish' }),
     ).rejects.toThrow('not supported');
   });
-  it('bulk publishes, features and drafts selected Nuggets and enforces the free limit', async () => {
+  it('bulk publishes, features and drafts selected Nuggets without a free limit', async () => {
     state.Nugget.push(
       { id: 'a', status: 'draft', isGold: false, publishedAt: null },
       { id: 'b', status: 'published', isGold: true, publishedAt: '2026-01-01' },
@@ -1034,8 +1036,8 @@ describe('bulk content actions', () => {
         ids: state.Nugget.map((row) => String(row.id)),
         action: 'publish',
       }),
-    ).rejects.toThrow('Only 10');
-    expect(state.Nugget.every((row) => row.status === 'draft')).toBe(true);
+    ).resolves.toMatchObject({ affected: 11 });
+    expect(state.Nugget.every((row) => row.status === 'published')).toBe(true);
     await bulkContent('nuggets', { ids: ['n-1', 'n-2'], action: 'delete' });
     expect(state.Nugget).toHaveLength(9);
   });
@@ -1081,5 +1083,44 @@ describe('Import Nugget Details', () => {
     const row = (kind === 'topics' ? 'nugget,' : '') + '41,Wise Work,Integrity,"First line\nSecond<br>Third"';
     await importHierarchy(headers + row, false, kind);
     expect(state.Nugget[0]).toMatchObject({ details: 'First line\nSecond<br>Third' });
+  });
+});
+
+describe('Admin-controlled Free and Gold access', () => {
+  it('marks selected Nuggets Gold or Free without changing status, dates or other Nuggets', async () => {
+    state.Nugget = [{ id: 'a', topic: 'Work', status: 'draft', isGold: false }, { id: 'b', topic: 'Work', status: 'published', isGold: false }, { id: 'c', topic: 'Other', status: 'published', isGold: false }];
+    await bulkContent('nuggets', { ids: ['a', 'b'], action: 'gold' });
+    expect(state.Nugget).toEqual([{ id: 'a', topic: 'Work', status: 'draft', isGold: true }, { id: 'b', topic: 'Work', status: 'published', isGold: true }, { id: 'c', topic: 'Other', status: 'published', isGold: false }]);
+    await bulkContent('nuggets', { ids: ['a', 'b'], action: 'free' });
+    expect(state.Nugget.every(n => n.isGold === false)).toBe(true);
+  });
+  it('updates all current Nuggets in selected topics, including drafts and spelling case variations', async () => {
+    state.Topic = [{ id: 1, name: 'Work', visible: true }, { id: 2, name: 'Money', visible: false }];
+    state.Nugget = [{ id: 'a', topic: 'work', status: 'draft', isGold: false }, { id: 'b', topic: 'Money', status: 'published', isGold: false }, { id: 'c', topic: 'Other', status: 'published', isGold: false }];
+    expect(await bulkContent('topics', { ids: ['1', '2'], action: 'gold' })).toMatchObject({ affected: 2, nuggetsAffected: 2 });
+    expect(state.Nugget.map(n => n.isGold)).toEqual([true, true, false]);
+    expect(state.Topic.map(t => t.visible)).toEqual([true, false]);
+    await bulkContent('topics', { ids: ['1', '2'], action: 'free' });
+    expect(state.Nugget.every(n => n.isGold === false)).toBe(true);
+  });
+  it('rolls back missing topics and rejects Gold actions on categories', async () => {
+    state.Topic = [{ id: 1, name: 'Work' }];
+    state.Nugget = [{ id: 'a', topic: 'Work', isGold: false }];
+    await expect(bulkContent('topics', { ids: ['1', '999'], action: 'gold' })).rejects.toThrow('no longer exists');
+    expect(state.Nugget[0].isGold).toBe(false);
+    await expect(bulkContent('categories', { ids: ['1'], action: 'gold' })).rejects.toThrow('not supported');
+  });
+  it('allows unlimited free publication and free reading beyond the tenth Nugget while protecting Gold', async () => {
+    const service = new NuggetsService();
+    const data = { title: 'Wisdom', topic: 'Work', tag: 'Work', scriptureRef: 'Proverbs 1:1', scriptureText: 'Scripture', image: '/image.png', keyPrinciple: 'Wisdom', marketplaceApplication: 'Act wisely', practicalActionPlan: [], duration: '05:00', book: 'Proverbs', bibleSection: 'Wisdom Literature', challenges: [], status: 'published' };
+    for (let number = 1; number <= 15; number++) await service.createNugget({ ...data, number, slug: `free-${number}` } as CreateNuggetDto);
+    await service.createNugget({ ...data, number: 16, slug: 'gold', isGold: true } as CreateNuggetDto);
+    expect(await service.getNuggetBySlug('free-15')).toHaveProperty('isGold', false);
+    const feed = await service.getPublishedNuggets({ limit: '100' });
+    expect(feed.access.freeLimit).toBeNull();
+    expect(feed.data.filter(n => !n.locked)).toHaveLength(15);
+    await expect(service.getNuggetBySlug('gold')).rejects.toThrow('available to Premium');
+    await service.updateNugget('nugget-16', { isGold: false });
+    expect(await service.getNuggetBySlug('gold')).toHaveProperty('isGold', false);
   });
 });

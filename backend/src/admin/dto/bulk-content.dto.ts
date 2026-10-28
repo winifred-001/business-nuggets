@@ -17,7 +17,7 @@ export class BulkContentDto {
   @MaxLength(150, { each: true })
   @Matches(/^[a-zA-Z0-9_-]+$/, { each: true })
   ids!: string[];
-  @IsIn(['delete', 'show', 'hide', 'publish', 'draft', 'feature', 'unfeature'])
+  @IsIn(['delete', 'show', 'hide', 'publish', 'draft', 'feature', 'unfeature', 'gold', 'free'])
   action!:
-    'delete' | 'show' | 'hide' | 'publish' | 'draft' | 'feature' | 'unfeature';
+    'delete' | 'show' | 'hide' | 'publish' | 'draft' | 'feature' | 'unfeature' | 'gold' | 'free';
 }

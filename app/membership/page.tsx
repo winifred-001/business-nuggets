@@ -131,7 +131,7 @@ export default function MembershipPage() {
                 <p className="mt-5 max-w-[850px] text-[16px] leading-7 text-white/55">
                   {isPremium
                     ? "Your account has full access to every published Business Nugget, including Reader, Audio and Musical experiences."
-                    : "Your account currently has Free Access. You can open the 10 free Nuggets selected by the admin and upgrade to unlock the complete library."}
+                    : "Your account currently has Free Access. You can open all free Nuggets selected by the admin and upgrade to unlock the complete library."}
                 </p>
 
                 {isPremium && (
@@ -193,7 +193,7 @@ export default function MembershipPage() {
               </h2>
 
               <p className="mt-4 text-[16px] leading-7 text-white/55">
-                The admin selects up to 10 published Nuggets that Free members can open. The rest of the library remains visible but locked for Free accounts.
+                The admin chooses which published Nuggets are free, with no limit. Gold Nuggets remain visible but require Premium membership to open.
               </p>
 
               <Link

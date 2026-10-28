@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { db } from '../prisma/db';
 import { taxonomyKey } from '../topics/topics-csv';
-import { FREE_NUGGET_LIMIT } from '../nuggets/nuggets.service';
 import { BulkContentDto } from './dto/bulk-content.dto';
 
 export async function bulkContent(
@@ -14,8 +13,10 @@ export async function bulkContent(
 ) {
   const allowed =
     kind === 'nuggets'
-      ? ['delete', 'publish', 'draft', 'feature', 'unfeature']
-      : ['delete', 'show', 'hide'];
+      ? ['delete', 'publish', 'draft', 'feature', 'unfeature', 'gold', 'free']
+      : kind === 'topics'
+        ? ['delete', 'show', 'hide', 'gold', 'free']
+        : ['delete', 'show', 'hide'];
   if (!allowed.includes(input.action))
     throw new BadRequestException(
       'This action is not supported for the selected content type.',
@@ -49,22 +50,6 @@ export async function bulkContent(
           );
         items.push(item);
       }
-      if (input.action === 'publish') {
-        const selected = new Set(input.ids);
-        const all = await tx.orm.public.Nugget.all();
-        const free = all.filter(
-          (item) =>
-            !item.isGold &&
-            (selected.has(item.id) || item.status === 'published'),
-        ).length;
-        if (
-          items.some((item) => !item.isGold && item.status !== 'published') &&
-          free > FREE_NUGGET_LIMIT
-        )
-          throw new BadRequestException(
-            `Only ${FREE_NUGGET_LIMIT} free Nuggets can be published. Reduce this selection or mark some as Gold first.`,
-          );
-      }
       for (const item of items) {
         const where = tx.orm.public.Nugget.where({ id: item.id });
         if (input.action === 'delete') await where.delete();
@@ -76,6 +61,8 @@ export async function bulkContent(
                 ? item.publishedAt || new Date().toISOString()
                 : null,
           });
+        else if (input.action === 'gold' || input.action === 'free')
+          await where.update({ isGold: input.action === 'gold' });
         else await where.update({ featured: input.action === 'feature' });
       }
     } else if (kind === 'topics') {
@@ -89,6 +76,22 @@ export async function bulkContent(
             'A selected topic no longer exists. Refresh the list.',
           );
         items.push(item);
+      }
+      if (input.action === 'gold' || input.action === 'free') {
+        const names = new Set(items.map((item) => taxonomyKey(item.name)));
+        const nuggets = (await tx.orm.public.Nugget.all())
+          .filter((item) => names.has(taxonomyKey(item.topic)))
+          .sort((a, b) => a.id.localeCompare(b.id));
+        for (const nugget of nuggets) {
+          const where = tx.orm.public.Nugget.where({ id: nugget.id });
+          const current = await where.forUpdate().first();
+          if (!current || !names.has(taxonomyKey(current.topic)))
+            throw new ConflictException('A Nugget changed during this action. Refresh and retry. Nothing was changed.');
+          await tx.orm.public.Nugget.where({ id: nugget.id }).update({
+            isGold: input.action === 'gold',
+          });
+        }
+        return { affected: input.ids.length, nuggetsAffected: nuggets.length, action: input.action };
       }
       if (input.action === 'delete') {
         const names = new Set(items.map((item) => taxonomyKey(item.name)));

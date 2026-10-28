@@ -100,9 +100,12 @@ The original authenticated multipart endpoints remain available with the 5 MiB l
 
 POST `/admin/nuggets/bulk`, `/admin/topics/bulk`, `/admin/categories/bulk` accept
 `{ids: string[], action}` with 1–5000 distinct IDs. All actions are transactional.
-Nuggets support delete, publish, draft, feature and unfeature; bulk publishing
-respects the existing free-Nugget limit. Topics/categories support delete, show and
-hide. Used topics/categories block the entire deletion, and unused topic deletion
+Nuggets support delete, publish, draft, feature, unfeature, gold and free. There is
+no limit on free publication or free reading; only Nuggets marked Gold require
+Premium membership. Topics support delete, show, hide, gold and free. Topic Gold/Free
+actions update all current Nuggets in the selected topics, including drafts; future
+Nuggets retain the access setting chosen at creation. The response includes
+`nuggetsAffected`. Categories support delete, show and hide. Used topics/categories block the entire deletion, and unused topic deletion
 also removes followed-topic entries. No bulk taxonomy deletion cascades to Nuggets.
 
 Each list includes item checkboxes, filtered Select All across pages, a selected

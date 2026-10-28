@@ -990,7 +990,7 @@ export function createOpenApiDocument() {
           requestBody: jsonBody({ $ref: "#/components/schemas/NuggetInput" }),
           responses: {
             "201": { description: "Nugget created" },
-            "400": { description: "Validation or free-Nugget limit error" },
+            "400": { description: "Validation error" },
             "401": { description: "Unauthorized" },
             "403": { description: "Forbidden" },
           },

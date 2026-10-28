@@ -729,6 +729,8 @@ export default function AdminNuggetsPage() {
             { value: "delete", label: "Delete selected" },
             { value: "publish", label: "Publish selected" },
             { value: "draft", label: "Move to drafts" },
+            { value: "gold", label: "Mark as Gold/Premium" },
+            { value: "free", label: "Make Free (remove Gold)" },
             { value: "feature", label: "Feature selected" },
             { value: "unfeature", label: "Remove featured" },
           ]}
@@ -820,6 +822,7 @@ export default function AdminNuggetsPage() {
                               Gold
                             </span>
                           )}
+                          {nugget.isGold && <span className="mt-1 inline-block rounded bg-[#C8A35A]/15 px-2 py-1 text-[12px] font-semibold text-[#C8A35A]">Gold / Premium</span>}
                         </td>
 
                         {/* TOPIC */}

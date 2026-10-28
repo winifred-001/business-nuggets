@@ -234,12 +234,14 @@ export default function AdminTopicsPage() {
   async function applyBulk(action: string, ids: string[]) {
     setError("");
     setSuccess("");
-    const result = await request<{ affected: number }>(
+    const result = await request<{ affected: number; nuggetsAffected?: number }>(
       `/${kind === "topic" ? "topics" : "categories"}/bulk`,
       { method: "POST", ...jsonBody({ action, ids }) },
     );
     setSuccess(
-      `${result.affected} ${kind === "topic" ? "topics" : "categories"} updated (${action}).`,
+      result.nuggetsAffected !== undefined
+        ? `${result.nuggetsAffected} Nuggets in ${result.affected} selected topics marked ${action === "gold" ? "Gold/Premium" : "Free"}.`
+        : `${result.affected} ${kind === "topic" ? "topics" : "categories"} updated (${action}).`,
     );
     await load();
   }
@@ -386,9 +388,16 @@ export default function AdminTopicsPage() {
             { value: "delete", label: "Delete selected" },
             { value: "show", label: "Make visible" },
             { value: "hide", label: "Hide selected" },
+            ...(kind === "topic" ? [
+              { value: "gold", label: "Mark topic Nuggets as Gold/Premium" },
+              { value: "free", label: "Make topic Nuggets Free" },
+            ] : []),
           ]}
           apply={applyBulk}
         />
+        {kind === "topic" && (
+          <p className="mt-2 text-[13px] text-white/50">Gold and Free actions update all current Nuggets in the selected topics, including drafts. New Nuggets keep the access setting chosen when they are created.</p>
+        )}
         {loading ? (
           <p className="mt-6 text-sm text-white/40" role="status">
             Loading topics and categories…
