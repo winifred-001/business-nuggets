@@ -1,4 +1,4 @@
-import { nuggetText } from "@/lib/nugget-text";
+import FormattedNuggetText from "@/components/FormattedNuggetText";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -106,9 +106,7 @@ export default async function ReaderViewPage({
 
             {nugget.scriptureText && (
               <blockquote className="mt-6 max-w-[800px] border-l-2 border-[#C8A35A] pl-5">
-                <p className="font-serif whitespace-pre-line break-words text-[18px] italic leading-8 text-[#655D53]">
-                  “{nuggetText(nugget.scriptureText)}”
-                </p>
+                <FormattedNuggetText className="font-serif whitespace-pre-line break-words text-[18px] italic leading-8 text-[#655D53]" text={`“${nugget.scriptureText}”`} />
 
                 <p className="mt-3 text-[13px] font-semibold uppercase tracking-[0.08em] text-[#9A7839]">
                   {nugget.scriptureRef}
@@ -117,39 +115,35 @@ export default async function ReaderViewPage({
             )}
 
             <section className="mt-9">
-              <h2 className="bn-nugget-section-title font-serif text-[22px] leading-tight text-[#15120E]">
+              <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#15120E]">
                 Scripture Context
               </h2>
 
-              <p className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]">
-                {nuggetText(nugget.keyPrinciple) ||
-                  "Commentary for this Nugget will be added soon."}
-              </p>
+              <FormattedNuggetText className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]" text={nugget.keyPrinciple ||
+                  "Commentary for this Nugget will be added soon."} />
             </section>
 
             {nugget.details && (
               <section className="mt-9">
-                <h2 className="bn-nugget-section-title font-serif text-[22px] leading-tight text-[#15120E]">Details</h2>
-                <p className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]">{nuggetText(nugget.details)}</p>
+                <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#15120E]">Details</h2>
+                <FormattedNuggetText className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]" text={nugget.details} />
               </section>
             )}
 
             {nugget.marketplaceApplication && (
               <section className="mt-9">
-                <h2 className="bn-nugget-section-title font-serif text-[22px] leading-tight text-[#15120E]">
+                <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#15120E]">
                   Marketplace Application
                 </h2>
 
-                <p className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]">
-                  {nuggetText(nugget.marketplaceApplication)}
-                </p>
+                <FormattedNuggetText className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]" text={nugget.marketplaceApplication} />
               </section>
             )}
 
             {nugget.practicalActionPlan &&
               nugget.practicalActionPlan.length > 0 && (
                 <section className="mt-9">
-                  <h2 className="bn-nugget-section-title font-serif text-[22px] leading-tight text-[#15120E]">
+                  <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#15120E]">
                     Practical Action Plan
                   </h2>
 
@@ -164,7 +158,7 @@ export default async function ReaderViewPage({
                             {index + 1}.
                           </span>
 
-                          <span>{nuggetText(action)}</span>
+                          <FormattedNuggetText text={action} />
                         </li>
                       ),
                     )}

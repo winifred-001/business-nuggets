@@ -563,7 +563,8 @@ p[class~="text-[14px]"] {
   }
 
   .bn-nugget-section-title {
-    font-size: 22px !important;
+    font-size: 20px !important;
+    text-transform: uppercase;
   }
 
   /* Keep every admin page/section heading compact, including module overrides. */

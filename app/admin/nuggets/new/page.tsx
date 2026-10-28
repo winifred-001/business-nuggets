@@ -542,7 +542,7 @@ export default function NewNuggetPage() {
             <FormSection
               icon={<Lightbulb size={20} />}
               title="Core Insight"
-              description="Capture the teaching and how it applies in the marketplace. Press Enter for a new line, or leave a blank line between paragraphs. Basic <br> and <p> tags are also supported."
+              description="Capture the teaching and how it applies in the marketplace. Press Enter for a new line, or leave a blank line between paragraphs. Use **bold text** or <strong>bold text</strong> for bold, and ## Heading text on its own line for a heading. Basic <br> and <p> tags are also supported."
             >
               <div className="grid gap-5 lg:grid-cols-2">
                 <Field label="Key Principle" required>

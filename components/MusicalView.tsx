@@ -1,5 +1,7 @@
 "use client";
 
+import { nuggetExcerpt } from "@/lib/nugget-text";
+
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -31,8 +33,8 @@ export default function MusicalView({
   const { audioRef, audioProps, playing, audioError: message, togglePlay, seek, duration } = useAudioPlayback(audioSrc);
 
   const principleLines =
-    nugget.keyPrinciple
-      ?.split(/(?<=[.!?])\s+/)
+    nuggetExcerpt(nugget.keyPrinciple || "")
+      .split(/(?<=[.!?])\s+/)
       .filter(Boolean)
       .slice(0, 3) ?? [];
 

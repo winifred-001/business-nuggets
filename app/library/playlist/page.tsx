@@ -1,5 +1,7 @@
 "use client";
 
+import { nuggetExcerpt } from "@/lib/nugget-text";
+
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -332,8 +334,7 @@ function PlaylistCard({
   const description =
     playlistNuggets.length >
     0
-      ? playlistNuggets[0]
-          .keyPrinciple
+      ? nuggetExcerpt(playlistNuggets[0].keyPrinciple)
       : "Build a focused collection of business nuggets for your learning path.";
 
   return (

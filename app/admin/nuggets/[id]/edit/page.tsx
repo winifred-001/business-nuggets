@@ -809,7 +809,7 @@ export default function EditNuggetPage() {
                 placeholder="Add the full explanation and supporting details..."
                 className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
               />
-              <p className="mt-2 text-[12px] text-white/45">Press Enter for a new line, or leave a blank line between paragraphs. Basic &lt;br&gt; and &lt;p&gt; tags are also supported.</p>
+              <p className="mt-2 text-[12px] text-white/45">Press Enter for a new line, or leave a blank line between paragraphs. Use **bold text** or &lt;strong&gt;bold text&lt;/strong&gt; for bold, and ## Heading text on its own line for a heading. Basic &lt;br&gt; and &lt;p&gt; tags are also supported.</p>
             </div>
 
             {/* MARKETPLACE */}
