@@ -13,7 +13,7 @@ import FollowTopicButton from "@/components/FollowTopicButton";
 
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 import { getServerMemberToken } from "@/lib/server-member-token";
-import { slugify } from "@/lib/nuggets";
+import { getTopicCatalog } from "@/lib/topics-api";
 
 import type { Nugget } from "@/types/nugget";
 
@@ -31,9 +31,12 @@ export default async function TopicDetailPage({
   const token = await getServerMemberToken();
 
   let nuggets: Nugget[] = [];
+  let topicRecord;
 
   try {
-    nuggets = await getPublishedNuggets(token);
+    const [data, catalog] = await Promise.all([getPublishedNuggets(token), getTopicCatalog()]);
+    nuggets = data;
+    topicRecord = catalog.topics.find(topic => topic.slug === slug);
   } catch (error) {
     console.error(
       "Failed to load topic Nuggets:",
@@ -41,24 +44,14 @@ export default async function TopicDetailPage({
     );
   }
 
-  const availableTopics = [
-    ...new Set(
-      nuggets
-        .map((nugget) => nugget.topic)
-        .filter(Boolean),
-    ),
-  ];
-
-  const topic = availableTopics.find(
-    (item) => slugify(item) === slug,
-  );
+  const topic = topicRecord?.name;
 
   if (!topic) {
     notFound();
   }
 
   const topicNuggets = nuggets.filter(
-    (nugget) => nugget.topic === topic,
+    (nugget) => nugget.topic.trim().toLowerCase() === topic.trim().toLowerCase(),
   );
 
   const featured =

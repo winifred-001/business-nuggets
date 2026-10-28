@@ -32,6 +32,8 @@ import {
 } from "@/lib/nuggets";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 
+import { getTopicCatalog, type TopicCatalog } from "@/lib/topics-api";
+
 import type { Nugget } from "@/types/nugget";
 
 const tabs = [
@@ -160,6 +162,8 @@ function LibraryContent() {
     Nugget[]
   >([]);
 
+  const [catalog, setCatalog] = useState<TopicCatalog>({ topics: [], categories: [] });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -173,12 +177,12 @@ function LibraryContent() {
       try {
         setLoading(true);
 
-        const data =
-          await getPublishedNuggets();
+        const [data, taxonomy] = await Promise.all([getPublishedNuggets(), getTopicCatalog()]);
 
         if (!mounted) return;
 
         setApiNuggets(data);
+        setCatalog(taxonomy);
         setError("");
       } catch (err) {
         console.error(
@@ -213,6 +217,8 @@ function LibraryContent() {
   )
     ? requestedTab
     : "All Nuggets";
+
+  const selectedCategories = params.getAll("category");
 
   const selectedTopics =
     params.getAll("topic");
@@ -311,16 +317,6 @@ function LibraryContent() {
     pushParams(next);
   }
 
-  const topics = useMemo(() => {
-    return [
-      ...new Set(
-        apiNuggets
-          .map((nugget) => nugget.topic)
-          .filter(Boolean),
-      ),
-    ];
-  }, [apiNuggets]);
-
   const bibleSections = useMemo(() => {
     return [
       ...new Set(
@@ -354,10 +350,17 @@ function LibraryContent() {
         book: selectedBook,
         sort,
       },
-      apiNuggets,
+      selectedCategories.length
+        ? apiNuggets.filter(nugget => catalog.topics.some(topic =>
+            topic.name.trim().toLowerCase() === nugget.topic.trim().toLowerCase() &&
+            catalog.categories.some(category => category.id === topic.categoryId && selectedCategories.includes(category.slug)),
+          ))
+        : apiNuggets,
     );
   }, [
     apiNuggets,
+    catalog,
+    selectedCategories,
     selectedTopics,
     selectedSections,
     selectedChallenge,
@@ -365,7 +368,7 @@ function LibraryContent() {
     sort,
   ]);
 
-  const ITEMS_PER_PAGE = 6;
+  const ITEMS_PER_PAGE = 12;
 
   const totalPages = Math.max(
     1,
@@ -388,28 +391,14 @@ function LibraryContent() {
     );
 
   const topicCards = useMemo(() => {
-    return topics.map(
-      (topic, index) => ({
-        title: topic,
-
-        description:
-          topicDescriptions[topic] ??
-          `Explore published biblical business wisdom on ${topic}.`,
-
-        count: apiNuggets.filter(
-          (nugget) =>
-            nugget.topic === topic,
-        ).length,
-
-        image:
-          topicImages[topic] ??
-          fallbackTopicImages[
-            index %
-              fallbackTopicImages.length
-          ],
-      }),
-    );
-  }, [topics, apiNuggets]);
+    return catalog.topics.map((topic, index) => ({
+      title: topic.name,
+      slug: topic.slug,
+      description: topic.description || topicDescriptions[topic.name] || `Explore published biblical business wisdom on ${topic.name}.`,
+      count: topic.nuggetCount,
+      image: topicImages[topic.name] ?? fallbackTopicImages[index % fallbackTopicImages.length],
+    }));
+  }, [catalog]);
 
   const challengeCards =
     useMemo(() => {
@@ -562,7 +551,9 @@ function LibraryContent() {
     }, [apiNuggets]);
 
   const resultContext =
-    selectedTopics.length === 1
+    selectedCategories.length === 1
+      ? `inside ${catalog.categories.find(category => category.slug === selectedCategories[0])?.name || "the selected category"}`
+      : selectedTopics.length === 1
       ? `inside ${selectedTopics[0]}`
       : selectedChallenge
         ? `for ${selectedChallenge}`
@@ -633,29 +624,10 @@ function LibraryContent() {
               {/* FILTERS */}
               <aside>
                 <FilterGroup
-                  title="Business Topics"
-                  items={topics.map(
-                    (topic) => ({
-                      label: topic,
-
-                      count:
-                        apiNuggets.filter(
-                          (nugget) =>
-                            nugget.topic ===
-                            topic,
-                        ).length,
-                    }),
-                  )}
-                  selected={
-                    selectedTopics
-                  }
-                  onToggle={(topic) =>
-                    updateParam(
-                      "topic",
-                      topic,
-                      true,
-                    )
-                  }
+                  title="Business Categories"
+                  items={catalog.categories.map(category => ({ label: category.name, value: category.slug, count: category.nuggetCount }))}
+                  selected={selectedCategories}
+                  onToggle={(category) => updateParam("category", category, true)}
                 />
 
                 <div className="mt-8">
@@ -707,7 +679,7 @@ function LibraryContent() {
                   </div>
                 </div>
 
-                {(selectedTopics.length >
+                {(selectedCategories.length > 0 || selectedTopics.length >
                   0 ||
                   selectedSections.length >
                     0 ||
@@ -806,7 +778,7 @@ function LibraryContent() {
                 )}
 
                 {totalPages > 1 && (
-                  <div className="mt-8 flex justify-end gap-2">
+                  <div className="mt-8 flex flex-wrap justify-end gap-2">
                     <PageButton
                       disabled={
                         safePage === 1
@@ -917,9 +889,7 @@ function LibraryContent() {
                     key={
                       topic.title
                     }
-                  href={`/topics/${slugify(
-                  topic.title,
-                  )}`}
+                  href={`/topics/${topic.slug}`}
                     className="group relative min-h-[245px] overflow-hidden rounded-xl border border-white/10"
                   >
                     <Image
@@ -1515,6 +1485,7 @@ function FilterGroup({
 
   items: {
     label: string;
+    value?: string;
     count: number;
   }[];
 
@@ -1528,11 +1499,12 @@ function FilterGroup({
         {title}
       </h2>
 
-      <div className="mt-4 space-y-3">
+      <div role="region" aria-label={`${title} filters`} tabIndex={0} className="mt-4 max-h-[320px] space-y-3 overflow-y-auto overscroll-contain pr-3 [scrollbar-color:#C8A35A_#191b18]">
+        {items.length === 0 && <p className="text-[13px] text-white/45">No categories available yet.</p>}
         {items.map((item) => {
           const checked =
             selected.includes(
-              item.label,
+              item.value ?? item.label,
             );
 
           return (
@@ -1544,7 +1516,7 @@ function FilterGroup({
                 type="checkbox"
                 checked={checked}
                 onChange={() =>
-                  onToggle(item.label)
+                  onToggle(item.value ?? item.label)
                 }
                 className="sr-only"
               />

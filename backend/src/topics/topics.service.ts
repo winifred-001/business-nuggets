@@ -81,6 +81,38 @@ export class TopicsService {
       slugs.add(taxonomySlug(name));
     }
   }
+  async getPublicCatalog() {
+    const [topics, categories, nuggets] = await Promise.all([
+      db.orm.public.Topic.all(),
+      db.orm.public.Category.all(),
+      db.orm.public.Nugget.where({ status: 'published' }).all(),
+    ]);
+    const visibleCategories = categories.filter(category => category.visible);
+    const publicTopics = topics
+      .filter(topic => topic.visible && (topic.categoryId === null || visibleCategories.some(category => category.id === topic.categoryId)))
+      .sort((a, b) => a.displayOrder - b.displayOrder || a.id - b.id)
+      .map(topic => ({
+        id: topic.id,
+        name: topic.name,
+        slug: topic.slug,
+        description: topic.description,
+        categoryId: topic.categoryId,
+        nuggetCount: nuggets.filter(nugget => taxonomyKey(nugget.topic) === taxonomyKey(topic.name)).length,
+      }));
+    return {
+      topics: publicTopics,
+      categories: visibleCategories
+        .sort((a, b) => a.displayOrder - b.displayOrder || a.id - b.id)
+        .map(category => ({
+          id: category.id,
+          name: category.name,
+          slug: category.slug,
+          description: category.description,
+          nuggetCount: publicTopics.filter(topic => topic.categoryId === category.id).reduce((total, topic) => total + topic.nuggetCount, 0),
+        })),
+    };
+  }
+
   async getAllTopics() {
     await this.syncFromNuggets();
     const [topics, nuggets, categories] = await Promise.all([

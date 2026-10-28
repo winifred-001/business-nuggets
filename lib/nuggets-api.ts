@@ -109,54 +109,27 @@ function isNugget(value: unknown): value is Nugget {
 export async function getPublishedNuggets(
   token?: string | null,
 ): Promise<Nugget[]> {
-  const response = await fetch(
-    `${API_URL}/nuggets?limit=100`,
-    {
+  const headers = authHeaders(token);
+  const nuggets: Nugget[] = [];
+  let page = 1;
+  while (true) {
+    const response = await fetch(`${API_URL}/nuggets?limit=100&page=${page}`, {
       cache: "no-store",
-      headers:
-        authHeaders(token),
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      `Could not load nuggets: ${response.status}`,
-    );
+      headers,
+    });
+    if (!response.ok) throw new Error(`Could not load nuggets: ${response.status}`);
+    const result: unknown = await response.json();
+    if (Array.isArray(result)) return normalizeFeed(result, false);
+    if (!result || typeof result !== "object" || !("data" in result)) return nuggets;
+    const envelope = result as NuggetsApiResponse;
+    if (!Array.isArray(envelope.data)) return nuggets;
+    nuggets.push(...normalizeFeed(envelope.data, envelope.access?.premium === true));
+    if (!envelope.pagination?.hasNextPage || page >= envelope.pagination.totalPages || !envelope.data.length) break;
+    page += 1;
   }
-
-  const result: unknown =
-    await response.json();
-
-  if (Array.isArray(result)) {
-    return normalizeFeed(
-      result,
-      false,
-    );
-  }
-
-  if (
-    typeof result === "object" &&
-    result !== null &&
-    "data" in result
-  ) {
-    const envelope =
-      result as NuggetsApiResponse;
-
-    const data =
-      envelope.data;
-
-    if (Array.isArray(data)) {
-      return normalizeFeed(
-        data,
-        envelope.access
-          ?.premium ===
-          true,
-      );
-    }
-  }
-
-  return [];
+  return nuggets;
 }
+
 
 /* =========================================================
    GET ONE NUGGET BY SLUG / ID

@@ -29,6 +29,7 @@ import 'reflect-metadata';
 import { ValidationPipe } from '@nestjs/common';
 import { NuggetsService } from '../nuggets/nuggets.service';
 import { CreateNuggetDto } from '../nuggets/dto/create-nugget.dto';
+import { TopicsController } from './topics.controller';
 import { TopicsService } from './topics.service';
 import { parseTaxonomyCsv } from './topics-csv';
 import { CreateTopicDto } from './topics.dto';
@@ -1122,5 +1123,33 @@ describe('Admin-controlled Free and Gold access', () => {
     await expect(service.getNuggetBySlug('gold')).rejects.toThrow('available to Premium');
     await service.updateNugget('nugget-16', { isGold: false });
     expect(await service.getNuggetBySlug('gold')).toHaveProperty('isGold', false);
+  });
+});
+
+describe('Public library topic catalog', () => {
+  it('returns visible categories and actual topics, with published-only counts and no teaching content', async () => {
+    state.Category = [{ id: 1, name: 'Business Growth', slug: 'growth', description: 'Grow wisely', visible: true, displayOrder: 0 }, { id: 2, name: 'Hidden', slug: 'hidden', visible: false, displayOrder: 1 }];
+    state.Topic = [
+      { id: 1, name: 'Work', slug: 'work', description: 'Faithful work', categoryId: 1, visible: true, displayOrder: 0 },
+      { id: 2, name: 'Empty Topic', slug: 'custom-topic-slug', categoryId: 1, visible: true, displayOrder: 1 },
+      { id: 3, name: 'Hidden Topic', slug: 'hidden-topic', categoryId: 1, visible: false, displayOrder: 2 },
+      { id: 4, name: 'Hidden Category Topic', slug: 'hidden-category-topic', categoryId: 2, visible: true, displayOrder: 3 },
+      { id: 5, name: 'Uncategorized', slug: 'uncategorized', categoryId: null, visible: true, displayOrder: 4 },
+    ];
+    state.Nugget = [{ id: 'a', topic: 'work', status: 'published', isGold: true, keyPrinciple: 'Private Gold text' }, { id: 'b', topic: 'Work', status: 'draft' }];
+    const catalog = await service().getPublicCatalog();
+    expect(catalog.categories).toHaveLength(1);
+    expect(catalog.categories[0]).toMatchObject({ name: 'Business Growth', nuggetCount: 1 });
+    expect(catalog.topics.map(t => t.name)).toEqual(['Work', 'Empty Topic', 'Uncategorized']);
+    expect(catalog.topics[0]).toMatchObject({ description: 'Faithful work', categoryId: 1, nuggetCount: 1 });
+    expect(catalog.topics[1]).toMatchObject({ slug: 'custom-topic-slug', nuggetCount: 0 });
+    expect(JSON.stringify(catalog)).not.toContain('Private Gold text');
+    const module = await Test.createTestingModule({ controllers: [TopicsController], providers: [{ provide: TopicsService, useValue: service() }] }).compile();
+    const app = module.createNestApplication();
+    await app.init();
+    try {
+      const result = await request(app.getHttpServer()).get('/topics/catalog').expect(200);
+      expect(result.body).toEqual(catalog);
+    } finally { await app.close(); }
   });
 });
