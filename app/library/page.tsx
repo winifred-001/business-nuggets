@@ -625,7 +625,7 @@ function LibraryContent() {
               <aside>
                 <FilterGroup
                   title="Business Categories"
-                  items={catalog.categories.map(category => ({ label: category.name, value: category.slug, count: category.nuggetCount }))}
+                  items={catalog.categories.map(category => ({ label: category.name, value: category.slug, count: catalog.topics.filter(topic => topic.categoryId === category.id).length }))}
                   selected={selectedCategories}
                   onToggle={(category) => updateParam("category", category, true)}
                 />
@@ -1527,7 +1527,7 @@ function FilterGroup({
 
               <span>
                 {item.label} (
-                {item.count})
+                {item.count} {item.count === 1 ? "topic" : "topics"})
               </span>
             </label>
           );
