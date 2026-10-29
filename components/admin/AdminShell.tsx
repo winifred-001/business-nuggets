@@ -47,6 +47,7 @@ type AdminUser = {
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Nuggets", href: "/admin/nuggets", icon: FileText },
+  { label: "Collections", href: "/admin/collections", icon: Library },
   { label: "Topics & Categories", href: "/admin/topics", icon: Tags },
   { label: "Scripture Index", href: "/admin/scripture", icon: BookOpen },
   { label: "Daily Schedule", href: "/admin/schedule", icon: CalendarDays },

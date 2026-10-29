@@ -27,11 +27,11 @@ import Footer from "@/components/Footer";
 import PageEyebrow from "@/components/PageEyebrow";
 
 import {
-  collections,
   filterNuggets,
   slugify,
 } from "@/lib/nuggets";
 import { BIBLE_GROUPS } from "@/lib/bible-books";
+import { getCollections, type PublicCollection } from "@/lib/collections-api";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 
 import { getTopicCatalog, type TopicCatalog } from "@/lib/topics-api";
@@ -164,6 +164,9 @@ function LibraryContent() {
     Nugget[]
   >([]);
 
+  const [collections, setCollections] = useState<PublicCollection[]>([]);
+  const [collectionsError, setCollectionsError] = useState("");
+
   const [catalog, setCatalog] = useState<TopicCatalog>({ topics: [], categories: [] });
 
   const [loading, setLoading] = useState(true);
@@ -179,12 +182,16 @@ function LibraryContent() {
       try {
         setLoading(true);
 
-        const [data, taxonomy] = await Promise.all([getPublishedNuggets(), getTopicCatalog()]);
+        const [data, taxonomy, savedCollections] = await Promise.all([getPublishedNuggets(), getTopicCatalog(), getCollections().catch(() => {
+          if (mounted) setCollectionsError("Collections could not be loaded. Please refresh the page to try again.");
+          return [];
+        })]);
 
         if (!mounted) return;
 
         setApiNuggets(data);
         setCatalog(taxonomy);
+        setCollections(savedCollections);
         setError("");
       } catch (err) {
         console.error(
@@ -489,16 +496,16 @@ function LibraryContent() {
 
             members,
 
-            image:
+            image: collection.image ||
               collectionImages[
                 collection.slug
-              ] ??
-              members[0]?.image ??
+              ] ||
+              members[0]?.image ||
               "/images/collection-main.png",
           };
         },
       );
-    }, [apiNuggets]);
+    }, [apiNuggets, collections]);
 
   const resultContext =
     selectedCategories.length === 1
@@ -1161,6 +1168,8 @@ function LibraryContent() {
               pathway or discover a new
               collection.
             </p>
+
+            {collectionCards.length === 0 && <p className="mt-8 rounded-xl border border-white/10 p-6 text-sm text-white/50">{collectionsError || "No collections are available yet. New reading series will appear here when published."}</p>}
 
             {collectionCards.length >
               0 && (

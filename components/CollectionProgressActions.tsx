@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from "@/lib/api";
 import Link from "next/link";
 import {
   Bookmark,
@@ -52,7 +53,7 @@ export default function CollectionProgressActions({
     async function loadHistory() {
       try {
         const response = await fetch(
-          "http://localhost:3001/history",
+          `${API_URL}/history`,
           {
             headers: {
               Authorization:
@@ -225,7 +226,7 @@ export default function CollectionProgressActions({
               fill="currentColor"
             />
 
-            Play Entire Series
+            Start Reading Series
           </Link>
         ) : (
           <button
@@ -235,7 +236,7 @@ export default function CollectionProgressActions({
           >
             <Play size={14} />
 
-            Play Entire Series
+            Start Reading Series
           </button>
         )}
 

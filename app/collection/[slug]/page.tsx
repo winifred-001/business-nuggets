@@ -10,9 +10,7 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import CollectionProgressActions from "@/components/CollectionProgressActions";
 
-import {
-  getCollectionBySlug,
-} from "@/lib/nuggets";
+import { getCollection } from "@/lib/collections-api";
 
 import {
   getPublishedNuggets,
@@ -44,7 +42,7 @@ export default async function CollectionDetailPage({
   const token = await getServerMemberToken();
 
   const collection =
-    getCollectionBySlug(slug);
+    await getCollection(slug);
 
   if (!collection) {
     notFound();
@@ -81,11 +79,11 @@ export default async function CollectionDetailPage({
   const firstUnit =
     units[0] ?? null;
 
-  const coverImage =
+  const coverImage = collection.image ||
     collectionImages[
       collection.slug
-    ] ??
-    firstUnit?.image ??
+    ] ||
+    firstUnit?.image ||
     "/images/collection-main.png";
 
   return (
@@ -147,7 +145,7 @@ export default async function CollectionDetailPage({
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 className="font-serif text-[28px]">
-                Chronological Blueprint Units
+                Reading Order
               </h2>
 
               <p className="mt-2 text-[14px] text-white/45">

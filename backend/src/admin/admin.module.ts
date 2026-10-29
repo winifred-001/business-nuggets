@@ -1,3 +1,5 @@
+import { CollectionsService } from "../collections/collections.service";
+import { CollectionsController } from "../collections/collections.controller";
 import { ImportUploadController } from "../imports/import-upload.controller";
 import { ImportTicketGuard } from "../imports/import-ticket";
 import {
@@ -80,11 +82,13 @@ import { EmailModule } from "../email/email.module";
 
   controllers: [
     AdminController,
+    CollectionsController,
     ImportUploadController,
   ],
 
   providers: [
     AdminIpAllowListGuard,
+    CollectionsService,
     ImportTicketGuard,
     {
       provide: APP_INTERCEPTOR,

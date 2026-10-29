@@ -1,3 +1,5 @@
+import { CollectionsService } from "../collections/collections.service";
+import { SaveCollectionDto } from "../collections/collections.dto";
 import { readImportFile } from "../imports/import-file";
 import { importHierarchy } from "../imports/hierarchy-import";
 import { IMPORT_LIMIT } from "../imports/import-limits";
@@ -66,6 +68,7 @@ import {AdminIpAllowListGuard,} from "./admin-ip-allow-list.guard";
 )
 export class AdminController {
   constructor(
+    private readonly collectionsService: CollectionsService,
     private readonly nuggetsService: NuggetsService,
     private readonly topicsService: TopicsService,
     private readonly scriptureService: ScriptureService,
@@ -82,6 +85,19 @@ export class AdminController {
     private readonly legalPagesService: LegalPagesService,
     private readonly emailService: EmailService,
   ) {}
+
+  @Get("collections")
+  @RequireAdminPermission("manageNuggets")
+  listCollections() { return this.collectionsService.list(); }
+  @Post("collections")
+  @RequireAdminPermission("manageNuggets")
+  createCollection(@Body() body: SaveCollectionDto) { return this.collectionsService.save(body); }
+  @Patch("collections/:id")
+  @RequireAdminPermission("manageNuggets")
+  updateCollection(@Param("id") id: string, @Body() body: SaveCollectionDto) { return this.collectionsService.save(body, id); }
+  @Delete("collections/:id")
+  @RequireAdminPermission("manageNuggets")
+  deleteCollection(@Param("id") id: string) { return this.collectionsService.remove(id); }
 
   /* =========================================
      ADMIN TEST
