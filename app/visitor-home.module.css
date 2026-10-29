@@ -10,7 +10,7 @@
 .card .cardExcerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; overflow-wrap: anywhere; }
 
 .introColumn { width: min(490px, 100%); }
-.nuggetCount { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 10px; margin: 0 0 16px; font-size: 20px; font-weight: 600; color: #756f65; text-align: center; }
+.nuggetCount { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 10px; margin: 0 0 16px; font-size: 20px; font-weight: 600; color: #756f65; text-align: center; text-transform: uppercase; }
 .counterNumber { font-family: var(--visitor-playfair), serif; font-size: 40px; line-height: 1.2; font-weight: 600; color: #9a7839; font-variant-numeric: tabular-nums; }
 
-.card .cardExcerpt { font-size: 15px; }
+.card .cardExcerpt { font-size: 15px; line-height: 25px; }

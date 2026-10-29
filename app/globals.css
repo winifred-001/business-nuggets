@@ -574,8 +574,8 @@ p[class~="text-[14px]"] {
   }
 
   .visitor-home .visitor-nugget-card h3 {
-    font-size: 20px !important;
-    line-height: 1.4 !important;
+    font-size: 25px !important;
+    line-height: 30px !important;
   }
 
   .bn-topic-content :is(h2, h3, h4),
