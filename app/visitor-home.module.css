@@ -9,5 +9,5 @@
 
 .card .cardExcerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; overflow-wrap: anywhere; }
 
-.nuggetCount { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #756f65; text-align: left; }
+.nuggetCount { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #756f65; text-align: right; }
 .nuggetCount + .searchbox { margin-top: 0; }
