@@ -579,6 +579,7 @@ p[class~="text-[14px]"] {
   }
 
   .bn-topic-content :is(h2, h3, h4),
+  .bn-challenge-content :is(h2, h3, h4),
   .bn-topic-card-title {
     font-size: 20px !important;
     line-height: 30px !important;

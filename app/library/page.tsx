@@ -925,7 +925,7 @@ function LibraryContent() {
               practical application.
             </p>
 
-            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div role="region" aria-label="Challenges Index cards" tabIndex={0} className={`mt-8 ${cardStyles.grid} ${cardStyles.challenges}`}>
               {challengeCards.map(
                 (item, index) => (
                   <Link
@@ -935,7 +935,7 @@ function LibraryContent() {
                     href={`/challenges/${slugify(
                    item.title,
                    )}`}
-                    className={`min-h-[220px] rounded-xl border bg-[#111111] p-6 transition hover:border-[#C8A35A]/50 ${
+                    className={`flex min-w-0 flex-col overflow-hidden rounded-xl border bg-[#111111] p-6 transition hover:border-[#C8A35A]/50 ${
                       index === 1
                         ? "border-[#C8A35A]/70"
                         : "border-white/10"
@@ -955,20 +955,20 @@ function LibraryContent() {
                       }
                     </p>
 
-                    <h3 className="mt-4 font-serif text-[20px] leading-tight">
+                    <h3 className="bn-topic-card-title mt-4 line-clamp-2 break-words font-serif">
                       {
                         item.title
                       }
                     </h3>
 
-                    <p className="mt-3 text-[13px] leading-5 text-white/55">
+                    <p className="mt-3 line-clamp-2 break-words text-[13px] leading-5 text-white/55">
                       {
                         item.subtitle
                       }
                     </p>
 
                     {item.firstNugget && (
-                      <p className="mt-4 text-[13px] leading-5 text-white/40">
+                      <p className="mt-4 line-clamp-1 text-[13px] leading-5 text-white/40">
                         Begin with:{" "}
                         {
                           item
@@ -978,7 +978,7 @@ function LibraryContent() {
                       </p>
                     )}
 
-                    <span className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#C8A35A]">
+                    <span className="mt-auto inline-flex items-center gap-1.5 text-[13px] font-medium text-[#C8A35A]">
                       Explore pathway
 
                       <ArrowRight

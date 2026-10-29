@@ -15,6 +15,7 @@
 }
 .grid > a { min-width: 0; height: 100%; overflow-wrap: anywhere; }
 .nuggets { --topic-row-height: 425px; }
+.challenges { --topic-row-height: 400px; }
 @media (min-width: 640px) {
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -22,3 +23,7 @@
   .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 .grid:focus-visible { outline: 2px solid #c8a35a; outline-offset: 4px; }
+
+@media (min-width: 1024px) {
+  .fourColumns { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
