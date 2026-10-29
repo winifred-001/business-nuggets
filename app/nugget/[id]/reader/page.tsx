@@ -1,16 +1,7 @@
 import FormattedNuggetText from "@/components/FormattedNuggetText";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  Maximize2,
-  Play,
-  Repeat2,
-  Shuffle,
-  SkipBack,
-  SkipForward,
-  Volume2,
-} from "lucide-react";
+import ReaderAudioBar from "@/components/ReaderAudioBar";
 
 import Navbar from "@/components/navbar";
 import PremiumNuggetGate from "@/components/PremiumNuggetGate";
@@ -202,118 +193,14 @@ export default async function ReaderViewPage({
         </div>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#DDD2C0] bg-[#F5F0E8]">
-        <div className="mx-auto flex min-h-[82px] max-w-[1180px] items-center gap-5 px-5 sm:px-8 lg:px-10">
-          <div className="flex min-w-0 items-center gap-3 sm:w-[270px]">
-            <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded">
-              <Image
-                src="/images/musical.png"
-                alt=""
-                fill
-                sizes="44px"
-                className="object-cover"
-              />
-            </div>
-
-            <div className="min-w-0">
-              <p className="truncate font-serif text-[13px] font-semibold text-[#15120E]">
-                The Joseph Storage Blueprint
-              </p>
-
-              <p className="mt-1 truncate text-[11px] text-[#756E64]">
-                Genesis 41 · Strategic Reserve
-              </p>
-            </div>
-          </div>
-
-          <div className="hidden min-w-0 flex-1 flex-col items-center md:flex">
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                aria-label="Shuffle"
-                className="text-[#756E64] transition hover:text-[#15120E]"
-              >
-                <Shuffle size={14} />
-              </button>
-
-              <button
-                type="button"
-                aria-label="Previous track"
-                className="text-[#756E64] transition hover:text-[#15120E]"
-              >
-                <SkipBack size={15} />
-              </button>
-
-              <button
-                type="button"
-                aria-label="Play"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#C8A35A] text-[#15120E]"
-              >
-                <Play
-                  size={14}
-                  fill="currentColor"
-                />
-              </button>
-
-              <button
-                type="button"
-                aria-label="Next track"
-                className="text-[#756E64] transition hover:text-[#15120E]"
-              >
-                <SkipForward size={15} />
-              </button>
-
-              <button
-                type="button"
-                aria-label="Repeat"
-                className="text-[#756E64] transition hover:text-[#15120E]"
-              >
-                <Repeat2 size={14} />
-              </button>
-            </div>
-
-            <div className="mt-2 flex w-full max-w-[520px] items-center gap-3">
-              <span className="text-[10px] text-[#8A8175]">
-                01:45
-              </span>
-
-              <div className="h-[3px] flex-1 overflow-hidden rounded-full bg-[#D8CDBB]">
-                <div className="h-full w-[38%] rounded-full bg-[#C8A35A]" />
-              </div>
-
-              <span className="text-[10px] text-[#8A8175]">
-                {nugget.duration || "06:42"}
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            aria-label="Play"
-            className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C8A35A] text-[#15120E] md:hidden"
-          >
-            <Play
-              size={15}
-              fill="currentColor"
-            />
-          </button>
-
-          <div className="hidden items-center justify-end gap-4 sm:w-[150px] md:flex">
-            <Volume2
-              size={15}
-              className="text-[#756E64]"
-            />
-
-            <button
-              type="button"
-              aria-label="Full screen"
-              className="text-[#756E64] transition hover:text-[#15120E]"
-            >
-              <Maximize2 size={15} />
-            </button>
-          </div>
-        </div>
-      </div>
+      <ReaderAudioBar
+        key={`${nugget.slug}-${nugget.nuggetAudioUrl || ""}`}
+        title={nugget.title}
+        subtitle={`${nugget.scriptureRef} · ${nugget.topic}`}
+        slug={nugget.slug}
+        coverImage={nugget.image}
+        audioSrc={nugget.nuggetAudioUrl || null}
+      />
     </div>
   );
 }
