@@ -1,3 +1,4 @@
+import { BIBLE_GROUPS, withBibleGroup } from "./bible-books";
 import type {
   BibleSection,
   Collection,
@@ -267,13 +268,7 @@ export const books = [...new Set(nuggets.map((n) => n.book))].sort(
   (a, b) => a.localeCompare(b, "en", { numeric: true }),
 );
 
-export const bibleSections: BibleSection[] = [
-  "The Pentateuch",
-  "History & Leadership",
-  "Wisdom Literature",
-  "The Prophets",
-  "New Testament",
-];
+export const bibleSections: BibleSection[] = BIBLE_GROUPS.map(group => group.name);
 
 // Turn a name into a name suitable for a page address.
 // Example: "Money & Stewardship" becomes "money-stewardship".
@@ -403,6 +398,8 @@ export function filterNuggets(
   const results = source.filter((nugget) => {
     const searchableText = normalize(
       [
+        nugget.book,
+        withBibleGroup(nugget).bibleSection,
         nugget.title,
         nugget.topic,
         nugget.tag,
@@ -425,7 +422,7 @@ export function filterNuggets(
 
     const matchesSection =
       !filters.sections?.length ||
-      filters.sections.includes(nugget.bibleSection);
+      filters.sections.includes(withBibleGroup(nugget).bibleSection);
 
     const matchesChallenge =
       !filters.challenge ||

@@ -95,7 +95,7 @@ export default function VisitorHomeLibrary({ nuggets }: { nuggets: HomeNugget[] 
       {visible.length > 0 ? (
         <div className={styles.cards} id="visitor-home-cards">
           {visible.slice(0, 9).map((nugget) => (
-            <article className={styles.card} key={nugget.slug}>
+            <article className={`visitor-nugget-card ${styles.card}`} key={nugget.slug}>
               <div className={styles.cardtop}>
                 <span className={styles.cardtag}>{nugget.topic || nugget.tag}</span>
                 <span className={styles.cardnum}>{String(nugget.number).padStart(2, "0")}</span>

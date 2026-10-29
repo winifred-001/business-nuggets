@@ -1,3 +1,4 @@
+import { withBibleGroup } from "@/lib/bible-books";
 import { API_URL } from "@/lib/api";
 import type { Nugget } from "@/types/nugget";
 
@@ -69,6 +70,7 @@ function normalizeFeed(
 ) {
   return data
     .filter(isNugget)
+    .map(withBibleGroup)
     .map(
       (nugget) =>
         premium
@@ -178,7 +180,7 @@ export async function getNuggetBySlugFromApi(
     await response.json();
 
   if (isNugget(result)) {
-    return result;
+    return withBibleGroup(result);
   }
 
   if (
@@ -191,7 +193,7 @@ export async function getNuggetBySlugFromApi(
     ).data;
 
     if (isNugget(data)) {
-      return data;
+      return withBibleGroup(data);
     }
   }
 

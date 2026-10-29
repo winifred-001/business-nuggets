@@ -9,6 +9,7 @@ import {
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 
+import { BIBLE_BOOKS } from "@/lib/bible-books";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 import { slugify } from "@/lib/nuggets";
 
@@ -73,17 +74,7 @@ export default async function ScriptureIndexDetailPage({
     );
   }
 
-  /*
-   * Books come from the backend,
-   * not a hard-coded books array.
-   */
-  const availableBooks = [
-    ...new Set(
-      nuggets
-        .map((nugget) => nugget.book)
-        .filter(Boolean),
-    ),
-  ];
+  const availableBooks = BIBLE_BOOKS;
 
   const book = availableBooks.find(
     (item) =>

@@ -31,15 +31,9 @@ import {
 
 import AdminShell from "@/components/admin/AdminShell";
 import { API_URL } from "@/lib/api";
-import { BIBLE_BOOKS } from "@/lib/bible-books";
+import { BIBLE_BOOKS, BIBLE_GROUPS, referenceWithBook, bibleGroupForBook, bibleBookFromReference } from "@/lib/bible-books";
 
-const bibleSections = [
-  "The Pentateuch",
-  "History & Leadership",
-  "Wisdom Literature",
-  "The Prophets",
-  "New Testament",
-] as const;
+const bibleSections = BIBLE_GROUPS.map(group => group.name);
 
 type Topic = {
   id: number;
@@ -125,6 +119,11 @@ export default function NewNuggetPage() {
     setForm((current) => ({
       ...current,
       [field]: value,
+      ...(field === "book" ? { bibleSection: bibleGroupForBook(String(value)) || "", scriptureRef: referenceWithBook(String(value), current.scriptureRef) } : {}),
+      ...(field === "scriptureRef" && bibleBookFromReference(String(value)) ? {
+        book: bibleBookFromReference(String(value))!,
+        bibleSection: bibleGroupForBook(bibleBookFromReference(String(value))!) || "",
+      } : {}),
     }));
   }
 
@@ -601,6 +600,7 @@ export default function NewNuggetPage() {
                 <Field label="Bible Section" required>
                   <select
                     value={form.bibleSection}
+                    disabled={Boolean(bibleGroupForBook(form.book))}
                     onChange={(event) =>
                       updateField("bibleSection", event.target.value)
                     }

@@ -1,4 +1,6 @@
-export type BibleSection =
+import type { BibleGroup } from "@/lib/bible-books";
+
+export type BibleSection = BibleGroup
   | "The Pentateuch"
   | "History & Leadership"
   | "Wisdom Literature"

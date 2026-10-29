@@ -1,6 +1,6 @@
 "use client";
 
-import { BIBLE_BOOKS } from "@/lib/bible-books";
+import { BIBLE_BOOKS, BIBLE_GROUPS, referenceWithBook, bibleGroupForBook, bibleBookFromReference, canonicalBibleBook } from "@/lib/bible-books";
 
 import AudioMediaInput from "@/components/AudioMediaInput";
 
@@ -93,14 +93,7 @@ type FormState = {
     | "published";
 };
 
-const bibleSections: BibleSection[] =
-  [
-    "The Pentateuch",
-    "History & Leadership",
-    "Wisdom Literature",
-    "The Prophets",
-    "New Testament",
-  ];
+const bibleSections = BIBLE_GROUPS.map(group => group.name);
 
 export default function EditNuggetPage() {
   const params =
@@ -308,12 +301,10 @@ export default function EditNuggetPage() {
             ),
 
           book:
-            nugget.book ||
-            "",
+            bibleBookFromReference(nugget.scriptureRef || "") || canonicalBibleBook(nugget.book || "") || nugget.book || "",
 
           bibleSection:
-            nugget.bibleSection ||
-            "Wisdom Literature",
+            bibleGroupForBook(bibleBookFromReference(nugget.scriptureRef || "") || nugget.book || "") || nugget.bibleSection || "Wisdom Literature",
 
           challenges:
             Array.isArray(
@@ -359,6 +350,11 @@ export default function EditNuggetPage() {
       (current) => ({
         ...current,
         [key]: value,
+        ...(key === "book" ? { bibleSection: bibleGroupForBook(String(value)) || current.bibleSection, scriptureRef: referenceWithBook(String(value), current.scriptureRef) } : {}),
+        ...(key === "scriptureRef" && bibleBookFromReference(String(value)) ? {
+          book: bibleBookFromReference(String(value))!,
+          bibleSection: bibleGroupForBook(bibleBookFromReference(String(value))!) || current.bibleSection,
+        } : {}),
       }),
     );
 
@@ -957,9 +953,8 @@ export default function EditNuggetPage() {
                 </FieldLabel>
 
                 <select
-                  value={
-                    form.bibleSection
-                  }
+                  value={form.bibleSection}
+                  disabled={Boolean(bibleGroupForBook(form.book))}
                   onChange={(
                     event,
                   ) =>

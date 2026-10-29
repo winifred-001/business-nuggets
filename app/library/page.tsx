@@ -30,6 +30,7 @@ import {
   filterNuggets,
   slugify,
 } from "@/lib/nuggets";
+import { BIBLE_GROUPS } from "@/lib/bible-books";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 
 import { getTopicCatalog, type TopicCatalog } from "@/lib/topics-api";
@@ -317,18 +318,7 @@ function LibraryContent() {
     pushParams(next);
   }
 
-  const bibleSections = useMemo(() => {
-    return [
-      ...new Set(
-        apiNuggets
-          .map(
-            (nugget) =>
-              nugget.bibleSection,
-          )
-          .filter(Boolean),
-      ),
-    ];
-  }, [apiNuggets]);
+  const bibleSections = BIBLE_GROUPS.map(group => group.name);
 
   const challenges = useMemo(() => {
     return [
@@ -437,54 +427,13 @@ function LibraryContent() {
       );
     }, [challenges, apiNuggets]);
 
-  const scriptureGroups =
-    useMemo(() => {
-      return bibleSections.map(
-        (section) => {
-          const sectionNuggets =
-            apiNuggets.filter(
-              (nugget) =>
-                nugget.bibleSection ===
-                section,
-            );
-
-          const books = [
-            ...new Set(
-              sectionNuggets
-                .map(
-                  (nugget) =>
-                    nugget.book,
-                )
-                .filter(Boolean),
-            ),
-          ].map((book) => {
-            const count =
-              sectionNuggets.filter(
-                (nugget) =>
-                  nugget.book === book,
-              ).length;
-
-            return {
-              title: book,
-              count,
-              description: `${count} published ${
-                count === 1
-                  ? "Nugget"
-                  : "Nuggets"
-              } from ${book}.`,
-            };
-          });
-
-          return {
-            title: section,
-            books,
-          };
-        },
-      );
-    }, [
-      apiNuggets,
-      bibleSections,
-    ]);
+  const scriptureGroups = useMemo(() => BIBLE_GROUPS.map(group => ({
+    title: group.name,
+    books: group.books.map(book => {
+      const count = apiNuggets.filter(nugget => nugget.book === book).length;
+      return { title: book, count, description: `${count} published ${count === 1 ? "Nugget" : "Nuggets"} from ${book}.` };
+    }),
+  })), [apiNuggets]);
 
   const normalizedBookQuery =
     bookQuery.trim().toLowerCase();
@@ -496,7 +445,7 @@ function LibraryContent() {
 
         books: group.books.filter(
           (book) =>
-            `${book.title} ${book.description}`
+            `${group.title} ${book.title} ${book.description}`
               .toLowerCase()
               .includes(
                 normalizedBookQuery,
