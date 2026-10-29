@@ -578,6 +578,12 @@ p[class~="text-[14px]"] {
     line-height: 1.4 !important;
   }
 
+  .bn-topic-content :is(h2, h3, h4),
+  .bn-topic-card-title {
+    font-size: 20px !important;
+    line-height: 30px !important;
+  }
+
   /* Keep every admin page/section heading compact, including module overrides. */
   .admin-typography :is(h1, h2, h3, h4, h5, h6) {
     font-size: var(--bn-admin-heading-font-size) !important;

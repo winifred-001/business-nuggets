@@ -1,3 +1,4 @@
+import cardStyles from "@/app/topic-cards.module.css";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -140,7 +141,7 @@ export default async function TopicDetailPage({
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10">
+        <section className="bn-topic-content mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10">
           {featured && (
             <section>
               <h2 className="font-serif text-[28px]">
@@ -171,7 +172,7 @@ export default async function TopicDetailPage({
                         Featured Wisdom · {featured.scriptureRef}
                       </p>
 
-                      <h3 className="mt-3 max-w-[520px] font-serif text-[24px] leading-tight">
+                      <h3 className="bn-topic-card-title mt-3 max-w-[520px] line-clamp-2 break-words font-serif">
                         {featured.title}
                       </h3>
 
@@ -267,14 +268,14 @@ export default async function TopicDetailPage({
             </div>
 
             {displayedNuggets.length > 0 ? (
-              <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div role="region" aria-label="Topic Nuggets" tabIndex={0} className={`mt-7 ${cardStyles.grid} ${cardStyles.nuggets}`}>
                 {displayedNuggets.map((nugget) => (
                   <Link
                     key={nugget.slug}
                     href={`/nugget/${nugget.slug}`}
-                    className="group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#C8A35A]/45"
+                    className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#C8A35A]/45"
                   >
-                    <div className="relative h-[185px] overflow-hidden">
+                    <div className="relative h-[185px] shrink-0 overflow-hidden">
                       <Image
                         src={nugget.image}
                         alt={nugget.title}
@@ -290,19 +291,19 @@ export default async function TopicDetailPage({
                       )}
                     </div>
 
-                    <div className="flex min-h-[190px] flex-col p-5">
+                    <div className="flex min-h-0 flex-1 flex-col p-5">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
+                        <span className="min-w-0 line-clamp-1 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
                           {nugget.tag}
                         </span>
 
-                        <span className="flex items-center gap-1.5 text-[13px] text-white/35">
+                        <span className="flex shrink-0 items-center gap-1.5 text-[13px] text-white/35">
                           <Clock3 size={13} />
                           {nugget.duration}
                         </span>
                       </div>
 
-                      <h3 className="mt-3 font-serif text-[19px] leading-[1.2]">
+                      <h3 className="bn-topic-card-title mt-3 line-clamp-2 break-words font-serif">
                         {nugget.title}
                       </h3>
 

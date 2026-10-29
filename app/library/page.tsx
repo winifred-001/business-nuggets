@@ -1,5 +1,6 @@
 "use client";
 
+import cardStyles from "@/app/topic-cards.module.css";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -831,7 +832,7 @@ function LibraryContent() {
               scripture foundations.
             </p>
 
-            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div role="region" aria-label="Topics Index cards" tabIndex={0} className={`mt-8 ${cardStyles.grid}`}>
               {topicCards.map(
                 (topic) => (
                   <Link
@@ -839,7 +840,7 @@ function LibraryContent() {
                       topic.title
                     }
                   href={`/topics/${topic.slug}`}
-                    className="group relative min-h-[245px] overflow-hidden rounded-xl border border-white/10"
+                    className="group relative min-w-0 overflow-hidden rounded-xl border border-white/10"
                   >
                     <Image
                       src={
@@ -875,13 +876,13 @@ function LibraryContent() {
                       </div>
 
                       <div className="mt-auto">
-                        <h3 className="font-serif text-[20px] leading-tight">
+                        <h3 className="bn-topic-card-title line-clamp-2 break-words font-serif">
                           {
                             topic.title
                           }
                         </h3>
 
-                        <p className="mt-2 text-[13px] leading-5 text-white/55">
+                        <p className="mt-2 line-clamp-2 break-words text-[13px] leading-5 text-white/55">
                           {
                             topic.description
                           }
