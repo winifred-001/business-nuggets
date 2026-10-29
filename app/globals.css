@@ -564,7 +564,7 @@ p[class~="text-[14px]"] {
 
   /* Homepage heading sizes take precedence over shared hero and mobile rules. */
   .visitor-home :is(h1, h2, h3, h4, h5, h6) {
-    font-size: 20px !important;
+    font-size: 40px !important;
     line-height: 50px !important;
   }
 
