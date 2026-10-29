@@ -625,7 +625,7 @@ function LibraryContent() {
               <aside>
                 <FilterGroup
                   title="Business Categories"
-                  items={catalog.categories.map(category => ({ label: category.name, value: category.slug, count: catalog.topics.filter(topic => topic.categoryId === category.id).length }))}
+                  items={catalog.categories.map(category => ({ label: category.name, value: category.slug, count: category.nuggetCount, topicCount: catalog.topics.filter(topic => topic.categoryId === category.id).length }))}
                   selected={selectedCategories}
                   onToggle={(category) => updateParam("category", category, true)}
                 />
@@ -1487,6 +1487,7 @@ function FilterGroup({
     label: string;
     value?: string;
     count: number;
+    topicCount: number;
   }[];
 
   selected: string[];
@@ -1499,7 +1500,7 @@ function FilterGroup({
         {title}
       </h2>
 
-      <div role="region" aria-label={`${title} filters`} tabIndex={0} className="mt-4 max-h-[320px] space-y-3 overflow-y-auto overscroll-contain pr-3 [scrollbar-color:#C8A35A_#191b18]">
+      <div role="region" aria-label={`${title} filters`} className="mt-4 space-y-3">
         {items.length === 0 && <p className="text-[13px] text-white/45">No categories available yet.</p>}
         {items.map((item) => {
           const checked =
@@ -1527,7 +1528,7 @@ function FilterGroup({
 
               <span>
                 {item.label} (
-                {item.count} {item.count === 1 ? "topic" : "topics"})
+                {item.topicCount} {item.topicCount === 1 ? "topic" : "topics"} · {item.count} {item.count === 1 ? "Nugget" : "Nuggets"})
               </span>
             </label>
           );
