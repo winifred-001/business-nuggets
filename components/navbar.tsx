@@ -29,7 +29,7 @@ type StoredUser = {
 
 const landingLinks = [
   { href: "/", label: "Home" },
-  { href: "/library", label: "The Library" },
+  { href: "/library", label: "Library" },
   { href: "/philosophy", label: "About Us" },
   { href: "/contact", label: "Contact" },
   { href: "/faqs", label: "FAQs" },
