@@ -3,6 +3,7 @@ import { DM_Sans, Manrope, Playfair_Display } from "next/font/google";
 
 import VisitorOnly from "@/components/VisitorOnly";
 import VisitorHomeHeader from "@/components/VisitorHomeHeader";
+import VisitorNuggetCounter from "@/components/VisitorNuggetCounter";
 import VisitorHomeLibrary from "@/components/VisitorHomeLibrary";
 import PageEyebrow from "@/components/PageEyebrow";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
@@ -235,15 +236,18 @@ export default async function HomePage() {
                   </h2>
                 </div>
 
-                <p className={styles.intro}>
-                  Explore thoughtful, practical reflections on leadership,
-                  stewardship, diligence, money, vision and the demands of the
-                  marketplace.
-                </p>
+                <div className={styles.introColumn}>
+                  <VisitorNuggetCounter totalCount={totalCount} />
+                  <p className={styles.intro}>
+                    Explore thoughtful, practical reflections on leadership,
+                    stewardship, diligence, money, vision and the demands of the
+                    marketplace.
+                  </p>
+                </div>
               </div>
 
               <div id="discover">
-                <VisitorHomeLibrary nuggets={homeNuggets} totalCount={totalCount} />
+                <VisitorHomeLibrary nuggets={homeNuggets} />
               </div>
 
               {nuggets.length === 0 && (

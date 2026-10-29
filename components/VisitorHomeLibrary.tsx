@@ -48,7 +48,7 @@ function matchesFilter(nugget: HomeNugget, filter: string) {
   return haystack.includes(filter);
 }
 
-export default function VisitorHomeLibrary({ nuggets, totalCount }: { nuggets: HomeNugget[]; totalCount: number | null }) {
+export default function VisitorHomeLibrary({ nuggets }: { nuggets: HomeNugget[] }) {
   const [filter, setFilter] = useState("all");
   const [term, setTerm] = useState("");
 
@@ -65,9 +65,6 @@ export default function VisitorHomeLibrary({ nuggets, totalCount }: { nuggets: H
 
   return (
     <>
-      <p className={styles.nuggetCount} aria-live="polite">
-        {totalCount === null ? "Nugget count temporarily unavailable" : `${totalCount.toLocaleString()} published ${totalCount === 1 ? "Nugget" : "Nuggets"} available`}
-      </p>
       <div className={styles.searchbox}>
         <span className={styles.searchIcon} aria-hidden="true">⌕</span>
         <input
