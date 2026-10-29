@@ -19,7 +19,6 @@ import {
   CheckCircle2,
   FileText,
   ImageIcon,
-  Lightbulb,
   ListChecks,
   Plus,
   Save,
@@ -411,25 +410,11 @@ export default function NewNuggetPage() {
           <div className="mt-6 space-y-5">
             <FormSection
               icon={<FileText size={20} />}
-              title="Basic Information"
-              description="Set the foundational details for this Nugget."
+              title="Nugget Content"
+              description="Add the teaching in reading order. Use **bold text** or <strong>bold text</strong> for bold, ## Heading on its own line for headings, and Enter for a new line."
             >
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-12">
-                <Field label="Nugget Number (BN)" required className="xl:col-span-3">
-                  <input
-                    type="number"
-                    min="1"
-                    value={form.number}
-                    onChange={(event) => updateField("number", event.target.value)}
-                    placeholder="e.g. 073"
-                    className={inputClass}
-                  />
-                  <p className="mt-2 text-[12px] text-white/25">
-                    It will appear as BN: {form.number || "---"}
-                  </p>
-                </Field>
-
-                <Field label="Title" required className="xl:col-span-5">
+              <div className="grid gap-5 md:grid-cols-2">
+                <Field label="Title" required className="md:col-span-2">
                   <input
                     value={form.title}
                     onChange={(event) => updateField("title", event.target.value)}
@@ -438,7 +423,7 @@ export default function NewNuggetPage() {
                   />
                 </Field>
 
-                <Field label="Slug" className="xl:col-span-4">
+                <Field label="Slug" className="md:col-span-2">
                   <input
                     value={slug}
                     readOnly
@@ -447,7 +432,18 @@ export default function NewNuggetPage() {
                   />
                 </Field>
 
-                <Field label="Topic" required className="xl:col-span-6">
+                <Field label="Scripture Reference" required>
+                  <input
+                    value={form.scriptureRef}
+                    onChange={(event) =>
+                      updateField("scriptureRef", event.target.value)
+                    }
+                    placeholder="e.g. Proverbs 23:7"
+                    className={inputClass}
+                  />
+                </Field>
+
+                <Field label="Topic" required>
                   <select
                     value={form.topic}
                     onChange={(event) => updateField("topic", event.target.value)}
@@ -467,65 +463,7 @@ export default function NewNuggetPage() {
                   </select>
                 </Field>
 
-                <Field label="Tag" required className="xl:col-span-6">
-                  <input
-                    value={form.tag}
-                    onChange={(event) => updateField("tag", event.target.value)}
-                    placeholder="e.g. leadership"
-                    className={inputClass}
-                  />
-                </Field>
-              </div>
-            </FormSection>
-
-            <FormSection
-              icon={<BookOpen size={20} />}
-              title="Scripture Details"
-              description="Add the biblical foundation for this Nugget."
-            >
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-12">
-                <Field label="Scripture Reference" required className="xl:col-span-4">
-                  <input
-                    value={form.scriptureRef}
-                    onChange={(event) =>
-                      updateField("scriptureRef", event.target.value)
-                    }
-                    placeholder="e.g. Proverbs 23:7"
-                    className={inputClass}
-                  />
-                </Field>
-
-                <Field label="Bible Book" required className="xl:col-span-4">
-                  <select
-                    value={form.book}
-                    onChange={(event) => updateField("book", event.target.value)}
-                    className={inputClass}
-                  >
-                    <option value="">Select a book</option>
-                    {BIBLE_BOOKS.map((book) => (
-                      <option key={book} value={book}>{book}</option>
-                    ))}
-                  </select>
-                </Field>
-
-                <Field label="Bible Section" required className="xl:col-span-4">
-                  <select
-                    value={form.bibleSection}
-                    onChange={(event) =>
-                      updateField("bibleSection", event.target.value)
-                    }
-                    className={inputClass}
-                  >
-                    <option value="">Select a Bible section</option>
-                    {bibleSections.map((section) => (
-                      <option key={section} value={section}>
-                        {section}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-
-                <Field label="Scripture Text" required className="md:col-span-2 xl:col-span-12">
+                <Field label="Scripture Text" required className="md:col-span-2">
                   <textarea
                     rows={5}
                     value={form.scriptureText}
@@ -536,16 +474,18 @@ export default function NewNuggetPage() {
                     className={textareaClass}
                   />
                 </Field>
-              </div>
-            </FormSection>
 
-            <FormSection
-              icon={<Lightbulb size={20} />}
-              title="Core Insight"
-              description="Capture the teaching and how it applies in the marketplace. Press Enter for a new line, or leave a blank line between paragraphs. Use **bold text** or <strong>bold text</strong> for bold, and ## Heading text on its own line for a heading. Basic <br> and <p> tags are also supported."
-            >
-              <div className="grid gap-5 lg:grid-cols-2">
-                <Field label="Key Principle" required>
+                <Field label="Explanation" className="md:col-span-2">
+                  <textarea
+                    rows={7}
+                    value={form.details}
+                    onChange={(event) => updateField("details", event.target.value)}
+                    placeholder="Add the full explanation and supporting details. Press Enter for a new line."
+                    className={textareaClass}
+                  />
+                </Field>
+
+                <Field label="Key Principles" required className="md:col-span-2">
                   <textarea
                     rows={5}
                     value={form.keyPrinciple}
@@ -557,17 +497,7 @@ export default function NewNuggetPage() {
                   />
                 </Field>
 
-                <Field label="Details">
-                  <textarea
-                    rows={7}
-                    value={form.details}
-                    onChange={(event) => updateField("details", event.target.value)}
-                    placeholder="Add the full explanation and supporting details. Press Enter for a new line."
-                    className={textareaClass}
-                  />
-                </Field>
-
-                <Field label="Marketplace Application" required>
+                <Field label="Marketplace Application" required className="md:col-span-2">
                   <textarea
                     rows={5}
                     value={form.marketplaceApplication}
@@ -578,6 +508,7 @@ export default function NewNuggetPage() {
                     className={textareaClass}
                   />
                 </Field>
+
               </div>
             </FormSection>
 
@@ -623,6 +554,68 @@ export default function NewNuggetPage() {
                 <Plus size={15} />
                 Add Action Step
               </button>
+            </FormSection>
+
+            <FormSection
+              icon={<BookOpen size={20} />}
+              title="Nugget Information"
+              description="Set the Nugget number, tag and Bible book."
+            >
+              <div className="grid gap-5 md:grid-cols-2">
+                <Field label="Nugget Number (BN)" required>
+                  <input
+                    type="number"
+                    min="1"
+                    value={form.number}
+                    onChange={(event) => updateField("number", event.target.value)}
+                    placeholder="e.g. 073"
+                    className={inputClass}
+                  />
+                  <p className="mt-2 text-[12px] text-white/25">
+                    It will appear as BN: {form.number || "---"}
+                  </p>
+                </Field>
+
+                <Field label="Tag" required>
+                  <input
+                    value={form.tag}
+                    onChange={(event) => updateField("tag", event.target.value)}
+                    placeholder="e.g. leadership"
+                    className={inputClass}
+                  />
+                </Field>
+
+                <Field label="Bible Book" required>
+                  <select
+                    value={form.book}
+                    onChange={(event) => updateField("book", event.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="">Select a book</option>
+                    {BIBLE_BOOKS.map((book) => (
+                      <option key={book} value={book}>{book}</option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Bible Section" required>
+                  <select
+                    value={form.bibleSection}
+                    onChange={(event) =>
+                      updateField("bibleSection", event.target.value)
+                    }
+                    className={inputClass}
+                  >
+                    <option value="">Select a Bible section</option>
+                    {bibleSections.map((section) => (
+                      <option key={section} value={section}>
+                        {section}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+              </div>
             </FormSection>
 
             <FormSection

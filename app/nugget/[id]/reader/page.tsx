@@ -114,21 +114,21 @@ export default async function ReaderViewPage({
               </blockquote>
             )}
 
+            {nugget.details && (
+              <section className="mt-9">
+                <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#15120E]">Explanation</h2>
+                <FormattedNuggetText className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]" text={nugget.details} />
+              </section>
+            )}
+
             <section className="mt-9">
               <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#15120E]">
-                Scripture Context
+                Key Principles
               </h2>
 
               <FormattedNuggetText className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]" text={nugget.keyPrinciple ||
                   "Commentary for this Nugget will be added soon."} />
             </section>
-
-            {nugget.details && (
-              <section className="mt-9">
-                <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#15120E]">Details</h2>
-                <FormattedNuggetText className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]" text={nugget.details} />
-              </section>
-            )}
 
             {nugget.marketplaceApplication && (
               <section className="mt-9">

@@ -132,19 +132,12 @@ export default async function NuggetDetailPage({
               {/* KEY PRINCIPLE */}
               <section className="pt-8">
                 <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#FAF9F6]">
-                  Key Principle
+                  Key Principles
                 </h2>
 
-                <FormattedNuggetText className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-white/50" text={nugget.keyPrinciple ||
+                <FormattedNuggetText preview className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-white/50" text={nugget.keyPrinciple ||
                     "Commentary for this Nugget will be added soon."} />
               </section>
-
-              {nugget.details && (
-                <section className="pt-9">
-                  <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#FAF9F6]">Details</h2>
-                  <FormattedNuggetText className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-white/50" text={nugget.details} />
-                </section>
-              )}
 
               {/* MARKETPLACE APPLICATION */}
               {nugget.marketplaceApplication && (
@@ -153,36 +146,16 @@ export default async function NuggetDetailPage({
                     Marketplace Application
                   </h2>
 
-                  <FormattedNuggetText className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-white/50" text={nugget.marketplaceApplication} />
+                  <FormattedNuggetText preview className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-white/50" text={nugget.marketplaceApplication} />
                 </section>
               )}
 
-              {/* PRACTICAL ACTION PLAN */}
-              {nugget.practicalActionPlan &&
-                nugget.practicalActionPlan.length > 0 && (
-                  <section className="pt-9">
-                    <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#FAF9F6]">
-                      Practical Action Plan
-                    </h2>
-
-                    <div className="mt-5 space-y-3">
-                      {nugget.practicalActionPlan.map(
-                        (action, index) => (
-                          <div
-                            key={`${index}-${action}`}
-                            className="flex gap-4 rounded-lg border border-white/[0.08] bg-[#111111] p-4"
-                          >
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#C8A35A]/40 text-[13px] font-semibold text-[#C8A35A]">
-                              {index + 1}
-                            </span>
-
-                            <FormattedNuggetText className="whitespace-pre-line break-words text-[14px] leading-6 text-white/55" text={action} />
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  </section>
-                )}
+              <Link
+                href={`/nugget/${nugget.slug}/reader`}
+                className="bn-button mt-8 inline-flex rounded-lg border border-[#C8A35A]/40 px-5 py-3 text-[13px] font-semibold text-[#C8A35A] transition hover:bg-[#C8A35A]/10 hover:text-[#E0C48A] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C8A35A]"
+              >
+                Read full teaching →
+              </Link>
             </div>
 
             {/* RIGHT ACTIONS */}

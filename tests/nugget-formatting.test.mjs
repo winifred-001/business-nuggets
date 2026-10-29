@@ -51,3 +51,16 @@ test('unclosed formatting stays readable and previews contain no formatting mark
   assert.deepEqual(text.nuggetBoldParts('**unfinished'), [{text:'**unfinished',bold:false}]);
   assert.equal(text.nuggetExcerpt('## Heading\n**Wise**<br><strong>work</strong>'), 'Heading Wise work');
 });
+
+test('six-line previews keep bold and line breaks in one clampable flow without changing the full reader rendering', () => {
+  const content = '## Heading\n**First line**\n\nSecond paragraph<br>Last line';
+  const preview = renderToStaticMarkup(React.createElement(Component, {text: content, preview: true}));
+  assert.match(preview, /line-clamp-6/);
+  assert.doesNotMatch(preview, /<p|<h3/);
+  assert.match(preview, /<strong[^>]*>First line<\/strong>/);
+  assert.match(preview, /Second paragraph\nLast line/);
+  const full = renderToStaticMarkup(React.createElement(Component, {text: content}));
+  assert.doesNotMatch(full, /line-clamp-6/);
+  assert.match(full, /<h3[^>]*>Heading<\/h3>/);
+  assert.match(full, /Last line/);
+});
