@@ -91,20 +91,52 @@ const sampleNuggets = [
       "Borrowing decisions carry responsibilities. Consider the cost of leverage and the importance of financial resilience.",
     marketplaceApplication: "",
   },
+  {
+    slug: "serve-your-customers-well",
+    number: 7,
+    title: "Serve Your Customers Well",
+    topic: "Service & Character",
+    tag: "character",
+    scriptureRef: "MARK 10:45",
+    keyPrinciple: "Approach leadership and customer relationships with a willingness to serve and a commitment to doing good work.",
+    marketplaceApplication: "",
+  },
+  {
+    slug: "seek-wise-counsel",
+    number: 8,
+    title: "Seek Wise Counsel",
+    topic: "Strategy & Decisions",
+    tag: "strategy",
+    scriptureRef: "PROVERBS 15:22",
+    keyPrinciple: "Invite thoughtful advice before making important decisions. Wise counsel can reveal gaps and strengthen a plan.",
+    marketplaceApplication: "",
+  },
+  {
+    slug: "be-faithful-in-small-things",
+    number: 9,
+    title: "Be Faithful in Small Things",
+    topic: "Stewardship & Growth",
+    tag: "growth",
+    scriptureRef: "LUKE 16:10",
+    keyPrinciple: "Care for the responsibilities already in your hands. Trust grows through consistent attention to everyday commitments.",
+    marketplaceApplication: "",
+  },
 ];
 
 export default async function HomePage() {
   let nuggets: Nugget[] = [];
+  let totalCount: number | null = null;
 
   try {
     nuggets = (await getPublishedNuggets()) as Nugget[];
+    totalCount = nuggets.length;
   } catch (error) {
     console.error("Failed to load visitor homepage Nuggets:", error);
   }
 
   const homeNuggets =
     nuggets.length > 0
-      ? nuggets.slice(0, 6).map((nugget) => ({
+      ? nuggets.slice(0, 9).map((nugget) => ({
           slug: nugget.slug,
           number: nugget.number,
           title: nugget.title,
@@ -121,7 +153,7 @@ export default async function HomePage() {
   return (
     <VisitorOnly>
       <div
-        className={`${styles.page} ${dmSans.variable} ${manrope.variable} ${playfair.variable}`}
+        className={`visitor-home ${styles.page} ${dmSans.variable} ${manrope.variable} ${playfair.variable}`}
       >
         <VisitorHomeHeader />
 
@@ -146,9 +178,9 @@ export default async function HomePage() {
                 </p>
 
                 <div className={styles.actions}>
-                  <a href="#library" className={`bn-button ${styles.btn}`}>
+                  <Link href="/library" className={`bn-button ${styles.btn}`}>
                     Explore the Nuggets <span>↗</span>
-                  </a>
+                  </Link>
                   <a href="#approach" className={`bn-button ${`${styles.btn} ${styles.btnOutline}`}`}>
                     Discover Our Vision <span>↗</span>
                   </a>
@@ -211,7 +243,7 @@ export default async function HomePage() {
               </div>
 
               <div id="discover">
-                <VisitorHomeLibrary nuggets={homeNuggets} />
+                <VisitorHomeLibrary nuggets={homeNuggets} totalCount={totalCount} />
               </div>
 
               {nuggets.length === 0 && (
@@ -250,9 +282,9 @@ export default async function HomePage() {
                   <li>Translate wisdom into ethical business practice</li>
                   <li>Reflect, apply and grow with intention</li>
                 </ul>
-                <a href="#library" className={`bn-button ${styles.btn}`}>
+                <Link href="/library" className={`bn-button ${styles.btn}`}>
                   Begin Your Discovery ↗
-                </a>
+                </Link>
               </div>
             </div>
           </section>
@@ -266,9 +298,9 @@ export default async function HomePage() {
                   marketplace.
                 </p>
               </div>
-              <a href="#library" className={`bn-button ${styles.btn}`}>
+              <Link href="/library" className={`bn-button ${styles.btn}`}>
                 Explore the Library ↗
-              </a>
+              </Link>
             </div>
           </section>
         </main>

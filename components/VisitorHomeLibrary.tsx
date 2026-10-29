@@ -48,7 +48,7 @@ function matchesFilter(nugget: HomeNugget, filter: string) {
   return haystack.includes(filter);
 }
 
-export default function VisitorHomeLibrary({ nuggets }: { nuggets: HomeNugget[] }) {
+export default function VisitorHomeLibrary({ nuggets, totalCount }: { nuggets: HomeNugget[]; totalCount: number | null }) {
   const [filter, setFilter] = useState("all");
   const [term, setTerm] = useState("");
 
@@ -65,6 +65,9 @@ export default function VisitorHomeLibrary({ nuggets }: { nuggets: HomeNugget[] 
 
   return (
     <>
+      <p className={styles.nuggetCount} aria-live="polite">
+        {totalCount === null ? "Nugget count temporarily unavailable" : `${totalCount.toLocaleString()} published ${totalCount === 1 ? "Nugget" : "Nuggets"} available`}
+      </p>
       <div className={styles.searchbox}>
         <span className={styles.searchIcon} aria-hidden="true">⌕</span>
         <input
@@ -74,13 +77,9 @@ export default function VisitorHomeLibrary({ nuggets }: { nuggets: HomeNugget[] 
           value={term}
           onChange={(event) => setTerm(event.target.value)}
         />
-        <button
-          type="button"
-          className={styles.btn}
-          onClick={() => document.getElementById("visitor-home-cards")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-        >
-          Search ↗
-        </button>
+        <Link href="/library" className={`bn-button ${styles.btn}`}>
+          Open Library ↗
+        </Link>
       </div>
 
       <div className={styles.pills} role="group" aria-label="Filter by topic">
@@ -98,7 +97,7 @@ export default function VisitorHomeLibrary({ nuggets }: { nuggets: HomeNugget[] 
 
       {visible.length > 0 ? (
         <div className={styles.cards} id="visitor-home-cards">
-          {visible.slice(0, 6).map((nugget) => (
+          {visible.slice(0, 9).map((nugget) => (
             <article className={styles.card} key={nugget.slug}>
               <div className={styles.cardtop}>
                 <span className={styles.cardtag}>{nugget.topic || nugget.tag}</span>
@@ -110,7 +109,7 @@ export default function VisitorHomeLibrary({ nuggets }: { nuggets: HomeNugget[] 
 
               <div className={styles.cardfoot}>
                 <span>{nugget.scriptureRef}</span>
-                <Link href={`/nugget/${nugget.slug}`}>Read insight ↗</Link>
+                <Link href="/library">Read insight ↗</Link>
               </div>
             </article>
           ))}
