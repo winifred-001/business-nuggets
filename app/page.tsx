@@ -182,9 +182,9 @@ export default async function HomePage() {
                   <Link href="/library" className={`bn-button ${styles.btn}`}>
                     Explore the Nuggets <span>↗</span>
                   </Link>
-                  <a href="#approach" className={`bn-button ${`${styles.btn} ${styles.btnOutline}`}`}>
+                  <Link href="/philosophy" className={`bn-button ${styles.btn} ${styles.btnOutline}`}>
                     Discover Our Vision <span>↗</span>
-                  </a>
+                  </Link>
                 </div>
 
                 <div className={styles.micro}>
