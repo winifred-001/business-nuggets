@@ -141,7 +141,7 @@ export default async function CollectionDetailPage({
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10">
+        <section className="bn-collection-content mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 className="font-serif text-[28px]">
@@ -191,7 +191,7 @@ export default async function CollectionDetailPage({
                   <div className="min-w-0">
                     <Link
                       href={`/nugget/${unit.slug}`}
-                      className="font-serif text-[17px] leading-5 text-[#FAF9F6] transition hover:text-[#E0C48A]"
+                      className="bn-collection-card-title line-clamp-2 break-words font-serif text-[#FAF9F6] transition hover:text-[#E0C48A]"
                     >
                       {unit.title}
                     </Link>

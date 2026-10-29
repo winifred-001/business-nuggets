@@ -1197,14 +1197,14 @@ function LibraryContent() {
                         Featured Pathway
                       </p>
 
-                      <h3 className="mt-3 font-serif text-[24px] leading-tight">
+                      <h3 className="bn-collection-card-title mt-3 line-clamp-2 break-words font-serif">
                         {
                           collectionCards[0]
                             .title
                         }
                       </h3>
 
-                      <p className="mt-3 max-w-xl text-[14px] leading-6 text-white/50">
+                      <p className="mt-3 max-w-xl line-clamp-2 break-words text-[14px] leading-6 text-white/50">
                         {
                           collectionCards[0]
                             .description
@@ -1274,13 +1274,13 @@ function LibraryContent() {
                               </div>
 
                               <div className="min-w-0 flex-1">
-                                <h4 className="font-serif text-[16px]">
+                                <h4 className="bn-collection-card-title line-clamp-2 break-words font-serif">
                                   {
                                     collection.title
                                   }
                                 </h4>
 
-                                <p className="mt-1 text-[13px] leading-5 text-white/45">
+                                <p className="mt-1 line-clamp-2 break-words text-[13px] leading-5 text-white/45">
                                   {
                                     collection.description
                                   }
