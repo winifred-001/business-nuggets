@@ -2,6 +2,7 @@
 
 import { BIBLE_BOOKS, BIBLE_GROUPS, referenceWithBook, bibleGroupForBook, bibleBookFromReference, canonicalBibleBook } from "@/lib/bible-books";
 
+import ImageMediaPicker from "@/components/ImageMediaPicker";
 import AudioMediaInput from "@/components/AudioMediaInput";
 
 import Image from "next/image";
@@ -1110,6 +1111,7 @@ export default function EditNuggetPage() {
                     alt=""
                     fill
                     sizes="280px"
+                    unoptimized
                     className="object-cover"
                   />
                 ) : (
@@ -1148,14 +1150,7 @@ export default function EditNuggetPage() {
                 className="mt-2 h-9 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[9px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
               />
 
-              <button
-                type="button"
-                disabled
-                title="The Admin Media Library will be connected when we build that screen."
-                className="mt-2 h-9 w-full rounded-md border border-white/10 text-[8px] text-white/30 disabled:cursor-not-allowed"
-              >
-                Choose from Library
-              </button>
+              <ImageMediaPicker value={form.image} disabled={saving} onSelect={url => updateField("image", url)} />
             </section>
 
             {/* PUBLISHING */}
