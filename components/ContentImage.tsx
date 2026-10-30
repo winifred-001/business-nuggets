@@ -21,7 +21,8 @@ export default function ContentImage({
   const [failedSources, setFailedSources] = useState<string[]>([]);
 
   const requested =
-    src.startsWith("/") && !src.startsWith("//")
+    (src.startsWith("/") && !src.startsWith("//")) ||
+    /^https:\/\/[^/]/i.test(src)
       ? src
       : SAMPLE_IMAGE;
 

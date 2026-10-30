@@ -64,6 +64,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Media Library URLs may use the API proxy, Cloudinary, or external storage.
+  // Let browsers load them directly without the optimizer hostname restriction.
+  images: { unoptimized: true },
   async headers() {
     return [
       {
