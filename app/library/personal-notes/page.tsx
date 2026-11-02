@@ -61,7 +61,8 @@ export default function PersonalNotesPage() {
       setNotes(loadedNotes);
 
       if (loadedNotes.length > 0 && selectedId === null) {
-        selectNote(loadedNotes[0]);
+        const requestedId = Number(new URLSearchParams(window.location.search).get("note"));
+        selectNote(loadedNotes.find(note => note.id === requestedId) || loadedNotes[0]);
       }
     } catch {
       setError("Could not connect to the server.");

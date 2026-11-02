@@ -1,3 +1,4 @@
+import { hasNuggetHtml, nuggetHtml, nuggetHtmlText } from "./nugget-html";
 /** Converts supported paragraph/break tags to text; never executes HTML. */
 export function nuggetText(value: string) {
   return value
@@ -42,6 +43,7 @@ export function nuggetBlocks(value: string) {
 }
 
 export function nuggetExcerpt(value: string) {
+  if (hasNuggetHtml(value)) return nuggetBoldParts(nuggetHtmlText(nuggetHtml(value))).map(part => part.text).join("").replace(/\s+/g, " ").trim();
   return nuggetBlocks(value)
     .map(block => nuggetBoldParts(block.text).map(part => part.text).join(""))
     .join(" ")

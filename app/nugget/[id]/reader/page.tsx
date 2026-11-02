@@ -1,3 +1,4 @@
+import ReaderStudyNotes from "@/components/ReaderStudyNotes";
 import FormattedNuggetText from "@/components/FormattedNuggetText";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -76,16 +77,9 @@ export default async function ReaderViewPage({
               </blockquote>
             )}
 
-            {nugget.details && (
-              <section className="mt-9">
-                <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#15120E]">Explanation</h2>
-                <FormattedNuggetText className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]" text={nugget.details} />
-              </section>
-            )}
-
             <section className="mt-9">
               <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#15120E]">
-                Key Principles
+                Key Principles and Boundaries
               </h2>
 
               <FormattedNuggetText className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]" text={nugget.keyPrinciple ||
@@ -99,6 +93,13 @@ export default async function ReaderViewPage({
                 </h2>
 
                 <FormattedNuggetText className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]" text={nugget.marketplaceApplication} />
+              </section>
+            )}
+
+            {nugget.details && (
+              <section className="mt-9">
+                <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#15120E]">Explanation: Full Biblical Context and Teaching</h2>
+                <FormattedNuggetText className="mt-4 max-w-[820px] whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]" text={nugget.details} />
               </section>
             )}
 
@@ -128,6 +129,15 @@ export default async function ReaderViewPage({
                 </section>
               )}
 
+            {nugget.challenges?.length > 0 && (
+              <section className="mt-9">
+                <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#15120E]">Challenges &amp; Reflection</h2>
+                <ul className="mt-4 list-disc space-y-3 pl-5 text-[14px] leading-7 text-[#4F4941]">
+                  {nugget.challenges.map((prompt, index) => <li key={index}><FormattedNuggetText text={prompt} /></li>)}
+                </ul>
+              </section>
+            )}
+
             <Link
               href={`/nugget/${nugget.slug}`}
               className="mt-10 inline-flex items-center text-[13px] font-semibold text-[#9A7839] transition hover:text-[#6F5224]"
@@ -137,29 +147,7 @@ export default async function ReaderViewPage({
           </article>
 
           <aside className="self-start lg:sticky lg:top-24">
-            <div className="border border-[#BCA46E] bg-[#F8F3EA] p-5">
-              <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#15120E]">
-                My Study Notes
-              </h2>
-
-              <p className="mt-3 text-[13px] leading-5 text-[#756E64]">
-                Take this in, then act. Write what you must execute each week instead of buying the next prosperity read.
-              </p>
-
-              <label
-                htmlFor="study-notes"
-                className="sr-only"
-              >
-                My study notes
-              </label>
-
-              <textarea
-                id="study-notes"
-                rows={7}
-                placeholder="Write your notes here..."
-                className="mt-4 w-full resize-none border border-[#BCA46E] bg-[#F5F0E8] p-3 text-[13px] leading-5 text-[#15120E] outline-none placeholder:text-[#9B9388] focus:border-[#9A7839]"
-              />
-            </div>
+            <ReaderStudyNotes key={nugget.id} nuggetId={nugget.id} title={nugget.title} slug={nugget.slug} />
           </aside>
         </div>
       </main>

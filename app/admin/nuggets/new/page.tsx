@@ -410,7 +410,7 @@ export default function NewNuggetPage() {
             <FormSection
               icon={<FileText size={20} />}
               title="Nugget Content"
-              description="Add the teaching in reading order. Use **bold text** or <strong>bold text</strong> for bold, ## Heading on its own line for headings, and Enter for a new line."
+              description="HTML formatting is supported: <p>, <br>, <strong> (or <bold>), <em>, <u>, <ul>, <ol>, <li>, headings and links. You can also use **bold text**, ## Heading, and Enter for new lines. Scripts and embedded content are not supported."
             >
               <div className="grid gap-5 md:grid-cols-2">
                 <Field label="Title" required className="md:col-span-2">
