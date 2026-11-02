@@ -111,9 +111,17 @@ function isNugget(value: unknown): value is Nugget {
 export async function getPublishedNuggets(
   token?: string | null,
 ): Promise<Nugget[]> {
+  return (await getPublishedNuggetsWithAccess(token)).nuggets;
+}
+
+// Use the backend's access decision rather than trusting stored profile data.
+export async function getPublishedNuggetsWithAccess(
+  token?: string | null,
+): Promise<{ nuggets: Nugget[]; premium: boolean }> {
   const headers = authHeaders(token);
   const nuggets: Nugget[] = [];
   let page = 1;
+  let premium = false;
   while (true) {
     const response = await fetch(`${API_URL}/nuggets?limit=100&page=${page}`, {
       cache: "no-store",
@@ -121,15 +129,16 @@ export async function getPublishedNuggets(
     });
     if (!response.ok) throw new Error(`Could not load nuggets: ${response.status}`);
     const result: unknown = await response.json();
-    if (Array.isArray(result)) return normalizeFeed(result, false);
-    if (!result || typeof result !== "object" || !("data" in result)) return nuggets;
+    if (Array.isArray(result)) return { nuggets: normalizeFeed(result, false), premium: false };
+    if (!result || typeof result !== "object" || !("data" in result)) return { nuggets, premium };
     const envelope = result as NuggetsApiResponse;
-    if (!Array.isArray(envelope.data)) return nuggets;
-    nuggets.push(...normalizeFeed(envelope.data, envelope.access?.premium === true));
+    if (!Array.isArray(envelope.data)) return { nuggets, premium };
+    premium = envelope.access?.premium === true;
+    nuggets.push(...normalizeFeed(envelope.data, premium));
     if (!envelope.pagination?.hasNextPage || page >= envelope.pagination.totalPages || !envelope.data.length) break;
     page += 1;
   }
-  return nuggets;
+  return { nuggets, premium };
 }
 
 

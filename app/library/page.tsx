@@ -7,6 +7,7 @@ import {
   Suspense,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -32,7 +33,7 @@ import {
 } from "@/lib/nuggets";
 import { BIBLE_GROUPS } from "@/lib/bible-books";
 import { getCollections, type PublicCollection } from "@/lib/collections-api";
-import { getPublishedNuggets } from "@/lib/nuggets-api";
+import { getPublishedNuggetsWithAccess } from "@/lib/nuggets-api";
 
 import { getTopicCatalog, type TopicCatalog } from "@/lib/topics-api";
 
@@ -169,6 +170,9 @@ function LibraryContent() {
 
   const [catalog, setCatalog] = useState<TopicCatalog>({ topics: [], categories: [] });
 
+  const [premiumAccess, setPremiumAccess] = useState(false);
+  const upgradeDialog = useRef<HTMLDialogElement>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -182,14 +186,15 @@ function LibraryContent() {
       try {
         setLoading(true);
 
-        const [data, taxonomy, savedCollections] = await Promise.all([getPublishedNuggets(), getTopicCatalog(), getCollections().catch(() => {
+        const [data, taxonomy, savedCollections] = await Promise.all([getPublishedNuggetsWithAccess(), getTopicCatalog(), getCollections().catch(() => {
           if (mounted) setCollectionsError("Collections could not be loaded. Please refresh the page to try again.");
           return [];
         })]);
 
         if (!mounted) return;
 
-        setApiNuggets(data);
+        setApiNuggets(data.nuggets);
+        setPremiumAccess(data.premium);
         setCatalog(taxonomy);
         setCollections(savedCollections);
         setError("");
@@ -257,7 +262,7 @@ function LibraryContent() {
   );
 
   const currentPage =
-    Number.isFinite(requestedPage) &&
+    Number.isInteger(requestedPage) &&
     requestedPage > 0
       ? requestedPage
       : 1;
@@ -278,6 +283,11 @@ function LibraryContent() {
     value: string,
     multiple = false,
   ) {
+    if (key === "page" && Number(value) > 2 && !premiumAccess) {
+      upgradeDialog.current?.showModal();
+      return;
+    }
+
     const next = new URLSearchParams(
       params.toString(),
     );
@@ -381,7 +391,9 @@ function LibraryContent() {
     totalPages,
   );
 
-  const paginatedNuggets =
+  const pageRequiresPremium = safePage > 2 && !premiumAccess;
+
+  const paginatedNuggets = pageRequiresPremium ? [] :
     filteredNuggets.slice(
       (safePage - 1) *
         ITEMS_PER_PAGE,
@@ -520,6 +532,10 @@ function LibraryContent() {
 
   return (
     <main>
+      <dialog ref={upgradeDialog} aria-labelledby="library-upgrade-title"
+        className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-32px)] max-w-[520px] overflow-y-auto rounded-xl border border-[#C8A35A]/40 bg-[#111111] p-6 text-[#FAF9F6] shadow-2xl backdrop:bg-black/75 sm:p-8">
+        <LibraryUpgradePrompt onReturn={() => upgradeDialog.current?.close()} dialog />
+      </dialog>
       {/* PAGE HEADER */}
       <section className="border-b border-white/[0.06]">
         <div className="mx-auto w-[calc(100%-38px)] max-w-[1190px] pt-16 sm:pt-24 lg:w-[calc(100%-64px)]">
@@ -697,7 +713,9 @@ function LibraryContent() {
                   </label>
                 </div>
 
-                {paginatedNuggets.length >
+                {pageRequiresPremium ? (
+                  <LibraryUpgradePrompt onReturn={() => updateParam("page", "2")} />
+                ) : paginatedNuggets.length >
                 0 ? (
                   <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                     {paginatedNuggets.map(
@@ -737,6 +755,7 @@ function LibraryContent() {
                 {totalPages > 1 && (
                   <div className="mt-8 flex flex-wrap justify-end gap-2">
                     <PageButton
+                      label="Previous page"
                       disabled={
                         safePage === 1
                       }
@@ -772,6 +791,8 @@ function LibraryContent() {
                             number
                           }
                           type="button"
+                          aria-label={`Page ${number}${number > 2 && !premiumAccess ? ": Premium required" : ""}`}
+                          aria-current={safePage === number ? "page" : undefined}
                           onClick={() =>
                             updateParam(
                               "page",
@@ -793,6 +814,7 @@ function LibraryContent() {
                     )}
 
                     <PageButton
+                      label="Next page"
                       disabled={
                         safePage ===
                         totalPages
@@ -1497,11 +1519,37 @@ function FilterGroup({
   );
 }
 
+function LibraryUpgradePrompt({ onReturn, dialog = false }: {
+  onReturn: () => void;
+  dialog?: boolean;
+}) {
+  return (
+    <section className={dialog ? "text-center" : "rounded-xl border border-[#C8A35A]/35 bg-[#111111] px-6 py-10 text-center"}>
+      <h2 id={dialog ? "library-upgrade-title" : undefined} className="font-serif text-[28px] text-[#FAF9F6]">
+        Explore more with Premium
+      </h2>
+      <p className="mt-4 text-[15px] leading-7 text-white/60">
+        You can browse the first 2 pages of the Library. Upgrade to Premium to browse every page and unlock Gold Nuggets.
+      </p>
+      <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+        <Link href="/membership" className="bn-button rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]">
+          Upgrade to Premium
+        </Link>
+        <button type="button" autoFocus={dialog} onClick={onReturn} className="bn-button rounded-lg border border-white/15 px-5 py-3 text-[13px] text-white/70 transition hover:border-[#C8A35A] hover:text-[#E0C48A]">
+          {dialog ? "Keep browsing" : "Back to page 2"}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function PageButton({
+  label,
   children,
   onClick,
   disabled = false,
 }: {
+  label: string;
   children: React.ReactNode;
   onClick: () => void;
   disabled?: boolean;
@@ -1510,6 +1558,7 @@ function PageButton({
     <button
       type="button"
       disabled={disabled}
+      aria-label={label}
       onClick={onClick}
       className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-white/45 transition hover:border-[#C8A35A]/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
     >
