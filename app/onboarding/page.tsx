@@ -21,6 +21,12 @@ type NuggetsEnvelope = {
   };
 };
 
+type PopularNuggetResponse = {
+  data?: Array<{
+    nuggetId?: string;
+  }>;
+};
+
 async function loadPublishedNuggets() {
   const nuggets: Nugget[] = [];
   let page = 1;
@@ -61,12 +67,34 @@ async function loadPublishedNuggets() {
   return nuggets;
 }
 
+async function loadPopularNuggetIds() {
+  try {
+    const response = await fetch(
+      "/api/member/proxy/discovery/popular-nuggets?limit=5&days=30",
+      { cache: "no-store" },
+    );
+
+    if (!response.ok) return [];
+
+    const result = (await response.json().catch(() => ({}))) as PopularNuggetResponse;
+
+    return Array.isArray(result.data)
+      ? result.data
+          .map((item) => item.nuggetId)
+          .filter((value): value is string => Boolean(value))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
 
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedWisdom, setSelectedWisdom] = useState<string[]>([]);
   const [nuggets, setNuggets] = useState<Nugget[]>([]);
+  const [popularNuggetIds, setPopularNuggetIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -74,18 +102,21 @@ export default function OnboardingPage() {
   useEffect(() => {
     async function loadOnboarding() {
       try {
-        const [preferencesResponse, publishedNuggets] = await Promise.all([
-          fetch("/api/member/proxy/users/me/preferences", {
-            cache: "no-store",
-          }),
-          loadPublishedNuggets(),
-        ]);
+        const [preferencesResponse, publishedNuggets, popularIds] =
+          await Promise.all([
+            fetch("/api/member/proxy/users/me/preferences", {
+              cache: "no-store",
+            }),
+            loadPublishedNuggets(),
+            loadPopularNuggetIds(),
+          ]);
 
         const preferencesData = preferencesResponse.ok
           ? await preferencesResponse.json().catch(() => ({}))
           : {};
 
         setNuggets(publishedNuggets);
+        setPopularNuggetIds(popularIds);
         setSelectedInterests(
           Array.isArray(preferencesData.interests)
             ? preferencesData.interests
@@ -116,8 +147,14 @@ export default function OnboardingPage() {
   );
 
   const nuggetChoices = useMemo(
-    () => getOnboardingNuggetChoices(nuggets, selectedInterests, 5),
-    [nuggets, selectedInterests],
+    () =>
+      getOnboardingNuggetChoices(
+        nuggets,
+        selectedInterests,
+        popularNuggetIds,
+        5,
+      ),
+    [nuggets, selectedInterests, popularNuggetIds],
   );
 
   function toggleInterest(interest: string) {
@@ -244,8 +281,8 @@ export default function OnboardingPage() {
               <section className="mt-9 w-full max-w-[860px] rounded-[10px] border border-white/10 bg-[#111111] px-5 py-6 sm:px-7">
                 <h2 className="font-serif">Choose Nuggets for Your Wisdom Stream</h2>
                 <p className="mt-2 text-white/35">
-                  These five options are refreshed from recent Nuggets, featured/popular
-                  Nuggets and Nuggets inside the categories you selected.
+                  These five options are refreshed from popular Nuggets, recent Nuggets
+                  and Nuggets inside the categories you selected.
                 </p>
 
                 <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
