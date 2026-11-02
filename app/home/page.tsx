@@ -8,16 +8,15 @@ import NuggetCard from "@/components/NuggetCard";
 
 import { API_URL } from "@/lib/api";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
+import {
+  rankPersonalizedNuggets,
+  type UserPreferences,
+} from "@/lib/personalization";
 import { getServerMemberToken } from "@/lib/server-member-token";
 
 import type { Nugget } from "@/types/nugget";
 
 import styles from "./home-typography.module.css";
-
-type UserPreferences = {
-  interests: string[];
-  wisdomNeeds: string[];
-};
 
 type FollowedTopic = {
   topic?: string;
@@ -121,76 +120,6 @@ async function loadMemberPersonalization(token: string | null) {
   }
 }
 
-function getRecommendedNuggets(
-  nuggets: Nugget[],
-  preferences: UserPreferences,
-  followedTopics: string[],
-) {
-  const signals = [
-    ...preferences.wisdomNeeds.map((value) => ({ value, weight: 4 })),
-    ...preferences.interests.map((value) => ({ value, weight: 3 })),
-    ...followedTopics.map((value) => ({ value, weight: 2 })),
-  ];
-
-  if (signals.length === 0) {
-    return nuggets.slice(0, 4);
-  }
-
-  const scored = nuggets.map((nugget) => {
-    const searchable = [
-      nugget.title,
-      nugget.topic,
-      nugget.tag,
-      nugget.keyPrinciple,
-      nugget.marketplaceApplication,
-      nugget.scriptureRef,
-      nugget.scriptureText,
-      ...(nugget.challenges ?? []),
-      ...(nugget.practicalActionPlan ?? []),
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-
-    let score = 0;
-
-    for (const signal of signals) {
-      const normalized = signal.value.trim().toLowerCase();
-
-      if (!normalized) continue;
-
-      if (searchable.includes(normalized)) {
-        score += signal.weight * 3;
-        continue;
-      }
-
-      const words = normalized
-        .split(/[\s&,/]+/)
-        .map((word) => word.trim())
-        .filter((word) => word.length > 3);
-
-      for (const word of words) {
-        if (searchable.includes(word)) {
-          score += signal.weight;
-        }
-      }
-    }
-
-    return {
-      nugget,
-      score,
-    };
-  });
-
-  const matches = scored
-    .filter((item) => item.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 4)
-    .map((item) => item.nugget);
-
-  return matches.length > 0 ? matches : nuggets.slice(0, 4);
-}
-
 function getContinueListening(
   nuggets: Nugget[],
   history: HistoryItem[],
@@ -232,10 +161,11 @@ export default async function HomePage() {
   const { preferences, followedTopics, history } =
     await loadMemberPersonalization(token);
 
-  const recommendations = getRecommendedNuggets(
+  const recommendations = rankPersonalizedNuggets(
     nuggets,
     preferences,
     followedTopics,
+    4,
   );
 
   const continueListening = getContinueListening(nuggets, history);
@@ -254,7 +184,7 @@ export default async function HomePage() {
             </h1>
 
             <p className="mt-3 max-w-[700px] text-white/50">
-              Continue learning and discover Business Nuggets shaped by your interests.
+              Continue learning and discover Business Nuggets shaped by your onboarding choices.
             </p>
           </section>
 
@@ -331,7 +261,7 @@ export default async function HomePage() {
                 </h2>
 
                 <p className="mt-2 text-white/40">
-                  Tailored teachings based on your interests and leadership profile.
+                  Tailored from the same saved onboarding choices used by your Recommendation Guide.
                 </p>
               </div>
 
