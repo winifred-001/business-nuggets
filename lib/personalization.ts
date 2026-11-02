@@ -40,8 +40,11 @@ function newestFirst(a: Nugget, b: Nugget) {
 }
 
 export function getCurrentCategories(nuggets: Nugget[]) {
-  return [...new Set(nuggets.map((nugget) => nugget.topic?.trim()).filter(Boolean))]
-    .sort((a, b) => a.localeCompare(b));
+  const categories = nuggets
+    .map((nugget) => nugget.topic?.trim())
+    .filter((value): value is string => Boolean(value));
+
+  return [...new Set(categories)].sort((a, b) => a.localeCompare(b));
 }
 
 export function getOnboardingNuggetChoices(
