@@ -73,6 +73,10 @@ import {
 } from "./analytics/analytics.module";
 
 import {
+  DiscoveryModule,
+} from "./discovery/discovery.module";
+
+import {
   MobileAppModule,
 } from "./mobile-app/mobile-app.module";
 
@@ -127,6 +131,7 @@ import {
     MediaModule,
     ModerationModule,
     AnalyticsModule,
+    DiscoveryModule,
     MobileAppModule,
     AppSettingsModule,
     PaymentsModule,
