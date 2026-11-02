@@ -50,15 +50,17 @@ export function getCurrentCategories(nuggets: Nugget[]) {
 export function getOnboardingNuggetChoices(
   nuggets: Nugget[],
   selectedCategories: string[],
+  popularNuggetIds: string[] = [],
   limit = 5,
 ): OnboardingChoice[] {
   const result: OnboardingChoice[] = [];
   const used = new Set<string>();
   const selected = new Set(selectedCategories.map(normalized));
   const recent = [...nuggets].sort(newestFirst);
+  const byId = new Map(nuggets.map((nugget) => [nugget.id, nugget]));
 
-  const add = (nugget: Nugget, source: OnboardingChoice["source"]) => {
-    if (result.length >= limit || used.has(nugget.id)) return;
+  const add = (nugget: Nugget | undefined, source: OnboardingChoice["source"]) => {
+    if (!nugget || result.length >= limit || used.has(nugget.id)) return;
     used.add(nugget.id);
     result.push({ nugget, source });
   };
@@ -70,13 +72,22 @@ export function getOnboardingNuggetChoices(
       .forEach((nugget) => add(nugget, "category"));
   }
 
+  const analyticsPopular = popularNuggetIds
+    .map((id) => byId.get(id))
+    .filter((nugget): nugget is Nugget => Boolean(nugget));
+
   const featured = recent.filter(
     (nugget) => Boolean((nugget as Nugget & { featured?: boolean }).featured),
   );
 
-  const popularPool = featured.length > 0 ? featured : recent;
-  popularPool.slice(0, 2).forEach((nugget) => add(nugget, "popular"));
+  const popularPool =
+    analyticsPopular.length > 0
+      ? analyticsPopular
+      : featured.length > 0
+        ? featured
+        : recent;
 
+  popularPool.slice(0, 2).forEach((nugget) => add(nugget, "popular"));
   recent.forEach((nugget) => add(nugget, "recent"));
 
   return result.slice(0, limit);
