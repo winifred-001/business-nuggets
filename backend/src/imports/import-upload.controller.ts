@@ -21,6 +21,7 @@ import { TopicsService } from '../topics/topics.service';
 import { ImportTicketGuard } from './import-ticket';
 import { readImportFile } from './import-file';
 import { IMPORT_LIMIT } from './import-limits';
+import { ScriptureVersesService } from '../scripture/scripture-verses.service';
 import { importHierarchy } from './hierarchy-import';
 
 /** Direct upload avoids the hosting proxy's body-size ceiling. Tickets cannot authenticate other API routes. */
@@ -33,14 +34,14 @@ import { importHierarchy } from './hierarchy-import';
 )
 @UseInterceptors(AdminAuditInterceptor)
 export class ImportUploadController {
-  constructor(private readonly topics: TopicsService) {}
+  constructor(private readonly topics: TopicsService, private readonly verses: ScriptureVersesService) {}
   @Post(':kind/:stage')
   @RequireAdminPermission('manageNuggets')
   @UseInterceptors(
     FileInterceptor('file', { limits: { fileSize: IMPORT_LIMIT, files: 1 } }),
   )
   async upload(
-    @Param('kind') kind: 'topics' | 'nuggets',
+    @Param('kind') kind: 'topics' | 'nuggets' | 'verses',
     @Param('stage') stage: 'preview' | 'commit',
     @UploadedFile() file: Express.Multer.File,
     @Request() request: any,
@@ -54,8 +55,10 @@ export class ImportUploadController {
       throw new BadRequestException(
         'The uploaded file changed. Choose the file and preview again.',
       );
+    const csv = await readImportFile(file);
+    if (kind === 'verses') return this.verses.import(csv, stage === 'preview');
     return importHierarchy(
-      await readImportFile(file),
+      csv,
       stage === 'preview',
       kind,
       this.topics,

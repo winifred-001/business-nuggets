@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 
+import ScriptureVerseDialog from "@/components/admin/ScriptureVerseDialog";
 import AdminShell from "@/components/admin/AdminShell";
 import { API_URL } from "@/lib/api";
 
@@ -27,9 +28,11 @@ type ScriptureBook = {
   displayOrder: number;
 
   nuggetCount: number;
+  verseCount: number;
 };
 
 type ScriptureResponse = {
+  verseCount: number;
   books: ScriptureBook[];
 
   unlinkedCount: number;
@@ -42,6 +45,8 @@ type ScriptureResponse = {
 };
 
 export default function AdminScripturePage() {
+  const [verseMode, setVerseMode] = useState<"import" | "browse" | null>(null);
+  const [verseCount, setVerseCount] = useState(0);
   const [books, setBooks] =
     useState<ScriptureBook[]>([]);
 
@@ -145,6 +150,7 @@ export default function AdminScripturePage() {
         return;
       }
 
+      setVerseCount(data.verseCount || 0);
       setBooks(
         data.books || [],
       );
@@ -349,6 +355,7 @@ export default function AdminScripturePage() {
   return (
     <AdminShell>
       <main className="px-4 py-6 sm:px-6 lg:px-7">
+        {verseMode && <ScriptureVerseDialog initialMode={verseMode} close={() => setVerseMode(null)} completed={loadIndex} />}
         {/* HEADER */}
 
         <section className="flex items-start justify-between gap-4">
@@ -364,14 +371,10 @@ export default function AdminScripturePage() {
             </p>
           </div>
 
-          <button
-            type="button"
-            disabled
-            title="Verse import will be connected when verse records are added."
-            className="h-9 rounded-md border border-white/10 px-4 text-[9px] text-white/35 disabled:cursor-not-allowed"
-          >
-            Import Verses
-          </button>
+          <div className="flex flex-wrap justify-end gap-2">
+            <button type="button" onClick={() => setVerseMode("browse")} className="bn-button rounded-md border border-white/15 px-4 py-2 text-[13px] text-white/60 transition hover:border-[#C8A35A]/50 hover:text-[#E0C48A]">View Verses ({verseCount})</button>
+            <button type="button" onClick={() => setVerseMode("import")} className="bn-button rounded-md border border-[#C8A35A]/40 px-4 py-2 text-[13px] text-[#C8A35A] transition hover:bg-[#C8A35A]/15">Import Verses</button>
+          </div>
         </section>
 
         {error && (
@@ -453,7 +456,7 @@ export default function AdminScripturePage() {
                           {book.nuggetCount ===
                           1
                             ? "nugget"
-                            : "nuggets"}
+                            : "nuggets"}{" · "}{book.verseCount || 0} saved verses
                         </p>
                       </div>
 

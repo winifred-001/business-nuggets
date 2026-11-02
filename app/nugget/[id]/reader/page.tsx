@@ -56,36 +56,7 @@ export default async function ReaderViewPage({
       <Navbar />
 
       <main className="mx-auto w-full max-w-[1180px] px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
-        <nav
-          aria-label="Reader breadcrumb"
-          className="flex flex-wrap items-center gap-2 text-[13px] text-[#756E64]"
-        >
-          <Link
-            href="/library"
-            className="transition hover:text-[#9A7839]"
-          >
-            Wisdom Archive
-          </Link>
-
-          <span>/</span>
-
-          <Link
-            href={`/library?topic=${encodeURIComponent(
-              nugget.topic,
-            )}`}
-            className="transition hover:text-[#9A7839]"
-          >
-            {nugget.topic}
-          </Link>
-
-          <span>/</span>
-
-          <span className="text-[#9A7839]">
-            {nugget.title}
-          </span>
-        </nav>
-
-        <div className="mt-7 grid gap-10 lg:grid-cols-[minmax(0,1fr)_270px]">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_270px]">
           <article className="min-w-0">
             <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#9A7839]">
               Nugget #{nugget.number} · {nugget.topic}

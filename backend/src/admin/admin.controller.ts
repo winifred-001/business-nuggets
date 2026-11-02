@@ -1,3 +1,4 @@
+import { ScriptureVersesService } from "../scripture/scripture-verses.service";
 import { CollectionsService } from "../collections/collections.service";
 import { SaveCollectionDto } from "../collections/collections.dto";
 import { readImportFile } from "../imports/import-file";
@@ -72,6 +73,7 @@ export class AdminController {
     private readonly nuggetsService: NuggetsService,
     private readonly topicsService: TopicsService,
     private readonly scriptureService: ScriptureService,
+    private readonly scriptureVerses: ScriptureVersesService,
     private readonly scheduleService: ScheduleService,
     private readonly usersService: UsersService,
     private readonly subscriptionsService: SubscriptionsService,
@@ -268,6 +270,12 @@ export class AdminController {
   )
   getScriptureIndex() {
     return this.scriptureService.getIndex();
+  }
+
+  @Get("scripture/verses")
+  @RequireAdminPermission("manageNuggets")
+  getScriptureVerses(@Query("book") book?: string, @Query("page") page?: string) {
+    return this.scriptureVerses.list(book, page);
   }
 
   @Post("scripture/books")

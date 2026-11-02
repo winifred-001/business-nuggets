@@ -101,12 +101,12 @@ export default function VisitorHomeLibrary({ nuggets }: { nuggets: HomeNugget[] 
                 <span className={styles.cardnum}>{String(nugget.number).padStart(2, "0")}</span>
               </div>
 
-              <h3>{nugget.title}</h3>
+              <h3><Link href={`/nugget/${nugget.slug}`}>{nugget.title}</Link></h3>
               <p className={styles.cardExcerpt}>{nuggetExcerpt(nugget.keyPrinciple || nugget.marketplaceApplication)}</p>
 
               <div className={styles.cardfoot}>
                 <span>{nugget.scriptureRef}</span>
-                <Link href="/library">Read insight ↗</Link>
+                <Link href={`/nugget/${nugget.slug}`}>Read insight ↗</Link>
               </div>
             </article>
           ))}

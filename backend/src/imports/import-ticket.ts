@@ -10,7 +10,7 @@ import { IsIn, IsInt, IsString, Matches, Max, Min } from 'class-validator';
 import { IMPORT_LIMIT } from './import-limits';
 
 export class ImportTicketDto {
-  @IsIn(['topics', 'nuggets']) kind!: 'topics' | 'nuggets';
+  @IsIn(['topics', 'nuggets', 'verses']) kind!: 'topics' | 'nuggets' | 'verses';
   @IsIn(['preview', 'commit']) stage!: 'preview' | 'commit';
   @IsInt() @Min(1) @Max(IMPORT_LIMIT) size!: number;
   @IsString() @Matches(/^[a-f0-9]{64}$/) sha256!: string;
@@ -64,7 +64,7 @@ export function verifyImportTicket(token: string): Ticket {
       !Number.isFinite(data.expiresAt) ||
       data.expiresAt < Date.now() ||
       data.expiresAt > Date.now() + 5 * 60 * 1000 ||
-      !['topics', 'nuggets'].includes(data.kind) ||
+      !['topics', 'nuggets', 'verses'].includes(data.kind) ||
       !['preview', 'commit'].includes(data.stage) ||
       !Number.isInteger(data.size) ||
       data.size < 1 ||

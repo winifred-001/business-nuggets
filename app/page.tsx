@@ -183,7 +183,7 @@ export default async function HomePage() {
                     Explore the Nuggets <span>↗</span>
                   </Link>
                   <Link href="/philosophy" className={`bn-button ${styles.btn} ${styles.btnOutline}`}>
-                    Discover Our Vision <span>↗</span>
+                    More About Us <span>↗</span>
                   </Link>
                 </div>
 
@@ -286,7 +286,7 @@ export default async function HomePage() {
                   <li>Translate wisdom into ethical business practice</li>
                   <li>Reflect, apply and grow with intention</li>
                 </ul>
-                <Link href="/library" className={`bn-button ${styles.btn}`}>
+                <Link href="/library?tab=Topics%20Index" className={`bn-button ${styles.btn}`}>
                   Begin Your Discovery ↗
                 </Link>
               </div>
@@ -302,7 +302,7 @@ export default async function HomePage() {
                   marketplace.
                 </p>
               </div>
-              <Link href="/library" className={`bn-button ${styles.btn}`}>
+              <Link href="/library?tab=Challenges" className={`bn-button ${styles.btn}`}>
                 Explore the Library ↗
               </Link>
             </div>

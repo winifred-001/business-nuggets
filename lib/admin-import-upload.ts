@@ -2,7 +2,7 @@ import { API_URL } from "./api";
 import { adminApiFetch } from "./admin-api";
 export const ADMIN_IMPORT_LIMIT = 5 * 1024 * 1024;
 export async function uploadAdminImport(
-  kind: "topics" | "nuggets",
+  kind: "topics" | "nuggets" | "verses",
   stage: "preview" | "commit",
   file: File,
 ) {

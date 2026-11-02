@@ -1,5 +1,4 @@
 import FormattedNuggetText from "@/components/FormattedNuggetText";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Share2 } from "lucide-react";
@@ -59,21 +58,6 @@ export default async function NuggetDetailPage({
       <main>
         {/* HERO */}
         <section className="relative min-h-[350px] overflow-hidden border-b border-white/[0.06]">
-          <Image
-            src={nugget.image}
-            alt={nugget.title}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-center"
-          />
-
-          <div className="absolute inset-0 bg-black/45" />
-
-          <div className="absolute inset-0 bg-gradient-to-r from-[#080808]/80 via-black/25 to-black/20" />
-
-          <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-black/10" />
-
           <div className="relative mx-auto flex min-h-[350px] max-w-[1280px] items-end px-5 pb-12 sm:px-8 lg:px-10">
             <div className="max-w-[950px]">
               <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
