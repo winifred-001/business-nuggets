@@ -2,10 +2,12 @@
 
 import BrandMark from "@/components/BrandMark";
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Bell,
+  LogOut,
   Settings,
+  UserRound,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -35,9 +37,9 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<StoredUser | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const settingsRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function readAuth() {
@@ -105,28 +107,28 @@ export default function Navbar() {
     };
   }, [pathname]);
 
-  const [previousPathname, setPreviousPathname] = useState(pathname);
-  if (previousPathname !== pathname) {
-    setPreviousPathname(pathname);
+  useEffect(() => {
     setMobileOpen(false);
-    setSettingsOpen(false);
-  }
+    setProfileOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {
-      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
-        setSettingsOpen(false);
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
       }
     }
 
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        setSettingsOpen(false);
+        setProfileOpen(false);
         setMobileOpen(false);
       }
     }
+
     document.addEventListener("mousedown", handleOutsideClick);
     document.addEventListener("keydown", handleEscape);
+
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
       document.removeEventListener("keydown", handleEscape);
@@ -138,11 +140,13 @@ export default function Navbar() {
     ...landingLinks.map((link) =>
       link.label === "Home" ? { ...link, href: homeHref } : link,
     ),
-    ...(isLoggedIn ? [
-      { href: "/library/saved-nuggets", label: "Saved Nuggets" },
-      { href: "/library/playlist", label: "Playlists" },
-      { href: "/library/personal-notes", label: "Notes" },
-    ] : []),
+    ...(isLoggedIn
+      ? [
+          { href: "/library/saved-nuggets", label: "Saved Nuggets" },
+          { href: "/library/playlist", label: "Playlists" },
+          { href: "/library/personal-notes", label: "Notes" },
+        ]
+      : []),
   ];
 
   function isActive(href: string) {
@@ -155,7 +159,7 @@ export default function Navbar() {
     setIsLoggedIn(false);
     setUser(null);
     setUnreadNotifications(0);
-    setSettingsOpen(false);
+    setProfileOpen(false);
     setMobileOpen(false);
     window.dispatchEvent(new Event("auth-change"));
     router.push("/");
@@ -212,18 +216,11 @@ export default function Navbar() {
                 >
                   {link.label}
                   {active && (
-                    <span className={`absolute bottom-1 left-0 h-px w-full bg-[#cda762] lg:-bottom-[10px]`} />
+                    <span className="absolute bottom-1 left-0 h-px w-full bg-[#cda762] lg:-bottom-[10px]" />
                   )}
                 </Link>
               );
             })}
-
-            {isLoggedIn && (
-              <button type="button" onClick={handleLogout}
-                className="hidden py-3 text-left text-[#d78484] transition hover:text-[#f0aaaa] lg:block lg:py-0">
-                Logout
-              </button>
-            )}
 
             {!isLoggedIn && (
               <div className="mt-4 flex items-center gap-[22px] border-t border-[rgba(234,210,160,.19)] pt-4 lg:hidden">
@@ -258,16 +255,37 @@ export default function Navbar() {
                     </span>
                   )}
                 </Link>
-                <Link href="/library/account" className="block py-3" onClick={() => setMobileOpen(false)}>
+
+                <Link
+                  href="/library/account"
+                  className="block py-3"
+                  onClick={() => setMobileOpen(false)}
+                >
                   Account Settings
                 </Link>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="w-full py-3 text-left text-[#d78484]"
-                >
-                  Logout
-                </button>
+
+                <div className="mt-2 border-t border-[rgba(234,210,160,.19)] pt-4">
+                  <div className="flex items-start gap-3 pb-3">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center border border-[#61563c] text-[#ead2a0]">
+                      <UserRound size={18} strokeWidth={1.6} />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] font-semibold text-[#f9f5ed]">{displayName}</p>
+                      {displayEmail && (
+                        <p className="mt-1 truncate text-[11px] text-[#b4b2ab]">{displayEmail}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-3 py-3 text-left text-[#d78484] transition hover:text-[#f0aaaa]"
+                  >
+                    <LogOut size={16} strokeWidth={1.7} />
+                    Logout
+                  </button>
+                </div>
               </div>
             )}
           </nav>
@@ -304,21 +322,32 @@ export default function Navbar() {
                   )}
                 </Link>
 
-                <div ref={settingsRef} className="relative">
+                <Link
+                  href="/library/account"
+                  aria-label="Account settings"
+                  className="grid h-[46px] w-[46px] place-items-center border border-[#61563c] text-[#f2e5cd] transition hover:bg-[#28251e]"
+                >
+                  <Settings size={20} strokeWidth={1.6} />
+                </Link>
+
+                <div ref={profileRef} className="relative">
                   <button
                     type="button"
-                    onClick={() => setSettingsOpen((current) => !current)}
-                    aria-label="Account settings"
-                    aria-controls="account-settings-dropdown"
+                    onClick={() => setProfileOpen((current) => !current)}
+                    aria-label="Profile"
+                    aria-controls="profile-dropdown"
                     aria-haspopup="true"
-                    aria-expanded={settingsOpen}
-                    className="flex h-[46px] items-center gap-2 border border-[#61563c] bg-transparent px-3 text-[#f2e5cd] transition hover:bg-[#28251e]"
+                    aria-expanded={profileOpen}
+                    className="grid h-[46px] w-[46px] place-items-center border border-[#61563c] bg-transparent text-[#f2e5cd] transition hover:bg-[#28251e]"
                   >
-                    <Settings size={20} strokeWidth={1.6} />
+                    <UserRound size={20} strokeWidth={1.6} />
                   </button>
 
-                  {settingsOpen && (
-                    <div id="account-settings-dropdown" className="absolute right-0 top-[54px] z-50 w-[240px] border border-[rgba(234,210,160,.19)] bg-[#191b18] shadow-2xl">
+                  {profileOpen && (
+                    <div
+                      id="profile-dropdown"
+                      className="absolute right-0 top-[54px] z-50 w-[240px] border border-[rgba(234,210,160,.19)] bg-[#191b18] shadow-2xl"
+                    >
                       <div className="border-b border-[rgba(234,210,160,.19)] px-4 py-4">
                         <p className="truncate text-[13px] font-semibold text-[#f9f5ed]">{displayName}</p>
                         {displayEmail && (
@@ -327,12 +356,15 @@ export default function Navbar() {
                       </div>
 
                       <div className="p-2">
-
-                        <SettingsLink href="/library/account" icon={<Settings size={15} />}>
-                          Account Settings
-                        </SettingsLink>
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-[12px] text-[#d78484] transition hover:bg-[#28251e] hover:text-[#f0aaaa]"
+                        >
+                          <LogOut size={15} strokeWidth={1.7} />
+                          Logout
+                        </button>
                       </div>
-
                     </div>
                   )}
                 </div>
@@ -341,36 +373,18 @@ export default function Navbar() {
 
             <button
               type="button"
-              className={`border-0 bg-transparent text-[26px] leading-none text-[#cda762] lg:hidden`}
+              className="border-0 bg-transparent text-[26px] leading-none text-[#cda762] lg:hidden"
               aria-label={mobileOpen ? "Close navigation" : "Toggle navigation"}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((value) => !value)}
             >
-              <span aria-hidden="true" data-button-icon>{mobileOpen ? "×" : "☰"}</span>
+              <span aria-hidden="true" data-button-icon>
+                {mobileOpen ? "×" : "☰"}
+              </span>
             </button>
           </div>
         </div>
       </header>
     </>
-  );
-}
-
-function SettingsLink({
-  href,
-  icon,
-  children,
-}: {
-  href: string;
-  icon: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="bn-button flex items-center gap-3 px-3 py-2.5 text-[12px] text-[#b8b5aa] transition hover:bg-[#28251e] hover:text-[#ead2a0]"
-    >
-      <span className="text-[#cda762]">{icon}</span>
-      {children}
-    </Link>
   );
 }
