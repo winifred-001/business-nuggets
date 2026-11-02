@@ -2,7 +2,7 @@
 
 import BrandMark from "@/components/BrandMark";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Bell,
   LogOut,
@@ -36,9 +36,7 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<StoredUser | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function readAuth() {
@@ -108,28 +106,18 @@ export default function Navbar() {
 
   useEffect(() => {
     setMobileOpen(false);
-    setProfileOpen(false);
   }, [pathname]);
 
   useEffect(() => {
-    function handleOutsideClick(event: MouseEvent) {
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
-        setProfileOpen(false);
-      }
-    }
-
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        setProfileOpen(false);
         setMobileOpen(false);
       }
     }
 
-    document.addEventListener("mousedown", handleOutsideClick);
     document.addEventListener("keydown", handleEscape);
 
     return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
       document.removeEventListener("keydown", handleEscape);
     };
   }, []);
@@ -158,7 +146,6 @@ export default function Navbar() {
     setIsLoggedIn(false);
     setUser(null);
     setUnreadNotifications(0);
-    setProfileOpen(false);
     setMobileOpen(false);
     window.dispatchEvent(new Event("auth-change"));
     router.push("/");
@@ -256,7 +243,11 @@ export default function Navbar() {
                 </Link>
 
                 <div className="mt-2 border-t border-[rgba(234,210,160,.19)] pt-4">
-                  <div className="flex items-start gap-3 pb-3">
+                  <Link
+                    href="/home"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-start gap-3 pb-3 transition hover:text-[#ead2a0]"
+                  >
                     <span className="grid h-9 w-9 shrink-0 place-items-center border border-[#61563c] text-[#ead2a0]">
                       <UserRound size={18} strokeWidth={1.6} />
                     </span>
@@ -265,8 +256,11 @@ export default function Navbar() {
                       {displayEmail && (
                         <p className="mt-1 truncate text-[11px] text-[#b4b2ab]">{displayEmail}</p>
                       )}
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-[#cda762]">
+                        Workspace
+                      </p>
                     </div>
-                  </div>
+                  </Link>
 
                   <Link
                     href="/library/account"
@@ -321,52 +315,14 @@ export default function Navbar() {
                   )}
                 </Link>
 
-                <div ref={profileRef} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setProfileOpen((current) => !current)}
-                    aria-label="Profile"
-                    aria-controls="profile-dropdown"
-                    aria-haspopup="true"
-                    aria-expanded={profileOpen}
-                    className="grid h-[46px] w-[46px] place-items-center border border-[#61563c] bg-transparent text-[#f2e5cd] transition hover:bg-[#28251e]"
-                  >
-                    <UserRound size={20} strokeWidth={1.6} />
-                  </button>
-
-                  {profileOpen && (
-                    <div
-                      id="profile-dropdown"
-                      className="absolute right-0 top-[54px] z-50 w-[240px] border border-[rgba(234,210,160,.19)] bg-[#191b18] shadow-2xl"
-                    >
-                      <div className="border-b border-[rgba(234,210,160,.19)] px-4 py-4">
-                        <p className="truncate text-[13px] font-semibold text-[#f9f5ed]">{displayName}</p>
-                        {displayEmail && (
-                          <p className="mt-1 truncate text-[11px] text-[#b4b2ab]">{displayEmail}</p>
-                        )}
-                      </div>
-
-                      <div className="p-2">
-                        <Link
-                          href="/library/account"
-                          onClick={() => setProfileOpen(false)}
-                          className="block px-3 py-2.5 text-[12px] text-[#b8b5aa] transition hover:bg-[#28251e] hover:text-[#ead2a0]"
-                        >
-                          Account Settings
-                        </Link>
-
-                        <button
-                          type="button"
-                          onClick={handleLogout}
-                          className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-[12px] text-[#d78484] transition hover:bg-[#28251e] hover:text-[#f0aaaa]"
-                        >
-                          <LogOut size={15} strokeWidth={1.7} />
-                          Logout
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <Link
+                  href="/home"
+                  aria-label="Open workspace"
+                  title="Workspace"
+                  className="grid h-[46px] w-[46px] place-items-center border border-[#61563c] bg-transparent text-[#f2e5cd] transition hover:bg-[#28251e]"
+                >
+                  <UserRound size={20} strokeWidth={1.6} />
+                </Link>
               </div>
             )}
 
