@@ -1,17 +1,15 @@
 "use client";
 
 import BrandMark from "@/components/BrandMark";
+import { ProfileAvatar } from "@/components/ProfileImage";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   Bell,
   ChevronDown,
   LogOut,
-  UserRound,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-
-import { API_URL } from "@/lib/api";
 
 type StoredUser = {
   id?: number | string;
@@ -80,9 +78,10 @@ export default function Navbar() {
       }
 
       try {
-        const response = await fetch(`${API_URL}/notifications/unread-count`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await fetch(
+          "/api/member/proxy/notifications/unread-count",
+          { cache: "no-store" },
+        );
         const data = response.ok ? await response.json().catch(() => ({})) : {};
 
         if (!cancelled) {
@@ -262,9 +261,7 @@ export default function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     className="flex items-start gap-3 pb-3 transition hover:text-[#ead2a0]"
                   >
-                    <span className="grid h-9 w-9 shrink-0 place-items-center border border-[#61563c] text-[#ead2a0]">
-                      <UserRound size={18} strokeWidth={1.6} />
-                    </span>
+                    <ProfileAvatar className="h-9 w-9" iconSize={18} />
                     <div className="min-w-0">
                       <p className="truncate text-[13px] font-semibold text-[#f9f5ed]">{displayName}</p>
                       {displayEmail && (
@@ -336,7 +333,7 @@ export default function Navbar() {
                     title="Workspace"
                     className="grid h-[46px] w-[46px] place-items-center border border-r-0 border-[#61563c] bg-transparent text-[#f2e5cd] transition hover:bg-[#28251e]"
                   >
-                    <UserRound size={20} strokeWidth={1.6} />
+                    <ProfileAvatar className="h-8 w-8" iconSize={19} />
                   </Link>
 
                   <button
