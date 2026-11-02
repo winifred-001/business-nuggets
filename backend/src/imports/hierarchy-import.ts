@@ -8,9 +8,9 @@ import {
   type TaxonomyRow,
 } from '../topics/topics-csv';
 import { csvCell } from './import-file';
-import { parseNuggets } from './nugget-import';
+import { nuggetImportColumnKey, parseNuggets } from './nugget-import';
 
-const columnKey = (value: string) => value.toLowerCase().replace(/[\s_-]/g, '');
+const columnKey = nuggetImportColumnKey;
 /** Flat rows support taxonomy alone, Nuggets alone, or all three levels with a type column. */
 export function splitHierarchy(csv: string, kind: 'topics' | 'nuggets') {
   if (kind === 'nuggets')

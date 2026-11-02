@@ -42,10 +42,13 @@ const topicExample = [
     title: "Plan Wisely",
     topic: "Money Management",
     category: "Stewardship",
-    scriptureRef: "Proverbs 21:5",
-    keyPrinciple: "Plan diligently",
-    details: "Prepare a clear plan before committing resources.",
-    practicalActionPlan: ["Review the budget"],
+    "Scripture Reference": "Proverbs 21:5",
+    "Scripture Text": "The thoughts of the diligent tend only to plenteousness.",
+    "Key Principles and Boundaries": "Plan diligently",
+    "Explanation: Full Biblical Context and Teaching": "Prepare a clear plan before committing resources.",
+    "Marketplace Application": "Review business spending",
+    "Practical Action Plan": ["Review the budget"],
+    "Challenges & Reflection": ["Which spending decision needs a clearer plan?"],
     songUrl: "",
     nuggetUrl: "",
   },
@@ -56,13 +59,13 @@ const nuggetExample = [
     title: "Plan Wisely",
     topic: "Money Management",
     category: "Stewardship",
-    scriptureRef: "Proverbs 21:5",
-    scriptureText: "",
-    keyPrinciple: "Plan diligently",
-    details: "Prepare a clear plan before committing resources.",
-    marketplaceApplication: "Review business spending",
-    practicalActionPlan: ["Review the budget"],
-    challenges: ["Money"],
+    "Scripture Reference": "Proverbs 21:5",
+    "Scripture Text": "",
+    "Key Principles and Boundaries": "Plan diligently",
+    "Explanation: Full Biblical Context and Teaching": "Prepare a clear plan before committing resources.",
+    "Marketplace Application": "Review business spending",
+    "Practical Action Plan": ["Review the budget"],
+    "Challenges & Reflection": ["Which spending decision needs a clearer plan?"],
     tag: "Stewardship",
     book: "Proverbs",
     bibleSection: "Old Testament",
@@ -245,6 +248,11 @@ export default function AdminImportDialog({
         must have one populated sheet with headers in the first row. JSON uses
         an array of row objects. Existing items are skipped without overwriting
         them.
+      </p>
+      <p className="mt-3 text-sm leading-6 text-white/60">
+        Use the section headings from the template as column names or JSON keys.
+        Keep paragraphs and **bold text** in their cells. For action steps and
+        reflection prompts, use JSON arrays or separate items with new lines.
       </p>
       <p className="mt-3 text-sm leading-6 text-white/60">
         {kind === "topics" ? (

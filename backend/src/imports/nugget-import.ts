@@ -21,8 +21,17 @@ const listFields = ['practicalActionPlan', 'challenges'] as const;
 const aliases: Record<string, string> = {
   songurl: 'audioUrl',
   nuggeturl: 'nuggetAudioUrl',
+  scripturereference: 'scriptureRef',
+  keyprinciples: 'keyPrinciple',
+  keyprinciplesandboundaries: 'keyPrinciple',
+  explanation: 'details',
+  explanationfullbiblicalcontextandteaching: 'details',
+  fullbiblicalcontextandteaching: 'details',
+  challengesreflection: 'challenges',
+  challengesandreflection: 'challenges',
 };
-const key = (value: string) => value.toLowerCase().replace(/[\s_-]/g, '');
+const key = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+export const nuggetImportColumnKey = (value: string) => key(aliases[key(value)] || value);
 export function parseNuggets(csv: string) {
   const records = parseCsvRecords(csv);
   const fields = [
@@ -38,7 +47,7 @@ export function parseNuggets(csv: string) {
   const byKey = new Map(fields.map((field) => [key(field), field]));
   const headers = records
     .shift()!
-    .fields.map((header) => aliases[key(header)] || byKey.get(key(header)));
+    .fields.map((header) => byKey.get(nuggetImportColumnKey(header)));
   if (
     headers.some((header) => !header) ||
     new Set(headers).size !== headers.length ||

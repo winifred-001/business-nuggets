@@ -474,17 +474,7 @@ export default function NewNuggetPage() {
                   />
                 </Field>
 
-                <Field label="Explanation" className="md:col-span-2">
-                  <textarea
-                    rows={7}
-                    value={form.details}
-                    onChange={(event) => updateField("details", event.target.value)}
-                    placeholder="Add the full explanation and supporting details. Press Enter for a new line."
-                    className={textareaClass}
-                  />
-                </Field>
-
-                <Field label="Key Principles" required className="md:col-span-2">
+                <Field label="Key Principles and Boundaries" required className="md:col-span-2">
                   <textarea
                     rows={5}
                     value={form.keyPrinciple}
@@ -492,6 +482,16 @@ export default function NewNuggetPage() {
                       updateField("keyPrinciple", event.target.value)
                     }
                     placeholder="Write the main principle or lesson from this Nugget..."
+                    className={textareaClass}
+                  />
+                </Field>
+
+                <Field label="Explanation: Full Biblical Context and Teaching" className="md:col-span-2">
+                  <textarea
+                    rows={7}
+                    value={form.details}
+                    onChange={(event) => updateField("details", event.target.value)}
+                    placeholder="Add the full explanation and supporting details. Press Enter for a new line."
                     className={textareaClass}
                   />
                 </Field>
@@ -556,6 +556,51 @@ export default function NewNuggetPage() {
             </FormSection>
 
             <FormSection
+              icon={<Target size={20} />}
+              title="Challenges & Reflection"
+              description="Add prompts that help readers apply or reflect on the teaching."
+            >
+              <div className="space-y-3">
+                {challenges.map((challenge, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.04] text-[13px] text-white/45">
+                      {index + 1}
+                    </div>
+
+                    <textarea
+                      rows={2}
+                      value={challenge}
+                      onChange={(event) =>
+                        updateChallenge(index, event.target.value)
+                      }
+                      placeholder="Add a challenge or reflection prompt..."
+                      className={textareaClass}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => removeChallenge(index)}
+                      disabled={challenges.length === 1}
+                      aria-label={`Remove challenge ${index + 1}`}
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-white/25 transition hover:bg-white/[0.04] hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-20"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setChallenges((current) => [...current, ""])}
+                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/10 px-4 text-[13px] font-medium text-white/55 transition hover:border-[#C8A35A]/25 hover:text-[#E0C48A]"
+              >
+                <Plus size={15} />
+                Add Challenge
+              </button>
+            </FormSection>
+
+            <FormSection
               icon={<BookOpen size={20} />}
               title="Nugget Information"
               description="Set the Nugget number, tag and Bible book."
@@ -616,51 +661,6 @@ export default function NewNuggetPage() {
                 </Field>
 
               </div>
-            </FormSection>
-
-            <FormSection
-              icon={<Target size={20} />}
-              title="Challenges & Reflection"
-              description="Add prompts that help readers apply or reflect on the teaching."
-            >
-              <div className="space-y-3">
-                {challenges.map((challenge, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.04] text-[13px] text-white/45">
-                      {index + 1}
-                    </div>
-
-                    <textarea
-                      rows={2}
-                      value={challenge}
-                      onChange={(event) =>
-                        updateChallenge(index, event.target.value)
-                      }
-                      placeholder="Add a challenge or reflection prompt..."
-                      className={textareaClass}
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => removeChallenge(index)}
-                      disabled={challenges.length === 1}
-                      aria-label={`Remove challenge ${index + 1}`}
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-white/25 transition hover:bg-white/[0.04] hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-20"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setChallenges((current) => [...current, ""])}
-                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/10 px-4 text-[13px] font-medium text-white/55 transition hover:border-[#C8A35A]/25 hover:text-[#E0C48A]"
-              >
-                <Plus size={15} />
-                Add Challenge
-              </button>
             </FormSection>
 
             <FormSection

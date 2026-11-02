@@ -312,7 +312,7 @@ export default function EditNuggetPage() {
               nugget.challenges,
             )
               ? nugget.challenges.join(
-                  ", ",
+                  "\n",
                 )
               : "",
 
@@ -414,7 +414,7 @@ export default function EditNuggetPage() {
 
     const challenges =
       form.challenges
-        .split(",")
+        .split(/\r?\n/)
         .map(
           (item) =>
             item.trim(),
@@ -770,23 +770,8 @@ export default function EditNuggetPage() {
             </div>
 
             <div className="mt-4">
-              <FieldLabel>Explanation</FieldLabel>
-              <textarea
-                aria-label="Explanation"
-                value={form.details}
-                onChange={(event) => updateField("details", event.target.value)}
-                rows={8}
-                placeholder="Add the full explanation and supporting details..."
-                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
-              />
-              <p className="mt-2 text-[12px] text-white/45">Press Enter for a new line, or leave a blank line between paragraphs. Use **bold text** or &lt;strong&gt;bold text&lt;/strong&gt; for bold, and ## Heading text on its own line for a heading. Basic &lt;br&gt; and &lt;p&gt; tags are also supported.</p>
-            </div>
-
-            {/* KEY PRINCIPLE */}
-
-            <div className="mt-4">
               <FieldLabel>
-                Key Principles
+                Key Principles and Boundaries
               </FieldLabel>
 
               <textarea
@@ -807,6 +792,19 @@ export default function EditNuggetPage() {
                 placeholder="Main biblical-business principle..."
                 className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
               />
+            </div>
+
+            <div className="mt-4">
+              <FieldLabel>Explanation: Full Biblical Context and Teaching</FieldLabel>
+              <textarea
+                aria-label="Explanation: Full Biblical Context and Teaching"
+                value={form.details}
+                onChange={(event) => updateField("details", event.target.value)}
+                rows={8}
+                placeholder="Add the full explanation and supporting details..."
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+              />
+              <p className="mt-2 text-[12px] text-white/45">Press Enter for a new line, or leave a blank line between paragraphs. Use **bold text** or &lt;strong&gt;bold text&lt;/strong&gt; for bold, and ## Heading text on its own line for a heading. Basic &lt;br&gt; and &lt;p&gt; tags are also supported.</p>
             </div>
 
             {/* MARKETPLACE */}
@@ -869,6 +867,38 @@ export default function EditNuggetPage() {
               <p className="mt-2 text-[8px] text-white/25">
                 Enter one action
                 per line.
+              </p>
+            </div>
+
+            {/* CHALLENGES */}
+
+            <div className="mt-4">
+              <FieldLabel>
+                Challenges &amp; Reflection
+              </FieldLabel>
+
+              <textarea
+                aria-label="Challenges & Reflection"
+                rows={5}
+                value={
+                  form.challenges
+                }
+                onChange={(
+                  event,
+                ) =>
+                  updateField(
+                    "challenges",
+                    event
+                      .target
+                      .value,
+                  )
+                }
+                placeholder="Enter one challenge or reflection prompt per line"
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+              />
+
+              <p className="mt-2 text-[8px] text-white/25">
+                Enter one challenge or reflection prompt per line.
               </p>
             </div>
 
@@ -988,38 +1018,6 @@ export default function EditNuggetPage() {
                   )}
                 </select>
               </div>
-            </div>
-
-            {/* CHALLENGES */}
-
-            <div className="mt-4">
-              <FieldLabel>
-                Challenges
-              </FieldLabel>
-
-              <input
-                value={
-                  form.challenges
-                }
-                onChange={(
-                  event,
-                ) =>
-                  updateField(
-                    "challenges",
-                    event
-                      .target
-                      .value,
-                  )
-                }
-                placeholder="Negotiation, Ethics, Pricing"
-                className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
-              />
-
-              <p className="mt-2 text-[8px] text-white/25">
-                Separate
-                challenges with
-                commas.
-              </p>
             </div>
 
             {/* AUDIO */}
