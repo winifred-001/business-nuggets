@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   Bell,
   LogOut,
-  Settings,
   UserRound,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
@@ -256,14 +255,6 @@ export default function Navbar() {
                   )}
                 </Link>
 
-                <Link
-                  href="/library/account"
-                  className="block py-3"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Account Settings
-                </Link>
-
                 <div className="mt-2 border-t border-[rgba(234,210,160,.19)] pt-4">
                   <div className="flex items-start gap-3 pb-3">
                     <span className="grid h-9 w-9 shrink-0 place-items-center border border-[#61563c] text-[#ead2a0]">
@@ -276,6 +267,14 @@ export default function Navbar() {
                       )}
                     </div>
                   </div>
+
+                  <Link
+                    href="/library/account"
+                    className="block py-3 text-[#c4c3be] transition hover:text-[#ead2a0]"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Account Settings
+                  </Link>
 
                   <button
                     type="button"
@@ -322,14 +321,6 @@ export default function Navbar() {
                   )}
                 </Link>
 
-                <Link
-                  href="/library/account"
-                  aria-label="Account settings"
-                  className="grid h-[46px] w-[46px] place-items-center border border-[#61563c] text-[#f2e5cd] transition hover:bg-[#28251e]"
-                >
-                  <Settings size={20} strokeWidth={1.6} />
-                </Link>
-
                 <div ref={profileRef} className="relative">
                   <button
                     type="button"
@@ -356,6 +347,14 @@ export default function Navbar() {
                       </div>
 
                       <div className="p-2">
+                        <Link
+                          href="/library/account"
+                          onClick={() => setProfileOpen(false)}
+                          className="block px-3 py-2.5 text-[12px] text-[#b8b5aa] transition hover:bg-[#28251e] hover:text-[#ead2a0]"
+                        >
+                          Account Settings
+                        </Link>
+
                         <button
                           type="button"
                           onClick={handleLogout}
