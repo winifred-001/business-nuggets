@@ -180,7 +180,7 @@ export default async function HomePage() {
 
                 <div className={styles.actions}>
                   <Link href="/library" className={`bn-button ${styles.btn}`}>
-                    Explore the Nuggets <span>↗</span>
+                    Explore The Nuggets <span>↗</span>
                   </Link>
                   <Link href="/philosophy" className={`bn-button ${styles.btn} ${styles.btnOutline}`}>
                     More About Us <span>↗</span>
@@ -303,7 +303,7 @@ export default async function HomePage() {
                 </p>
               </div>
               <Link href="/library?tab=Challenges" className={`bn-button ${styles.btn}`}>
-                Explore the Library ↗
+                Explore The Library ↗
               </Link>
             </div>
           </section>
