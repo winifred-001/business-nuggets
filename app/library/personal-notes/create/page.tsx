@@ -8,7 +8,8 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import AuthRouteGuard from "@/components/AuthRouteGuard";
 
-import { API_URL } from "@/lib/api";
+import { getNuggetBySlugFromApi } from "@/lib/nuggets-api";
+import FormattedNuggetText from "@/components/FormattedNuggetText";
 
 type LinkedNugget = {
   id: string;
@@ -59,36 +60,13 @@ export default function CreateStudyNotePage() {
 
     if (!linkedId) return;
 
-    setNuggetId(linkedId);
-
-    async function loadLinkedNugget() {
+    async function loadLinkedNugget(id: string) {
       try {
         setLoadingNugget(true);
 
-        const response =
-          await fetch(
-            `${API_URL}/nuggets`,
-          );
-
-        const data =
-          await response.json();
-
-        if (!response.ok) {
-          return;
-        }
-
-        if (!Array.isArray(data)) {
-          return;
-        }
-
-        const found =
-          data.find(
-            (item: LinkedNugget) =>
-              String(item.id) ===
-              String(linkedId),
-          ) ?? null;
-
+        const found = await getNuggetBySlugFromApi(id);
         setLinkedNugget(found);
+        setNuggetId(found?.id || null);
       } catch {
         setLinkedNugget(null);
       } finally {
@@ -96,7 +74,7 @@ export default function CreateStudyNotePage() {
       }
     }
 
-    loadLinkedNugget();
+    void loadLinkedNugget(linkedId);
   }, []);
 
   /* =========================================================
@@ -104,17 +82,6 @@ export default function CreateStudyNotePage() {
   ========================================================= */
 
   async function handleSaveNote() {
-    const token =
-      localStorage.getItem("token");
-
-    if (!token) {
-      setError(
-        "Your session has expired. Please sign in again.",
-      );
-
-      return;
-    }
-
     if (!content.trim()) {
       setError(
         "Write your reflection before saving the note.",
@@ -129,7 +96,7 @@ export default function CreateStudyNotePage() {
     try {
       const response =
         await fetch(
-          `${API_URL}/notes`,
+          "/api/member/proxy/notes",
           {
             method: "POST",
 
@@ -137,8 +104,6 @@ export default function CreateStudyNotePage() {
               "Content-Type":
                 "application/json",
 
-              Authorization:
-                `Bearer ${token}`,
             },
 
             body: JSON.stringify({
@@ -176,9 +141,8 @@ export default function CreateStudyNotePage() {
         return;
       }
 
-      router.push(
-        "/library/personal-notes",
-      );
+      if (!data.id) { setError("The server did not confirm the saved note. Please check My Notes before retrying."); return; }
+      router.push(`/library/personal-notes?note=${data.id}`);
 
       router.refresh();
     } catch {
@@ -297,6 +261,7 @@ export default function CreateStudyNotePage() {
                   }
                   placeholder="What does this principle mean for your business? Capture the decision, conversation or practical step you want to revisit..."
                   rows={8}
+                  maxLength={10000}
                   className="w-full resize-none rounded-md border border-white/10 bg-[#19191D] px-4 py-3 text-[12px] leading-6 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/60"
                 />
               </div>
@@ -330,7 +295,7 @@ export default function CreateStudyNotePage() {
                   type="button"
                   onClick={handleSaveNote}
                   disabled={
-                    saving ||
+                    saving || loadingNugget ||
                     !content.trim()
                   }
                   className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-40"
@@ -354,11 +319,7 @@ export default function CreateStudyNotePage() {
                   <>
                     {linkedNugget.scriptureText ? (
                       <blockquote className="mt-5 font-serif text-[17px] italic leading-7 text-[#F5F0E8]">
-                        “
-                        {
-                          linkedNugget.scriptureText
-                        }
-                        ”
+                        <FormattedNuggetText text={linkedNugget.scriptureText} />
                       </blockquote>
                     ) : (
                       <p className="mt-5 text-[12px] leading-6 text-white/45">
