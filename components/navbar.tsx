@@ -5,13 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Bell,
-  Bookmark,
-  ChevronDown,
-  ListMusic,
-  LogOut,
-  NotebookPen,
   Settings,
-  UserCircle,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -41,9 +35,9 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<StoredUser | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const profileRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function readAuth() {
@@ -111,26 +105,45 @@ export default function Navbar() {
     };
   }, [pathname]);
 
-  useEffect(() => {
+  const [previousPathname, setPreviousPathname] = useState(pathname);
+  if (previousPathname !== pathname) {
+    setPreviousPathname(pathname);
     setMobileOpen(false);
-    setProfileOpen(false);
-  }, [pathname]);
+    setSettingsOpen(false);
+  }
 
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
-        setProfileOpen(false);
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+        setSettingsOpen(false);
       }
     }
 
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setSettingsOpen(false);
+        setMobileOpen(false);
+      }
+    }
     document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
   }, []);
 
   const homeHref = isLoggedIn ? "/home" : "/";
-  const links = landingLinks.map((link) =>
-    link.label === "Home" ? { ...link, href: homeHref } : link,
-  );
+  const links = [
+    ...landingLinks.map((link) =>
+      link.label === "Home" ? { ...link, href: homeHref } : link,
+    ),
+    ...(isLoggedIn ? [
+      { href: "/library/saved-nuggets", label: "Saved Nuggets" },
+      { href: "/library/playlist", label: "Playlists" },
+      { href: "/library/personal-notes", label: "Notes" },
+    ] : []),
+  ];
 
   function isActive(href: string) {
     return pathname === href;
@@ -142,7 +155,7 @@ export default function Navbar() {
     setIsLoggedIn(false);
     setUser(null);
     setUnreadNotifications(0);
-    setProfileOpen(false);
+    setSettingsOpen(false);
     setMobileOpen(false);
     window.dispatchEvent(new Event("auth-change"));
     router.push("/");
@@ -158,10 +171,10 @@ export default function Navbar() {
       <div className="h-1 bg-[linear-gradient(90deg,#6d4c1c,#e1be79,#6d4c1c)]" />
 
       <header className="sticky top-0 z-50 h-[89px] border-b border-[rgba(234,210,160,.19)] bg-[#12130f] text-[#f9f5ed] max-[600px]:h-[76px]">
-        <div className="mx-auto flex h-full w-[calc(100%-38px)] max-w-[1190px] items-center justify-between gap-7 lg:w-[calc(100%-64px)]">
+        <div className="mx-auto flex h-full w-[calc(100%-38px)] max-w-[1190px] items-center justify-between gap-4 xl:w-[calc(100%-64px)]">
           <Link
             href={homeHref}
-            className="flex min-w-0 items-center gap-[13px] lg:min-w-[265px]"
+            className="flex min-w-0 items-center gap-[13px] xl:min-w-[210px]"
             aria-label="Business Nuggets home"
           >
             <BrandMark />
@@ -182,7 +195,7 @@ export default function Navbar() {
               mobileOpen
                 ? "absolute left-0 right-0 top-full flex"
                 : "hidden"
-            } z-40 flex-col gap-0 border-b border-[rgba(234,210,160,.19)] bg-[#151611] px-[30px] py-[25px] text-[13px] text-[#c4c3be] lg:static lg:flex lg:flex-row lg:items-center lg:gap-[22px] lg:border-0 lg:bg-transparent lg:p-0`}
+            } z-40 max-h-[calc(100dvh-90px)] overflow-y-auto flex-col gap-0 border-b border-[rgba(234,210,160,.19)] bg-[#151611] px-[30px] py-[25px] text-[13px] text-[#c4c3be] xl:static xl:max-h-none xl:overflow-visible xl:flex xl:flex-row xl:items-center xl:gap-[16px] xl:border-0 xl:bg-transparent xl:p-0`}
           >
             {links.map((link) => {
               const active = isActive(link.href);
@@ -193,20 +206,27 @@ export default function Navbar() {
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   onClick={() => setMobileOpen(false)}
-                  className={`relative py-3 transition lg:py-0 ${
+                  className={`relative whitespace-nowrap py-3 transition xl:py-0 ${
                     active ? "text-[#ead2a0]" : "hover:text-[#ead2a0]"
                   }`}
                 >
                   {link.label}
                   {active && (
-                    <span className="absolute bottom-1 left-0 h-px w-full bg-[#cda762] lg:-bottom-[10px]" />
+                    <span className="absolute bottom-1 left-0 h-px w-full bg-[#cda762] xl:-bottom-[10px]" />
                   )}
                 </Link>
               );
             })}
 
+            {isLoggedIn && (
+              <button type="button" onClick={handleLogout}
+                className="hidden py-3 text-left text-[#d78484] transition hover:text-[#f0aaaa] xl:block xl:py-0">
+                Logout
+              </button>
+            )}
+
             {!isLoggedIn && (
-              <div className="mt-4 flex items-center gap-[22px] border-t border-[rgba(234,210,160,.19)] pt-4 lg:hidden">
+              <div className="mt-4 flex items-center gap-[22px] border-t border-[rgba(234,210,160,.19)] pt-4 xl:hidden">
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
@@ -225,7 +245,7 @@ export default function Navbar() {
             )}
 
             {isLoggedIn && (
-              <div className="mt-4 border-t border-[rgba(234,210,160,.19)] pt-4 lg:hidden">
+              <div className="mt-4 border-t border-[rgba(234,210,160,.19)] pt-4 xl:hidden">
                 <Link
                   href="/notifications"
                   onClick={() => setMobileOpen(false)}
@@ -237,15 +257,6 @@ export default function Navbar() {
                       {unreadNotifications > 9 ? "9+" : unreadNotifications}
                     </span>
                   )}
-                </Link>
-                <Link href="/library/saved-nuggets" className="block py-3" onClick={() => setMobileOpen(false)}>
-                  Saved Nuggets
-                </Link>
-                <Link href="/library/playlist" className="block py-3" onClick={() => setMobileOpen(false)}>
-                  Playlists
-                </Link>
-                <Link href="/library/personal-notes" className="block py-3" onClick={() => setMobileOpen(false)}>
-                  Notes
                 </Link>
                 <Link href="/library/account" className="block py-3" onClick={() => setMobileOpen(false)}>
                   Account Settings
@@ -263,7 +274,7 @@ export default function Navbar() {
 
           <div className="flex items-center gap-[22px] text-[13px]">
             {!isLoggedIn ? (
-              <div className="hidden items-center gap-[22px] lg:flex">
+              <div className="hidden items-center gap-[22px] xl:flex">
                 <Link href="/login" className="text-[#bcbab4] transition hover:text-[#ead2a0]">
                   Login
                 </Link>
@@ -275,7 +286,7 @@ export default function Navbar() {
                 </Link>
               </div>
             ) : (
-              <div className="hidden items-center gap-3 lg:flex">
+              <div className="hidden items-center gap-3 xl:flex">
                 <Link
                   href="/notifications"
                   aria-label={
@@ -293,32 +304,21 @@ export default function Navbar() {
                   )}
                 </Link>
 
-                <div ref={profileRef} className="relative">
+                <div ref={settingsRef} className="relative">
                   <button
                     type="button"
-                    onClick={() => setProfileOpen((current) => !current)}
-                    aria-label="Open account menu"
-                    aria-expanded={profileOpen}
+                    onClick={() => setSettingsOpen((current) => !current)}
+                    aria-label="Account settings"
+                    aria-controls="account-settings-dropdown"
+                    aria-haspopup="true"
+                    aria-expanded={settingsOpen}
                     className="flex h-[46px] items-center gap-2 border border-[#61563c] bg-transparent px-3 text-[#f2e5cd] transition hover:bg-[#28251e]"
                   >
-                    {user?.avatar || user?.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={user.avatar || user.image || ""}
-                        alt=""
-                        className="h-7 w-7 rounded-full border border-[#cda762]/50 object-cover"
-                      />
-                    ) : (
-                      <UserCircle size={26} strokeWidth={1.4} className="text-[#ead2a0]" />
-                    )}
-                    <ChevronDown
-                      size={13}
-                      className={`transition-transform ${profileOpen ? "rotate-180" : ""}`}
-                    />
+                    <Settings size={20} strokeWidth={1.6} />
                   </button>
 
-                  {profileOpen && (
-                    <div className="absolute right-0 top-[54px] z-50 w-[240px] border border-[rgba(234,210,160,.19)] bg-[#191b18] shadow-2xl">
+                  {settingsOpen && (
+                    <div id="account-settings-dropdown" className="absolute right-0 top-[54px] z-50 w-[240px] border border-[rgba(234,210,160,.19)] bg-[#191b18] shadow-2xl">
                       <div className="border-b border-[rgba(234,210,160,.19)] px-4 py-4">
                         <p className="truncate text-[13px] font-semibold text-[#f9f5ed]">{displayName}</p>
                         {displayEmail && (
@@ -328,30 +328,11 @@ export default function Navbar() {
 
                       <div className="p-2">
 
-                        <ProfileLink href="/library/saved-nuggets" icon={<Bookmark size={15} />}>
-                          Saved Nuggets
-                        </ProfileLink>
-                        <ProfileLink href="/library/playlist" icon={<ListMusic size={15} />}>
-                          Playlists
-                        </ProfileLink>
-                        <ProfileLink href="/library/personal-notes" icon={<NotebookPen size={15} />}>
-                          Notes
-                        </ProfileLink>
-                        <ProfileLink href="/library/account" icon={<Settings size={15} />}>
+                        <SettingsLink href="/library/account" icon={<Settings size={15} />}>
                           Account Settings
-                        </ProfileLink>
+                        </SettingsLink>
                       </div>
 
-                      <div className="border-t border-[rgba(234,210,160,.19)] p-2">
-                        <button
-                          type="button"
-                          onClick={handleLogout}
-                          className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-[12px] text-[#d78484] transition hover:bg-[#28251e]"
-                        >
-                          <LogOut size={15} />
-                          Logout
-                        </button>
-                      </div>
                     </div>
                   )}
                 </div>
@@ -360,7 +341,7 @@ export default function Navbar() {
 
             <button
               type="button"
-              className="border-0 bg-transparent text-[26px] leading-none text-[#cda762] lg:hidden"
+              className="border-0 bg-transparent text-[26px] leading-none text-[#cda762] xl:hidden"
               aria-label={mobileOpen ? "Close navigation" : "Toggle navigation"}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((value) => !value)}
@@ -374,7 +355,7 @@ export default function Navbar() {
   );
 }
 
-function ProfileLink({
+function SettingsLink({
   href,
   icon,
   children,

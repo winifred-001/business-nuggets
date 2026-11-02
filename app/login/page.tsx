@@ -3,8 +3,6 @@
 import { postAuthDestination } from "@/lib/auth-return";
 import AuthContinueLink from "@/components/AuthContinueLink";
 import { useState } from "react";
-import Navbar from "@/components/navbar";
-import Footer from "@/components/Footer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
@@ -67,7 +65,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
-      <Navbar />
 
       <main className="flex flex-1 items-center justify-center px-5 py-10 sm:px-6 sm:py-14 md:px-8 lg:px-10 lg:py-16">
         <section className="w-full max-w-[520px] rounded-2xl border border-white/10 bg-[#111111] p-5 sm:p-8 md:p-10">
@@ -188,7 +185,6 @@ export default function LoginPage() {
         </section>
       </main>
 
-      <Footer />
     </div>
   );
 }
