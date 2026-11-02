@@ -195,7 +195,7 @@ export default function Navbar() {
               mobileOpen
                 ? "absolute left-0 right-0 top-full flex"
                 : "hidden"
-            } z-40 max-h-[calc(100dvh-90px)] overflow-y-auto flex-col gap-0 border-b border-[rgba(234,210,160,.19)] bg-[#151611] px-[30px] py-[25px] text-[13px] text-[#c4c3be] xl:static xl:max-h-none xl:overflow-visible xl:flex xl:flex-row xl:items-center xl:gap-[16px] xl:border-0 xl:bg-transparent xl:p-0`}
+            } z-40 max-h-[calc(100dvh-90px)] overflow-y-auto flex-col gap-0 border-b border-[rgba(234,210,160,.19)] bg-[#151611] px-[30px] py-[25px] text-[13px] text-[#c4c3be] xl:static xl:max-h-none xl:overflow-visible xl:flex xl:flex-row xl:items-center xl:gap-[16px] xl:border-0 xl:bg-transparent xl:p-0 ${!isLoggedIn ? "lg:static lg:max-h-none lg:overflow-visible lg:flex lg:flex-row lg:items-center lg:gap-[16px] lg:border-0 lg:bg-transparent lg:p-0" : ""}`}
           >
             {links.map((link) => {
               const active = isActive(link.href);
@@ -206,13 +206,13 @@ export default function Navbar() {
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   onClick={() => setMobileOpen(false)}
-                  className={`relative whitespace-nowrap py-3 transition xl:py-0 ${
+                  className={`relative whitespace-nowrap py-3 transition xl:py-0 ${!isLoggedIn ? "lg:py-0" : ""} ${
                     active ? "text-[#ead2a0]" : "hover:text-[#ead2a0]"
                   }`}
                 >
                   {link.label}
                   {active && (
-                    <span className="absolute bottom-1 left-0 h-px w-full bg-[#cda762] xl:-bottom-[10px]" />
+                    <span className={`absolute bottom-1 left-0 h-px w-full bg-[#cda762] xl:-bottom-[10px] ${!isLoggedIn ? "lg:-bottom-[10px]" : ""}`} />
                   )}
                 </Link>
               );
@@ -226,7 +226,7 @@ export default function Navbar() {
             )}
 
             {!isLoggedIn && (
-              <div className="mt-4 flex items-center gap-[22px] border-t border-[rgba(234,210,160,.19)] pt-4 xl:hidden">
+              <div className="mt-4 flex items-center gap-[22px] border-t border-[rgba(234,210,160,.19)] pt-4 lg:hidden">
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
@@ -274,7 +274,7 @@ export default function Navbar() {
 
           <div className="flex items-center gap-[22px] text-[13px]">
             {!isLoggedIn ? (
-              <div className="hidden items-center gap-[22px] xl:flex">
+              <div className="hidden items-center gap-[22px] lg:flex">
                 <Link href="/login" className="text-[#bcbab4] transition hover:text-[#ead2a0]">
                   Login
                 </Link>
@@ -341,7 +341,7 @@ export default function Navbar() {
 
             <button
               type="button"
-              className="border-0 bg-transparent text-[26px] leading-none text-[#cda762] xl:hidden"
+              className={`border-0 bg-transparent text-[26px] leading-none text-[#cda762] xl:hidden ${!isLoggedIn ? "lg:hidden" : ""}`}
               aria-label={mobileOpen ? "Close navigation" : "Toggle navigation"}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((value) => !value)}
