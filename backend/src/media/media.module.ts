@@ -12,6 +12,10 @@ import {
 } from "./media.controller";
 
 import {
+  ProfileImageController,
+} from "./profile-image.controller";
+
+import {
   CloudinaryStorageService,
 } from "./cloudinary-storage.service";
 
@@ -27,6 +31,7 @@ import {
   controllers: [
     AdminMediaController,
     MediaController,
+    ProfileImageController,
   ],
 
   providers: [
