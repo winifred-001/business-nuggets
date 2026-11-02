@@ -1,194 +1,146 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
-
-import {
-  Check,
-} from "lucide-react";
-
+import { useEffect, useMemo, useState } from "react";
+import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import Navbar from "@/components/navbar";
-import Footer from "@/components/Footer";
 import AuthRouteGuard from "@/components/AuthRouteGuard";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/navbar";
+import {
+  getCurrentCategories,
+  getOnboardingNuggetChoices,
+} from "@/lib/personalization";
+import type { Nugget } from "@/types/nugget";
 
-import { API_URL } from "@/lib/api";
+type NuggetsEnvelope = {
+  data?: Nugget[];
+  pagination?: {
+    hasNextPage?: boolean;
+    totalPages?: number;
+  };
+};
 
-const interests = [
-  "Leadership & Governance",
-  "Money & Stewardship",
-  "Strategy & Planning",
-  "Entrepreneurship & Innovation",
-  "Integrity & Character",
-  "People & Teams",
-  "Negotiation & Covenant",
-  "Global Expansion & Reserves",
-];
+async function loadPublishedNuggets() {
+  const nuggets: Nugget[] = [];
+  let page = 1;
 
-const wisdomTopics = [
-  "Strategic Principles",
-  "Managing Public Funds",
-  "Strategic Risk-Free Scaling",
-  "Executive Burnout",
-];
+  while (true) {
+    const response = await fetch(
+      `/api/member/proxy/nuggets?limit=100&page=${page}`,
+      { cache: "no-store" },
+    );
 
-export default function InterestsPage() {
-  const router =
-    useRouter();
+    if (!response.ok) {
+      throw new Error("Could not load published Nuggets.");
+    }
 
-  const [
-    selectedInterests,
-    setSelectedInterests,
-  ] = useState<string[]>([]);
+    const result: unknown = await response.json();
 
-  const [
-    selectedWisdom,
-    setSelectedWisdom,
-  ] = useState<string[]>([]);
+    if (Array.isArray(result)) {
+      return result as Nugget[];
+    }
 
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
+    if (!result || typeof result !== "object") break;
 
-  const [
-    saving,
-    setSaving,
-  ] = useState(false);
+    const envelope = result as NuggetsEnvelope;
+    if (!Array.isArray(envelope.data)) break;
 
-  const [
-    error,
-    setError,
-  ] = useState("");
+    nuggets.push(...envelope.data);
 
-  /* =========================================
-     LOAD EXISTING PREFERENCES
-  ========================================= */
+    if (
+      !envelope.pagination?.hasNextPage ||
+      page >= (envelope.pagination.totalPages ?? page)
+    ) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return nuggets;
+}
+
+export default function OnboardingPage() {
+  const router = useRouter();
+
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [selectedWisdom, setSelectedWisdom] = useState<string[]>([]);
+  const [nuggets, setNuggets] = useState<Nugget[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    async function loadPreferences() {
-      const token =
-        localStorage.getItem(
-          "token",
+    async function loadOnboarding() {
+      try {
+        const [preferencesResponse, publishedNuggets] = await Promise.all([
+          fetch("/api/member/proxy/users/me/preferences", {
+            cache: "no-store",
+          }),
+          loadPublishedNuggets(),
+        ]);
+
+        const preferencesData = preferencesResponse.ok
+          ? await preferencesResponse.json().catch(() => ({}))
+          : {};
+
+        setNuggets(publishedNuggets);
+        setSelectedInterests(
+          Array.isArray(preferencesData.interests)
+            ? preferencesData.interests
+            : [],
+        );
+        setSelectedWisdom(
+          Array.isArray(preferencesData.wisdomNeeds)
+            ? preferencesData.wisdomNeeds
+            : [],
         );
 
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response =
-          await fetch(
-            `${API_URL}/users/me/preferences`,
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            },
-          );
-
-        const data =
-          await response
-            .json()
-            .catch(
-              () => ({}),
-            );
-
-        if (response.ok) {
-          setSelectedInterests(
-            Array.isArray(
-              data.interests,
-            )
-              ? data.interests
-              : [],
-          );
-
-          setSelectedWisdom(
-            Array.isArray(
-              data.wisdomNeeds,
-            )
-              ? data.wisdomNeeds
-              : [],
-          );
+        if (!preferencesResponse.ok) {
+          setError("Could not load your saved onboarding choices.");
         }
       } catch {
-        console.error(
-          "Could not load preferences.",
-        );
+        setError("Could not load the current onboarding options.");
       } finally {
         setLoading(false);
       }
     }
 
-    loadPreferences();
+    void loadOnboarding();
   }, []);
 
-  function toggleInterest(
-    interest: string,
-  ) {
-    setSelectedInterests(
-      (current) =>
-        current.includes(
-          interest,
-        )
-          ? current.filter(
-              (item) =>
-                item !==
-                interest,
-            )
-          : [
-              ...current,
-              interest,
-            ],
-    );
+  const categories = useMemo(
+    () => getCurrentCategories(nuggets),
+    [nuggets],
+  );
 
+  const nuggetChoices = useMemo(
+    () => getOnboardingNuggetChoices(nuggets, selectedInterests, 5),
+    [nuggets, selectedInterests],
+  );
+
+  function toggleInterest(interest: string) {
+    setSelectedInterests((current) =>
+      current.includes(interest)
+        ? current.filter((item) => item !== interest)
+        : [...current, interest],
+    );
     setError("");
   }
 
-  function toggleWisdom(
-    topic: string,
-  ) {
-    setSelectedWisdom(
-      (current) =>
-        current.includes(
-          topic,
-        )
-          ? current.filter(
-              (item) =>
-                item !== topic,
-            )
-          : [
-              ...current,
-              topic,
-            ],
+  function toggleWisdom(title: string) {
+    setSelectedWisdom((current) =>
+      current.includes(title)
+        ? current.filter((item) => item !== title)
+        : [...current, title],
     );
-
     setError("");
   }
 
   async function savePreferences() {
-    const token =
-      localStorage.getItem(
-        "token",
-      );
-
-    if (!token) {
-      return;
-    }
-
-    if (
-      selectedInterests.length ===
-      0
-    ) {
-      setError(
-        "Choose at least one business interest.",
-      );
-
+    if (selectedInterests.length === 0) {
+      setError("Choose at least one business category.");
       return;
     }
 
@@ -196,62 +148,35 @@ export default function InterestsPage() {
     setError("");
 
     try {
-      const response =
-        await fetch(
-          `${API_URL}/users/me/preferences`,
-          {
-            method: "PATCH",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              Authorization:
-                `Bearer ${token}`,
-            },
-
-            body:
-              JSON.stringify({
-                interests:
-                  selectedInterests,
-
-                wisdomNeeds:
-                  selectedWisdom,
-              }),
+      const response = await fetch(
+        "/api/member/proxy/users/me/preferences",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({
+            interests: selectedInterests,
+            wisdomNeeds: selectedWisdom,
+          }),
+        },
+      );
 
-      const data =
-        await response
-          .json()
-          .catch(
-            () => ({}),
-          );
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         setError(
-          Array.isArray(
-            data.message,
-          )
-            ? data.message.join(
-                ", ",
-              )
-            : data.message ||
-                "Could not save your preferences.",
+          Array.isArray(data.message)
+            ? data.message.join(", ")
+            : data.message || "Could not save your onboarding choices.",
         );
-
         return;
       }
 
-      router.push(
-        "/home",
-      );
-
+      router.push("/onboarding-complete");
       router.refresh();
     } catch {
-      setError(
-        "Could not connect to the server.",
-      );
+      setError("Could not save your onboarding choices.");
     } finally {
       setSaving(false);
     }
@@ -263,183 +188,135 @@ export default function InterestsPage() {
         <Navbar />
 
         <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col items-center px-5 py-10 sm:px-8 sm:py-12 lg:px-10 lg:py-14">
-          {/* STEP */}
-
-          <div className="flex flex-wrap items-center justify-center gap-2 text-center">
-            <span className="rounded-full bg-[#C8A35A] px-2.5 py-1 text-[9px] font-semibold text-[#080808]">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-center">
+            <span className="rounded-full bg-[#C8A35A] px-3 py-1 font-semibold text-[#080808]">
               STEP 2 OF 3
             </span>
-
-            <span className="text-[10px] text-white/35">
-              Customizing your
-              wisdom stream
-            </span>
+            <span className="text-white/40">Customizing your wisdom stream</span>
           </div>
-
-          {/* HEADING */}
 
           <div className="mt-8 text-center">
-            <h1 className="bn-hero-title font-serif text-[28px] leading-tight text-white">
+            <h1 className="bn-hero-title font-serif leading-tight text-white">
               What interests you?
             </h1>
-
-            <p className="mx-auto mt-3 max-w-[540px] text-[11px] leading-6 text-white/45">
-              Select the
-              biblical-business
-              topics that align
-              with your
-              professional
-              challenges.
+            <p className="mx-auto mt-3 max-w-[650px] text-white/45">
+              Select the current Business Nuggets categories that match your work,
+              leadership and marketplace interests.
             </p>
           </div>
 
-          {/* INTERESTS */}
-
           {loading ? (
-            <p className="mt-10 text-[11px] text-white/30">
-              Loading your
-              preferences...
-            </p>
+            <p className="mt-10 text-white/35">Loading current categories and Nuggets...</p>
           ) : (
             <>
-              <div className="mt-8 grid w-full max-w-[850px] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {interests.map(
-                  (
-                    interest,
-                  ) => {
-                    const selected =
-                      selectedInterests.includes(
-                        interest,
-                      );
+              <section className="mt-8 w-full max-w-[940px]">
+                <h2 className="text-center font-serif">Choose Your Categories</h2>
 
-                    return (
-                      <button
-                        key={
-                          interest
-                        }
-                        type="button"
-                        onClick={() =>
-                          toggleInterest(
-                            interest,
-                          )
-                        }
-                        className={`flex min-h-11 items-center justify-center gap-2 rounded-full border px-4 py-2 text-[10px] transition ${
-                          selected
-                            ? "border-[#C8A35A] bg-[#C8A35A] text-[#080808]"
-                            : "border-white/10 bg-[#151515] text-white/60 hover:border-[#C8A35A]/50 hover:text-white"
-                        }`}
-                      >
-                        {selected && (
-                          <Check
-                            size={
-                              11
-                            }
-                            strokeWidth={
-                              3
-                            }
-                          />
-                        )}
-
-                        {
-                          interest
-                        }
-                      </button>
-                    );
-                  },
-                )}
-              </div>
-
-              {/* WISDOM NEEDS */}
-
-              <section className="mt-8 w-full max-w-[760px] rounded-[10px] border border-white/10 bg-[#111111] px-5 py-6">
-                <h2 className="font-serif text-[18px]">
-                  What do you need
-                  wisdom about
-                  today?
-                </h2>
-
-                <p className="mt-2 text-[10px] leading-5 text-white/30">
-                  These can change
-                  over time. They
-                  help prioritize
-                  what appears in
-                  your
-                  recommendations.
-                </p>
-
-                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {wisdomTopics.map(
-                    (
-                      topic,
-                    ) => {
-                      const selected =
-                        selectedWisdom.includes(
-                          topic,
-                        );
+                {categories.length > 0 ? (
+                  <div className="mt-5 flex flex-wrap justify-center gap-3">
+                    {categories.map((interest) => {
+                      const selected = selectedInterests.includes(interest);
 
                       return (
                         <button
-                          key={
-                            topic
-                          }
+                          key={interest}
                           type="button"
-                          onClick={() =>
-                            toggleWisdom(
-                              topic,
-                            )
-                          }
-                          className={`flex min-h-11 items-center justify-center gap-2 rounded-full border px-4 py-2 text-[10px] transition ${
+                          onClick={() => toggleInterest(interest)}
+                          className={`flex min-h-11 items-center justify-center gap-2 rounded-full border px-4 py-2 transition ${
                             selected
-                              ? "border-[#C8A35A] bg-[#C8A35A]/15 text-[#E0C48A]"
-                              : "border-white/10 bg-[#181818] text-white/55 hover:border-[#C8A35A]/40 hover:text-white"
+                              ? "border-[#C8A35A] bg-[#C8A35A] text-[#080808]"
+                              : "border-white/10 bg-[#151515] text-white/60 hover:border-[#C8A35A]/50 hover:text-white"
                           }`}
                         >
-                          {selected && (
-                            <Check
-                              size={
-                                11
-                              }
-                            />
-                          )}
-
-                          {
-                            topic
-                          }
+                          {selected && <Check size={14} strokeWidth={3} />}
+                          {interest}
                         </button>
                       );
-                    },
-                  )}
+                    })}
+                  </div>
+                ) : (
+                  <p className="mt-5 text-center text-white/40">
+                    No published Nugget categories are available yet.
+                  </p>
+                )}
+              </section>
+
+              <section className="mt-9 w-full max-w-[860px] rounded-[10px] border border-white/10 bg-[#111111] px-5 py-6 sm:px-7">
+                <h2 className="font-serif">Choose Nuggets for Your Wisdom Stream</h2>
+                <p className="mt-2 text-white/35">
+                  These five options are refreshed from recent Nuggets, featured/popular
+                  Nuggets and Nuggets inside the categories you selected.
+                </p>
+
+                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {nuggetChoices.map(({ nugget, source }) => {
+                    const selected = selectedWisdom.includes(nugget.title);
+                    const sourceLabel =
+                      source === "category"
+                        ? "From your categories"
+                        : source === "popular"
+                          ? "Popular"
+                          : "Recent";
+
+                    return (
+                      <button
+                        key={nugget.id}
+                        type="button"
+                        onClick={() => toggleWisdom(nugget.title)}
+                        className={`flex min-h-[76px] items-start gap-3 rounded-lg border px-4 py-3 text-left transition ${
+                          selected
+                            ? "border-[#C8A35A] bg-[#C8A35A]/15 text-[#FAF9F6]"
+                            : "border-white/10 bg-[#181818] text-white/65 hover:border-[#C8A35A]/40 hover:text-white"
+                        }`}
+                      >
+                        <span
+                          className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-sm border ${
+                            selected
+                              ? "border-[#C8A35A] bg-[#C8A35A] text-[#080808]"
+                              : "border-white/20"
+                          }`}
+                        >
+                          {selected && <Check size={12} strokeWidth={3} />}
+                        </span>
+
+                        <span className="min-w-0">
+                          <span className="block font-medium text-white/90">
+                            {nugget.title}
+                          </span>
+                          <span className="mt-1 block text-white/35">
+                            {sourceLabel} · {nugget.topic}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </section>
 
-              {/* ERROR */}
-
               {error && (
-                <div className="mt-5 w-full max-w-[760px] rounded-md border border-red-500/20 bg-red-500/[0.05] px-4 py-3">
-                  <p className="text-center text-[10px] text-red-400">
-                    {error}
-                  </p>
+                <div className="mt-5 w-full max-w-[860px] rounded-md border border-red-500/20 bg-red-500/[0.05] px-4 py-3">
+                  <p className="text-center text-red-400">{error}</p>
                 </div>
               )}
 
-              {/* CONTINUE */}
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => router.push("/onboarding-complete")}
+                  className="min-h-10 px-4 text-white/55 transition hover:text-white"
+                >
+                  Skip for now
+                </button>
 
-              <button
-                type="button"
-                onClick={
-                  savePreferences
-                }
-                disabled={
-                  saving ||
-                  selectedInterests.length ===
-                    0
-                }
-                className="mt-8 min-h-10 rounded-md bg-[#C8A35A] px-7 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {saving
-                  ? "Saving..."
-                  : "Continue to My Homepage"}
-              </button>
+                <button
+                  type="button"
+                  onClick={savePreferences}
+                  disabled={saving || selectedInterests.length === 0}
+                  className="min-h-10 rounded-md bg-[#C8A35A] px-7 font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {saving ? "Saving..." : "Save & Continue"}
+                </button>
+              </div>
             </>
           )}
         </main>
