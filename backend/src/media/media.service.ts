@@ -148,6 +148,73 @@ export class MediaService {
   }
 
   /* =========================================
+     MEMBER PROFILE IMAGE
+
+     Profile photos reuse MediaAsset storage so no separate
+     user-image database column is required. The special
+     originalName is never supplied by the browser and is
+     derived only from the authenticated user id.
+  ========================================= */
+
+  private profileImageKey(userId: number) {
+    return `__business_nuggets_profile_user_${userId}__`;
+  }
+
+  private async getProfileImageAssets(userId: number) {
+    const key = this.profileImageKey(userId);
+    const assets = await db.orm.public.MediaAsset.all();
+
+    return assets
+      .filter((asset) => asset.originalName === key)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+  }
+
+  async getProfileImage(userId: number) {
+    const [asset] = await this.getProfileImageAssets(userId);
+
+    return {
+      url: asset?.url ?? null,
+    };
+  }
+
+  async uploadProfileImage(userId: number, file: Express.Multer.File) {
+    const previousAssets = await this.getProfileImageAssets(userId);
+
+    const profileFile: Express.Multer.File = {
+      ...file,
+      originalname: this.profileImageKey(userId),
+    };
+
+    const asset = await this.uploadAsset(profileFile, null);
+
+    // The new photo is safely stored before old versions are removed.
+    // Cleanup failures should not make a successful replacement fail.
+    await Promise.allSettled(
+      previousAssets.map((previous) => this.deleteAsset(previous.id)),
+    );
+
+    return {
+      url: asset.url,
+    };
+  }
+
+  async deleteProfileImage(userId: number) {
+    const assets = await this.getProfileImageAssets(userId);
+
+    await Promise.all(
+      assets.map((asset) => this.deleteAsset(asset.id)),
+    );
+
+    return {
+      message: 'Profile image removed successfully',
+      url: null,
+    };
+  }
+
+  /* =========================================
      DELETE ASSET
   ========================================= */
 
