@@ -212,7 +212,7 @@ export default function WorkspacePage() {
                     <ProfileAvatar className="h-14 w-14" iconSize={30} />
 
                     <div className="min-w-0">
-                      <h2 className="truncate font-serif text-[20px] leading-tight">
+                      <h2 className="truncate font-serif !text-[20px] !leading-6">
                         {user?.name || "Business Nuggets Member"}
                       </h2>
 
@@ -315,7 +315,7 @@ function WorkspaceCard({ card }: { card: WorkspaceCard }) {
         )}
       </div>
 
-      <h2 className="mt-5 font-serif text-[20px] leading-6 text-white/90 transition group-hover:text-[#C8A35A]">
+      <h2 className="mt-5 font-serif !text-[20px] !leading-6 text-white/90 transition group-hover:text-[#C8A35A]">
         {card.title}
       </h2>
 
