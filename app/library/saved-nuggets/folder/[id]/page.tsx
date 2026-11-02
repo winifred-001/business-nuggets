@@ -396,7 +396,7 @@ export default function SavedFolderDetailPage() {
       <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
         <Navbar />
 
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
+        <main className="bn-member-library mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
           <Link
             href="/library/saved-nuggets"
             className="text-[11px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
@@ -621,7 +621,7 @@ export default function SavedFolderDetailPage() {
 
         {showDelete &&
           folder && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-5">
+            <div className="bn-member-library fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-5">
               <div className="w-full max-w-[420px] rounded-[10px] border border-white/10 bg-[#111111] p-6">
                 <h2 className="font-serif text-[24px]">
                   Delete Saved

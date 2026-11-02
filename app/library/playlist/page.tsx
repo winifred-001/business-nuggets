@@ -116,7 +116,7 @@ export default function PlaylistsPage() {
     <div className="flex min-h-screen flex-col bg-[#080808] text-white">
       <Navbar />
 
-      <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-12 sm:px-8 lg:px-10 lg:py-16">
+      <main className="bn-member-library mx-auto w-full max-w-[1280px] flex-1 px-5 py-12 sm:px-8 lg:px-10 lg:py-16">
         {/* HEADER */}
 
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">

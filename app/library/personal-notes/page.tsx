@@ -163,7 +163,7 @@ export default function PersonalNotesPage() {
     <div className="flex min-h-screen flex-col bg-black text-white">
       <Navbar />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:py-16">
+      <main className="bn-member-library mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:py-16">
         {error && (
           <div className="mb-6 rounded-md border border-red-900/50 bg-red-950/20 px-4 py-3 text-sm text-red-300">
             {error}

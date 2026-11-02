@@ -482,7 +482,7 @@ export default function AddToPlaylistPage() {
       <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
         <Navbar />
 
-        <main className="mx-auto flex w-full max-w-[1280px] flex-1 items-start justify-center px-5 py-12 sm:px-8 lg:px-10 lg:py-16">
+        <main className="bn-member-library mx-auto flex w-full max-w-[1280px] flex-1 items-start justify-center px-5 py-12 sm:px-8 lg:px-10 lg:py-16">
           <section className="w-full max-w-[760px] rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-7">
             {/* HEADER */}
 

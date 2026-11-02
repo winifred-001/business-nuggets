@@ -478,7 +478,7 @@ export default function EditPlaylistPage() {
       <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
         <Navbar />
 
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
+        <main className="bn-member-library mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
           {/* BACK */}
 
           <Link

@@ -412,7 +412,7 @@ export default function SavedNuggetsPage() {
       <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
         <Navbar />
 
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
+        <main className="bn-member-library mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
           {/* =================================================
               HEADER
           ================================================= */}
@@ -839,7 +839,7 @@ export default function SavedNuggetsPage() {
 
         {folderMenuFor && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-5"
+            className="bn-member-library fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-5"
             onMouseDown={(
               event,
             ) => {

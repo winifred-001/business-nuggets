@@ -166,7 +166,7 @@ export default function PlaylistDetailPage() {
     <div className="flex min-h-screen flex-col bg-black text-white">
       <Navbar />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6">
+      <main className="bn-member-library mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6">
         <Link
           href="/library/playlist"
           className="text-sm text-amber-300 hover:text-amber-200"
@@ -312,7 +312,7 @@ export default function PlaylistDetailPage() {
       </main>
 
       {showDeleteModal && playlist && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4">
+  <div className="bn-member-library fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4">
     <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#111] p-6 shadow-2xl">
       <h2 className="font-serif text-xl font-semibold text-white">
         Delete Folder?

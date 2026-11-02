@@ -592,6 +592,46 @@ p[class~="text-[14px]"] {
     font-size: var(--bn-admin-heading-font-size) !important;
   }
 
+  /* Member library screens share the site's current fonts and type scale. */
+  .bn-member-library {
+    font-family: var(--font-dm-sans), "DM Sans", Arial, sans-serif !important;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .bn-member-library :where(h1, h2, h3, h4, h5, h6, .font-serif) {
+    font-family: var(--font-playfair), "Playfair Display", Georgia, serif !important;
+    overflow-wrap: anywhere;
+  }
+
+  .bn-member-library .bn-hero-title {
+    font-size: var(--bn-hero-font-size) !important;
+    line-height: 1.15 !important;
+  }
+
+  .bn-member-library :where(p, label, input, textarea, select, li) {
+    font-size: 14px !important;
+    line-height: 1.65 !important;
+  }
+
+  .bn-member-library :where(span, small, time) {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  .bn-member-library a {
+    font-size: 13px !important;
+  }
+
+  .bn-member-library :is(h2, h3, h4, h5, h6, .font-serif):not(.bn-hero-title):not(h1) {
+    font-size: 20px !important;
+    line-height: 30px !important;
+  }
+
+  .bn-member-library :is(h1, h2, h3, h4, h5, h6, .font-serif) a {
+    font-size: inherit !important;
+  }
+
   [data-button-icon] {
     font-size: 26px !important;
   }
