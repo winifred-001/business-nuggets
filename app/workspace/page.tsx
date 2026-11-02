@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   Bell,
   Bookmark,
-  CircleUserRound,
   Headphones,
   ListMusic,
   LogOut,
@@ -20,7 +19,10 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import AuthRouteGuard from "@/components/AuthRouteGuard";
-import { API_URL } from "@/lib/api";
+import {
+  ProfileAvatar,
+  ProfileImageEditor,
+} from "@/components/ProfileImage";
 
 type User = {
   id: number;
@@ -64,10 +66,6 @@ export default function WorkspacePage() {
         return;
       }
 
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
-
       try {
         const [
           userResponse,
@@ -77,12 +75,12 @@ export default function WorkspacePage() {
           historyResponse,
           followingResponse,
         ] = await Promise.all([
-          fetch(`${API_URL}/users/me`, { headers }),
-          fetch(`${API_URL}/saved-nuggets`, { headers }),
-          fetch(`${API_URL}/notes`, { headers }),
-          fetch(`${API_URL}/playlists`, { headers }),
-          fetch(`${API_URL}/history`, { headers }),
-          fetch(`${API_URL}/following/topics`, { headers }),
+          fetch("/api/member/proxy/users/me", { cache: "no-store" }),
+          fetch("/api/member/proxy/saved-nuggets", { cache: "no-store" }),
+          fetch("/api/member/proxy/notes", { cache: "no-store" }),
+          fetch("/api/member/proxy/playlists", { cache: "no-store" }),
+          fetch("/api/member/proxy/history", { cache: "no-store" }),
+          fetch("/api/member/proxy/following/topics", { cache: "no-store" }),
         ]);
 
         if (userResponse.ok) {
@@ -208,24 +206,31 @@ export default function WorkspacePage() {
             {loading ? (
               <p className="text-[14px] text-white/30">Loading workspace...</p>
             ) : (
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[#181818]">
-                    <CircleUserRound size={30} className="text-white/55" />
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-4">
+                    <ProfileAvatar className="h-14 w-14" iconSize={30} />
+
+                    <div className="min-w-0">
+                      <h2 className="truncate font-serif text-[20px] leading-tight">
+                        {user?.name || "Business Nuggets Member"}
+                      </h2>
+
+                      <p className="mt-1 truncate text-[14px] text-white/35">
+                        {user?.email || ""}
+                      </p>
+
+                      <span className="mt-3 inline-flex rounded-sm bg-[#C8A35A]/15 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+                        BNB Member
+                      </span>
+                    </div>
                   </div>
 
-                  <div>
-                    <h2 className="font-serif text-[20px] leading-tight">
-                      {user?.name || "Business Nuggets Member"}
-                    </h2>
-
-                    <p className="mt-1 text-[14px] text-white/35">
-                      {user?.email || ""}
+                  <div className="mt-5 border-t border-white/[0.06] pt-4">
+                    <p className="mb-3 text-[14px] font-medium text-white/70">
+                      Profile Picture
                     </p>
-
-                    <span className="mt-3 inline-flex rounded-sm bg-[#C8A35A]/15 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
-                      BNB Member
-                    </span>
+                    <ProfileImageEditor />
                   </div>
                 </div>
 
