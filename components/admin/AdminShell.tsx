@@ -154,7 +154,7 @@ export default function AdminShell({
         <div className="flex items-center justify-between border-b border-white/[0.06] px-4 sm:px-5">
           <Link
             href="/admin/dashboard"
-            className="flex min-w-0 flex-col items-center pt-[3px] pb-[2px] [&_img]:py-0"
+            className="flex min-w-0 flex-col items-center py-px [&_img]:py-0"
             aria-label="Business Nuggets Admin Console"
           >
             <BrandMark />
