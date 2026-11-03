@@ -14,3 +14,8 @@
 .counterNumber { font-family: var(--visitor-playfair), serif; font-size: 40px; line-height: 1.2; font-weight: 600; color: #E28906; font-variant-numeric: tabular-nums; }
 
 .card .cardExcerpt { font-size: 15px; line-height: 25px; }
+
+.searchbox { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.searchbox .searchIcon { position: absolute; left: 16px; margin: 0; pointer-events: none; }
+.searchbox input { width: 100%; padding-left: 26px; }
+.searchbox .btn { width: 100%; padding-inline: 8px; text-align: center; }

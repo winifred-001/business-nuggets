@@ -70,7 +70,7 @@ export default function VisitorHomeLibrary({ nuggets }: { nuggets: HomeNugget[] 
         <input
           type="search"
           aria-label="Search nuggets"
-          placeholder="Search leadership, finance, Proverbs, vision..."
+          placeholder="Search Leadership, Finance, Proverbs, Vision..."
           value={term}
           onChange={(event) => setTerm(event.target.value)}
         />
