@@ -1,3 +1,4 @@
+import BrandMark from "@/components/BrandMark";
 import Link from "next/link";
 import { DM_Sans, Manrope, Playfair_Display } from "next/font/google";
 
@@ -313,12 +314,8 @@ export default async function HomePage() {
           <div className={styles.container}>
             <div className={styles.footerInner}>
               <div>
-                <Link href="/" className={styles.brand}>
-                  <div className={styles.brandmark}>B</div>
-                  <div className={styles.brandtext}>
-                    <strong>BUSINESS NUGGETS</strong>
-                    <em>from the Bible</em>
-                  </div>
+                <Link href="/" className={styles.brand} aria-label="Business Nuggets home">
+                  <BrandMark />
                 </Link>
                 <p>Biblical principles. Practical wisdom. Purposeful enterprise.</p>
               </div>

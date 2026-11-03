@@ -181,16 +181,7 @@ export default function Navbar() {
             aria-label="Business Nuggets home"
           >
             <BrandMark />
-
-            <span className="block">
-              <strong className="block text-[13px] font-bold tracking-[0.13em] text-[#f9f5ed] max-[600px]:text-[11px]">
-                BUSINESS NUGGETS
-              </strong>
-              <em className="block font-serif text-[14px] font-normal text-[#cda762]">
-                from the Bible
-              </em>
-            </span>
-          </Link>
+            </Link>
 
           <nav
             aria-label="Main navigation"

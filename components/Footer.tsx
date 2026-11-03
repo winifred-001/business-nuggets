@@ -16,15 +16,6 @@ export default function Footer() {
               aria-label="Business Nuggets home"
             >
               <BrandMark />
-
-              <span className="block">
-                <strong className={`${styles.brandName} block font-bold tracking-[0.13em] text-[#f9f5ed] `}>
-                  BUSINESS NUGGETS
-                </strong>
-                <em className={`${styles.brandTagline} block font-normal text-[#cda762]`}>
-                  from the Bible
-                </em>
-              </span>
             </Link>
 
             <p className={`${styles.copy} mt-4 max-w-[340px] text-[#96938b]`}>
