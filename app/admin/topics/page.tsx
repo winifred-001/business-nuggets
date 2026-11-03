@@ -1,4 +1,5 @@
 "use client";
+import ImageMediaPicker from "@/components/ImageMediaPicker";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import {
   Check,
@@ -22,6 +23,7 @@ type BaseItem = {
   name: string;
   slug: string;
   description: string | null;
+  image?: string | null;
   visible: boolean;
   displayOrder: number;
 };
@@ -96,6 +98,7 @@ export default function AdminTopicsPage() {
     [deleting, setDeleting] = useState<Editor | null>(null);
   const [name, setName] = useState(""),
     [description, setDescription] = useState(""),
+    [image, setImage] = useState(""),
     [visible, setVisible] = useState(true),
     [categoryId, setCategoryId] = useState("");
   const [importOpen, setImportOpen] = useState(false);
@@ -129,6 +132,7 @@ export default function AdminTopicsPage() {
     setEditor({ kind: nextKind, item });
     setName(item?.name || "");
     setDescription(item?.description || "");
+    setImage(item?.image || "");
     setVisible(item?.visible ?? true);
     setCategoryId(
       nextKind === "topic" && item && "categoryId" in item
@@ -154,6 +158,7 @@ export default function AdminTopicsPage() {
             description: description.trim(),
             visible,
             ...(editor.kind === "topic" && {
+              image,
               categoryId: categoryId ? Number(categoryId) : null,
             }),
           }),
@@ -565,6 +570,20 @@ export default function AdminTopicsPage() {
                       ))}
                     </select>
                   </label>
+                )}
+                {editor.kind === "topic" && (
+                  <div className="text-sm text-white/55">
+                    <p>Cover Image</p>
+                    {image && (
+                      <div className="mt-2 flex items-center gap-3">
+                        <img src={image} alt="Topic cover preview" className="h-20 w-32 rounded object-cover" />
+                        <button type="button" disabled={busy} onClick={() => setImage("")} className="underline">
+                          Remove cover
+                        </button>
+                      </div>
+                    )}
+                    <ImageMediaPicker value={image} disabled={busy} onSelect={setImage} />
+                  </div>
                 )}
                 <label className="flex items-center justify-between rounded border border-white/10 bg-[#080808] p-4 text-sm text-white/55">
                   Visible

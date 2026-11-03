@@ -20,6 +20,36 @@ import {
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 @Injectable()
 export class TopicsService {
+  private coversReady?: Promise<void>;
+
+  private ensureCovers() {
+    this.coversReady ??= db.runtime().execute(db.raw.sql`
+      CREATE TABLE IF NOT EXISTS "TopicCover" (
+        "topicId" integer PRIMARY KEY REFERENCES "Topic" ("id") ON DELETE CASCADE,
+        "image" text NOT NULL
+      )
+    `.affectedCount().build()).then(() => undefined).catch(error => {
+      this.coversReady = undefined;
+      throw error;
+    });
+    return this.coversReady;
+  }
+
+  private async getCovers() {
+    await this.ensureCovers();
+    const rows = await db.runtime().query(db.raw.sql`
+      SELECT "topicId", "image" FROM "TopicCover"
+    `.returnsRow({ topicId: 'pg/int4@1', image: 'pg/text@1' }).build());
+    return new Map(rows.map(row => [row.topicId, row.image]));
+  }
+
+  private async saveCover(tx: Tx, topicId: number, image: string) {
+    await tx.execute(db.raw.sql`
+      INSERT INTO "TopicCover" ("topicId", "image") VALUES (${topicId}, ${image})
+      ON CONFLICT ("topicId") DO UPDATE SET "image" = EXCLUDED."image"
+    `.affectedCount().build());
+  }
+
   private validateName(name: string) {
     const trimmed = name.trim();
     if (!trimmed || trimmed.length > 120 || !taxonomySlug(trimmed))
@@ -82,10 +112,11 @@ export class TopicsService {
     }
   }
   async getPublicCatalog() {
-    const [topics, categories, nuggets] = await Promise.all([
+    const [topics, categories, nuggets, covers] = await Promise.all([
       db.orm.public.Topic.all(),
       db.orm.public.Category.all(),
       db.orm.public.Nugget.where({ status: 'published' }).all(),
+      this.getCovers(),
     ]);
     const visibleCategories = categories.filter(category => category.visible);
     const publicTopics = topics
@@ -96,6 +127,7 @@ export class TopicsService {
         name: topic.name,
         slug: topic.slug,
         description: topic.description,
+        image: covers.get(topic.id) || null,
         categoryId: topic.categoryId,
         nuggetCount: nuggets.filter(nugget => taxonomyKey(nugget.topic) === taxonomyKey(topic.name)).length,
       }));
@@ -115,14 +147,16 @@ export class TopicsService {
 
   async getAllTopics() {
     await this.syncFromNuggets();
-    const [topics, nuggets, categories] = await Promise.all([
+    const [topics, nuggets, categories, covers] = await Promise.all([
       db.orm.public.Topic.all(),
       db.orm.public.Nugget.all(),
       db.orm.public.Category.all(),
+      this.getCovers(),
     ]);
     return topics
       .map((topic) => ({
         ...topic,
+        image: covers.get(topic.id) || null,
         categoryName:
           categories.find((category) => category.id === topic.categoryId)
             ?.name || null,
@@ -145,7 +179,8 @@ export class TopicsService {
       }))
       .sort((a, b) => a.displayOrder - b.displayOrder || a.id - b.id);
   }
-  async createTopic(input: CreateTopicDto) {
+  async createTopic({ image, ...input }: CreateTopicDto) {
+    if (image !== undefined) await this.ensureCovers();
     return db.transaction(async (tx) => {
       const name = this.validateName(input.name),
         topics = await tx.orm.public.Topic.all();
@@ -155,7 +190,7 @@ export class TopicsService {
         !(await tx.orm.public.Category.where({ id: input.categoryId }).first())
       )
         throw new BadRequestException('Category not found.');
-      return tx.orm.public.Topic.create({
+      const topic = await tx.orm.public.Topic.create({
         name,
         slug: taxonomySlug(name),
         description: input.description?.trim() || null,
@@ -164,9 +199,12 @@ export class TopicsService {
           Math.max(-1, ...topics.map((topic) => topic.displayOrder)) + 1,
         categoryId: input.categoryId ?? null,
       });
+      if (image !== undefined) await this.saveCover(tx, topic.id, image);
+      return { ...topic, image: image || null };
     });
   }
-  async updateTopic(id: number, input: UpdateTopicDto) {
+  async updateTopic(id: number, { image, ...input }: UpdateTopicDto) {
+    if (image !== undefined) await this.ensureCovers();
     return db.transaction(async (tx) => {
       const existing = await tx.orm.public.Topic.where({ id })
         .forUpdate()
@@ -215,6 +253,7 @@ export class TopicsService {
             });
         }
       }
+      if (image !== undefined) await this.saveCover(tx, id, image);
       return updated;
     });
   }

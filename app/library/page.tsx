@@ -406,7 +406,7 @@ function LibraryContent() {
       slug: topic.slug,
       description: topic.description || topicDescriptions[topic.name] || `Explore published biblical business wisdom on ${topic.name}.`,
       count: topic.nuggetCount,
-      image: topicImages[topic.name] ?? fallbackTopicImages[index % fallbackTopicImages.length],
+      image: topic.image || topicImages[topic.name] || fallbackTopicImages[index % fallbackTopicImages.length],
     }));
   }, [catalog]);
 

@@ -35,6 +35,7 @@ import { parseTaxonomyCsv } from './topics-csv';
 import { CreateTopicDto } from './topics.dto';
 type Row = Record<string, unknown>;
 let state: Record<'Topic' | 'Category' | 'Nugget' | 'FollowedTopic', Row[]>;
+let covers: Map<number, string>;
 let failOnTopic: string | null = null;
 jest.mock('../prisma/db', () => {
   const table = (key: keyof typeof state) => {
@@ -97,12 +98,22 @@ jest.mock('../prisma/db', () => {
   return {
     db: {
       orm,
+      raw: {
+        sql: (_parts: TemplateStringsArray, ...values: unknown[]) => {
+          const build = () => ({ build: () => values });
+          return { affectedCount: build, returnsRow: build };
+        },
+      },
+      runtime: () => ({
+        execute: async () => undefined,
+        query: async () => Array.from(covers, ([topicId, image]) => ({ topicId, image })),
+      }),
       transaction: async (
-        work: (tx: { orm: typeof orm }) => Promise<unknown>,
+        work: (tx: { orm: typeof orm; execute: (values: [number, string]) => Promise<void> }) => Promise<unknown>,
       ) => {
         const backup = structuredClone(state);
         try {
-          return await work({ orm });
+          return await work({ orm, execute: async ([id, image]) => { covers.set(id, image); } });
         } catch (error) {
           state = backup;
           throw error;
@@ -134,6 +145,7 @@ const category = () => ({
 });
 const service = () => new TopicsService();
 beforeEach(() => {
+  covers = new Map();
   state = { Topic: [], Category: [], Nugget: [], FollowedTopic: [] };
   failOnTopic = null;
 });
@@ -1152,4 +1164,17 @@ describe('Public library topic catalog', () => {
       expect(result.body).toEqual(catalog);
     } finally { await app.close(); }
   });
+});
+
+it('saves, replaces and removes topic covers in the public catalog', async () => {
+  const topics = service();
+  const first = 'https://example.com/cover.png';
+  const replacement = 'https://example.com/replacement.png';
+  const created = await topics.createTopic({ name: 'Cover test', image: first });
+  expect((await topics.getAllTopics())[0].image).toBe(first);
+  await topics.updateTopic(created.id, { image: replacement });
+  await topics.updateTopic(created.id, { description: 'Keep the cover' });
+  expect((await topics.getPublicCatalog()).topics[0].image).toBe(replacement);
+  await topics.updateTopic(created.id, { image: '' });
+  expect((await topics.getPublicCatalog()).topics[0].image).toBeNull();
 });

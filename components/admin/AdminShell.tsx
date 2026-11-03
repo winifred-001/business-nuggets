@@ -1,5 +1,6 @@
 "use client";
 
+import BrandMark from "@/components/BrandMark";
 import Link from "next/link";
 import {
   usePathname,
@@ -153,20 +154,13 @@ export default function AdminShell({
         <div className="flex min-h-[72px] items-center justify-between border-b border-white/[0.06] px-4 sm:px-5">
           <Link
             href="/admin/dashboard"
-            className="flex min-h-11 items-center gap-3"
+            className="flex min-w-0 flex-col items-start gap-1 py-2"
+            aria-label="Business Nuggets Admin Console"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#C8A35A] font-serif text-[18px] font-bold text-[#080808]">
-              B
-            </div>
-
-            <div>
-              <p className="text-[14px] font-semibold uppercase leading-tight tracking-[0.04em] text-[#FAF9F6]">
-                Business Nuggets
-              </p>
-              <p className="mt-1 text-[12px] leading-none text-[#C8A35A]">
-                Admin Console
-              </p>
-            </div>
+            <BrandMark />
+            <span className="text-[12px] leading-none text-[#C8A35A]">
+              Admin Console
+            </span>
           </Link>
 
           <button

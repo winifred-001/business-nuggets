@@ -39,8 +39,20 @@ export class UpdateCategoryDto {
   displayOrder?: number;
 }
 export class CreateTopicDto extends CreateCategoryDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  @Matches(/^(?:https:\/\/[^\s]+|)$/i)
+  image?: string;
+
   @IsOptional() @IsInt() @Min(1) @Max(2147483647) categoryId?: number | null;
 }
 export class UpdateTopicDto extends UpdateCategoryDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  @Matches(/^(?:https:\/\/[^\s]+|)$/i)
+  image?: string;
+
   @IsOptional() @IsInt() @Min(1) @Max(2147483647) categoryId?: number | null;
 }

@@ -5,6 +5,7 @@ export type PublicTopic = {
   name: string;
   slug: string;
   description: string | null;
+  image?: string | null;
   categoryId: number | null;
   nuggetCount: number;
 };
