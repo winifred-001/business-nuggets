@@ -1,5 +1,6 @@
 "use client";
 
+import BrandMark from "@/components/BrandMark";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
@@ -198,26 +199,19 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
+    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
       <header className="border-b border-white/[0.07] bg-[#111111]">
-        <div className="flex h-[72px] items-center px-6 lg:px-10">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-[#C8A35A] font-serif text-[14px] font-bold text-[#080808]">
-              B
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.05em] text-white">
-                Business Nuggets
-              </p>
-              <p className="mt-0.5 text-[8px] text-[#C8A35A]">
-                Admin Console
-              </p>
-            </div>
+        <div className="flex items-center px-6 lg:px-10">
+          <Link href="/" aria-label="Business Nuggets home" className="flex min-w-0 flex-col items-center py-px [&_img]:py-0">
+            <BrandMark />
+            <span className="text-[12px] leading-none text-[#C8A35A]">
+              Admin Console
+            </span>
           </Link>
         </div>
       </header>
 
-      <main className="flex min-h-[calc(100vh-72px)] items-start justify-center px-5 py-16 sm:py-20">
+      <main className="flex flex-1 items-start justify-center px-5 py-16 sm:py-20">
         <section className="w-full max-w-[440px] rounded-[10px] border border-white/10 bg-[#111111] p-6 sm:p-8">
           <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md bg-[#C8A35A] text-[#080808]">
             <ShieldCheck size={20} />
