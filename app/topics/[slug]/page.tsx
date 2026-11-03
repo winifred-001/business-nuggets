@@ -83,7 +83,7 @@ export default async function TopicDetailPage({
   const heroImage =
     featured?.image ??
     topicNuggets[0]?.image ??
-    "/images/visiting-homepage2.png";
+    "/media-placeholder.svg";
 
   return (
     <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">

@@ -1144,7 +1144,7 @@ export default function EditNuggetPage() {
                       .value,
                   )
                 }
-                placeholder="/images/nugget.jpg"
+                placeholder="/media-placeholder.svg"
                 className="mt-2 h-9 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[9px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
               />
 

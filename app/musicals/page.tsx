@@ -22,10 +22,10 @@ type MusicalNugget = Nugget & {
 };
 
 const musicalImages = [
-  "/images/musical.png",
-  "/images/cinematic-musical1.png",
-  "/images/cinematic-musical2.png",
-  "/images/cinematic-musical3.png",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
 ];
 
 function normalize(value: string) {

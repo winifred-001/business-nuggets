@@ -207,10 +207,10 @@ export default function MusicalView({
                       <Image
                         src={
                           index === 0
-                            ? "/images/cinematic-musical1.png"
+                            ? "/media-placeholder.svg"
                             : index === 1
-                              ? "/images/cinematic-musical2.png"
-                              : "/images/cinematic-musical3.png"
+                              ? "/media-placeholder.svg"
+                              : "/media-placeholder.svg"
                         }
                         alt={
                           item.title

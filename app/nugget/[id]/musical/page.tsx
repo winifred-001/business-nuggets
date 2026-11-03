@@ -104,7 +104,7 @@ export default async function MusicalPage({
         audioSrc={audioSrc}
         coverImage={
           nugget.musicalImage ??
-          "/images/musical.png"
+          "/media-placeholder.svg"
         }
       />
 

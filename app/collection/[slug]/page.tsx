@@ -26,11 +26,11 @@ const collectionImages: Record<
   string
 > = {
   "starting-your-business-gods-way":
-    "/images/collection-main.png",
+    "/media-placeholder.svg",
   "capital-stewardship-debt":
-    "/images/saved-nugget1.png",
+    "/media-placeholder.svg",
   "integrity-as-a-premium-brand":
-    "/images/saved-nugget2.png",
+    "/media-placeholder.svg",
 };
 
 export default async function CollectionDetailPage({
@@ -84,7 +84,7 @@ export default async function CollectionDetailPage({
       collection.slug
     ] ||
     firstUnit?.image ||
-    "/images/collection-main.png";
+    "/media-placeholder.svg";
 
   return (
     <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">

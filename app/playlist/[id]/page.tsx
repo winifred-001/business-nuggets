@@ -392,7 +392,7 @@ export default function PlaylistDetailPage() {
                 <Image
                   src={
                     firstNugget?.image ??
-                    "/images/playlist-details.png"
+                    "/media-placeholder.svg"
                   }
                   alt={playlist.name}
                   fill

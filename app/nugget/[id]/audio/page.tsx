@@ -101,7 +101,7 @@ export default async function AudioPlayerPage({
         audioSrc={audioSrc}
         coverImage={
           nugget.audioImage ??
-          "/images/audio-player.png"
+          "/media-placeholder.svg"
         }
       />
 

@@ -7,7 +7,7 @@ import { Pause, Play, Repeat2, Shuffle, SkipBack, SkipForward, Volume2, VolumeX,
 import { useAudioPlayback, audioTime } from "@/lib/use-audio-playback";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 import type { Nugget } from "@/types/nugget";
-export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage = "/images/musical.png" }: { title: string; subtitle: string; audioSrc: string | null; slug: string; coverImage?: string }) {
+export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage = "/media-placeholder.svg" }: { title: string; subtitle: string; audioSrc: string | null; slug: string; coverImage?: string }) {
   const { audioRef, audioProps, playing, currentTime, duration, muted, repeat, audioError, togglePlay, seekTo, toggleRepeat, toggleMute } = useAudioPlayback(audioSrc);
   const router = useRouter();
   const [tracks, setTracks] = useState<Nugget[]>([]);

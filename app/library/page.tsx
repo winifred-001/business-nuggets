@@ -49,34 +49,34 @@ const tabs = [
 
 const topicImages: Record<string, string> = {
   "Leadership & Governance":
-    "/images/visiting-homepage2.png",
+    "/media-placeholder.svg",
 
   "Leadership & Teams":
-    "/images/visiting-homepage2.png",
+    "/media-placeholder.svg",
 
   "Money & Stewardship":
-    "/images/visiting-homepage3.png",
+    "/media-placeholder.svg",
 
   "Strategy & Planning":
-    "/images/visiting-homepage4.png",
+    "/media-placeholder.svg",
 
   "Entrepreneurship & Innovation":
-    "/images/visiting-homepage5.png",
+    "/media-placeholder.svg",
 
   "Integrity & Character":
-    "/images/visiting-homepage6.png",
+    "/media-placeholder.svg",
 
   "People & Teams":
-    "/images/visiting-homepage7.png",
+    "/media-placeholder.svg",
 };
 
 const fallbackTopicImages = [
-  "/images/visiting-homepage2.png",
-  "/images/visiting-homepage3.png",
-  "/images/visiting-homepage4.png",
-  "/images/visiting-homepage5.png",
-  "/images/visiting-homepage6.png",
-  "/images/visiting-homepage7.png",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
 ];
 
 const topicDescriptions: Record<string, string> = {
@@ -148,13 +148,13 @@ const challengeDescriptions: Record<
 
 const collectionImages: Record<string, string> = {
   "starting-your-business-gods-way":
-    "/images/collection-main.png",
+    "/media-placeholder.svg",
 
   "capital-stewardship-debt":
-    "/images/saved-nugget1.png",
+    "/media-placeholder.svg",
 
   "integrity-as-a-premium-brand":
-    "/images/saved-nugget2.png",
+    "/media-placeholder.svg",
 };
 
 function LibraryContent() {
@@ -513,7 +513,7 @@ function LibraryContent() {
                 collection.slug
               ] ||
               members[0]?.image ||
-              "/images/collection-main.png",
+              "/media-placeholder.svg",
           };
         },
       );

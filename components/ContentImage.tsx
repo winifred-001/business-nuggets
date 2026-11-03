@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 
-const SAMPLE_IMAGE = "/images/nuggetCard.png";
+const SAMPLE_IMAGE = "/media-placeholder.svg";
 
 type ContentImageProps = {
   src: string;
