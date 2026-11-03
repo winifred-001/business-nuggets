@@ -24,7 +24,7 @@ const valid = () => ({ title: 'Privacy Policy', introduction: '', notice: '', se
 const pipe = new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true });
 const validate = (value: unknown) => pipe.transform(value, { type: 'body', metatype: UpdateLegalPageDto });
 describe('Site pages', () => {
-  it.each(['about', 'contact', 'faqs', 'privacy-policy', 'terms-of-use'])('saves and reloads %s through the storage adapter', async slug => {
+  it.each(['about', 'contact', 'faqs', 'authors', 'privacy-policy', 'terms-of-use'])('saves and reloads %s through the storage adapter', async slug => {
     const service = new LegalPagesService();
     const input = { ...valid(), title: slug };
     expect(await service.updatePage(slug, input)).toEqual({ ...input, updatedAt: '2026-10-26T12:00:00.000Z' });

@@ -13,6 +13,8 @@ import {
   getAuthorBySlug,
 } from "@/lib/authors";
 
+import { getSitePage } from "@/lib/site-pages";
+
 type AuthorDetailsPageProps = {
   params: Promise<{
     slug: string;
@@ -25,12 +27,18 @@ export default async function AuthorDetailsPage({
   const { slug } =
     await params;
 
-  const author =
-    getAuthorBySlug(slug);
+  const page = await getSitePage("authors");
+  const section = page.sections.find(item => item.id === slug);
+  if (!section) notFound();
 
-  if (!author) {
-    notFound();
-  }
+  const original = getAuthorBySlug(slug);
+  const author = {
+    name: section.title,
+    roleLabel: original?.roleLabel ?? "Contributor",
+    description: section.body,
+    bio: section.body,
+    works: original?.works ?? [],
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">

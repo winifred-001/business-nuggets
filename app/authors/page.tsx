@@ -9,10 +9,23 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 
 import {
-  authors,
+  authors as originalAuthors,
 } from "@/lib/authors";
 
-export default function AuthorsPage() {
+import { getSitePage } from "@/lib/site-pages";
+
+export default async function AuthorsPage() {
+  const page = await getSitePage("authors");
+  const authors = page.sections.map(section => {
+    const original = originalAuthors.find(author => author.slug === section.id);
+    return {
+      slug: section.id,
+      name: section.title,
+      description: section.body,
+      roleLabel: original?.roleLabel ?? "Contributor",
+      works: original?.works ?? [],
+    };
+  });
   return (
     <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
       <Navbar />
@@ -31,14 +44,11 @@ export default function AuthorsPage() {
 
         <section className="mt-3">
           <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
-            Authors &amp; Creators
+            {page.title}
           </h1>
 
           <p className="mt-3 text-[13px] leading-6 text-white/40">
-            Discover the named
-            creators behind the
-            platform&apos;s cinematic
-            wisdom works.
+            {page.introduction}
           </p>
         </section>
 

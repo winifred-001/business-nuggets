@@ -25,7 +25,7 @@ export class LegalPagesService {
   }
 
   private validateSlug(slug: string) {
-    if (!['privacy-policy', 'terms-of-use', 'about', 'contact', 'faqs'].includes(slug)) {
+    if (!['privacy-policy', 'terms-of-use', 'about', 'contact', 'faqs', 'authors'].includes(slug)) {
       throw new NotFoundException('Site page not found');
     }
   }
