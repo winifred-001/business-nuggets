@@ -1,32 +1,68 @@
+import { randomBytes } from "node:crypto";
+import type { PlaylistNameDto } from "./dto/playlist.dto";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { db } from "../prisma/db";
 
 @Injectable()
 export class PlaylistsService {
-  async createPlaylist(userId: number, name: string) {
-    return db.orm.public.Playlist.create({
-      userId,
-      name,
+  private metadataReady?: Promise<void>;
+
+  private ensureMetadata() {
+    this.metadataReady ??= db.runtime().execute(db.raw.sql`
+      ALTER TABLE "Playlist"
+        ADD COLUMN IF NOT EXISTS "description" text NOT NULL DEFAULT '',
+        ADD COLUMN IF NOT EXISTS "shareToken" text UNIQUE
+    `.affectedCount().build()).then(() => undefined).catch(error => {
+      this.metadataReady = undefined;
+      throw error;
     });
+    return this.metadataReady;
+  }
+
+  async createPlaylist(userId: number, data: PlaylistNameDto) {
+    await this.ensureMetadata();
+    const token = data.privacy === "shared" ? randomBytes(32).toString("hex") : "";
+    const [playlist] = await db.runtime().query(db.raw.sql`
+      INSERT INTO "Playlist" ("userId", "name", "description", "shareToken")
+      VALUES (${userId}, ${data.name.trim()}, ${data.description?.trim() ?? ""}, NULLIF(${token}, ''))
+      RETURNING "id", "name", "description", COALESCE("shareToken", '') AS "shareToken"
+    `.returnsRow({ id: "pg/int4@1", name: "pg/text@1", description: "pg/text@1", shareToken: "pg/text@1" }).build());
+    return playlist;
   }
 
   async getPlaylists(userId: number) {
-    const playlists = await db.orm.public.Playlist
-      .where({ userId })
-      .all();
+    await this.ensureMetadata();
+    const playlists = await db.runtime().query(db.raw.sql`
+      SELECT "id", "name", "userId", "createdAt", "description", COALESCE("shareToken", '') AS "shareToken"
+      FROM "Playlist" WHERE "userId" = ${userId}
+    `.returnsRow({
+      id: "pg/int4@1", name: "pg/text@1", userId: "pg/int4@1",
+      createdAt: "pg/timestamptz-string@1", description: "pg/text@1",
+      shareToken: "pg/text@1",
+    }).build());
+    return Promise.all(playlists.map(async playlist => ({
+      ...playlist,
+      items: await db.orm.public.PlaylistItem.where({ playlistId: playlist.id }).all(),
+    })));
+  }
 
-    return Promise.all(
-      playlists.map(async (playlist) => {
-        const items = await db.orm.public.PlaylistItem
-          .where({ playlistId: playlist.id })
-          .all();
-
-        return {
-          ...playlist,
-          items,
-        };
-      })
-    );
+  async getSharedPlaylist(token: string) {
+    if (!/^[a-f0-9]{64}$/.test(token)) throw new NotFoundException("Playlist not found");
+    await this.ensureMetadata();
+    const rows = await db.runtime().query(db.raw.sql`
+      SELECT p."name", p."description", COALESCE(i."nuggetId", '') AS "nuggetId"
+      FROM "Playlist" p LEFT JOIN "PlaylistItem" i ON i."playlistId" = p."id"
+      WHERE p."shareToken" = ${token} ORDER BY i."id"
+    `.returnsRow({
+      name: "pg/text@1", description: "pg/text@1",
+      nuggetId: "pg/text@1",
+    }).build());
+    if (!rows.length) throw new NotFoundException("Playlist not found");
+    return {
+      name: rows[0].name,
+      description: rows[0].description,
+      nuggetIds: rows.flatMap(row => row.nuggetId ? [row.nuggetId] : []),
+    };
   }
 
   async addItem(
@@ -94,31 +130,23 @@ export class PlaylistsService {
       .delete();
   }
    
-  async updatePlaylist(
-  userId: number,
-  playlistId: number,
-  name: string
-) {
-  const playlist = await db.orm.public.Playlist
-    .where({
-      id: playlistId,
-      userId,
-    })
-    .first();
-
-  if (!playlist) {
-    throw new NotFoundException("Playlist not found");
+  async updatePlaylist(userId: number, playlistId: number, data: PlaylistNameDto) {
+    await this.ensureMetadata();
+    const [playlist] = await db.runtime().query(db.raw.sql`
+      UPDATE "Playlist"
+      SET "name" = ${data.name.trim()},
+          "description" = CASE WHEN ${data.description !== undefined} THEN ${data.description?.trim() ?? ""} ELSE "description" END,
+          "shareToken" = CASE
+            WHEN ${data.privacy ?? ""} = 'private' THEN NULL
+            WHEN ${data.privacy ?? ""} = 'shared' THEN COALESCE("shareToken", ${randomBytes(32).toString("hex")})
+            ELSE "shareToken"
+          END
+      WHERE "id" = ${playlistId} AND "userId" = ${userId}
+      RETURNING "id", "name", "description", COALESCE("shareToken", '') AS "shareToken"
+    `.returnsRow({ id: "pg/int4@1", name: "pg/text@1", description: "pg/text@1", shareToken: "pg/text@1" }).build());
+    if (!playlist) throw new NotFoundException("Playlist not found");
+    return playlist;
   }
-
-  return db.orm.public.Playlist
-    .where({
-      id: playlistId,
-      userId,
-    })
-    .update({
-      name: name.trim(),
-    });
-}
 
   async deletePlaylist(userId: number, playlistId: number) {
     const playlist = await db.orm.public.Playlist

@@ -6,7 +6,6 @@ import { useParams, useRouter } from "next/navigation";
 
 import {
   GripVertical,
-  Lock,
   Trash2,
 } from "lucide-react";
 
@@ -26,6 +25,8 @@ type PlaylistItem = {
 type Playlist = {
   id: number;
   name: string;
+  description?: string;
+  shareToken?: string | null;
   userId?: number;
   createdAt?: string;
   items: PlaylistItem[];
@@ -52,6 +53,9 @@ export default function EditPlaylistPage() {
 
   const [nuggets, setNuggets] =
     useState<Nugget[]>([]);
+
+  const [description, setDescription] = useState("");
+  const [shared, setShared] = useState(false);
 
   const [name, setName] =
     useState("");
@@ -146,6 +150,8 @@ export default function EditPlaylistPage() {
 
       setPlaylist(found);
 
+      setDescription(found.description ?? "");
+      setShared(Boolean(found.shareToken));
       setName(
         found.name || "",
       );
@@ -335,6 +341,8 @@ export default function EditPlaylistPage() {
               JSON.stringify({
                 name:
                   trimmedName,
+                description: description.trim(),
+                privacy: shared ? "shared" : "private",
               }),
           },
         );
@@ -559,69 +567,15 @@ export default function EditPlaylistPage() {
                       placeholder="Playlist name"
                       className="h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/60"
                     />
-                  </div>
-
-                  {/* DESCRIPTION */}
-
-                  <div className="mt-5">
-                    <label className="mb-2 block text-[10px] font-semibold text-white/55">
-                      Description
+                    <label className="mt-4 block">Description
+                      <textarea className="mt-2 block w-full border border-white/10 bg-[#19191D] p-3" maxLength={300} value={description} onChange={event => setDescription(event.target.value)} />
                     </label>
-
-                    <div className="rounded-md border border-white/[0.07] bg-[#151515] px-4 py-3">
-                      <p className="text-[11px] leading-5 text-white/30">
-                        Playlist
-                        descriptions
-                        are not stored
-                        by the backend
-                        yet.
-                      </p>
-                    </div>
+                    <label className="mt-4 flex gap-2">
+                      <input type="checkbox" checked={shared} onChange={event => setShared(event.target.checked)} />
+                      Share by link
+                    </label>
                   </div>
 
-                  {/* PRIVACY */}
-
-                  <div className="mt-5">
-                    <p className="mb-2 text-[10px] font-semibold text-white/55">
-                      Privacy
-                    </p>
-
-                    <div className="rounded-md border border-[#C8A35A]/40 bg-[#C8A35A]/[0.10] p-4">
-                      <div className="flex gap-3">
-                        <span className="mt-0.5 text-[#C8A35A]">
-                          <Lock
-                            size={
-                              15
-                            }
-                          />
-                        </span>
-
-                        <div>
-                          <p className="text-[12px] font-medium text-[#F5F0E8]">
-                            Private
-                          </p>
-
-                          <p className="mt-1 text-[10px] leading-5 text-white/35">
-                            Only you
-                            can access
-                            this
-                            playlist
-                            in your
-                            workspace.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="mt-5 text-[10px] leading-5 text-white/25">
-                    Playlist sharing
-                    is not enabled
-                    yet, so existing
-                    playlists remain
-                    private to the
-                    signed-in user.
-                  </p>
                 </section>
 
                 {/* =========================================

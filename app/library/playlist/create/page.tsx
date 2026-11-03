@@ -81,6 +81,8 @@ export default function CreatePlaylistPage() {
               JSON.stringify({
                 name:
                   trimmedName,
+                description: description.trim(),
+                privacy,
               }),
           },
         );
@@ -103,28 +105,6 @@ export default function CreatePlaylistPage() {
         );
 
         return;
-      }
-
-      /*
-       * Description and privacy are currently
-       * UI-only because the Playlist backend
-       * does not store these fields yet.
-       *
-       * We keep the entered values locally
-       * so the user does not immediately lose
-       * them while we build the backend fields.
-       */
-
-      if (data.id) {
-        localStorage.setItem(
-          `playlist-meta-${data.id}`,
-          JSON.stringify({
-            description:
-              description.trim(),
-
-            privacy,
-          }),
-        );
       }
 
       router.push(
@@ -219,13 +199,6 @@ export default function CreatePlaylistPage() {
                 maxLength={300}
                 className="w-full resize-none rounded-md border border-white/10 bg-[#19191D] px-4 py-3 text-[12px] leading-6 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/60"
               />
-
-              <p className="mt-2 text-[10px] leading-5 text-white/25">
-                Description support will be
-                connected permanently when
-                the playlist backend stores
-                this field.
-              </p>
             </div>
 
             {/* PRIVACY */}
@@ -331,20 +304,10 @@ export default function CreatePlaylistPage() {
                   </p>
 
                   <p className="mt-1 text-[10px] leading-5 text-white/35">
-                    Prepare this playlist
-                    for future sharing
-                    features.
+                    Anyone with the link can view this playlist.
                   </p>
                 </div>
               </button>
-
-              <p className="text-[10px] leading-5 text-white/25">
-                Playlist sharing is not
-                available on the backend yet.
-                Your playlist will still be
-                accessible only from your
-                account for now.
-              </p>
             </div>
 
             {/* ERROR */}

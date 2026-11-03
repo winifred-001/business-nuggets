@@ -21,6 +21,8 @@ type PlaylistItem = {
 type Playlist = {
   id: number;
   name: string;
+  description?: string;
+  shareToken?: string | null;
   userId: number;
   createdAt: string;
   items: PlaylistItem[];
@@ -32,6 +34,7 @@ export default function PlaylistDetailPage() {
 
   const playlistId = Number(params.id);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [shareStatus, setShareStatus] = useState("");
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -195,6 +198,21 @@ export default function PlaylistDetailPage() {
                   <h1 className="bn-hero-title font-serif text-3xl font-semibold sm:text-4xl">
                     {playlist.name}
                   </h1>
+                  {playlist.description && <p className="mt-2 whitespace-pre-wrap">{playlist.description}</p>}
+                  {playlist.shareToken && (
+                    <div className="mt-3">
+                      <button type="button" className="bn-button text-[#C8A35A]" onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(new URL(`/shared-playlist/${playlist.shareToken}`, window.location.origin).href);
+                          setShareStatus("Share link copied.");
+                        } catch {
+                          setShareStatus("Could not copy the link. Open the shared view to copy its address.");
+                        }
+                      }}>Copy Share Link</button>
+                      <Link className="ml-3 underline" href={`/shared-playlist/${playlist.shareToken}`}>Open shared view</Link>
+                      <p role="status">{shareStatus}</p>
+                    </div>
+                  )}
 
                   <p className="mt-2 text-sm text-gray-500">
                     {playlist.items.length}{" "}
