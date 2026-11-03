@@ -200,7 +200,7 @@ export default function Navbar() {
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   onClick={() => setMobileOpen(false)}
-                  className={`relative whitespace-nowrap py-3 transition lg:py-0 ${
+                  className={`relative whitespace-nowrap py-3 font-bold transition lg:py-0 ${
                     active ? "text-[#E28906]" : "hover:text-[#E28906]"
                   }`}
                 >
@@ -217,7 +217,7 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="text-[#bcbab4] transition hover:text-[#E28906]"
+                  className="font-bold text-[#bcbab4] transition hover:text-[#E28906]"
                 >
                   Login
                 </Link>
@@ -288,7 +288,7 @@ export default function Navbar() {
           <div className="flex items-center gap-[22px] text-[13px]">
             {!isLoggedIn ? (
               <div className="hidden items-center gap-[22px] lg:flex">
-                <Link href="/login" className="text-[#bcbab4] transition hover:text-[#E28906]">
+                <Link href="/login" className="font-bold text-[#bcbab4] transition hover:text-[#E28906]">
                   Login
                 </Link>
                 <Link
