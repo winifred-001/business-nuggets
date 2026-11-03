@@ -187,7 +187,7 @@ export default function WorkspacePage() {
         <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10">
           <Link
             href="/home"
-            className="text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             ← My Homepage
           </Link>
@@ -220,7 +220,7 @@ export default function WorkspacePage() {
                         {user?.email || ""}
                       </p>
 
-                      <span className="mt-3 inline-flex rounded-sm bg-[#C8A35A]/15 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+                      <span className="mt-3 inline-flex rounded-sm bg-[#E28906]/15 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
                         BNB Member
                       </span>
                     </div>
@@ -237,14 +237,14 @@ export default function WorkspacePage() {
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href="/membership"
-                    className="bn-button inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 bg-[#080808] px-4 text-[10px] font-medium text-white/70 transition hover:border-[#C8A35A]/30 hover:text-white"
+                    className="bn-button inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 bg-[#080808] px-4 text-[10px] font-medium text-white/70 transition hover:border-[#E28906]/30 hover:text-white"
                   >
                     Membership Details →
                   </Link>
 
                   <Link
                     href="/library/account"
-                    className="bn-button inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-5 text-[10px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                    className="bn-button inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#E28906] px-5 text-[10px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
                   >
                     <Settings size={13} />
                     Settings →
@@ -263,7 +263,7 @@ export default function WorkspacePage() {
           <section className="mt-7 flex flex-col gap-5 border-t border-white/[0.06] pt-5 sm:flex-row sm:items-center sm:justify-between">
             <Link
               href="/library/account"
-              className="inline-flex items-center gap-2 text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="inline-flex items-center gap-2 text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               <Settings size={13} />
               Account &amp; Workspace Settings →
@@ -303,10 +303,10 @@ function WorkspaceCard({ card }: { card: WorkspaceCard }) {
   return (
     <Link
       href={card.href}
-      className="group flex min-h-[190px] flex-col rounded-[10px] border border-white/10 bg-[#111111] p-5 transition hover:border-[#C8A35A]/35"
+      className="group flex min-h-[190px] flex-col rounded-[10px] border border-white/10 bg-[#111111] p-5 transition hover:border-[#E28906]/35"
     >
       <div className="flex items-start justify-between gap-4">
-        <Icon size={16} className="text-[#C8A35A]" />
+        <Icon size={16} className="text-[#E28906]" />
 
         {card.count !== undefined && (
           <span className="rounded-full border border-white/[0.07] px-2 py-1 text-[8px] text-white/30">
@@ -315,7 +315,7 @@ function WorkspaceCard({ card }: { card: WorkspaceCard }) {
         )}
       </div>
 
-      <h2 className="mt-5 font-serif !text-[20px] !leading-6 text-white/90 transition group-hover:text-[#C8A35A]">
+      <h2 className="mt-5 font-serif !text-[20px] !leading-6 text-white/90 transition group-hover:text-[#E28906]">
         {card.title}
       </h2>
 
@@ -323,7 +323,7 @@ function WorkspaceCard({ card }: { card: WorkspaceCard }) {
         {card.description}
       </p>
 
-      <span className="mt-auto pt-5 text-[14px] font-medium text-[#C8A35A]">
+      <span className="mt-auto pt-5 text-[14px] font-medium text-[#E28906]">
         {card.action} →
       </span>
     </Link>

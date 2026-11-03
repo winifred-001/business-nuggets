@@ -197,7 +197,7 @@ export default function BusinessCategoryPreferences({
                 onClick={() => toggleCategory(category)}
                 className={`flex items-center justify-between rounded-lg border p-4 text-left transition ${
                   selected
-                    ? "border-[#C8A35A]/60 bg-[#C8A35A]/15"
+                    ? "border-[#E28906]/60 bg-[#E28906]/15"
                     : "border-white/10 bg-[#141414] hover:border-white/20"
                 }`}
               >
@@ -208,7 +208,7 @@ export default function BusinessCategoryPreferences({
                 <span
                   className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
                     selected
-                      ? "border-[#C8A35A] bg-[#C8A35A] text-black"
+                      ? "border-[#E28906] bg-[#E28906] text-black"
                       : "border-white/15"
                   }`}
                 >
@@ -225,7 +225,7 @@ export default function BusinessCategoryPreferences({
               onClick={() => toggleCategory(category)}
               className={`rounded-full border px-4 py-2 text-[12px] transition ${
                 selected
-                  ? "border-[#C8A35A] bg-[#C8A35A]/15 text-[#E0C48A]"
+                  ? "border-[#E28906] bg-[#E28906]/15 text-[#E28906]"
                   : "border-white/10 text-white/45 hover:border-white/20 hover:text-white/70"
               }`}
             >
@@ -236,7 +236,7 @@ export default function BusinessCategoryPreferences({
       </div>
 
       {message && (
-        <p className={`mt-4 text-[12px] ${error ? "text-red-400" : "text-[#C8A35A]"}`}>
+        <p className={`mt-4 text-[12px] ${error ? "text-red-400" : "text-[#E28906]"}`}>
           {message}
         </p>
       )}
@@ -247,7 +247,7 @@ export default function BusinessCategoryPreferences({
             type="button"
             onClick={saveCategories}
             disabled={saving}
-            className="rounded-md bg-[#C8A35A] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-md bg-[#E28906] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {saving ? "Saving..." : "Save Categories"}
           </button>

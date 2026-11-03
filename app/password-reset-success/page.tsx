@@ -10,7 +10,7 @@ export default function PasswordResetSuccessPage() {
 
       <main className="flex flex-1 items-center justify-center px-5 py-10 sm:px-6 sm:py-14 md:px-8 lg:px-10 lg:py-16">
         <section className="w-full max-w-[520px] rounded-2xl border border-white/10 bg-[#111111] p-5 sm:p-8 md:p-10">
-          <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#C8A35A]/30 bg-[#C8A35A]/[0.06] text-[#C8A35A]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#E28906]/30 bg-[#E28906]/[0.06] text-[#E28906]">
             <ShieldCheck size={21} />
           </div>
 
@@ -22,13 +22,13 @@ export default function PasswordResetSuccessPage() {
             Your password reset is complete. Return to Sign In to access your workspace with your new password.
           </p>
 
-          <p className="mt-6 text-[12px] font-semibold uppercase tracking-[0.1em] text-[#C8A35A]">
+          <p className="mt-6 text-[12px] font-semibold uppercase tracking-[0.1em] text-[#E28906]">
             Confirmation state
           </p>
 
           <Link
             href="/login"
-            className="bn-button mt-5 flex min-h-12 w-full items-center justify-center rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+            className="bn-button mt-5 flex min-h-12 w-full items-center justify-center rounded-lg bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
           >
             Sign In
           </Link>
@@ -37,7 +37,7 @@ export default function PasswordResetSuccessPage() {
             Need help accessing your account?{" "}
             <Link
               href="/support"
-              className="font-medium text-white/65 transition hover:text-[#C8A35A]"
+              className="font-medium text-white/65 transition hover:text-[#E28906]"
             >
               Support →
             </Link>

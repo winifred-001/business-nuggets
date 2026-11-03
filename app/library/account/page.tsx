@@ -591,7 +591,7 @@ export default function AccountSettingsPage() {
         <main className="mx-auto w-full max-w-[1280px] px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
           <Link
             href="/home"
-            className="text-[11px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="text-[11px] font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             ← My Wisdom Workspace
           </Link>
@@ -630,7 +630,7 @@ export default function AccountSettingsPage() {
                     onClick={() => handleNavigation(item)}
                     className={`block w-full px-4 py-3 text-left text-[13px] transition ${
                       active === item
-                        ? "bg-[#C8A35A]/10 text-[#C8A35A]"
+                        ? "bg-[#E28906]/10 text-[#E28906]"
                         : item === "Delete Account"
                           ? "text-red-400"
                           : "text-white/55 hover:bg-white/[0.04]"
@@ -655,7 +655,7 @@ export default function AccountSettingsPage() {
                       onClick={() => handleNavigation(item)}
                       className={`relative block w-full px-3 py-3 text-left text-[12px] transition ${
                         selected
-                          ? "text-[#C8A35A]"
+                          ? "text-[#E28906]"
                           : item === "Delete Account"
                             ? "text-red-400/90 hover:text-red-300"
                             : "text-white/45 hover:text-white/75"
@@ -663,7 +663,7 @@ export default function AccountSettingsPage() {
                     >
                       {item}
                       {selected && (
-                        <span className="absolute bottom-0 left-3 h-px w-[70px] bg-[#C8A35A]" />
+                        <span className="absolute bottom-0 left-3 h-px w-[70px] bg-[#E28906]" />
                       )}
                     </button>
                   );
@@ -888,7 +888,7 @@ export default function AccountSettingsPage() {
                   >
                     <div className="overflow-x-auto">
                       <div className="min-w-[620px]">
-                        <div className="grid grid-cols-[1fr_120px_120px] gap-3 px-3 pb-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                        <div className="grid grid-cols-[1fr_120px_120px] gap-3 px-3 pb-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                           <span>Update Type</span>
                           <span>Email</span>
                           <span>In-App</span>
@@ -995,15 +995,15 @@ export default function AccountSettingsPage() {
                         onChange={setConfirmPassword}
                         placeholder="Re-enter your new password"
                       />
-                      <Link href="/forgot-password" className="text-[11px] text-[#C8A35A]">
+                      <Link href="/forgot-password" className="text-[11px] text-[#E28906]">
                         Forgot Password? → Request Reset Link
                       </Link>
                     </div>
                   </SettingsCard>
 
                   <SettingsCard title="Two-Factor Authentication">
-                    <div className="rounded-md border border-[#C8A35A]/20 bg-[#C8A35A]/15 p-4">
-                      <p className="text-[11px] font-semibold text-[#E0C48A]">
+                    <div className="rounded-md border border-[#E28906]/20 bg-[#E28906]/15 p-4">
+                      <p className="text-[11px] font-semibold text-[#E28906]">
                         Not enabled — upcoming status
                       </p>
                       <p className="mt-2 text-[11px] leading-5 text-white/40">
@@ -1066,8 +1066,8 @@ export default function AccountSettingsPage() {
                   </SettingsCard>
 
                   <SettingsCard title="Review Before Signing Out">
-                    <div className="rounded-md border border-[#C8A35A]/20 bg-[#C8A35A]/15 p-4">
-                      <p className="text-[11px] font-medium text-[#E0C48A]">
+                    <div className="rounded-md border border-[#E28906]/20 bg-[#E28906]/15 p-4">
+                      <p className="text-[11px] font-medium text-[#E28906]">
                         Sign out this browser?
                       </p>
                       <p className="mt-2 text-[11px] leading-5 text-white/40">
@@ -1078,7 +1078,7 @@ export default function AccountSettingsPage() {
                       <button
                         type="button"
                         onClick={() => void handleSignOut()}
-                        className="rounded-md bg-[#C8A35A] px-4 py-2.5 text-[11px] font-semibold text-[#080808]"
+                        className="rounded-md bg-[#E28906] px-4 py-2.5 text-[11px] font-semibold text-[#080808]"
                       >
                         Sign Out Current Device
                       </button>
@@ -1315,7 +1315,7 @@ export default function AccountSettingsPage() {
               {active === "Sign Out" && (
                 <SettingsCard title="Sign Out">
                   <div className="flex items-start gap-4 rounded-lg border border-white/10 bg-[#141414] p-5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/10 bg-[#0B0B0B] text-[#C8A35A]">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/10 bg-[#0B0B0B] text-[#E28906]">
                       <LogOut size={17} />
                     </div>
                     <div>
@@ -1349,7 +1349,7 @@ export default function AccountSettingsPage() {
 }
 
 const inputClass =
-  "h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/60";
+  "h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/60";
 
 function SettingsCard({
   title,
@@ -1420,7 +1420,7 @@ function Switch({
       aria-checked={checked}
       onClick={() => onChange(!checked)}
       className={`relative h-6 w-11 rounded-full transition ${
-        checked ? "bg-[#C8A35A]" : "bg-white/15"
+        checked ? "bg-[#E28906]" : "bg-white/15"
       }`}
     >
       <span
@@ -1511,14 +1511,14 @@ function ChannelToggle({
       onClick={onClick}
       className={`flex h-10 items-center gap-2 rounded-md border px-3 text-[10px] transition ${
         enabled
-          ? "border-[#C8A35A]/45 bg-[#C8A35A]/15 text-[#E0C48A]"
+          ? "border-[#E28906]/45 bg-[#E28906]/15 text-[#E28906]"
           : "border-white/10 bg-[#19191D] text-white/35"
       }`}
     >
       <span
         className={`flex h-4 w-4 items-center justify-center rounded-sm border ${
           enabled
-            ? "border-[#C8A35A] bg-[#C8A35A] text-black"
+            ? "border-[#E28906] bg-[#E28906] text-black"
             : "border-white/20"
         }`}
       >
@@ -1544,18 +1544,18 @@ function DeviceRow({
     <div
       className={`flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between ${
         highlighted
-          ? "border-[#C8A35A]/60 bg-[#C8A35A]/[0.04]"
+          ? "border-[#E28906]/60 bg-[#E28906]/[0.04]"
           : "border-white/10 bg-[#141414]"
       }`}
     >
       <div className="flex items-start gap-3">
-        <Laptop size={17} className="mt-0.5 text-[#C8A35A]" />
+        <Laptop size={17} className="mt-0.5 text-[#E28906]" />
         <div>
           <p className="text-[13px] text-white/75">{title}</p>
           <p className="mt-1 text-[11px] text-white/35">{description}</p>
         </div>
       </div>
-      <span className="text-[10px] font-medium text-[#C8A35A]">{action}</span>
+      <span className="text-[10px] font-medium text-[#E28906]">{action}</span>
     </div>
   );
 }
@@ -1575,7 +1575,7 @@ function ExportOption({
     <label
       className={`flex cursor-pointer items-center gap-3 rounded-md border p-4 ${
         checked
-          ? "border-[#C8A35A]/45 bg-[#C8A35A]/15"
+          ? "border-[#E28906]/45 bg-[#E28906]/15"
           : "border-white/10 bg-[#141414]"
       }`}
     >
@@ -1583,7 +1583,7 @@ function ExportOption({
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
-        className="accent-[#C8A35A]"
+        className="accent-[#E28906]"
       />
       <span>
         <span className="block text-[12px] text-white/75">{title}</span>
@@ -1604,7 +1604,7 @@ function EmptyState({
 }) {
   return (
     <div className="rounded-lg border border-white/10 bg-[#141414] p-8 text-center">
-      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#C8A35A]/10 text-[#C8A35A]">
+      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#E28906]/10 text-[#E28906]">
         {icon}
       </div>
       <h3 className="mt-4 font-serif text-[18px] text-white/75">{title}</h3>
@@ -1623,7 +1623,7 @@ function StatusMessage({
   error?: boolean;
 }) {
   return (
-    <p className={`text-[12px] ${error ? "text-red-400" : "text-[#C8A35A]"}`}>
+    <p className={`text-[12px] ${error ? "text-red-400" : "text-[#E28906]"}`}>
       {text}
     </p>
   );
@@ -1643,7 +1643,7 @@ function PrimaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="rounded-md bg-[#C8A35A] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-40"
+      className="rounded-md bg-[#E28906] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-40"
     >
       {children}
     </button>

@@ -212,7 +212,7 @@ export default function AdminMediaPage() {
               type="button"
               disabled={busy}
               onClick={() => fileInput.current?.click()}
-              className={`${button} border-[#cda762] bg-[#cda762] font-semibold text-black`}
+              className={`${button} border-[#E28906] bg-[#E28906] font-semibold text-black`}
             >
               <Upload size={16} />
               {busy ? "Working…" : "Upload file"}
@@ -379,7 +379,7 @@ export default function AdminMediaPage() {
               >
                 {asset.mimeType.startsWith("audio/") ? (
                   <div className="flex min-h-[180px] flex-col justify-center gap-4 bg-[#191b18] p-4">
-                    <Music2 size={32} className="mx-auto text-[#cda762]" />
+                    <Music2 size={32} className="mx-auto text-[#E28906]" />
                     <audio
                       controls
                       preload="none"
@@ -415,7 +415,7 @@ export default function AdminMediaPage() {
                     <button
                       type="button"
                       onClick={() => copy(asset)}
-                      className="text-[#ead2a0]"
+                      className="text-[#E28906]"
                     >
                       Copy URL
                     </button>
@@ -423,7 +423,7 @@ export default function AdminMediaPage() {
                       href={mediaUrl(asset.url)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#ead2a0]"
+                      className="text-[#E28906]"
                     >
                       Open file ↗
                     </a>
@@ -449,7 +449,7 @@ export default function AdminMediaPage() {
           </p>
           <div className="mt-3 h-1 overflow-hidden rounded bg-white/10">
             <div
-              className="h-full bg-[#cda762]"
+              className="h-full bg-[#E28906]"
               style={{
                 width: `${library.storage.limitBytes ? Math.min(100, (library.storage.usedBytes / library.storage.limitBytes) * 100) : 0}%`,
               }}

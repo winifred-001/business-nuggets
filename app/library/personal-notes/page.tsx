@@ -181,7 +181,7 @@ export default function PersonalNotesPage() {
               <Link
   href="/library/personal-notes/create"
   aria-label="Create new note"
-  className="text-[#C8A35A] transition hover:text-[#E0C48A]"
+  className="text-[#E28906] transition hover:text-[#E28906]"
 >
   <Plus size={19} />
 </Link>

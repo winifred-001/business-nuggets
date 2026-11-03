@@ -128,7 +128,7 @@ export default async function MusicalsPage({
         <section>
           <Link
             href="/library"
-            className="text-[13px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="text-[13px] font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             ← Library
           </Link>
@@ -149,7 +149,7 @@ export default async function MusicalsPage({
         )}
 
         {!loadError && featured && (
-          <section className="mt-9 overflow-hidden rounded-xl border border-[#C8A35A]/60 bg-[#111111] p-5 sm:p-6">
+          <section className="mt-9 overflow-hidden rounded-xl border border-[#E28906]/60 bg-[#111111] p-5 sm:p-6">
             <div className="grid gap-7 md:grid-cols-[280px_minmax(0,1fr)] md:items-center">
               <div className="relative aspect-square overflow-hidden rounded-lg">
                 <Image
@@ -165,14 +165,14 @@ export default async function MusicalsPage({
                 />
 
                 {featured.isGold && (
-                  <span className="absolute right-3 top-3 rounded border border-[#C8A35A]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E0C48A]">
+                  <span className="absolute right-3 top-3 rounded border border-[#E28906]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E28906]">
                     GOLD
                   </span>
                 )}
               </div>
 
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#C8A35A]">
+                <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#E28906]">
                   Featured Suite · {featured.scriptureRef}
                 </p>
 
@@ -193,7 +193,7 @@ export default async function MusicalsPage({
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href={`/nugget/${featured.slug}/musical`}
-                    className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                    className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#E28906] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
                   >
                     Open Musical
                     <ArrowRight size={14} />
@@ -201,7 +201,7 @@ export default async function MusicalsPage({
 
                   <Link
                     href={`/nugget/${featured.slug}`}
-                    className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 px-5 text-[13px] font-medium text-white/65 transition hover:border-[#C8A35A]/50 hover:text-white"
+                    className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 px-5 text-[13px] font-medium text-white/65 transition hover:border-[#E28906]/50 hover:text-white"
                   >
                     Read Exposition
                   </Link>
@@ -231,7 +231,7 @@ export default async function MusicalsPage({
               name="q"
               defaultValue={q}
               placeholder="Search title, creator or scripture..."
-              className="h-12 w-full rounded-lg border border-white/10 bg-[#181818] pl-11 pr-4 text-[14px] text-white outline-none placeholder:text-white/25 focus:border-[#C8A35A]/55"
+              className="h-12 w-full rounded-lg border border-white/10 bg-[#181818] pl-11 pr-4 text-[14px] text-white outline-none placeholder:text-white/25 focus:border-[#E28906]/55"
             />
           </form>
         </section>
@@ -257,7 +257,7 @@ export default async function MusicalsPage({
             {q && (
               <Link
                 href="/musicals"
-                className="text-[13px] font-medium text-[#C8A35A]"
+                className="text-[13px] font-medium text-[#E28906]"
               >
                 Clear search
               </Link>
@@ -269,7 +269,7 @@ export default async function MusicalsPage({
               {archive.map((nugget, index) => (
                 <article
                   key={nugget.slug}
-                  className="flex flex-col gap-4 rounded-xl border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/35 sm:flex-row sm:items-center"
+                  className="flex flex-col gap-4 rounded-xl border border-white/10 bg-[#111111] p-4 transition hover:border-[#E28906]/35 sm:flex-row sm:items-center"
                 >
                   <Link
                     href={`/nugget/${nugget.slug}/musical`}
@@ -290,7 +290,7 @@ export default async function MusicalsPage({
                     />
 
                     {nugget.isGold && (
-                      <span className="absolute right-1.5 top-1.5 rounded border border-[#C8A35A]/50 bg-[#080808]/90 px-1.5 py-0.5 text-[9px] font-bold text-[#E0C48A]">
+                      <span className="absolute right-1.5 top-1.5 rounded border border-[#E28906]/50 bg-[#080808]/90 px-1.5 py-0.5 text-[9px] font-bold text-[#E28906]">
                         GOLD
                       </span>
                     )}
@@ -299,7 +299,7 @@ export default async function MusicalsPage({
                   <div className="min-w-0 flex-1">
                     <Link
                       href={`/nugget/${nugget.slug}/musical`}
-                      className="font-serif text-[18px] leading-6 transition hover:text-[#E0C48A]"
+                      className="font-serif text-[18px] leading-6 transition hover:text-[#E28906]"
                     >
                       {nugget.musicalTitle ?? nugget.title}
                     </Link>
@@ -315,7 +315,7 @@ export default async function MusicalsPage({
 
                   <Link
                     href={`/nugget/${nugget.slug}/musical`}
-                    className="inline-flex shrink-0 items-center gap-2 text-[13px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                    className="inline-flex shrink-0 items-center gap-2 text-[13px] font-medium text-[#E28906] transition hover:text-[#E28906]"
                   >
                     Open Musical
                     <ArrowRight size={13} />
@@ -340,7 +340,7 @@ export default async function MusicalsPage({
           <div className="mt-8 flex flex-wrap gap-6">
             <Link
               href="/library?tab=Topics+Index"
-              className="inline-flex items-center gap-2 text-[13px] font-medium text-[#C8A35A]"
+              className="inline-flex items-center gap-2 text-[13px] font-medium text-[#E28906]"
             >
               Explore Topics
               <ArrowRight size={13} />
@@ -348,7 +348,7 @@ export default async function MusicalsPage({
 
             <Link
               href="/library?tab=Scripture+Matrix"
-              className="inline-flex items-center gap-2 text-[13px] font-medium text-[#C8A35A]"
+              className="inline-flex items-center gap-2 text-[13px] font-medium text-[#E28906]"
             >
               Browse Scripture Index
               <ArrowRight size={13} />

@@ -8,7 +8,7 @@ export default function Footer() {
   return (
     <footer className={`${styles.footer} bg-[#10110f] px-0 pb-7 pt-12 text-[#b8b5aa]`}>
       <div className="mx-auto w-[calc(100%-38px)] max-w-[1190px] lg:w-[calc(100%-64px)]">
-        <div className="flex flex-col items-start justify-between gap-7 border-b border-[rgba(234,210,160,.19)] pb-10 md:flex-row">
+        <div className="flex flex-col items-start justify-between gap-7 border-b border-[rgba(226,137,6,.19)] pb-10 md:flex-row">
           <div>
             <Link
               href="/"
@@ -27,21 +27,21 @@ export default function Footer() {
             className={`${styles.links} flex flex-wrap gap-x-[26px] gap-y-3 text-[#b8b5aa]`}
             aria-label="Footer navigation"
           >
-            <Link href="/" className="transition hover:text-[#ead2a0]">
+            <Link href="/" className="transition hover:text-[#E28906]">
               Home
             </Link>
-            <Link href="/library" className="transition hover:text-[#ead2a0]">
+            <Link href="/library" className="transition hover:text-[#E28906]">
               Library
             </Link>
             <Link
               href="/privacy-policy"
-              className="transition hover:text-[#ead2a0]"
+              className="transition hover:text-[#E28906]"
             >
               Privacy Policy
             </Link>
             <Link
               href="/terms-of-use"
-              className="transition hover:text-[#ead2a0]"
+              className="transition hover:text-[#E28906]"
             >
               Terms of Use
             </Link>

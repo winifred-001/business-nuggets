@@ -130,7 +130,7 @@ export default function PaymentCallbackContent() {
         {status === "verifying" && (
           <LoaderCircle
             size={34}
-            className="mx-auto animate-spin text-[#C8A35A]"
+            className="mx-auto animate-spin text-[#E28906]"
           />
         )}
 
@@ -164,14 +164,14 @@ export default function PaymentCallbackContent() {
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link
               href="/library"
-              className="bn-button inline-flex min-h-11 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button inline-flex min-h-11 items-center justify-center rounded-md bg-[#E28906] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
             >
               Open Full Library
             </Link>
 
             <Link
               href="/membership"
-              className="bn-button inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 px-5 text-[11px] text-white/60 transition hover:border-[#C8A35A]/40 hover:text-white"
+              className="bn-button inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 px-5 text-[11px] text-white/60 transition hover:border-[#E28906]/40 hover:text-white"
             >
               Membership
             </Link>
@@ -182,14 +182,14 @@ export default function PaymentCallbackContent() {
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link
               href="/membership"
-              className="bn-button inline-flex min-h-11 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button inline-flex min-h-11 items-center justify-center rounded-md bg-[#E28906] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
             >
               Return to Membership
             </Link>
 
             <Link
               href="/login"
-              className="bn-button inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 px-5 text-[11px] text-white/60 transition hover:border-[#C8A35A]/40 hover:text-white"
+              className="bn-button inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 px-5 text-[11px] text-white/60 transition hover:border-[#E28906]/40 hover:text-white"
             >
               Log In
             </Link>

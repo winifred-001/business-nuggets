@@ -875,7 +875,7 @@ export default function AdminRolesPage() {
               onClick={() =>
                 void openPromotion()
               }
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#C8A35A]/40 px-4 text-[14px] font-semibold text-[#E0C48A] transition hover:bg-[#C8A35A]/10"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#E28906]/40 px-4 text-[14px] font-semibold text-[#E28906] transition hover:bg-[#E28906]/10"
             >
               <UserPlus size={16} />
               Promote User
@@ -886,7 +886,7 @@ export default function AdminRolesPage() {
               onClick={() =>
                 setAddOpen(true)
               }
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[14px] font-semibold text-[#080808] hover:bg-[#E0C48A]"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#E28906] px-4 text-[14px] font-semibold text-[#080808] hover:bg-[#E28906]"
             >
               <Plus size={15} />
               Add New Admin
@@ -992,7 +992,7 @@ export default function AdminRolesPage() {
                             {admin.name}
                             {admin.id ===
                               currentAdminId && (
-                              <span className="ml-2 text-[12px] text-[#C8A35A]">
+                              <span className="ml-2 text-[12px] text-[#E28906]">
                                 You
                               </span>
                             )}
@@ -1068,7 +1068,7 @@ export default function AdminRolesPage() {
                     key={role}
                     className="text-center"
                   >
-                    <p className="text-[14px] font-medium text-[#C8A35A]">
+                    <p className="text-[14px] font-medium text-[#E28906]">
                       {
                         ROLE_LABELS[
                           role
@@ -1147,12 +1147,12 @@ export default function AdminRolesPage() {
                             }
                             className={`flex h-8 w-8 items-center justify-center rounded-md border transition ${
                               enabled
-                                ? "border-[#C8A35A]/45 bg-[#C8A35A]/15 text-[#C8A35A]"
+                                ? "border-[#E28906]/45 bg-[#E28906]/15 text-[#E28906]"
                                 : "border-white/10 bg-[#080808] text-white/20"
                             } ${
                               disabled
                                 ? "cursor-not-allowed opacity-60"
-                                : "cursor-pointer hover:border-[#C8A35A]/60 hover:bg-[#C8A35A]/10"
+                                : "cursor-pointer hover:border-[#E28906]/60 hover:bg-[#E28906]/10"
                             }`}
                           >
                             {isSaving ? (
@@ -1208,7 +1208,7 @@ export default function AdminRolesPage() {
                     disabled={
                       promotableLoading
                     }
-                    className="mt-2 min-h-11 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[14px] text-white/70 outline-none focus:border-[#C8A35A]/40"
+                    className="mt-2 min-h-11 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[14px] text-white/70 outline-none focus:border-[#E28906]/40"
                   >
                     <option value="">
                       {promotableLoading
@@ -1248,7 +1248,7 @@ export default function AdminRolesPage() {
 
                 {promoteRole ===
                   "super-admin" && (
-                  <div className="rounded-md border border-[#B7791F]/30 bg-[#B7791F]/10 px-4 py-3 text-[13px] leading-5 text-[#E0C48A]">
+                  <div className="rounded-md border border-[#E28906]/30 bg-[#E28906]/10 px-4 py-3 text-[13px] leading-5 text-[#E28906]">
                     Super Admin has full administrative authority. Only an existing Super Admin can assign this role.
                   </div>
                 )}
@@ -1273,7 +1273,7 @@ export default function AdminRolesPage() {
                   onClick={() =>
                     void promoteExistingUser()
                   }
-                  className="min-h-11 rounded-md bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] disabled:opacity-50"
+                  className="min-h-11 rounded-md bg-[#E28906] px-5 text-[14px] font-semibold text-[#080808] disabled:opacity-50"
                 >
                   {saving
                     ? "Promoting..."
@@ -1340,7 +1340,7 @@ export default function AdminRolesPage() {
                   onClick={() =>
                     void addAdmin()
                   }
-                  className="min-h-11 rounded-md bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] disabled:opacity-50"
+                  className="min-h-11 rounded-md bg-[#E28906] px-5 text-[14px] font-semibold text-[#080808] disabled:opacity-50"
                 >
                   {saving
                     ? "Creating..."
@@ -1444,7 +1444,7 @@ export default function AdminRolesPage() {
                   onClick={() =>
                     void saveAdmin()
                   }
-                  className="min-h-11 rounded-md bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] disabled:opacity-50"
+                  className="min-h-11 rounded-md bg-[#E28906] px-5 text-[14px] font-semibold text-[#080808] disabled:opacity-50"
                 >
                   {saving
                     ? "Saving..."
@@ -1487,7 +1487,7 @@ function Field({
             event.target.value,
           )
         }
-        className="mt-2 min-h-11 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[14px] text-white outline-none focus:border-[#C8A35A]/30"
+        className="mt-2 min-h-11 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[14px] text-white outline-none focus:border-[#E28906]/30"
       />
     </div>
   );

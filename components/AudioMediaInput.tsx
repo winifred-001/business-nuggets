@@ -25,12 +25,12 @@ export default function AudioMediaInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="https://example.com/audio.mp3"
-        className="mt-2 h-11 w-full rounded-lg border border-white/20 bg-[#080808] px-3 text-sm text-white outline-none focus:border-[#cda762]"
+        className="mt-2 h-11 w-full rounded-lg border border-white/20 bg-[#080808] px-3 text-sm text-white outline-none focus:border-[#E28906]"
       />
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-lg border border-[#cda762]/40 px-4 py-2 text-sm text-[#ead2a0]"
+        className="rounded-lg border border-[#E28906]/40 px-4 py-2 text-sm text-[#E28906]"
       >
         Choose audio from Media Library
       </button>
@@ -147,7 +147,7 @@ function AudioPicker({
                 <button
                   type="button"
                   onClick={() => onSelect(mediaUrl(asset.url))}
-                  className="mt-3 rounded bg-[#cda762] px-4 py-2 font-semibold text-black"
+                  className="mt-3 rounded bg-[#E28906] px-4 py-2 font-semibold text-black"
                 >
                   Use this audio
                 </button>

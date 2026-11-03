@@ -516,7 +516,7 @@ export default function AdminMobilePage() {
               saving ||
               !settings
             }
-            className="h-9 w-fit rounded-md bg-[#C8A35A] px-5 text-[8px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:opacity-40"
+            className="h-9 w-fit rounded-md bg-[#E28906] px-5 text-[8px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:opacity-40"
           >
             {saving
               ? "Publishing..."
@@ -713,7 +713,7 @@ export default function AdminMobilePage() {
                   onClick={
                     openBanner
                   }
-                  className="mt-5 h-9 rounded-md bg-[#C8A35A] px-7 text-[8px] font-semibold text-[#080808]"
+                  className="mt-5 h-9 rounded-md bg-[#E28906] px-7 text-[8px] font-semibold text-[#080808]"
                 >
                   Edit Banner
                 </button>
@@ -751,7 +751,7 @@ export default function AdminMobilePage() {
                           screen,
                         )
                       }
-                      className="text-[7px] text-[#C8A35A] hover:text-[#E0C48A]"
+                      className="text-[7px] text-[#E28906] hover:text-[#E28906]"
                     >
                       Edit
                     </button>
@@ -807,7 +807,7 @@ export default function AdminMobilePage() {
                       .value,
                   )
                 }
-                className="mt-2 w-full resize-none rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none focus:border-[#C8A35A]/35"
+                className="mt-2 w-full resize-none rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none focus:border-[#E28906]/35"
               />
 
               <p className="mt-3 text-[7px] text-white/25">
@@ -835,7 +835,7 @@ export default function AdminMobilePage() {
                   onClick={
                     saveBannerLocally
                   }
-                  className="h-9 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808]"
+                  className="h-9 rounded-md bg-[#E28906] px-5 text-[9px] font-semibold text-[#080808]"
                 >
                   Save Banner
                 </button>
@@ -935,7 +935,7 @@ export default function AdminMobilePage() {
                   onClick={
                     saveOnboarding
                   }
-                  className="h-9 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
+                  className="h-9 rounded-md bg-[#E28906] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
                 >
                   {saving
                     ? "Saving..."
@@ -1007,7 +1007,7 @@ function StatusBadge({
   }
 
   return (
-    <span className="rounded-full border border-[#C8A35A]/20 bg-[#C8A35A]/[0.08] px-2.5 py-1 text-[6px] text-[#C8A35A]">
+    <span className="rounded-full border border-[#E28906]/20 bg-[#E28906]/[0.08] px-2.5 py-1 text-[6px] text-[#E28906]">
       Review
     </span>
   );

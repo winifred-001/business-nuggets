@@ -226,7 +226,7 @@ export default function OnboardingPage() {
 
         <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col items-center px-5 py-10 sm:px-8 sm:py-12 lg:px-10 lg:py-14">
           <div className="flex flex-wrap items-center justify-center gap-3 text-center">
-            <span className="rounded-full bg-[#C8A35A] px-3 py-1 font-semibold text-[#080808]">
+            <span className="rounded-full bg-[#E28906] px-3 py-1 font-semibold text-[#080808]">
               STEP 2 OF 3
             </span>
             <span className="text-white/40">Customizing your wisdom stream</span>
@@ -261,8 +261,8 @@ export default function OnboardingPage() {
                           onClick={() => toggleInterest(interest)}
                           className={`flex min-h-11 items-center justify-center gap-2 rounded-full border px-4 py-2 transition ${
                             selected
-                              ? "border-[#C8A35A] bg-[#C8A35A] text-[#080808]"
-                              : "border-white/10 bg-[#151515] text-white/60 hover:border-[#C8A35A]/50 hover:text-white"
+                              ? "border-[#E28906] bg-[#E28906] text-[#080808]"
+                              : "border-white/10 bg-[#151515] text-white/60 hover:border-[#E28906]/50 hover:text-white"
                           }`}
                         >
                           {selected && <Check size={14} strokeWidth={3} />}
@@ -302,14 +302,14 @@ export default function OnboardingPage() {
                         onClick={() => toggleWisdom(nugget.title)}
                         className={`flex min-h-[76px] items-start gap-3 rounded-lg border px-4 py-3 text-left transition ${
                           selected
-                            ? "border-[#C8A35A] bg-[#C8A35A]/15 text-[#FAF9F6]"
-                            : "border-white/10 bg-[#181818] text-white/65 hover:border-[#C8A35A]/40 hover:text-white"
+                            ? "border-[#E28906] bg-[#E28906]/15 text-[#FAF9F6]"
+                            : "border-white/10 bg-[#181818] text-white/65 hover:border-[#E28906]/40 hover:text-white"
                         }`}
                       >
                         <span
                           className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-sm border ${
                             selected
-                              ? "border-[#C8A35A] bg-[#C8A35A] text-[#080808]"
+                              ? "border-[#E28906] bg-[#E28906] text-[#080808]"
                               : "border-white/20"
                           }`}
                         >
@@ -349,7 +349,7 @@ export default function OnboardingPage() {
                   type="button"
                   onClick={savePreferences}
                   disabled={saving || selectedInterests.length === 0}
-                  className="min-h-10 rounded-md bg-[#C8A35A] px-7 font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="min-h-10 rounded-md bg-[#E28906] px-7 font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {saving ? "Saving..." : "Save & Continue"}
                 </button>

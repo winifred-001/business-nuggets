@@ -88,7 +88,7 @@ export default function MembershipPage() {
         <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
           <Link
             href="/workspace"
-            className="text-[12px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="text-[12px] font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             ← My Wisdom Workspace
           </Link>
@@ -113,14 +113,14 @@ export default function MembershipPage() {
 
           {!loading &&
             !error && user && (
-              <section className="mt-8 rounded-[12px] border border-[#C8A35A]/55 bg-[#111111] p-5 sm:p-6">
+              <section className="mt-8 rounded-[12px] border border-[#E28906]/55 bg-[#111111] p-5 sm:p-6">
                 <h2 className="font-serif text-[28px]">
                   {user?.name ||
                     "BNB Member"}
                 </h2>
 
                 <div className="mt-4">
-                  <span className="inline-flex items-center gap-2 rounded-sm bg-[#C8A35A]/15 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+                  <span className="inline-flex items-center gap-2 rounded-sm bg-[#E28906]/15 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
                     <Crown size={14} />
                     {isPremium
                       ? "BNB Premium • Current Membership"
@@ -155,14 +155,14 @@ export default function MembershipPage() {
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href="/library/account"
-                    className="bn-button inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/75 transition hover:border-[#C8A35A]/35 hover:text-white"
+                    className="bn-button inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/75 transition hover:border-[#E28906]/35 hover:text-white"
                   >
                     Billing &amp; Membership Help →
                   </Link>
 
                   <a
                     href="mailto:support@businessnuggets.example"
-                    className="bn-button inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                    className="bn-button inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#E28906] px-4 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
                   >
                     <Mail size={15} />
                     Contact Support →
@@ -198,14 +198,14 @@ export default function MembershipPage() {
 
               <Link
                 href="/library"
-                className="mt-5 inline-block text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                className="mt-5 inline-block text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
               >
                 Browse All Nuggets →
               </Link>
             </article>
 
-            <article className="rounded-[12px] border border-[#C8A35A]/45 bg-[#111111] p-5 sm:p-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md border border-[#C8A35A]/25 bg-[#C8A35A]/[0.06] text-[#C8A35A]">
+            <article className="rounded-[12px] border border-[#E28906]/45 bg-[#111111] p-5 sm:p-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md border border-[#E28906]/25 bg-[#E28906]/[0.06] text-[#E28906]">
                 <Crown size={18} />
               </div>
 
@@ -219,7 +219,7 @@ export default function MembershipPage() {
 
               <Link
                 href="/library"
-                className="mt-5 inline-block text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                className="mt-5 inline-block text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
               >
                 Explore Full Library →
               </Link>
@@ -263,7 +263,7 @@ export default function MembershipPage() {
                       <Link
                         key={nugget.id}
                         href={`/nugget/${nugget.slug}`}
-                        className="group flex items-center gap-4 rounded-[10px] border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/40"
+                        className="group flex items-center gap-4 rounded-[10px] border border-white/10 bg-[#111111] p-4 transition hover:border-[#E28906]/40"
                       >
                         <div className="relative h-[64px] w-[80px] shrink-0 overflow-hidden rounded-md bg-[#181818]">
                           <Image
@@ -277,11 +277,11 @@ export default function MembershipPage() {
 
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="font-serif text-[22px] leading-6 text-white/90 transition group-hover:text-[#C8A35A]">
+                            <h3 className="font-serif text-[22px] leading-6 text-white/90 transition group-hover:text-[#E28906]">
                               {nugget.title}
                             </h3>
 
-                            <span className="rounded-sm bg-[#C8A35A]/15 px-2 py-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+                            <span className="rounded-sm bg-[#E28906]/15 px-2 py-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
                               Gold
                             </span>
                           </div>
@@ -295,7 +295,7 @@ export default function MembershipPage() {
                           </p>
                         </div>
 
-                        <span className="hidden shrink-0 text-[14px] font-medium text-[#C8A35A] sm:block">
+                        <span className="hidden shrink-0 text-[14px] font-medium text-[#E28906] sm:block">
                           Unlock →
                         </span>
                       </Link>
@@ -305,8 +305,8 @@ export default function MembershipPage() {
             </section>
           )}
 
-          <section className="mt-10 rounded-[10px] border border-[#C8A35A]/20 bg-[#C8A35A]/[0.14] px-5 py-4">
-            <p className="text-[15px] font-semibold text-[#E0C48A]">
+          <section className="mt-10 rounded-[10px] border border-[#E28906]/20 bg-[#E28906]/[0.14] px-5 py-4">
+            <p className="text-[15px] font-semibold text-[#E28906]">
               Membership questions?
             </p>
 

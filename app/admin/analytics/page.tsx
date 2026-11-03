@@ -278,7 +278,7 @@ export default function AdminAnalyticsPage() {
               onClick={
                 exportCsv
               }
-              className="h-9 rounded-md bg-[#C8A35A] px-5 text-[8px] font-semibold text-[#080808]"
+              className="h-9 rounded-md bg-[#E28906] px-5 text-[8px] font-semibold text-[#080808]"
             >
               Export
             </button>
@@ -384,7 +384,7 @@ export default function AdminAnalyticsPage() {
                   title={`${item.date}: ${item.web} web, ${item.mobile} mobile`}
                 >
                   <div
-                    className="w-[45%] rounded-t-sm bg-[#C8A35A]"
+                    className="w-[45%] rounded-t-sm bg-[#E28906]"
                     style={{
                       height:
                         `${Math.max(
@@ -439,7 +439,7 @@ export default function AdminAnalyticsPage() {
                       }
                     </p>
 
-                    <p className="shrink-0 text-[7px] text-[#C8A35A]">
+                    <p className="shrink-0 text-[7px] text-[#E28906]">
                       {formatNumber(
                         nugget.views,
                       )}{" "}
@@ -485,7 +485,7 @@ export default function AdminAnalyticsPage() {
 
                     <div className="h-[5px] overflow-hidden rounded-full bg-white/[0.04]">
                       <div
-                        className="h-full rounded-full bg-[#C8A35A]"
+                        className="h-full rounded-full bg-[#E28906]"
                         style={{
                           width:
                             `${item.percentage}%`,

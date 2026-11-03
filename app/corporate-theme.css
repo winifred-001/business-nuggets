@@ -46,42 +46,42 @@
 [class~="bg-[#111111]/30"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 30%, transparent) !important; }
 
 /* Previous gold actions -> Royal Blue */
-[class~="bg-[#C8A35A]"],
-[class~="bg-[#D0A85C]"],
-[class~="bg-[#9A7839]"] {
+[class~="bg-[#E28906]"],
+[class~="bg-[#E28906]"],
+[class~="bg-[#E28906]"] {
   background-color: var(--bnb-blue) !important;
 }
 
-[class~="bg-[#C8A35A]/50"] { background-color: color-mix(in srgb, var(--bnb-blue) 50%, transparent) !important; }
-[class~="bg-[#C8A35A]/40"] { background-color: color-mix(in srgb, var(--bnb-blue) 40%, transparent) !important; }
-[class~="bg-[#C8A35A]/30"] { background-color: color-mix(in srgb, var(--bnb-blue) 30%, transparent) !important; }
-[class~="bg-[#C8A35A]/20"] { background-color: color-mix(in srgb, var(--bnb-blue) 20%, transparent) !important; }
-[class~="bg-[#C8A35A]/15"] { background-color: color-mix(in srgb, var(--bnb-blue) 15%, transparent) !important; }
-[class~="bg-[#C8A35A]/10"] { background-color: color-mix(in srgb, var(--bnb-blue) 10%, transparent) !important; }
-[class~="bg-[#C8A35A]/5"] { background-color: color-mix(in srgb, var(--bnb-blue) 5%, transparent) !important; }
+[class~="bg-[#E28906]/50"] { background-color: color-mix(in srgb, var(--bnb-blue) 50%, transparent) !important; }
+[class~="bg-[#E28906]/40"] { background-color: color-mix(in srgb, var(--bnb-blue) 40%, transparent) !important; }
+[class~="bg-[#E28906]/30"] { background-color: color-mix(in srgb, var(--bnb-blue) 30%, transparent) !important; }
+[class~="bg-[#E28906]/20"] { background-color: color-mix(in srgb, var(--bnb-blue) 20%, transparent) !important; }
+[class~="bg-[#E28906]/15"] { background-color: color-mix(in srgb, var(--bnb-blue) 15%, transparent) !important; }
+[class~="bg-[#E28906]/10"] { background-color: color-mix(in srgb, var(--bnb-blue) 10%, transparent) !important; }
+[class~="bg-[#E28906]/5"] { background-color: color-mix(in srgb, var(--bnb-blue) 5%, transparent) !important; }
 
 /* Previous soft gold -> Teal accent */
-[class~="bg-[#E0C48A]"] {
+[class~="bg-[#E28906]"] {
   background-color: var(--bnb-teal) !important;
 }
 
-[class~="bg-[#E0C48A]/20"] { background-color: color-mix(in srgb, var(--bnb-teal) 20%, transparent) !important; }
-[class~="bg-[#E0C48A]/10"] { background-color: color-mix(in srgb, var(--bnb-teal) 10%, transparent) !important; }
+[class~="bg-[#E28906]/20"] { background-color: color-mix(in srgb, var(--bnb-teal) 20%, transparent) !important; }
+[class~="bg-[#E28906]/10"] { background-color: color-mix(in srgb, var(--bnb-teal) 10%, transparent) !important; }
 
-[class~="hover:bg-[#C8A35A]"]:hover,
-[class~="hover:bg-[#D0A85C]"]:hover,
-[class~="hover:bg-[#E0C48A]"]:hover {
+[class~="hover:bg-[#E28906]"]:hover,
+[class~="hover:bg-[#E28906]"]:hover,
+[class~="hover:bg-[#E28906]"]:hover {
   background-color: var(--bnb-teal) !important;
 }
 
 /* Brand text */
-[class~="text-[#C8A35A]"],
-[class~="text-[#D0A85C]"],
-[class~="text-[#9A7839]"] {
+[class~="text-[#E28906]"],
+[class~="text-[#E28906]"],
+[class~="text-[#E28906]"] {
   color: var(--bnb-blue) !important;
 }
 
-[class~="text-[#E0C48A]"] {
+[class~="text-[#E28906]"] {
   color: var(--bnb-teal) !important;
 }
 
@@ -94,29 +94,29 @@
   color: var(--bnb-mist) !important;
 }
 
-[class~="hover:text-[#C8A35A]"]:hover,
-[class~="hover:text-[#E0C48A]"]:hover {
+[class~="hover:text-[#E28906]"]:hover,
+[class~="hover:text-[#E28906]"]:hover {
   color: var(--bnb-teal) !important;
 }
 
 /* Borders, rings and focus states */
-[class~="border-[#C8A35A]"],
-[class~="border-[#D0A85C]"] {
+[class~="border-[#E28906]"],
+[class~="border-[#E28906]"] {
   border-color: var(--bnb-blue) !important;
 }
 
-[class~="border-[#C8A35A]/60"] { border-color: color-mix(in srgb, var(--bnb-blue) 60%, transparent) !important; }
-[class~="border-[#C8A35A]/50"] { border-color: color-mix(in srgb, var(--bnb-blue) 50%, transparent) !important; }
-[class~="border-[#C8A35A]/40"] { border-color: color-mix(in srgb, var(--bnb-blue) 40%, transparent) !important; }
-[class~="border-[#C8A35A]/30"] { border-color: color-mix(in srgb, var(--bnb-blue) 30%, transparent) !important; }
-[class~="border-[#C8A35A]/20"] { border-color: color-mix(in srgb, var(--bnb-blue) 20%, transparent) !important; }
-[class~="border-[#C8A35A]/10"] { border-color: color-mix(in srgb, var(--bnb-blue) 10%, transparent) !important; }
+[class~="border-[#E28906]/60"] { border-color: color-mix(in srgb, var(--bnb-blue) 60%, transparent) !important; }
+[class~="border-[#E28906]/50"] { border-color: color-mix(in srgb, var(--bnb-blue) 50%, transparent) !important; }
+[class~="border-[#E28906]/40"] { border-color: color-mix(in srgb, var(--bnb-blue) 40%, transparent) !important; }
+[class~="border-[#E28906]/30"] { border-color: color-mix(in srgb, var(--bnb-blue) 30%, transparent) !important; }
+[class~="border-[#E28906]/20"] { border-color: color-mix(in srgb, var(--bnb-blue) 20%, transparent) !important; }
+[class~="border-[#E28906]/10"] { border-color: color-mix(in srgb, var(--bnb-blue) 10%, transparent) !important; }
 
-[class~="focus:border-[#C8A35A]"]:focus {
+[class~="focus:border-[#E28906]"]:focus {
   border-color: var(--bnb-blue) !important;
 }
 
-[class~="focus:ring-[#C8A35A]"]:focus {
+[class~="focus:ring-[#E28906]"]:focus {
   --tw-ring-color: var(--bnb-blue) !important;
 }
 
@@ -137,10 +137,10 @@
   --tw-gradient-to: var(--bnb-charcoal) var(--tw-gradient-to-position) !important;
 }
 
-[class~="from-[#C8A35A]"] {
+[class~="from-[#E28906]"] {
   --tw-gradient-from: var(--bnb-blue) var(--tw-gradient-from-position) !important;
 }
 
-[class~="to-[#C8A35A]"] {
+[class~="to-[#E28906]"] {
   --tw-gradient-to: var(--bnb-blue) var(--tw-gradient-to-position) !important;
 }

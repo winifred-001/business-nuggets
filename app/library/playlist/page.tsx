@@ -134,7 +134,7 @@ export default function PlaylistsPage() {
 
           <Link
             href="/library/playlist/create"
-            className="bn-button flex w-fit items-center gap-2 rounded-md bg-[#C8A35A] px-4 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+            className="bn-button flex w-fit items-center gap-2 rounded-md bg-[#E28906] px-4 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
           >
             <Plus size={14} />
 
@@ -176,7 +176,7 @@ export default function PlaylistsPage() {
               <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black">
                 <ListMusic
                   size={20}
-                  className="text-[#C8A35A]"
+                  className="text-[#E28906]"
                 />
               </div>
 
@@ -193,7 +193,7 @@ export default function PlaylistsPage() {
 
               <Link
                 href="/library/playlist/create"
-                className="bn-button mt-5 flex items-center gap-2 rounded-md bg-[#C8A35A] px-4 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                className="bn-button mt-5 flex items-center gap-2 rounded-md bg-[#E28906] px-4 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
               >
                 <Plus
                   size={14}
@@ -338,7 +338,7 @@ function PlaylistCard({
       : "Build a focused collection of business nuggets for your learning path.";
 
   return (
-    <article className="group flex min-h-[195px] flex-col rounded-xl border border-white/10 bg-[#101010] p-5 transition hover:border-[#C8A35A]/30">
+    <article className="group flex min-h-[195px] flex-col rounded-xl border border-white/10 bg-[#101010] p-5 transition hover:border-[#E28906]/30">
       <div className="flex gap-4">
         <PlaylistPreview
           nuggets={
@@ -382,7 +382,7 @@ function PlaylistCard({
 
       <Link
         href={`/library/playlist/${playlist.id}`}
-        className="mt-auto flex items-center justify-between pt-5 text-[11px] font-medium text-[#C8A35A]"
+        className="mt-auto flex items-center justify-between pt-5 text-[11px] font-medium text-[#E28906]"
       >
         <span>
           Open Playlist
@@ -414,7 +414,7 @@ function PlaylistPreview({
       <div className="flex h-[82px] w-[82px] shrink-0 items-center justify-center rounded-md border border-white/10 bg-[#181818]">
         <ListMusic
           size={20}
-          className="text-[#C8A35A]"
+          className="text-[#E28906]"
         />
       </div>
     );

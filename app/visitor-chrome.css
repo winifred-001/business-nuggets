@@ -1,9 +1,9 @@
 :root {
   --ink: #10110f;
   --surface: #191b18;
-  --gold: #cda762;
-  --goldlight: #ead2a0;
+  --gold: #E28906;
+  --goldlight: #E28906;
   --cream: #f6f2e9;
   --muted: #b4b2ab;
-  --line: rgba(234, 210, 160, 0.19);
+  --line: rgba(226,137,6, 0.19);
 }

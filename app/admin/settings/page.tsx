@@ -22,7 +22,7 @@ type Connections = {
 const tabs = ["General", "Branding", "Payments", "Integrations", "Security"] as const;
 type Tab = typeof tabs[number];
 const palette = [
-  ["Gold", "#CDA762"], ["Background", "#10110F"], ["Surface", "#191B18"],
+  ["Gold", "#E28906"], ["Background", "#10110F"], ["Surface", "#191B18"],
   ["Card", "#161713"], ["Text", "#F9F5ED"],
 ];
 const emptyBrand: SiteBranding = { logoUrl: "", faviconUrl: "", socialImageUrl: "" };

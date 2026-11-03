@@ -269,7 +269,7 @@ export default function NotificationsPage() {
               </p>
             ) : notifications.length === 0 ? (
               <div className="flex min-h-[220px] flex-col items-center justify-center px-6 text-center">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#181818] text-[#C8A35A]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#181818] text-[#E28906]">
                   <Bell size={18} />
                 </div>
                 <h2 className="mt-4 font-serif text-[18px] text-white/85">
@@ -313,7 +313,7 @@ function NotificationGroupView({
 }) {
   return (
     <section>
-      <h2 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#C8A35A]">
+      <h2 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#E28906]">
         {title}
       </h2>
 
@@ -349,16 +349,16 @@ function NotificationCard({
       }`}
     >
       {!read && (
-        <span className="absolute left-3 top-1/2 hidden h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-[#C8A35A] sm:block" />
+        <span className="absolute left-3 top-1/2 hidden h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-[#E28906] sm:block" />
       )}
 
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/[0.06] bg-[#1D1D20] text-[#C8A35A] sm:ml-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/[0.06] bg-[#1D1D20] text-[#E28906] sm:ml-3">
         <Icon size={15} strokeWidth={1.7} />
       </div>
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[9px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
+          <span className="text-[9px] font-semibold uppercase tracking-[0.06em] text-[#E28906]">
             {formatType(notification.type)}
           </span>
           <span className="text-[9px] text-white/25">
@@ -378,7 +378,7 @@ function NotificationCard({
       <button
         type="button"
         onClick={onView}
-        className="shrink-0 self-start rounded-md border border-white/10 px-4 py-2 text-[10px] text-white/55 transition hover:border-[#C8A35A]/40 hover:text-[#C8A35A] sm:self-center"
+        className="shrink-0 self-start rounded-md border border-white/10 px-4 py-2 text-[10px] text-white/55 transition hover:border-[#E28906]/40 hover:text-[#E28906] sm:self-center"
       >
         View
       </button>

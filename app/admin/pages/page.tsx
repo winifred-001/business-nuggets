@@ -16,7 +16,7 @@ export default function AdminSitePagesPage() {
       <h1 className="font-serif text-[37px]!">Site Pages</h1>
       <p className="mt-3 text-sm leading-6 text-white/60">Edit About, Contact, FAQs, Privacy Policy and Terms of Use. Saving publishes changes immediately. Settings permission is required.</p>
       <div className="my-6 flex flex-wrap gap-3" role="group" aria-label="Choose site page">
-        {(Object.keys(defaults) as SiteSlug[]).map(value => <button key={value} type="button" aria-pressed={slug === value} disabled={saving} onClick={() => { if (value !== slug && (!dirty || window.confirm("Discard your unsaved changes?"))) { setDirty(false); setSlug(value); } }} className={`rounded border px-4 py-3 text-sm ${slug === value ? "border-[#cda762] bg-[#cda762] text-black" : "border-white/20"}`}>{sitePageLinks[value].label}</button>)}
+        {(Object.keys(defaults) as SiteSlug[]).map(value => <button key={value} type="button" aria-pressed={slug === value} disabled={saving} onClick={() => { if (value !== slug && (!dirty || window.confirm("Discard your unsaved changes?"))) { setDirty(false); setSlug(value); } }} className={`rounded border px-4 py-3 text-sm ${slug === value ? "border-[#E28906] bg-[#E28906] text-black" : "border-white/20"}`}>{sitePageLinks[value].label}</button>)}
       </div>
       <SiteEditor key={slug} slug={slug} onDirtyChange={setDirty} onSavingChange={setSaving} />
     </div>
@@ -72,7 +72,7 @@ function SiteEditor({ slug, onDirtyChange, onSavingChange }: { slug: SiteSlug; o
     finally { setSaving(false); onSavingChange(false); }
   }
 
-  const fieldClass = "mt-2 w-full rounded-lg border border-white/20 bg-[var(--bn-surface)] px-4 py-3 text-white outline-none focus:border-[#cda762]";
+  const fieldClass = "mt-2 w-full rounded-lg border border-white/20 bg-[var(--bn-surface)] px-4 py-3 text-white outline-none focus:border-[#E28906]";
   if (loading) return <p role="status">Loading site page…</p>;
   if (!document) return <p role="alert" className="text-red-300">{error}</p>;
   return <form onSubmit={save} className="space-y-6">
@@ -80,10 +80,10 @@ function SiteEditor({ slug, onDirtyChange, onSavingChange }: { slug: SiteSlug; o
       <label className="block">Page title<input required maxLength={200} value={document.title} onChange={event => update({ ...document, title: event.target.value })} className={fieldClass} /></label>
       <label className="block">Introduction<textarea rows={3} maxLength={3000} value={document.introduction} onChange={event => update({ ...document, introduction: event.target.value })} className={fieldClass} /></label>
       <label className="block">Notice (optional)<textarea rows={3} maxLength={3000} value={document.notice} onChange={event => update({ ...document, notice: event.target.value })} className={fieldClass} /></label>
-      {slug === "contact" && <p className="text-sm text-[#ead2a0]">Change the support email in <Link href="/admin/settings" className="underline">Settings → General</Link>. The email button uses that address automatically.</p>}
+      {slug === "contact" && <p className="text-sm text-[#E28906]">Change the support email in <Link href="/admin/settings" className="underline">Settings → General</Link>. The email button uses that address automatically.</p>}
       <p className="text-sm leading-6 text-white/50">Use plain text. Blank lines separate paragraphs. HTML is displayed as text.</p>
       {document.sections.map((section, index) => <fieldset key={section.id} className="space-y-4 rounded-xl border border-white/15 p-5">
-        <legend className="px-2 text-[#ead2a0]">{slug === "faqs" ? "Question" : slug === "authors" ? "Author" : "Section"} {index + 1}</legend>
+        <legend className="px-2 text-[#E28906]">{slug === "faqs" ? "Question" : slug === "authors" ? "Author" : "Section"} {index + 1}</legend>
         <label className="block">{slug === "faqs" ? "Question" : slug === "authors" ? "Author name" : "Section title"}<input required maxLength={200} value={section.title} onChange={event => update({ ...document, sections: document.sections.map((item, i) => i === index ? { ...item, title: event.target.value } : item) })} className={fieldClass} /></label>
         <label className="block">{slug === "faqs" ? "Answer" : slug === "authors" ? "Biography" : "Content"}<textarea required rows={8} maxLength={10000} value={section.body} onChange={event => update({ ...document, sections: document.sections.map((item, i) => i === index ? { ...item, body: event.target.value } : item) })} className={fieldClass} /></label>
         <button type="button" disabled={document.sections.length === 1} onClick={() => update({ ...document, sections: document.sections.filter((_, i) => i !== index) })} className="text-sm text-red-300 disabled:opacity-40">Remove {slug === "faqs" ? "question" : slug === "authors" ? "author" : "section"}</button>
@@ -93,8 +93,8 @@ function SiteEditor({ slug, onDirtyChange, onSavingChange }: { slug: SiteSlug; o
     {error && <p role="alert" className="text-red-300">{error}</p>}
     {success && <p role="status" className="text-green-300">{success}</p>}
     <div className="flex flex-wrap items-center gap-5">
-      <button type="submit" disabled={saving || !dirty} className="rounded-lg bg-[#cda762] px-6 py-3 font-semibold text-black disabled:opacity-50">{saving ? "Publishing…" : "Save & publish"}</button>
-      <Link href={sitePageLinks[slug].href} target="_blank" rel="noopener noreferrer" className="text-[#ead2a0]">View public page ↗</Link>
+      <button type="submit" disabled={saving || !dirty} className="rounded-lg bg-[#E28906] px-6 py-3 font-semibold text-black disabled:opacity-50">{saving ? "Publishing…" : "Save & publish"}</button>
+      <Link href={sitePageLinks[slug].href} target="_blank" rel="noopener noreferrer" className="text-[#E28906]">View public page ↗</Link>
       {dirty && <span className="text-sm text-white/50">Unsaved changes</span>}
     </div>
   </form>;

@@ -62,7 +62,7 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
                 disabled={tracks.length < 2}
                 className="text-white/40 hover:text-white"
               >
-                <Shuffle size={14} className={shuffle ? "text-[#C8A35A]" : undefined} />
+                <Shuffle size={14} className={shuffle ? "text-[#E28906]" : undefined} />
               </button>
 
               <button
@@ -80,7 +80,7 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
                 aria-label={playing ? "Pause" : "Play"}
                 onClick={togglePlay}
                 disabled={!audioSrc}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#C8A35A] text-[#080808]"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E28906] text-[#080808]"
               >
                 {playing ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
               </button>
@@ -103,7 +103,7 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
                 disabled={!audioSrc}
                 className="text-white/40 hover:text-white"
               >
-                <Repeat2 size={14} className={repeat ? "text-[#C8A35A]" : undefined} />
+                <Repeat2 size={14} className={repeat ? "text-[#E28906]" : undefined} />
               </button>
             </div>
 
@@ -113,7 +113,7 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
               </span>
 
               <div className="relative h-[3px] flex-1 rounded-full bg-white/10">
-                <div className="h-full rounded-full bg-[#C8A35A]" style={{ width: `${duration ? currentTime / duration * 100 : 0}%` }} />
+                <div className="h-full rounded-full bg-[#E28906]" style={{ width: `${duration ? currentTime / duration * 100 : 0}%` }} />
                 <input aria-label="Audio progress" type="range" min={0} max={duration || 1} value={currentTime} disabled={!duration} onChange={event => seekTo(Number(event.target.value))} className="absolute inset-x-0 -top-2 h-5 w-full cursor-pointer opacity-0" />
               </div>
 
@@ -129,7 +129,7 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
             aria-label={playing ? "Pause" : "Play"}
                 onClick={togglePlay}
                 disabled={!audioSrc}
-            className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C8A35A] text-[#080808] md:hidden"
+            className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E28906] text-[#080808] md:hidden"
           >
             {playing ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
           </button>
@@ -147,7 +147,7 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
             </Link>
           </div>
         </div>
-        {(audioError || !audioSrc) && <p role="status" className="mx-auto max-w-[1440px] px-4 pb-2 text-[12px] text-[#C8A35A] sm:px-6 lg:px-10">{audioError || "No audio has been attached to this Nugget yet."}</p>}
+        {(audioError || !audioSrc) && <p role="status" className="mx-auto max-w-[1440px] px-4 pb-2 text-[12px] text-[#E28906] sm:px-6 lg:px-10">{audioError || "No audio has been attached to this Nugget yet."}</p>}
       </div>
   );
 }

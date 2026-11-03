@@ -59,7 +59,7 @@ export default async function ReaderViewPage({
       <main className="mx-auto w-full max-w-[1180px] px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_270px]">
           <article className="min-w-0">
-            <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#9A7839]">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
               Nugget #{nugget.number} · {nugget.topic}
             </p>
 
@@ -68,10 +68,10 @@ export default async function ReaderViewPage({
             </h1>
 
             {nugget.scriptureText && (
-              <blockquote className="mt-6 max-w-[800px] border-l-2 border-[#C8A35A] pl-5">
+              <blockquote className="mt-6 max-w-[800px] border-l-2 border-[#E28906] pl-5">
                 <FormattedNuggetText className="font-serif whitespace-pre-line break-words text-[18px] italic leading-8 text-[#655D53]" text={`“${nugget.scriptureText}”`} />
 
-                <p className="mt-3 text-[13px] font-semibold uppercase tracking-[0.08em] text-[#9A7839]">
+                <p className="mt-3 text-[13px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                   {nugget.scriptureRef}
                 </p>
               </blockquote>
@@ -117,7 +117,7 @@ export default async function ReaderViewPage({
                           key={`${index}-${action}`}
                           className="flex gap-3 whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]"
                         >
-                          <span className="shrink-0 font-semibold text-[#9A7839]">
+                          <span className="shrink-0 font-semibold text-[#E28906]">
                             {index + 1}.
                           </span>
 
@@ -140,7 +140,7 @@ export default async function ReaderViewPage({
 
             <Link
               href={`/nugget/${nugget.slug}`}
-              className="mt-10 inline-flex items-center text-[13px] font-semibold text-[#9A7839] transition hover:text-[#6F5224]"
+              className="mt-10 inline-flex items-center text-[13px] font-semibold text-[#E28906] transition hover:text-[#6F5224]"
             >
               ← Back to Nugget
             </Link>

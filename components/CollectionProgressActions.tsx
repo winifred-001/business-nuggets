@@ -197,7 +197,7 @@ export default function CollectionProgressActions({
               : `${completed} / ${nuggetIds.length} Completed`}
           </span>
 
-          <span className="font-medium text-[#C8A35A]">
+          <span className="font-medium text-[#E28906]">
             {loading
               ? "—"
               : `${percentComplete}% Complete`}
@@ -206,7 +206,7 @@ export default function CollectionProgressActions({
 
         <div className="mt-2 h-[4px] overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-[#C8A35A] transition-[width] duration-500"
+            className="h-full rounded-full bg-[#E28906] transition-[width] duration-500"
             style={{
               width: `${percentComplete}%`,
             }}
@@ -219,7 +219,7 @@ export default function CollectionProgressActions({
         {firstNuggetSlug ? (
           <Link
             href={`/nugget/${firstNuggetSlug}/reader`}
-            className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+            className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#E28906] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
           >
             <Play
               size={14}
@@ -232,7 +232,7 @@ export default function CollectionProgressActions({
           <button
             disabled
             type="button"
-            className="inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-lg bg-[#C8A35A]/40 px-5 text-[13px] font-semibold text-[#080808]/60"
+            className="inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-lg bg-[#E28906]/40 px-5 text-[13px] font-semibold text-[#080808]/60"
           >
             <Play size={14} />
 
@@ -245,8 +245,8 @@ export default function CollectionProgressActions({
           onClick={toggleBookmark}
           className={`inline-flex min-h-11 items-center gap-2 rounded-lg border px-5 text-[13px] font-medium transition ${
             bookmarked
-              ? "border-[#C8A35A] bg-[#C8A35A]/10 text-[#C8A35A]"
-              : "border-white/15 text-white/65 hover:border-[#C8A35A]/50 hover:text-white"
+              ? "border-[#E28906] bg-[#E28906]/10 text-[#E28906]"
+              : "border-white/15 text-white/65 hover:border-[#E28906]/50 hover:text-white"
           }`}
         >
           {bookmarked ? (

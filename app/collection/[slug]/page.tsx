@@ -95,7 +95,7 @@ export default async function CollectionDetailPage({
           <div className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10 lg:py-16">
             <Link
               href="/library?tab=Collections"
-              className="text-[13px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="text-[13px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               ← Collections
             </Link>
@@ -115,7 +115,7 @@ export default async function CollectionDetailPage({
               </div>
 
               <div>
-                <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-[#C8A35A]">
+                <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-[#E28906]">
                   Curated Learning Pathway
                 </p>
 
@@ -166,9 +166,9 @@ export default async function CollectionDetailPage({
               {units.map((unit, index) => (
                 <div
                   key={unit.slug}
-                  className="grid gap-4 rounded-xl border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/35 sm:grid-cols-[42px_70px_minmax(0,1fr)_90px_auto] sm:items-center"
+                  className="grid gap-4 rounded-xl border border-white/10 bg-[#111111] p-4 transition hover:border-[#E28906]/35 sm:grid-cols-[42px_70px_minmax(0,1fr)_90px_auto] sm:items-center"
                 >
-                  <span className="font-serif text-[18px] text-[#C8A35A]">
+                  <span className="font-serif text-[18px] text-[#E28906]">
                     {String(index + 1).padStart(2, "0")}
                   </span>
 
@@ -182,7 +182,7 @@ export default async function CollectionDetailPage({
                     />
 
                     {unit.isGold && (
-                      <span className="absolute right-1 top-1 rounded border border-[#C8A35A]/50 bg-[#080808]/90 px-1.5 py-0.5 text-[9px] font-bold text-[#E0C48A]">
+                      <span className="absolute right-1 top-1 rounded border border-[#E28906]/50 bg-[#080808]/90 px-1.5 py-0.5 text-[9px] font-bold text-[#E28906]">
                         GOLD
                       </span>
                     )}
@@ -191,7 +191,7 @@ export default async function CollectionDetailPage({
                   <div className="min-w-0">
                     <Link
                       href={`/nugget/${unit.slug}`}
-                      className="bn-collection-card-title line-clamp-2 break-words font-serif text-[#FAF9F6] transition hover:text-[#E0C48A]"
+                      className="bn-collection-card-title line-clamp-2 break-words font-serif text-[#FAF9F6] transition hover:text-[#E28906]"
                     >
                       {unit.title}
                     </Link>
@@ -209,7 +209,7 @@ export default async function CollectionDetailPage({
                     <Link
                       href={`/nugget/${unit.slug}`}
                       aria-label={`Open ${unit.title}`}
-                      className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-white/50 transition hover:border-[#C8A35A]/50 hover:text-[#C8A35A]"
+                      className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-white/50 transition hover:border-[#E28906]/50 hover:text-[#E28906]"
                     >
                       <BookOpen size={15} />
                     </Link>
@@ -217,7 +217,7 @@ export default async function CollectionDetailPage({
                     <Link
                       href={`/nugget/${unit.slug}/reader`}
                       aria-label={`Read ${unit.title}`}
-                      className="flex h-9 w-9 items-center justify-center rounded-md border border-[#C8A35A]/35 text-[#C8A35A] transition hover:bg-[#C8A35A] hover:text-[#080808]"
+                      className="flex h-9 w-9 items-center justify-center rounded-md border border-[#E28906]/35 text-[#E28906] transition hover:bg-[#E28906] hover:text-[#080808]"
                     >
                       <Headphones size={15} />
                     </Link>

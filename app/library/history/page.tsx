@@ -193,7 +193,7 @@ export default function HistoryPage() {
         <main className="mx-auto w-full max-w-7xl flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
           <Link
             href="/workspace"
-            className="text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             ← My Wisdom Workspace
           </Link>
@@ -247,7 +247,7 @@ export default function HistoryPage() {
 
               <Link
                 href="/library"
-                className="bn-button mt-5 inline-block rounded-md bg-[#C8A35A] px-4 py-2.5 text-[14px] font-semibold text-black"
+                className="bn-button mt-5 inline-block rounded-md bg-[#E28906] px-4 py-2.5 text-[14px] font-semibold text-black"
               >
                 Explore Nuggets
               </Link>
@@ -279,7 +279,7 @@ export default function HistoryPage() {
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                           <div>
                             <div className="flex flex-wrap items-center gap-2 text-[14px]">
-                              <span className="text-[#C8A35A]">
+                              <span className="text-[#E28906]">
                                 {item.nugget.topic}
                               </span>
 
@@ -301,7 +301,7 @@ export default function HistoryPage() {
 
                           <div
                             className={`shrink-0 text-[14px] ${
-                              completed ? "text-emerald-400" : "text-[#C8A35A]"
+                              completed ? "text-emerald-400" : "text-[#E28906]"
                             }`}
                           >
                             {completed ? "Completed" : "In Progress"}
@@ -311,7 +311,7 @@ export default function HistoryPage() {
                         <div className="mt-6 flex items-center gap-4">
                           <div className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/10">
                             <div
-                              className="h-full bg-[#C8A35A]"
+                              className="h-full bg-[#E28906]"
                               style={{
                                 width: `${Math.min(
                                   Math.max(item.progress || 0, 0),
@@ -338,7 +338,7 @@ export default function HistoryPage() {
 
                           <Link
                             href={`/nugget/${item.nugget.slug}/reader`}
-                            className="bn-button flex items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-[14px] text-white transition hover:border-[#C8A35A]/35"
+                            className="bn-button flex items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-[14px] text-white transition hover:border-[#E28906]/35"
                           >
                             <RotateCcw size={14} />
                             {completed ? "Replay" : "Resume"}
@@ -360,10 +360,10 @@ export default function HistoryPage() {
                     <Link
                       key={item.id}
                       href={`/nugget/${item.nugget.slug}`}
-                      className="block rounded-xl border border-white/10 bg-[#111] p-4 transition hover:border-[#C8A35A]/35"
+                      className="block rounded-xl border border-white/10 bg-[#111] p-4 transition hover:border-[#E28906]/35"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3 text-[14px]">
-                        <span className="text-[#C8A35A]">
+                        <span className="text-[#E28906]">
                           {item.nugget.topic}
                         </span>
 

@@ -171,9 +171,9 @@ export default function Navbar() {
 
   return (
     <>
-      <div className="h-1 bg-[linear-gradient(90deg,#6d4c1c,#e1be79,#6d4c1c)]" />
+      <div className="h-1 bg-[linear-gradient(90deg,#E28906,#E28906,#E28906)]" />
 
-      <header className="sticky top-0 z-50 h-[89px] border-b border-[rgba(234,210,160,.19)] bg-[#12130f] text-[#f9f5ed] max-[600px]:h-[76px]">
+      <header className="sticky top-0 z-50 h-[89px] border-b border-[rgba(226,137,6,.19)] bg-[#12130f] text-[#f9f5ed] max-[600px]:h-[76px]">
         <div className="mx-auto flex h-full w-[calc(100%-38px)] max-w-[1190px] items-center justify-between gap-3 lg:w-[calc(100%-64px)]">
           <Link
             href={homeHref}
@@ -189,7 +189,7 @@ export default function Navbar() {
               mobileOpen
                 ? "absolute left-0 right-0 top-full flex"
                 : "hidden"
-            } z-40 max-h-[calc(100dvh-90px)] overflow-y-auto flex-col gap-0 border-b border-[rgba(234,210,160,.19)] bg-[#151611] px-[30px] py-[25px] text-[13px] text-[#c4c3be] lg:static lg:max-h-none lg:overflow-visible lg:flex lg:flex-row lg:items-center lg:gap-[12px] xl:gap-[16px] lg:border-0 lg:bg-transparent lg:p-0`}
+            } z-40 max-h-[calc(100dvh-90px)] overflow-y-auto flex-col gap-0 border-b border-[rgba(226,137,6,.19)] bg-[#151611] px-[30px] py-[25px] text-[13px] text-[#c4c3be] lg:static lg:max-h-none lg:overflow-visible lg:flex lg:flex-row lg:items-center lg:gap-[12px] xl:gap-[16px] lg:border-0 lg:bg-transparent lg:p-0`}
           >
             {links.map((link) => {
               const active = isActive(link.href);
@@ -201,30 +201,30 @@ export default function Navbar() {
                   aria-current={active ? "page" : undefined}
                   onClick={() => setMobileOpen(false)}
                   className={`relative whitespace-nowrap py-3 transition lg:py-0 ${
-                    active ? "text-[#ead2a0]" : "hover:text-[#ead2a0]"
+                    active ? "text-[#E28906]" : "hover:text-[#E28906]"
                   }`}
                 >
                   {link.label}
                   {active && (
-                    <span className="absolute bottom-1 left-0 h-px w-full bg-[#cda762] lg:-bottom-[10px]" />
+                    <span className="absolute bottom-1 left-0 h-px w-full bg-[#E28906] lg:-bottom-[10px]" />
                   )}
                 </Link>
               );
             })}
 
             {!isLoggedIn && (
-              <div className="mt-4 flex items-center gap-[22px] border-t border-[rgba(234,210,160,.19)] pt-4 lg:hidden">
+              <div className="mt-4 flex items-center gap-[22px] border-t border-[rgba(226,137,6,.19)] pt-4 lg:hidden">
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="text-[#bcbab4] transition hover:text-[#ead2a0]"
+                  className="text-[#bcbab4] transition hover:text-[#E28906]"
                 >
                   Login
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="bn-button inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[11px] font-bold text-[#17140e] transition hover:bg-[#e0bf80]"
+                  className="bn-button inline-flex items-center justify-center border border-[#E28906] bg-[#E28906] px-[22px] py-[11px] font-bold text-[#17140e] transition hover:bg-[#E28906]"
                 >
                   Sign Up
                 </Link>
@@ -232,7 +232,7 @@ export default function Navbar() {
             )}
 
             {isLoggedIn && (
-              <div className="mt-4 border-t border-[rgba(234,210,160,.19)] pt-4 lg:hidden">
+              <div className="mt-4 border-t border-[rgba(226,137,6,.19)] pt-4 lg:hidden">
                 <Link
                   href="/notifications"
                   onClick={() => setMobileOpen(false)}
@@ -240,17 +240,17 @@ export default function Navbar() {
                 >
                   <span>Notifications</span>
                   {unreadNotifications > 0 && (
-                    <span className="bg-[#cda762] px-2 py-0.5 text-[9px] font-bold text-[#17140e]">
+                    <span className="bg-[#E28906] px-2 py-0.5 text-[9px] font-bold text-[#17140e]">
                       {unreadNotifications > 9 ? "9+" : unreadNotifications}
                     </span>
                   )}
                 </Link>
 
-                <div className="mt-2 border-t border-[rgba(234,210,160,.19)] pt-4">
+                <div className="mt-2 border-t border-[rgba(226,137,6,.19)] pt-4">
                   <Link
                     href="/workspace"
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-start gap-3 pb-3 transition hover:text-[#ead2a0]"
+                    className="flex items-start gap-3 pb-3 transition hover:text-[#E28906]"
                   >
                     <ProfileAvatar className="h-9 w-9" iconSize={18} />
                     <div className="min-w-0">
@@ -258,7 +258,7 @@ export default function Navbar() {
                       {displayEmail && (
                         <p className="mt-1 truncate text-[11px] text-[#b4b2ab]">{displayEmail}</p>
                       )}
-                      <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-[#cda762]">
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-[#E28906]">
                         Workspace
                       </p>
                     </div>
@@ -266,7 +266,7 @@ export default function Navbar() {
 
                   <Link
                     href="/library/account"
-                    className="block py-3 text-[#c4c3be] transition hover:text-[#ead2a0]"
+                    className="block py-3 text-[#c4c3be] transition hover:text-[#E28906]"
                     onClick={() => setMobileOpen(false)}
                   >
                     Account Settings
@@ -288,12 +288,12 @@ export default function Navbar() {
           <div className="flex items-center gap-[22px] text-[13px]">
             {!isLoggedIn ? (
               <div className="hidden items-center gap-[22px] lg:flex">
-                <Link href="/login" className="text-[#bcbab4] transition hover:text-[#ead2a0]">
+                <Link href="/login" className="text-[#bcbab4] transition hover:text-[#E28906]">
                   Login
                 </Link>
                 <Link
                   href="/register"
-                  className="bn-button inline-flex items-center justify-center border border-[#cda762] bg-[#cda762] px-[22px] py-[11px] font-bold text-[#17140e] transition hover:-translate-y-0.5 hover:bg-[#e0bf80]"
+                  className="bn-button inline-flex items-center justify-center border border-[#E28906] bg-[#E28906] px-[22px] py-[11px] font-bold text-[#17140e] transition hover:-translate-y-0.5 hover:bg-[#E28906]"
                 >
                   Sign Up
                 </Link>
@@ -307,11 +307,11 @@ export default function Navbar() {
                       ? `Notifications, ${unreadNotifications} unread`
                       : "Notifications"
                   }
-                  className="relative grid h-[46px] w-[46px] place-items-center border border-[#61563c] text-[#ead2a0] transition hover:bg-[#28251e]"
+                  className="relative grid h-[46px] w-[46px] place-items-center border border-[#61563c] text-[#E28906] transition hover:bg-[#28251e]"
                 >
                   <Bell size={18} strokeWidth={1.6} />
                   {unreadNotifications > 0 && (
-                    <span className="absolute -right-1.5 -top-1.5 flex min-h-[17px] min-w-[17px] items-center justify-center bg-[#cda762] px-1 text-[8px] font-bold text-[#17140e]">
+                    <span className="absolute -right-1.5 -top-1.5 flex min-h-[17px] min-w-[17px] items-center justify-center bg-[#E28906] px-1 text-[8px] font-bold text-[#17140e]">
                       {unreadNotifications > 9 ? "9+" : unreadNotifications}
                     </span>
                   )}
@@ -346,9 +346,9 @@ export default function Navbar() {
                   {profileOpen && (
                     <div
                       id="profile-dropdown"
-                      className="absolute right-0 top-[54px] z-50 w-[240px] border border-[rgba(234,210,160,.19)] bg-[#191b18] shadow-2xl"
+                      className="absolute right-0 top-[54px] z-50 w-[240px] border border-[rgba(226,137,6,.19)] bg-[#191b18] shadow-2xl"
                     >
-                      <div className="border-b border-[rgba(234,210,160,.19)] px-4 py-4">
+                      <div className="border-b border-[rgba(226,137,6,.19)] px-4 py-4">
                         <p className="truncate text-[13px] font-semibold text-[#f9f5ed]">{displayName}</p>
                         {displayEmail && (
                           <p className="mt-1 truncate text-[11px] text-[#b4b2ab]">{displayEmail}</p>
@@ -359,7 +359,7 @@ export default function Navbar() {
                         <Link
                           href="/library/account"
                           onClick={() => setProfileOpen(false)}
-                          className="block px-3 py-2.5 text-[12px] text-[#b8b5aa] transition hover:bg-[#28251e] hover:text-[#ead2a0]"
+                          className="block px-3 py-2.5 text-[12px] text-[#b8b5aa] transition hover:bg-[#28251e] hover:text-[#E28906]"
                         >
                           Account Settings
                         </Link>
@@ -381,7 +381,7 @@ export default function Navbar() {
 
             <button
               type="button"
-              className="border-0 bg-transparent text-[26px] leading-none text-[#cda762] lg:hidden"
+              className="border-0 bg-transparent text-[26px] leading-none text-[#E28906] lg:hidden"
               aria-label={mobileOpen ? "Close navigation" : "Toggle navigation"}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((value) => !value)}

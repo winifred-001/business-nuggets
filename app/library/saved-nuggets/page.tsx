@@ -317,7 +317,7 @@ export default function SavedNuggetsPage() {
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Search saved Nuggets..."
-                  className="h-11 w-full rounded-md border border-white/10 bg-[#111111] pl-11 pr-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/50"
+                  className="h-11 w-full rounded-md border border-white/10 bg-[#111111] pl-11 pr-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/50"
                 />
               </div>
             </div>
@@ -335,8 +335,8 @@ export default function SavedNuggetsPage() {
                         onClick={() => setActiveFilter(tab.value)}
                         className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[10px] font-medium transition ${
                           active
-                            ? "bg-[#C8A35A] text-[#080808]"
-                            : "border border-white/10 bg-[#111111] text-white/45 hover:border-[#C8A35A]/40 hover:text-[#C8A35A]"
+                            ? "bg-[#E28906] text-[#080808]"
+                            : "border border-white/10 bg-[#111111] text-white/45 hover:border-[#E28906]/40 hover:text-[#E28906]"
                         }`}
                       >
                         <span>{tab.label}</span>
@@ -386,7 +386,7 @@ export default function SavedNuggetsPage() {
 
                     <div className="p-4">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                        <span className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                           {nugget.topic || nugget.tag}
                         </span>
 
@@ -397,7 +397,7 @@ export default function SavedNuggetsPage() {
                       </div>
 
                       <Link href={`/nugget/${nugget.slug}`}>
-                        <h2 className="mt-3 line-clamp-2 font-serif text-[18px] leading-6 text-white/90 transition group-hover:text-[#C8A35A]">
+                        <h2 className="mt-3 line-clamp-2 font-serif text-[18px] leading-6 text-white/90 transition group-hover:text-[#E28906]">
                           {nugget.title}
                         </h2>
                       </Link>
@@ -409,7 +409,7 @@ export default function SavedNuggetsPage() {
                       <div className="mt-5 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
                         <Link
                           href={`/nugget/${nugget.slug}`}
-                          className="text-[10px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                          className="text-[10px] font-medium text-[#E28906] transition hover:text-[#E28906]"
                         >
                           Listen &amp; Read
                         </Link>
@@ -421,7 +421,7 @@ export default function SavedNuggetsPage() {
                               setFolderMenuFor(nugget.id);
                               setFolderMessage("");
                             }}
-                            className="rounded-md border border-white/10 px-2.5 py-1.5 text-[9px] text-white/50 transition hover:border-[#C8A35A]/40 hover:text-[#C8A35A]"
+                            className="rounded-md border border-white/10 px-2.5 py-1.5 text-[9px] text-white/50 transition hover:border-[#E28906]/40 hover:text-[#E28906]"
                           >
                             Add to Folder
                           </button>
@@ -430,7 +430,7 @@ export default function SavedNuggetsPage() {
                             type="button"
                             onClick={() => removeSavedNugget(nugget.id)}
                             aria-label={`Remove ${nugget.title} from saved Nuggets`}
-                            className="text-[#C8A35A] transition hover:text-red-400"
+                            className="text-[#E28906] transition hover:text-red-400"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -459,7 +459,7 @@ export default function SavedNuggetsPage() {
 
             {!loading && !error && savedNuggets.length === 0 && (
               <div className="py-16 text-center">
-                <Bookmark size={29} className="mx-auto text-[#C8A35A]" />
+                <Bookmark size={29} className="mx-auto text-[#E28906]" />
                 <h2 className="mt-4 font-serif text-[20px]">
                   No saved Nuggets yet
                 </h2>
@@ -468,7 +468,7 @@ export default function SavedNuggetsPage() {
                 </p>
                 <Link
                   href="/library"
-                  className="bn-button mt-5 inline-flex rounded-md bg-[#C8A35A] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                  className="bn-button mt-5 inline-flex rounded-md bg-[#E28906] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
                 >
                   Browse Library
                 </Link>
@@ -490,7 +490,7 @@ export default function SavedNuggetsPage() {
 
               <Link
                 href="/library/saved-nuggets/create-folder"
-                className="bn-button flex w-fit items-center gap-2 rounded-md bg-[#C8A35A] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                className="bn-button flex w-fit items-center gap-2 rounded-md bg-[#E28906] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
               >
                 <FolderPlus size={15} />
                 Create Folder
@@ -499,7 +499,7 @@ export default function SavedNuggetsPage() {
 
             {folders.length === 0 ? (
               <div className="mt-8 flex min-h-[220px] flex-col items-center justify-center rounded-[10px] border border-white/10 bg-[#111111] px-6 text-center">
-                <FolderOpen size={27} className="text-[#C8A35A]" />
+                <FolderOpen size={27} className="text-[#E28906]" />
                 <h3 className="mt-4 font-serif text-[20px]">
                   No custom folders yet
                 </h3>
@@ -508,7 +508,7 @@ export default function SavedNuggetsPage() {
                 </p>
                 <Link
                   href="/library/saved-nuggets/create-folder"
-                  className="mt-5 text-[11px] font-medium text-[#C8A35A]"
+                  className="mt-5 text-[11px] font-medium text-[#E28906]"
                 >
                   Create your first folder →
                 </Link>
@@ -519,10 +519,10 @@ export default function SavedNuggetsPage() {
                   <Link
                     key={folder.id}
                     href={`/library/saved-nuggets/folder/${folder.id}`}
-                    className="group rounded-[10px] border border-white/10 bg-[#111111] p-5 transition hover:border-[#C8A35A]/40"
+                    className="group rounded-[10px] border border-white/10 bg-[#111111] p-5 transition hover:border-[#E28906]/40"
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-md border border-[#C8A35A]/20 bg-[#C8A35A]/[0.05] text-[#C8A35A]">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-md border border-[#E28906]/20 bg-[#E28906]/[0.05] text-[#E28906]">
                         <FolderOpen size={16} />
                       </div>
 
@@ -532,11 +532,11 @@ export default function SavedNuggetsPage() {
                       </span>
                     </div>
 
-                    <p className="mt-5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                    <p className="mt-5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                       Saved Folder
                     </p>
 
-                    <h3 className="mt-2 font-serif text-[18px] text-white/90 transition group-hover:text-[#C8A35A]">
+                    <h3 className="mt-2 font-serif text-[18px] text-white/90 transition group-hover:text-[#E28906]">
                       {folder.name}
                     </h3>
 
@@ -546,7 +546,7 @@ export default function SavedNuggetsPage() {
                       </p>
                     )}
 
-                    <span className="mt-5 inline-block text-[10px] font-medium text-[#C8A35A]">
+                    <span className="mt-5 inline-block text-[10px] font-medium text-[#E28906]">
                       Open Folder →
                     </span>
                   </Link>
@@ -569,7 +569,7 @@ export default function SavedNuggetsPage() {
             <div className="w-full max-w-[460px] rounded-[10px] border border-white/10 bg-[#111111] p-6 shadow-2xl">
               <div className="flex items-start justify-between gap-5">
                 <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                     Saved Nuggets
                   </p>
                   <h2 className="mt-2 font-serif text-[24px]">
@@ -594,8 +594,8 @@ export default function SavedNuggetsPage() {
               </div>
 
               {folderMessage && (
-                <div className="mt-4 rounded-md border border-[#C8A35A]/25 bg-[#C8A35A]/[0.06] px-4 py-3">
-                  <p className="text-[11px] text-[#E0C48A]">
+                <div className="mt-4 rounded-md border border-[#E28906]/25 bg-[#E28906]/[0.06] px-4 py-3">
+                  <p className="text-[11px] text-[#E28906]">
                     {folderMessage}
                   </p>
                 </div>
@@ -604,7 +604,7 @@ export default function SavedNuggetsPage() {
               <div className="mt-6 max-h-[340px] space-y-3 overflow-y-auto pr-1">
                 {folders.length === 0 ? (
                   <div className="rounded-lg border border-white/10 bg-[#18181B] px-5 py-7 text-center">
-                    <FolderPlus size={22} className="mx-auto text-[#C8A35A]" />
+                    <FolderPlus size={22} className="mx-auto text-[#E28906]" />
                     <h3 className="mt-3 font-serif text-[17px]">
                       No saved folders
                     </h3>
@@ -629,8 +629,8 @@ export default function SavedNuggetsPage() {
                         }
                         className={`flex w-full items-center justify-between gap-4 rounded-lg border px-4 py-4 text-left transition ${
                           alreadyAdded
-                            ? "cursor-default border-[#C8A35A]/20 bg-[#C8A35A]/[0.05]"
-                            : "border-white/10 bg-[#19191D] hover:border-[#C8A35A]/40"
+                            ? "cursor-default border-[#E28906]/20 bg-[#E28906]/[0.05]"
+                            : "border-white/10 bg-[#19191D] hover:border-[#E28906]/40"
                         } disabled:opacity-60`}
                       >
                         <div className="min-w-0">
@@ -653,8 +653,8 @@ export default function SavedNuggetsPage() {
                         <span
                           className={`shrink-0 text-[10px] font-medium ${
                             alreadyAdded
-                              ? "text-[#C8A35A]/60"
-                              : "text-[#C8A35A]"
+                              ? "text-[#E28906]/60"
+                              : "text-[#E28906]"
                           }`}
                         >
                           {alreadyAdded
@@ -672,7 +672,7 @@ export default function SavedNuggetsPage() {
               <div className="mt-6 border-t border-white/[0.07] pt-5">
                 <Link
                   href="/library/saved-nuggets/create-folder"
-                  className="bn-button flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                  className="bn-button flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-[#E28906] px-4 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
                 >
                   <FolderPlus size={14} />
                   Create New Folder

@@ -35,11 +35,11 @@ type Topic = BaseItem & {
 type Category = BaseItem & { topicCount: number };
 type Editor = { kind: Kind; item: BaseItem | null };
 const primary =
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 py-2 font-semibold text-[#080808] transition hover:bg-[#E0C48A] active:translate-y-px focus-visible:outline-2 focus-visible:outline-[#E0C48A] disabled:opacity-40 disabled:cursor-not-allowed";
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#E28906] px-4 py-2 font-semibold text-[#080808] transition hover:bg-[#E28906] active:translate-y-px focus-visible:outline-2 focus-visible:outline-[#E28906] disabled:opacity-40 disabled:cursor-not-allowed";
 const secondary =
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#C8A35A]/35 px-4 py-2 text-[#E0C48A] transition hover:bg-white/[0.08] active:translate-y-px focus-visible:outline-2 focus-visible:outline-[#E0C48A] disabled:opacity-40 disabled:cursor-not-allowed";
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#E28906]/35 px-4 py-2 text-[#E28906] transition hover:bg-white/[0.08] active:translate-y-px focus-visible:outline-2 focus-visible:outline-[#E28906] disabled:opacity-40 disabled:cursor-not-allowed";
 const inputClass =
-  "mt-2 w-full rounded-md border border-white/15 bg-[#080808] px-3 py-3 text-sm text-white outline-none focus:border-[#C8A35A]";
+  "mt-2 w-full rounded-md border border-white/15 bg-[#080808] px-3 py-3 text-sm text-white outline-none focus:border-[#E28906]";
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await adminApiFetch(path, init);
   const text = await response.text();
@@ -424,7 +424,7 @@ export default function AdminTopicsPage() {
                     aria-label={`Select ${item.name}`}
                     checked={selection.selected.has(String(item.id))}
                     onChange={() => selection.toggle(String(item.id))}
-                    className="h-4 w-4 accent-[#cda762]"
+                    className="h-4 w-4 accent-[#E28906]"
                   />
                   Select
                 </label>
@@ -450,7 +450,7 @@ export default function AdminTopicsPage() {
                       type="button"
                       disabled={busy}
                       onClick={() => openEditor(kind, item)}
-                      className="inline-flex items-center gap-1.5 text-[#C8A35A]"
+                      className="inline-flex items-center gap-1.5 text-[#E28906]"
                     >
                       <Pencil size={13} />
                       Edit
@@ -591,7 +591,7 @@ export default function AdminTopicsPage() {
                     type="checkbox"
                     checked={visible}
                     onChange={(event) => setVisible(event.target.checked)}
-                    className="h-4 w-4 accent-[#C8A35A]"
+                    className="h-4 w-4 accent-[#E28906]"
                   />
                 </label>
               </fieldset>
@@ -632,7 +632,7 @@ export default function AdminTopicsPage() {
               Delete <strong>{deleting.item.name}</strong>?
             </p>
             {assigned > 0 ? (
-              <p className="mt-4 text-sm leading-6 text-[#E0C48A]">
+              <p className="mt-4 text-sm leading-6 text-[#E28906]">
                 {deleting.kind === "topic"
                   ? "This topic is assigned to Nuggets. Reassign those Nuggets before deleting it."
                   : "This category contains topics. Edit those topics and move them to another category or Uncategorized first."}

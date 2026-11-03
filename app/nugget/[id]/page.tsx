@@ -60,7 +60,7 @@ export default async function NuggetDetailPage({
         <section className="relative min-h-[350px] overflow-hidden border-b border-white/[0.06]">
           <div className="relative mx-auto flex min-h-[350px] max-w-[1280px] items-end px-5 pb-12 sm:px-8 lg:px-10">
             <div className="max-w-[950px]">
-              <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+              <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                 Nugget #{nugget.number} · {nugget.topic}
               </p>
 
@@ -81,7 +81,7 @@ export default async function NuggetDetailPage({
                 <blockquote className="rounded-xl border border-white/10 bg-[#111111] p-6">
                   <FormattedNuggetText className="font-serif whitespace-pre-line break-words text-[18px] italic leading-8 text-[#FAF9F6]/80" text={`“${nugget.scriptureText}”`} />
 
-                  <p className="mt-4 text-[13px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                  <p className="mt-4 text-[13px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                     {nugget.scriptureRef}
                   </p>
                 </blockquote>
@@ -91,23 +91,23 @@ export default async function NuggetDetailPage({
               <div className="mt-8 flex gap-7 overflow-x-auto border-b border-white/[0.08]">
                 <Link
                   href={`/nugget/${nugget.slug}`}
-                  className="relative shrink-0 pb-4 text-[13px] font-medium text-[#C8A35A]"
+                  className="relative shrink-0 pb-4 text-[13px] font-medium text-[#E28906]"
                 >
                   Read Wisdom
 
-                  <span className="absolute bottom-0 left-0 h-[2px] w-full bg-[#C8A35A]" />
+                  <span className="absolute bottom-0 left-0 h-[2px] w-full bg-[#E28906]" />
                 </Link>
 
                 <Link
                   href={`/nugget/${nugget.slug}/musical`}
-                  className="shrink-0 pb-4 text-[13px] text-white/45 transition hover:text-[#C8A35A]"
+                  className="shrink-0 pb-4 text-[13px] text-white/45 transition hover:text-[#E28906]"
                 >
                   Listen Musical
                 </Link>
 
                 <Link
                   href={`/nugget/${nugget.slug}/audio`}
-                  className="shrink-0 pb-4 text-[13px] text-white/45 transition hover:text-[#C8A35A]"
+                  className="shrink-0 pb-4 text-[13px] text-white/45 transition hover:text-[#E28906]"
                 >
                   Listen Commentary
                 </Link>
@@ -136,7 +136,7 @@ export default async function NuggetDetailPage({
 
               <Link
                 href={`/nugget/${nugget.slug}/reader`}
-                className="bn-button mt-8 inline-flex rounded-lg border border-[#C8A35A]/40 px-5 py-3 text-[13px] font-semibold text-[#C8A35A] transition hover:bg-[#C8A35A]/10 hover:text-[#E0C48A] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C8A35A]"
+                className="bn-button mt-8 inline-flex rounded-lg border border-[#E28906]/40 px-5 py-3 text-[13px] font-semibold text-[#E28906] transition hover:bg-[#E28906]/10 hover:text-[#E28906] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E28906]"
               >
                 Read full teaching →
               </Link>
@@ -153,11 +153,11 @@ export default async function NuggetDetailPage({
 
                 <Link
   href={`/share-nugget/${nugget.slug}`}
-  className="bn-button flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[14px] text-white/65 transition hover:bg-white/[0.04] hover:text-[#E0C48A]"
+  className="bn-button flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[14px] text-white/65 transition hover:bg-white/[0.04] hover:text-[#E28906]"
 >
   <Share2
     size={16}
-    className="text-[#C8A35A]"
+    className="text-[#E28906]"
   />
 
   Share Commentary

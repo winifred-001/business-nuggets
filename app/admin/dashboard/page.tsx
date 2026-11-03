@@ -211,14 +211,14 @@ export default function AdminDashboardPage() {
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              className="min-h-9 rounded-md border border-white/10 px-4 text-[9px] text-white/55 transition hover:border-[#C8A35A]/30 hover:text-white"
+              className="min-h-9 rounded-md border border-white/10 px-4 text-[9px] text-white/55 transition hover:border-[#E28906]/30 hover:text-white"
             >
               Export Report
             </button>
 
             <Link
               href="/admin/nuggets/new"
-              className="bn-button inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button inline-flex min-h-9 items-center gap-2 rounded-md bg-[#E28906] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
             >
               <Plus
                 size={12}
@@ -375,7 +375,7 @@ export default function AdminDashboardPage() {
 
                       <div className="mt-2 h-[4px] overflow-hidden rounded-full bg-white/[0.06]">
                         <div
-                          className="h-full rounded-full bg-[#C8A35A]"
+                          className="h-full rounded-full bg-[#E28906]"
                           style={{
                             width:
                               `${Math.max(
@@ -408,7 +408,7 @@ export default function AdminDashboardPage() {
 
               <Link
                 href="/admin/nuggets"
-                className="text-[8px] text-[#C8A35A]"
+                className="text-[8px] text-[#E28906]"
               >
                 View All →
               </Link>
@@ -563,7 +563,7 @@ function MetricCard({
 
         <Icon
           size={15}
-          className="text-[#C8A35A]"
+          className="text-[#E28906]"
         />
       </div>
     </div>
@@ -601,7 +601,7 @@ function ProgressRow({
 
       <div className="mt-2 h-[5px] overflow-hidden rounded-full bg-white/[0.06]">
         <div
-          className="h-full rounded-full bg-[#C8A35A]"
+          className="h-full rounded-full bg-[#E28906]"
           style={{
             width:
               `${percentage}%`,
@@ -628,7 +628,7 @@ function StatusBadge({
           ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
           : normalized ===
               "draft"
-            ? "border-[#C8A35A]/20 bg-[#C8A35A]/10 text-[#E0C48A]"
+            ? "border-[#E28906]/20 bg-[#E28906]/10 text-[#E28906]"
             : "border-white/10 bg-white/[0.04] text-white/40"
       }`}
     >
@@ -649,13 +649,13 @@ function ActionRow({
   return (
     <Link
       href={href}
-      className="bn-button flex items-center justify-between gap-3 rounded-md border border-white/[0.07] bg-[#080808] px-4 py-3 transition hover:border-[#C8A35A]/25"
+      className="bn-button flex items-center justify-between gap-3 rounded-md border border-white/[0.07] bg-[#080808] px-4 py-3 transition hover:border-[#E28906]/25"
     >
       <span className="text-[9px] text-white/50">
         {label}
       </span>
 
-      <span className="text-[8px] text-[#C8A35A]">
+      <span className="text-[8px] text-[#E28906]">
         {action}
       </span>
     </Link>

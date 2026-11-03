@@ -58,7 +58,7 @@ export default function MusicalView({
             </div>
 
             <div className="mt-6 text-center">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#C8A35A]">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#E28906]">
                 Wisdom Cinematic Musical
               </p>
 
@@ -91,7 +91,7 @@ export default function MusicalView({
                   aria-label={playing ? "Pause" : "Play"}
                   disabled={!audioSrc}
                   onClick={togglePlay}
-                  className="flex h-11 w-11 items-center justify-center rounded-full bg-[#C8A35A] text-[#080808]"
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E28906] text-[#080808]"
                 >
                   {playing ? (
                     <Pause
@@ -122,7 +122,7 @@ export default function MusicalView({
               </div>
 
               {(message || !audioSrc) && (
-                <p className="mt-4 text-[13px] text-[#C8A35A]">
+                <p className="mt-4 text-[13px] text-[#E28906]">
                   {message || "No Musical audio has been attached to this Nugget yet."}
                 </p>
               )}
@@ -131,9 +131,9 @@ export default function MusicalView({
 
           {/* TEXT EXPERIENCE */}
           <section>
-            <div className="flex flex-col gap-5 rounded-xl border border-[#C8A35A]/45 bg-[#111111] p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-5 rounded-xl border border-[#E28906]/45 bg-[#111111] p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                   Parent Scripture Study
                 </p>
 
@@ -145,7 +145,7 @@ export default function MusicalView({
 
               <Link
                 href={`/nugget/${nugget.slug}`}
-                className="bn-button w-fit rounded-md bg-[#C8A35A]/20 px-4 py-2 text-[12px] font-medium text-[#C8A35A]"
+                className="bn-button w-fit rounded-md bg-[#E28906]/20 px-4 py-2 text-[12px] font-medium text-[#E28906]"
               >
                 Read Exposition
               </Link>
@@ -157,7 +157,7 @@ export default function MusicalView({
               </h2>
 
               {nugget.scriptureText && (
-                <p className="mt-5 max-w-[700px] font-serif text-[18px] italic leading-8 text-[#C8A35A]">
+                <p className="mt-5 max-w-[700px] font-serif text-[18px] italic leading-8 text-[#E28906]">
                   “
                   {
                     nugget.scriptureText
@@ -173,7 +173,7 @@ export default function MusicalView({
                       key={`${line}-${index}`}
                       className={`max-w-[720px] font-serif text-[17px] leading-7 ${
                         index === 1
-                          ? "text-[#E0C48A]"
+                          ? "text-[#E28906]"
                           : "text-white/60"
                       }`}
                     >
@@ -201,7 +201,7 @@ export default function MusicalView({
                       item.slug
                     }
                     href={`/nugget/${item.slug}/musical`}
-                    className="group flex items-center gap-4 rounded-lg border border-white/10 bg-[#111111] p-3 transition hover:border-[#C8A35A]/40"
+                    className="group flex items-center gap-4 rounded-lg border border-white/10 bg-[#111111] p-3 transition hover:border-[#E28906]/40"
                   >
                     <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md">
                       <Image

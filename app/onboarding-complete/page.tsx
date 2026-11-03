@@ -46,11 +46,11 @@ export default function OnboardingCompletePage() {
         <Navbar />
 
         <main className="mx-auto flex w-full max-w-[940px] flex-1 flex-col items-center px-5 py-10 sm:px-8 sm:py-12 lg:px-10 lg:py-14">
-          <span className="rounded-full border border-[#C8A35A]/30 bg-[#C8A35A]/10 px-3 py-1 font-semibold text-[#C8A35A]">
+          <span className="rounded-full border border-[#E28906]/30 bg-[#E28906]/10 px-3 py-1 font-semibold text-[#E28906]">
             STEP 3 OF 3
           </span>
 
-          <div className="mt-5 grid h-12 w-12 place-items-center rounded-full border border-[#C8A35A] text-[#C8A35A]">
+          <div className="mt-5 grid h-12 w-12 place-items-center rounded-full border border-[#E28906] text-[#E28906]">
             <Check size={22} strokeWidth={1.8} />
           </div>
 
@@ -74,9 +74,9 @@ export default function OnboardingCompletePage() {
                 {preferences.interests.map((interest) => (
                   <div
                     key={interest}
-                    className="flex items-start gap-3 rounded-lg border border-[#C8A35A]/35 bg-[#C8A35A]/10 px-4 py-4"
+                    className="flex items-start gap-3 rounded-lg border border-[#E28906]/35 bg-[#E28906]/10 px-4 py-4"
                   >
-                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-sm bg-[#C8A35A] text-[#080808]">
+                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-sm bg-[#E28906] text-[#080808]">
                       <Check size={12} strokeWidth={3} />
                     </span>
                     <div className="min-w-0">
@@ -105,7 +105,7 @@ export default function OnboardingCompletePage() {
                 {preferences.wisdomNeeds.map((title) => (
                   <span
                     key={title}
-                    className="rounded-full border border-[#C8A35A]/25 bg-[#C8A35A]/[0.08] px-3 py-2 text-[#E0C48A]"
+                    className="rounded-full border border-[#E28906]/25 bg-[#E28906]/[0.08] px-3 py-2 text-[#E28906]"
                   >
                     {title}
                   </span>
@@ -117,13 +117,13 @@ export default function OnboardingCompletePage() {
           <div className="mt-7 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/onboarding?edit=1"
-              className="bn-button inline-flex min-h-11 items-center rounded-md border border-white/10 bg-[#111111] px-5 font-medium text-white/70 transition hover:border-[#C8A35A]/40 hover:text-[#C8A35A]"
+              className="bn-button inline-flex min-h-11 items-center rounded-md border border-white/10 bg-[#111111] px-5 font-medium text-white/70 transition hover:border-[#E28906]/40 hover:text-[#E28906]"
             >
               Adjust Interests
             </Link>
             <Link
               href="/home"
-              className="bn-button inline-flex min-h-11 items-center rounded-md bg-[#C8A35A] px-6 font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button inline-flex min-h-11 items-center rounded-md bg-[#E28906] px-6 font-semibold text-[#080808] transition hover:bg-[#E28906]"
             >
               Go to My Homepage
             </Link>
@@ -131,7 +131,7 @@ export default function OnboardingCompletePage() {
 
           <Link
             href="/recommendations"
-            className="mt-6 font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="mt-6 font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             Understand your recommendations → Recommendation Guide
           </Link>

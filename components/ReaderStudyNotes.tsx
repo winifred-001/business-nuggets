@@ -59,23 +59,23 @@ export default function ReaderStudyNotes({ nuggetId, title, slug }: { nuggetId: 
     finally { setSaving(false); }
   }
   return (
-    <div className="border border-[#BCA46E] bg-[#F8F3EA] p-5">
+    <div className="border border-[#E28906] bg-[#F8F3EA] p-5">
       <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#15120E]">My Study Notes</h2>
       <p className="mt-3 text-[13px] leading-5 text-[#756E64]">Take this in, then act. Write what you must execute each week instead of buying the next prosperity read.</p>
       <label htmlFor="study-notes" className="sr-only">My study notes</label>
       <textarea id="study-notes" rows={7} maxLength={10000} value={content} disabled={!ready || !authenticated || saving}
         onChange={event => { setContent(event.target.value); setStatus(""); }} placeholder="Write your notes here..."
-        className="mt-4 w-full resize-y border border-[#BCA46E] bg-[#F5F0E8] p-3 text-[13px] leading-5 text-[#15120E] outline-none placeholder:text-[#9B9388] focus:border-[#9A7839] disabled:opacity-60" />
+        className="mt-4 w-full resize-y border border-[#E28906] bg-[#F5F0E8] p-3 text-[13px] leading-5 text-[#15120E] outline-none placeholder:text-[#9B9388] focus:border-[#E28906] disabled:opacity-60" />
       {!ready && !error && <p role="status" className="mt-2 text-[13px] text-[#756E64]">Loading your notes…</p>}
       {ready && authenticated && <button type="button" disabled={saving || !content.trim()} onClick={() => void save()}
-        className="bn-button mt-3 w-full border border-[#9A7839] bg-[#C8A35A] px-4 py-2.5 text-[13px] font-semibold text-[#15120E] transition hover:bg-[#D8B975] disabled:cursor-not-allowed disabled:opacity-50">
+        className="bn-button mt-3 w-full border border-[#E28906] bg-[#E28906] px-4 py-2.5 text-[13px] font-semibold text-[#15120E] transition hover:bg-[#D8B975] disabled:cursor-not-allowed disabled:opacity-50">
         {saving ? "Saving…" : note ? "Update Notes" : "Save Notes"}
       </button>}
-      {ready && !authenticated && <Link href={loginFor(`/nugget/${slug}/reader`)} className="bn-button mt-3 block border border-[#9A7839] bg-[#C8A35A] px-4 py-2.5 text-center text-[13px] font-semibold text-[#15120E]">Log in to Save Notes</Link>}
+      {ready && !authenticated && <Link href={loginFor(`/nugget/${slug}/reader`)} className="bn-button mt-3 block border border-[#E28906] bg-[#E28906] px-4 py-2.5 text-center text-[13px] font-semibold text-[#15120E]">Log in to Save Notes</Link>}
       {error && <p role="alert" className="mt-3 text-[13px] text-red-700">{error}</p>}
-      {!ready && error && <button type="button" onClick={() => setAttempt(value => value + 1)} className="bn-button mt-2 text-[13px] text-[#9A7839] underline">Retry loading notes</button>}
+      {!ready && error && <button type="button" onClick={() => setAttempt(value => value + 1)} className="bn-button mt-2 text-[13px] text-[#E28906] underline">Retry loading notes</button>}
       {status && <p role="status" className="mt-3 text-[13px] text-emerald-800">{status}</p>}
-      <Link href={`/library/personal-notes${note ? `?note=${note.id}` : ""}`} className="bn-button mt-4 inline-block text-[13px] font-semibold text-[#9A7839] underline underline-offset-2">View My Notes →</Link>
+      <Link href={`/library/personal-notes${note ? `?note=${note.id}` : ""}`} className="bn-button mt-4 inline-block text-[13px] font-semibold text-[#E28906] underline underline-offset-2">View My Notes →</Link>
     </div>
   );
 }

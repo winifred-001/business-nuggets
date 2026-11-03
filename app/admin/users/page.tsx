@@ -616,7 +616,7 @@ export default function AdminUsersPage() {
               onClick={
                 exportCsv
               }
-              className="h-9 rounded-md border border-white/10 px-4 text-[9px] text-white/50 transition hover:border-[#C8A35A]/30 hover:text-white"
+              className="h-9 rounded-md border border-white/10 px-4 text-[9px] text-white/50 transition hover:border-[#E28906]/30 hover:text-white"
             >
               Export CSV
             </button>
@@ -628,7 +628,7 @@ export default function AdminUsersPage() {
                   true,
                 )
               }
-              className="inline-flex h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="inline-flex h-9 items-center gap-2 rounded-md bg-[#E28906] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
             >
               <Plus
                 size={12}
@@ -714,7 +714,7 @@ export default function AdminUsersPage() {
               )
             }
             placeholder="Search members..."
-            className="h-9 w-full rounded-md border border-white/10 bg-[#111111] pl-9 pr-4 text-[9px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/35"
+            className="h-9 w-full rounded-md border border-white/10 bg-[#111111] pl-9 pr-4 text-[9px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/35"
           />
         </div>
 
@@ -794,7 +794,7 @@ export default function AdminUsersPage() {
 
                           {user.role ===
                             "admin" && (
-                            <p className="mt-1 text-[7px] text-[#C8A35A]">
+                            <p className="mt-1 text-[7px] text-[#E28906]">
                               Admin
                             </p>
                           )}
@@ -985,7 +985,7 @@ export default function AdminUsersPage() {
                   ]}
                 />
 
-                <div className="rounded-md border border-[#C8A35A]/20 bg-[#C8A35A]/[0.05] px-4 py-3 text-[10px] leading-5 text-white/40">
+                <div className="rounded-md border border-[#E28906]/20 bg-[#E28906]/[0.05] px-4 py-3 text-[10px] leading-5 text-white/40">
                   Admin access and role changes are managed securely from Roles &amp; Access.
                 </div>
               </div>
@@ -1011,7 +1011,7 @@ export default function AdminUsersPage() {
                   onClick={
                     saveUser
                   }
-                  className="h-9 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
+                  className="h-9 rounded-md bg-[#E28906] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
                 >
                   {saving
                     ? "Saving..."
@@ -1134,7 +1134,7 @@ export default function AdminUsersPage() {
                   onClick={
                     inviteUser
                   }
-                  className="h-9 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
+                  className="h-9 rounded-md bg-[#E28906] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
                 >
                   {saving
                     ? "Creating..."
@@ -1234,7 +1234,7 @@ function Field({
               .value,
           )
         }
-        className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#C8A35A]/35"
+        className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#E28906]/35"
       />
     </div>
   );

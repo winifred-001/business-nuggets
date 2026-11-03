@@ -399,7 +399,7 @@ export default function AdminNotificationsPage() {
             onClick={
               newCampaign
             }
-            className="inline-flex h-9 w-fit items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[8px] font-semibold text-[#080808] hover:bg-[#E0C48A]"
+            className="inline-flex h-9 w-fit items-center gap-2 rounded-md bg-[#E28906] px-4 text-[8px] font-semibold text-[#080808] hover:bg-[#E28906]"
           >
             <Plus
               size={11}
@@ -458,7 +458,7 @@ export default function AdminNotificationsPage() {
                 )
               }
               placeholder="Today's Business Nugget"
-              className="mt-2 h-10 rounded-md border border-white/10 bg-[#080808] px-3 text-[9px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/30"
+              className="mt-2 h-10 rounded-md border border-white/10 bg-[#080808] px-3 text-[9px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/30"
             />
 
             <label className="mt-4 block text-[7px] text-white/30">
@@ -480,7 +480,7 @@ export default function AdminNotificationsPage() {
                 )
               }
               placeholder="The Law of Just Balances in Corporate Negotiation"
-              className="mt-2 resize-none rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[9px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/30"
+              className="mt-2 resize-none rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[9px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/30"
             />
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -611,7 +611,7 @@ export default function AdminNotificationsPage() {
                 disabled={
                   saving
                 }
-                className="h-9 rounded-md bg-[#C8A35A] px-7 text-[8px] font-semibold text-[#080808] hover:bg-[#E0C48A] disabled:opacity-40"
+                className="h-9 rounded-md bg-[#E28906] px-7 text-[8px] font-semibold text-[#080808] hover:bg-[#E28906] disabled:opacity-40"
               >
                 {saving
                   ? "Scheduling..."
@@ -751,7 +751,7 @@ function CampaignStatus({
       ? "border-emerald-500/20 bg-emerald-500/[0.08] text-emerald-400"
       : normalized ===
           "scheduled"
-        ? "border-[#C8A35A]/20 bg-[#C8A35A]/[0.08] text-[#C8A35A]"
+        ? "border-[#E28906]/20 bg-[#E28906]/[0.08] text-[#E28906]"
         : normalized ===
             "failed"
           ? "border-red-500/20 bg-red-500/[0.08] text-red-400"

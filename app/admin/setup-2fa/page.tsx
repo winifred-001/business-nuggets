@@ -151,14 +151,14 @@ export default function AdminSetupTwoFactorPage() {
       <header className="border-b border-white/[0.07] bg-[#111111]">
         <div className="flex h-[72px] items-center px-6 lg:px-10">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-[#C8A35A] font-serif text-[14px] font-bold text-[#080808]">
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-[#E28906] font-serif text-[14px] font-bold text-[#080808]">
               B
             </div>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.05em] text-white">
                 Business Nuggets
               </p>
-              <p className="mt-0.5 text-[8px] text-[#C8A35A]">Admin Console</p>
+              <p className="mt-0.5 text-[8px] text-[#E28906]">Admin Console</p>
             </div>
           </Link>
         </div>
@@ -166,12 +166,12 @@ export default function AdminSetupTwoFactorPage() {
 
       <main className="mx-auto flex min-h-[calc(100vh-72px)] w-full max-w-[760px] items-start justify-center px-5 py-12 sm:py-16">
         <section className="w-full rounded-[10px] border border-white/10 bg-[#111111] p-6 sm:p-8">
-          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md bg-[#C8A35A]/15 text-[#C8A35A]">
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md bg-[#E28906]/15 text-[#E28906]">
             <ShieldCheck size={20} />
           </div>
 
           <div className="mt-5 text-center">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#C8A35A]">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#E28906]">
               Required Security Setup
             </p>
             <h1 className="mt-2 font-serif text-[28px] leading-tight">
@@ -205,7 +205,7 @@ export default function AdminSetupTwoFactorPage() {
                 {recoveryCodes.map((recoveryCode) => (
                   <code
                     key={recoveryCode}
-                    className="rounded border border-white/[0.07] bg-[#151515] px-3 py-2 text-center text-[11px] tracking-[0.08em] text-[#E0C48A]"
+                    className="rounded border border-white/[0.07] bg-[#151515] px-3 py-2 text-center text-[11px] tracking-[0.08em] text-[#E28906]"
                   >
                     {recoveryCode}
                   </code>
@@ -225,7 +225,7 @@ export default function AdminSetupTwoFactorPage() {
                 <button
                   type="button"
                   onClick={returnToLogin}
-                  className="min-h-10 rounded-md bg-[#C8A35A] px-5 text-[10px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                  className="min-h-10 rounded-md bg-[#E28906] px-5 text-[10px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
                 >
                   I Saved Them — Continue to Sign In
                 </button>
@@ -242,7 +242,7 @@ export default function AdminSetupTwoFactorPage() {
               {secret && otpauthUrl && (
                 <div className="mt-8 grid gap-5 md:grid-cols-2">
                   <div className="rounded-lg border border-white/10 bg-[#0D0D0D] p-5">
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                       1. Add to authenticator
                     </p>
                     <p className="mt-3 text-[10px] leading-5 text-white/40">
@@ -251,7 +251,7 @@ export default function AdminSetupTwoFactorPage() {
 
                     <a
                       href={otpauthUrl}
-                      className="bn-button mt-4 inline-flex rounded-md border border-[#C8A35A]/30 px-4 py-2.5 text-[10px] text-[#C8A35A] transition hover:bg-[#C8A35A]/10"
+                      className="bn-button mt-4 inline-flex rounded-md border border-[#E28906]/30 px-4 py-2.5 text-[10px] text-[#E28906] transition hover:bg-[#E28906]/10"
                     >
                       Open in authenticator app
                     </a>
@@ -270,7 +270,7 @@ export default function AdminSetupTwoFactorPage() {
                     onSubmit={confirmSetup}
                     className="rounded-lg border border-white/10 bg-[#0D0D0D] p-5"
                   >
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                       2. Verify the setup
                     </p>
                     <p className="mt-3 text-[10px] leading-5 text-white/40">
@@ -288,13 +288,13 @@ export default function AdminSetupTwoFactorPage() {
                         setError("");
                       }}
                       placeholder="000000"
-                      className="mt-5 h-12 w-full rounded-md border border-white/10 bg-[#151515] px-4 text-center text-[20px] tracking-[0.35em] text-white outline-none placeholder:text-white/15 focus:border-[#C8A35A]/50"
+                      className="mt-5 h-12 w-full rounded-md border border-white/10 bg-[#151515] px-4 text-center text-[20px] tracking-[0.35em] text-white outline-none placeholder:text-white/15 focus:border-[#E28906]/50"
                     />
 
                     <button
                       type="submit"
                       disabled={confirming || code.length !== 6}
-                      className="mt-4 min-h-10 w-full rounded-md bg-[#C8A35A] px-4 text-[10px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:opacity-50"
+                      className="mt-4 min-h-10 w-full rounded-md bg-[#E28906] px-4 text-[10px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:opacity-50"
                     >
                       {confirming ? "Confirming..." : "Enable Two-Factor Authentication"}
                     </button>

@@ -432,7 +432,7 @@ export default function AdminSubscriptionsPage() {
             onClick={
               openCreate
             }
-            className="inline-flex h-9 w-fit items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+            className="inline-flex h-9 w-fit items-center gap-2 rounded-md bg-[#E28906] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
           >
             <Plus
               size={12}
@@ -502,7 +502,7 @@ export default function AdminSubscriptionsPage() {
                       )}
                     </div>
 
-                    <p className="mt-5 font-serif text-[26px] text-[#C8A35A]">
+                    <p className="mt-5 font-serif text-[26px] text-[#E28906]">
                       {formatMoney(
                         plan.priceCents,
                         plan.currency,
@@ -541,7 +541,7 @@ export default function AdminSubscriptionsPage() {
                           plan,
                         )
                       }
-                      className="mt-5 text-[8px] text-[#C8A35A] transition hover:text-[#E0C48A]"
+                      className="mt-5 text-[8px] text-[#E28906] transition hover:text-[#E28906]"
                     >
                       Edit Plan
                     </button>
@@ -829,7 +829,7 @@ export default function AdminSubscriptionsPage() {
                             .checked,
                         )
                       }
-                      className="h-4 w-4 accent-[#C8A35A]"
+                      className="h-4 w-4 accent-[#E28906]"
                     />
                   </label>
                 )}
@@ -856,7 +856,7 @@ export default function AdminSubscriptionsPage() {
                   onClick={
                     savePlan
                   }
-                  className="h-9 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
+                  className="h-9 rounded-md bg-[#E28906] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
                 >
                   {saving
                     ? "Saving..."
@@ -906,7 +906,7 @@ function Field({
               .value,
           )
         }
-        className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[9px] text-white outline-none focus:border-[#C8A35A]/35"
+        className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[9px] text-white outline-none focus:border-[#E28906]/35"
       />
     </div>
   );

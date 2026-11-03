@@ -108,14 +108,14 @@ export default async function TopicDetailPage({
             <div className="w-full">
               <Link
                 href="/library?tab=Topics+Index"
-                className="text-[13px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                className="text-[13px] font-medium text-[#E28906] transition hover:text-[#E28906]"
               >
                 ← Core Wisdom Pathway
               </Link>
 
               <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-[760px]">
-                  <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[#C8A35A]">
+                  <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[#E28906]">
                     Core Wisdom Pathway
                   </p>
 
@@ -149,7 +149,7 @@ export default async function TopicDetailPage({
               </h2>
 
               <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-                <div className="overflow-hidden rounded-xl border border-[#C8A35A]/55 bg-[#111111]">
+                <div className="overflow-hidden rounded-xl border border-[#E28906]/55 bg-[#111111]">
                   <div className="grid md:grid-cols-[270px_minmax(0,1fr)]">
                     <div className="relative min-h-[250px]">
                       <Image
@@ -161,14 +161,14 @@ export default async function TopicDetailPage({
                       />
 
                       {featured.isGold && (
-                        <span className="absolute right-3 top-3 rounded border border-[#C8A35A]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E0C48A]">
+                        <span className="absolute right-3 top-3 rounded border border-[#E28906]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E28906]">
                           GOLD
                         </span>
                       )}
                     </div>
 
                     <div className="flex flex-col justify-center p-6 lg:p-7">
-                      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                         Featured Wisdom · {featured.scriptureRef}
                       </p>
 
@@ -185,7 +185,7 @@ export default async function TopicDetailPage({
                       <div className="mt-5 flex flex-wrap items-center gap-3">
                         <Link
                           href={`/nugget/${featured.slug}/audio`}
-                          className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                          className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#E28906] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
                         >
                           <Headphones size={15} />
                           Listen Audio
@@ -193,7 +193,7 @@ export default async function TopicDetailPage({
 
                         <Link
                           href={`/nugget/${featured.slug}`}
-                          className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 px-5 text-[13px] font-medium text-white transition hover:border-[#C8A35A]/50"
+                          className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 px-5 text-[13px] font-medium text-white transition hover:border-[#E28906]/50"
                         >
                           Read Commentary
                           <ArrowRight size={14} />
@@ -213,8 +213,8 @@ export default async function TopicDetailPage({
                       href={`/topics/${slug}`}
                       className={`bn-button ${`block rounded-md border px-3 py-2.5 text-[13px] transition ${
                         !selectedSegment
-                          ? "border-[#C8A35A]/45 bg-[#C8A35A]/10 text-[#C8A35A]"
-                          : "border-white/10 bg-[#161616] text-white/50 hover:border-[#C8A35A]/30"
+                          ? "border-[#E28906]/45 bg-[#E28906]/10 text-[#E28906]"
+                          : "border-white/10 bg-[#161616] text-white/50 hover:border-[#E28906]/30"
                       }`}`}
                     >
                       All {topic}
@@ -226,8 +226,8 @@ export default async function TopicDetailPage({
                         href={`/topics/${slug}?segment=${encodeURIComponent(segment)}`}
                         className={`bn-button ${`block rounded-md border px-3 py-2.5 text-[13px] transition ${
                           selectedSegment === segment
-                            ? "border-[#C8A35A]/45 bg-[#C8A35A]/10 text-[#C8A35A]"
-                            : "border-white/10 bg-[#161616] text-white/50 hover:border-[#C8A35A]/30 hover:text-white"
+                            ? "border-[#E28906]/45 bg-[#E28906]/10 text-[#E28906]"
+                            : "border-white/10 bg-[#161616] text-white/50 hover:border-[#E28906]/30 hover:text-white"
                         }`}`}
                       >
                         {segment}
@@ -260,7 +260,7 @@ export default async function TopicDetailPage({
               {selectedSegment && (
                 <Link
                   href={`/topics/${slug}`}
-                  className="text-[13px] font-medium text-[#C8A35A]"
+                  className="text-[13px] font-medium text-[#E28906]"
                 >
                   Clear segment
                 </Link>
@@ -273,7 +273,7 @@ export default async function TopicDetailPage({
                   <Link
                     key={nugget.slug}
                     href={`/nugget/${nugget.slug}`}
-                    className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#C8A35A]/45"
+                    className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#E28906]/45"
                   >
                     <div className="relative h-[185px] shrink-0 overflow-hidden">
                       <Image
@@ -285,7 +285,7 @@ export default async function TopicDetailPage({
                       />
 
                       {nugget.isGold && (
-                        <span className="absolute right-3 top-3 rounded border border-[#C8A35A]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E0C48A]">
+                        <span className="absolute right-3 top-3 rounded border border-[#E28906]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E28906]">
                           GOLD
                         </span>
                       )}
@@ -293,7 +293,7 @@ export default async function TopicDetailPage({
 
                     <div className="flex min-h-0 flex-1 flex-col p-5">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="min-w-0 line-clamp-1 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
+                        <span className="min-w-0 line-clamp-1 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#E28906]">
                           {nugget.tag}
                         </span>
 
@@ -311,7 +311,7 @@ export default async function TopicDetailPage({
                         {nugget.scriptureRef}
                       </p>
 
-                      <span className="mt-auto inline-flex items-center gap-2 pt-5 text-[13px] font-medium text-[#C8A35A]">
+                      <span className="mt-auto inline-flex items-center gap-2 pt-5 text-[13px] font-medium text-[#E28906]">
                         Listen & Read
                         <ArrowRight size={13} />
                       </span>

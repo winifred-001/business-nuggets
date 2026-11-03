@@ -327,7 +327,7 @@ export function ProfileImageEditor() {
             onClick={() =>
               inputRef.current?.click()
             }
-            className="bn-button inline-flex min-h-9 items-center gap-2 rounded-md border border-[#C8A35A]/50 px-3 text-[10px] font-semibold text-[#C8A35A] transition hover:bg-[#C8A35A]/10 disabled:cursor-not-allowed disabled:opacity-50"
+            className="bn-button inline-flex min-h-9 items-center gap-2 rounded-md border border-[#E28906]/50 px-3 text-[10px] font-semibold text-[#E28906] transition hover:bg-[#E28906]/10 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Camera size={13} />
             {saving

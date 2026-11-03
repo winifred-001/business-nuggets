@@ -79,8 +79,8 @@ export default function FollowChallengeButton({
       onClick={toggleFollow}
       className={`inline-flex min-h-11 w-fit items-center gap-2 rounded-lg px-5 text-[13px] font-semibold transition ${
         followed
-          ? "border border-[#C8A35A] bg-transparent text-[#C8A35A]"
-          : "bg-[#C8A35A] text-[#080808] hover:bg-[#E0C48A]"
+          ? "border border-[#E28906] bg-transparent text-[#E28906]"
+          : "bg-[#E28906] text-[#080808] hover:bg-[#E28906]"
       }`}
     >
       {followed ? (

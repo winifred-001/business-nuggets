@@ -80,11 +80,11 @@ export default function RegisterPage() {
       <main className="flex flex-1 items-center justify-center px-5 py-10 sm:px-6 sm:py-14 md:px-8 lg:px-10 lg:py-16">
         <section className="w-full max-w-[560px] rounded-2xl border border-white/10 bg-[#111111] p-5 sm:p-8 md:p-10">
           <div className="mb-7 text-center">
-            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-[#C8A35A] font-serif text-[20px] font-bold text-[#080808]">
+            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-[#E28906] font-serif text-[20px] font-bold text-[#080808]">
               B
             </div>
 
-            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#C8A35A]">
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#E28906]">
               Business Nuggets
             </p>
 
@@ -109,7 +109,7 @@ export default function RegisterPage() {
                 placeholder="e.g. Nehemiah Vance"
                 required
                 autoComplete="name"
-                className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
+                className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#E28906]"
               />
             </div>
 
@@ -124,7 +124,7 @@ export default function RegisterPage() {
                 placeholder="e.g. builder@jerusalemcorp.org"
                 required
                 autoComplete="email"
-                className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
+                className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#E28906]"
               />
             </div>
 
@@ -142,7 +142,7 @@ export default function RegisterPage() {
                   required
                   minLength={8}
                   autoComplete="new-password"
-                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
+                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#E28906]"
                 />
               </div>
 
@@ -159,7 +159,7 @@ export default function RegisterPage() {
                   required
                   minLength={8}
                   autoComplete="new-password"
-                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
+                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#E28906]"
                 />
               </div>
             </div>
@@ -185,7 +185,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="min-h-12 w-full rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-12 w-full rounded-lg bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
@@ -195,7 +195,7 @@ export default function RegisterPage() {
             Already have an account?{" "}
             <AuthContinueLink
               href="/login"
-              className="font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Sign in
             </AuthContinueLink>

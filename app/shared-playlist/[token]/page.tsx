@@ -29,14 +29,14 @@ export default async function SharedPlaylistPage({ params }: { params: Promise<{
     <div className="flex min-h-screen flex-col bg-[#080808] text-white">
       <Navbar />
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
-        <p className="mb-3 text-sm uppercase text-[#C8A35A]">Shared Playlist</p>
+        <p className="mb-3 text-sm uppercase text-[#E28906]">Shared Playlist</p>
         <h1 className="bn-hero-title font-serif">{playlist.name}</h1>
         {playlist.description && <p className="mt-4 whitespace-pre-wrap text-white/70">{playlist.description}</p>}
         {items.length ? (
           <ol className="mt-8 divide-y divide-white/10 border-y border-white/10">
             {items.map(nugget => (
               <li key={nugget.id} className="py-4">
-                <Link className="text-[#C8A35A] hover:underline" href={`/nugget/${nugget.slug}`}>{nugget.title}</Link>
+                <Link className="text-[#E28906] hover:underline" href={`/nugget/${nugget.slug}`}>{nugget.title}</Link>
                 <p className="mt-1 text-sm text-white/60">{nugget.scriptureRef}</p>
               </li>
             ))}

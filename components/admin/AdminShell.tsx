@@ -158,7 +158,7 @@ export default function AdminShell({
             aria-label="Business Nuggets Admin Console"
           >
             <BrandMark />
-            <span className="text-[12px] leading-none text-[#C8A35A]">
+            <span className="text-[12px] leading-none text-[#E28906]">
               Admin Console
             </span>
           </Link>
@@ -167,7 +167,7 @@ export default function AdminShell({
             type="button"
             onClick={() => setMobileOpen(false)}
             aria-label="Close navigation"
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-white/50 transition hover:bg-white/[0.04] hover:text-[#E0C48A] lg:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-white/50 transition hover:bg-white/[0.04] hover:text-[#E28906] lg:hidden"
           >
             <X size={20} />
           </button>
@@ -187,7 +187,7 @@ export default function AdminShell({
                 onClick={() => setMobileOpen(false)}
                 className={`bn-button ${`mb-1.5 flex min-h-11 items-center gap-3 rounded-lg px-3 text-[14px] transition ${
                   active
-                    ? "bg-[#C8A35A]/15 text-[#E0C48A]"
+                    ? "bg-[#E28906]/15 text-[#E28906]"
                     : "text-white/55 hover:bg-white/[0.04] hover:text-white"
                 }`}`}
               >
@@ -200,7 +200,7 @@ export default function AdminShell({
 
         <div className="border-t border-white/[0.07] p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C8A35A]/15 text-[13px] font-semibold text-[#C8A35A]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E28906]/15 text-[13px] font-semibold text-[#E28906]">
               {user?.name?.slice(0, 2).toUpperCase() || "AD"}
             </div>
 
@@ -229,7 +229,7 @@ export default function AdminShell({
             type="button"
             onClick={() => setMobileOpen(true)}
             aria-label="Open admin navigation"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/10 text-white/65 transition hover:border-[#C8A35A]/35 hover:text-[#E0C48A] lg:hidden"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/10 text-white/65 transition hover:border-[#E28906]/35 hover:text-[#E28906] lg:hidden"
           >
             <Menu size={20} />
           </button>
@@ -242,21 +242,21 @@ export default function AdminShell({
             <input
               type="text"
               placeholder="Search nuggets, users, topics..."
-              className="h-11 w-full rounded-lg border border-white/10 bg-[#080808] pl-10 pr-4 text-[14px] text-white outline-none placeholder:text-white/25 focus:border-[#C8A35A]/45"
+              className="h-11 w-full rounded-lg border border-white/10 bg-[#080808] pl-10 pr-4 text-[14px] text-white outline-none placeholder:text-white/25 focus:border-[#E28906]/45"
             />
           </div>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
-              className="bn-button inline-flex min-h-11 items-center rounded-lg px-2 text-[14px] text-white/45 transition hover:text-[#E0C48A] sm:px-3"
+              className="bn-button inline-flex min-h-11 items-center rounded-lg px-2 text-[14px] text-white/45 transition hover:text-[#E28906] sm:px-3"
             >
               View Site
             </Link>
 
             <div className="hidden h-7 w-px bg-white/[0.07] sm:block" />
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C8A35A]/15 text-[13px] font-semibold text-[#C8A35A]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E28906]/15 text-[13px] font-semibold text-[#E28906]">
               {user?.name?.slice(0, 2).toUpperCase() || "AD"}
             </div>
           </div>

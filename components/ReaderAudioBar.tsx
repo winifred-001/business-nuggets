@@ -66,7 +66,7 @@ export default function ReaderAudioBar({ title, subtitle, slug, coverImage, audi
                 onClick={() => setShuffle(value => !value)}
                 className="text-[#756E64] transition hover:text-[#15120E]"
               >
-                <Shuffle size={14} className={shuffle ? "text-[#9A7839]" : undefined} />
+                <Shuffle size={14} className={shuffle ? "text-[#E28906]" : undefined} />
               </button>
 
               <button
@@ -84,7 +84,7 @@ export default function ReaderAudioBar({ title, subtitle, slug, coverImage, audi
                 aria-label={playing ? "Pause" : "Play"}
                 disabled={!audioSrc}
                 onClick={togglePlay}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#C8A35A] text-[#15120E]"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E28906] text-[#15120E]"
               >
                 {playing ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
               </button>
@@ -107,7 +107,7 @@ export default function ReaderAudioBar({ title, subtitle, slug, coverImage, audi
                 onClick={toggleRepeat}
                 className="text-[#756E64] transition hover:text-[#15120E]"
               >
-                <Repeat2 size={14} className={repeat ? "text-[#9A7839]" : undefined} />
+                <Repeat2 size={14} className={repeat ? "text-[#E28906]" : undefined} />
               </button>
             </div>
 
@@ -117,7 +117,7 @@ export default function ReaderAudioBar({ title, subtitle, slug, coverImage, audi
               </span>
 
               <div className="relative h-[3px] flex-1 rounded-full bg-[#D8CDBB]">
-                <div className="h-full rounded-full bg-[#C8A35A]" style={{ width: `${duration ? currentTime / duration * 100 : 0}%` }} />
+                <div className="h-full rounded-full bg-[#E28906]" style={{ width: `${duration ? currentTime / duration * 100 : 0}%` }} />
                 <input aria-label="Audio progress" type="range" min={0} max={duration || 1} value={currentTime} disabled={!duration} onChange={event => seekTo(Number(event.target.value))} className="absolute inset-x-0 -top-2 h-5 w-full cursor-pointer opacity-0" />
               </div>
 
@@ -132,7 +132,7 @@ export default function ReaderAudioBar({ title, subtitle, slug, coverImage, audi
             aria-label={playing ? "Pause" : "Play"}
                 disabled={!audioSrc}
                 onClick={togglePlay}
-            className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C8A35A] text-[#15120E] md:hidden"
+            className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E28906] text-[#15120E] md:hidden"
           >
             {playing ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
           </button>
@@ -151,7 +151,7 @@ export default function ReaderAudioBar({ title, subtitle, slug, coverImage, audi
             </Link>
           </div>
         </div>
-        {(audioError || !audioSrc) && <p role="status" className="mx-auto max-w-[1180px] px-5 pb-2 text-[12px] text-[#9A7839] sm:px-8 lg:px-10">{audioError || "No commentary audio has been attached to this Nugget yet."}</p>}
+        {(audioError || !audioSrc) && <p role="status" className="mx-auto max-w-[1180px] px-5 pb-2 text-[12px] text-[#E28906] sm:px-8 lg:px-10">{audioError || "No commentary audio has been attached to this Nugget yet."}</p>}
       </div>
   );
 }

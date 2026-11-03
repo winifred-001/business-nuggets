@@ -746,7 +746,7 @@ export default function AdminSchedulePage() {
             onClick={
               autoFillWeek
             }
-            className="h-9 w-fit rounded-md border border-white/10 px-4 text-[9px] text-white/55 transition hover:border-[#C8A35A]/35 hover:text-white disabled:opacity-40"
+            className="h-9 w-fit rounded-md border border-white/10 px-4 text-[9px] text-white/55 transition hover:border-[#E28906]/35 hover:text-white disabled:opacity-40"
           >
             Auto-Fill Week
           </button>
@@ -854,7 +854,7 @@ export default function AdminSchedulePage() {
                           );
                         }
                       }}
-                      className="min-h-[80px] rounded-md border border-white/[0.07] bg-[#080808] p-2 text-left transition hover:border-[#C8A35A]/30 sm:min-h-[100px]"
+                      className="min-h-[80px] rounded-md border border-white/[0.07] bg-[#080808] p-2 text-left transition hover:border-[#E28906]/30 sm:min-h-[100px]"
                     >
                       <span className="text-[8px] text-white/45">
                         {day}
@@ -874,9 +874,9 @@ export default function AdminSchedulePage() {
                                 key={
                                   item.id
                                 }
-                                className="rounded bg-[#C8A35A]/15 px-1.5 py-1"
+                                className="rounded bg-[#E28906]/15 px-1.5 py-1"
                               >
-                                <p className="truncate text-[6px] text-[#E0C48A] sm:text-[7px]">
+                                <p className="truncate text-[6px] text-[#E28906] sm:text-[7px]">
                                   {formatTime(
                                     item.scheduledFor,
                                   )}{" "}
@@ -924,7 +924,7 @@ export default function AdminSchedulePage() {
                         item,
                       )
                     }
-                    className="w-full rounded-md border border-white/[0.07] bg-[#080808] p-3 text-left transition hover:border-[#C8A35A]/30"
+                    className="w-full rounded-md border border-white/[0.07] bg-[#080808] p-3 text-left transition hover:border-[#E28906]/30"
                   >
                     <p className="truncate text-[9px] text-white/65">
                       {item
@@ -964,7 +964,7 @@ export default function AdminSchedulePage() {
               onClick={() =>
                 openCreate()
               }
-              className="mt-auto inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#C8A35A] text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="mt-auto inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#E28906] text-[9px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
             >
               <Plus
                 size={12}
@@ -1159,7 +1159,7 @@ export default function AdminSchedulePage() {
                   onClick={
                     saveSchedule
                   }
-                  className="h-9 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
+                  className="h-9 rounded-md bg-[#E28906] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
                 >
                   {saving
                     ? "Saving..."

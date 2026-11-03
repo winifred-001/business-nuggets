@@ -105,7 +105,7 @@ export default function ResetPasswordPage() {
 
               <Link
                 href="/forgot-password"
-                className="bn-button mt-5 flex min-h-12 w-full items-center justify-center rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                className="bn-button mt-5 flex min-h-12 w-full items-center justify-center rounded-lg bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
               >
                 Request a New Link
               </Link>
@@ -132,7 +132,7 @@ export default function ResetPasswordPage() {
                   }}
                   minLength={8}
                   required
-                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none focus:border-[#C8A35A]"
+                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none focus:border-[#E28906]"
                 />
               </div>
 
@@ -156,7 +156,7 @@ export default function ResetPasswordPage() {
                   }}
                   minLength={8}
                   required
-                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none focus:border-[#C8A35A]"
+                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none focus:border-[#E28906]"
                 />
               </div>
 
@@ -172,7 +172,7 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={loading || !tokenReady}
-                className="min-h-12 w-full rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-12 w-full rounded-lg bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? "Resetting..." : "Reset Password"}
               </button>
@@ -181,7 +181,7 @@ export default function ResetPasswordPage() {
 
           <Link
             href="/login"
-            className="bn-button mt-4 flex min-h-12 w-full items-center justify-center rounded-lg border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/65 transition hover:border-[#C8A35A]/35 hover:text-[#E0C48A]"
+            className="bn-button mt-4 flex min-h-12 w-full items-center justify-center rounded-lg border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/65 transition hover:border-[#E28906]/35 hover:text-[#E28906]"
           >
             Back to Sign In
           </Link>

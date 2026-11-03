@@ -8,7 +8,7 @@ export default function NuggetCard({
   nugget: Nugget;
 }) {
   return (
-    <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#111111] text-[#FAF9F6] transition hover:border-[#C8A35A]/50">
+    <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#111111] text-[#FAF9F6] transition hover:border-[#E28906]/50">
       <Link
         href={`/nugget/${nugget.slug}`}
         aria-label={`Open ${nugget.title}`}
@@ -17,12 +17,12 @@ export default function NuggetCard({
         <ContentImage src={nugget.image} alt={nugget.title} />
 
         <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
-          <span className="min-w-0 break-words rounded-md bg-[#C8A35A] px-2.5 py-1.5 text-[12px] font-semibold leading-4 text-[#080808]">
+          <span className="min-w-0 break-words rounded-md bg-[#E28906] px-2.5 py-1.5 text-[12px] font-semibold leading-4 text-[#080808]">
             {nugget.tag}
           </span>
 
           {nugget.isGold && (
-            <span className="shrink-0 rounded-md border border-[#C8A35A]/60 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold leading-4 text-[#E0C48A] backdrop-blur-sm">
+            <span className="shrink-0 rounded-md border border-[#E28906]/60 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold leading-4 text-[#E28906] backdrop-blur-sm">
               GOLD
             </span>
           )}
@@ -33,7 +33,7 @@ export default function NuggetCard({
         <h3 className="break-words font-serif text-[22px] leading-7 text-[#FAF9F6]">
           <Link
             href={`/nugget/${nugget.slug}`}
-            className="transition hover:text-[#E0C48A]"
+            className="transition hover:text-[#E28906]"
           >
             {nugget.title}
           </Link>
@@ -45,7 +45,7 @@ export default function NuggetCard({
 
         <Link
           href={`/nugget/${nugget.slug}/reader`}
-          className="bn-button mt-auto inline-flex min-h-11 items-center pt-4 text-[14px] font-semibold text-[#C8A35A] transition hover:text-[#E0C48A]"
+          className="bn-button mt-auto inline-flex min-h-11 items-center pt-4 text-[14px] font-semibold text-[#E28906] transition hover:text-[#E28906]"
         >
           Read wisdom →
         </Link>

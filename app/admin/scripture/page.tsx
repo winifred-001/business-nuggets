@@ -372,8 +372,8 @@ export default function AdminScripturePage() {
           </div>
 
           <div className="flex flex-wrap justify-end gap-2">
-            <button type="button" onClick={() => setVerseMode("browse")} className="bn-button rounded-md border border-white/15 px-4 py-2 text-[13px] text-white/60 transition hover:border-[#C8A35A]/50 hover:text-[#E0C48A]">View Verses ({verseCount})</button>
-            <button type="button" onClick={() => setVerseMode("import")} className="bn-button rounded-md border border-[#C8A35A]/40 px-4 py-2 text-[13px] text-[#C8A35A] transition hover:bg-[#C8A35A]/15">Import Verses</button>
+            <button type="button" onClick={() => setVerseMode("browse")} className="bn-button rounded-md border border-white/15 px-4 py-2 text-[13px] text-white/60 transition hover:border-[#E28906]/50 hover:text-[#E28906]">View Verses ({verseCount})</button>
+            <button type="button" onClick={() => setVerseMode("import")} className="bn-button rounded-md border border-[#E28906]/40 px-4 py-2 text-[13px] text-[#E28906] transition hover:bg-[#E28906]/15">Import Verses</button>
           </div>
         </section>
 
@@ -467,7 +467,7 @@ export default function AdminScripturePage() {
                             book,
                           )
                         }
-                        className="inline-flex items-center gap-2 text-[8px] text-[#C8A35A] hover:text-[#E0C48A]"
+                        className="inline-flex items-center gap-2 text-[8px] text-[#E28906] hover:text-[#E28906]"
                       >
                         Manage
 
@@ -559,7 +559,7 @@ export default function AdminScripturePage() {
                 onClick={
                   addBook
                 }
-                className="mt-4 h-10 w-full rounded-md bg-[#C8A35A] text-[9px] font-semibold text-[#080808] hover:bg-[#E0C48A] disabled:opacity-50"
+                className="mt-4 h-10 w-full rounded-md bg-[#E28906] text-[9px] font-semibold text-[#080808] hover:bg-[#E28906] disabled:opacity-50"
               >
                 Add to Index
               </button>
@@ -567,8 +567,8 @@ export default function AdminScripturePage() {
 
             {/* GUIDELINES */}
 
-            <section className="rounded-[10px] border border-[#C8A35A]/20 bg-[#C8A35A]/10 p-5">
-              <h2 className="text-[9px] font-semibold text-[#C8A35A]">
+            <section className="rounded-[10px] border border-[#E28906]/20 bg-[#E28906]/10 p-5">
+              <h2 className="text-[9px] font-semibold text-[#E28906]">
                 Index Guidelines
               </h2>
 
@@ -584,8 +584,8 @@ export default function AdminScripturePage() {
 
             {/* UNLINKED */}
 
-            <section className="rounded-[10px] border border-[#C8A35A]/20 bg-[#C8A35A]/10 p-5">
-              <h2 className="text-[9px] font-semibold text-[#C8A35A]">
+            <section className="rounded-[10px] border border-[#E28906]/20 bg-[#E28906]/10 p-5">
+              <h2 className="text-[9px] font-semibold text-[#E28906]">
                 Unlinked Nuggets
               </h2>
 
@@ -604,7 +604,7 @@ export default function AdminScripturePage() {
 
               <a
                 href="/admin/nuggets"
-                className="mt-3 inline-block text-[8px] text-[#C8A35A]"
+                className="mt-3 inline-block text-[8px] text-[#E28906]"
               >
                 Review now →
               </a>
@@ -700,7 +700,7 @@ export default function AdminScripturePage() {
                         .checked,
                     )
                   }
-                  className="h-4 w-4 accent-[#C8A35A]"
+                  className="h-4 w-4 accent-[#E28906]"
                 />
               </label>
 
@@ -723,7 +723,7 @@ export default function AdminScripturePage() {
                     saveEdit
                   }
                   disabled={saving}
-                  className="h-9 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
+                  className="h-9 rounded-md bg-[#E28906] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
                 >
                   Save Changes
                 </button>

@@ -35,7 +35,7 @@ export default async function AuthorsPage() {
 
         <Link
           href="/"
-          className="text-[10px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+          className="text-[10px] font-medium text-[#E28906] transition hover:text-[#E28906]"
         >
           ← Home
         </Link>
@@ -69,7 +69,7 @@ export default async function AuthorsPage() {
                   }
                 </h2>
 
-                <p className="mt-4 text-[8px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                <p className="mt-4 text-[8px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                   {
                     author.roleLabel
                   }
@@ -100,9 +100,9 @@ export default async function AuthorsPage() {
                           href={
                             work.href
                           }
-                          className="group flex items-center gap-4 rounded-[8px] border border-white/10 bg-[#0C0C0C] p-3 transition hover:border-[#C8A35A]/35"
+                          className="group flex items-center gap-4 rounded-[8px] border border-white/10 bg-[#0C0C0C] p-3 transition hover:border-[#E28906]/35"
                         >
-                          <div className="flex h-[52px] w-[62px] shrink-0 items-center justify-center rounded-md border border-white/[0.06] bg-[#181818] text-[#C8A35A]">
+                          <div className="flex h-[52px] w-[62px] shrink-0 items-center justify-center rounded-md border border-white/[0.06] bg-[#181818] text-[#E28906]">
                             <Music2
                               size={
                                 19
@@ -124,7 +124,7 @@ export default async function AuthorsPage() {
                             </p>
                           </div>
 
-                          <span className="hidden shrink-0 text-[8px] text-[#C8A35A] sm:block">
+                          <span className="hidden shrink-0 text-[8px] text-[#E28906] sm:block">
                             {
                               work.type
                             }{" "}
@@ -137,7 +137,7 @@ export default async function AuthorsPage() {
 
                 <Link
                   href={`/authors/${author.slug}`}
-                  className="bn-button mt-5 inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                  className="bn-button mt-5 inline-flex min-h-9 items-center gap-2 rounded-md bg-[#E28906] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
                 >
                   View{" "}
                   {author.name}
@@ -175,7 +175,7 @@ export default async function AuthorsPage() {
           <div className="mt-5 flex flex-wrap gap-5">
             <Link
               href="/musicals"
-              className="text-[9px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="text-[9px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Explore Wisdom
               Musicals →
@@ -187,7 +187,7 @@ export default async function AuthorsPage() {
 
             <Link
               href="/philosophy"
-              className="text-[9px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="text-[9px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Our Philosophy →
             </Link>

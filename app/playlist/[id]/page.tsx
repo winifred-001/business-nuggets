@@ -368,7 +368,7 @@ export default function PlaylistDetailPage() {
 
             <Link
               href="/library"
-              className="bn-button mt-6 inline-flex rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
+              className="bn-button mt-6 inline-flex rounded-lg bg-[#E28906] px-5 py-3 text-[13px] font-semibold text-[#080808]"
             >
               Back to Library
             </Link>
@@ -404,7 +404,7 @@ export default function PlaylistDetailPage() {
 
               {/* INFO */}
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#C8A35A]">
+                <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#E28906]">
                   Curated Personal Playlist
                 </p>
 
@@ -452,7 +452,7 @@ export default function PlaylistDetailPage() {
                   {firstNugget ? (
                     <Link
                       href={`/nugget/${firstNugget.slug}/audio?playlist=${playlist.id}`}
-                      className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                      className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#E28906] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
                     >
                       <Play
                         size={14}
@@ -465,7 +465,7 @@ export default function PlaylistDetailPage() {
                     <button
                       disabled
                       type="button"
-                      className="inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-lg bg-[#C8A35A]/40 px-5 text-[13px] font-semibold text-[#080808]/50"
+                      className="inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-lg bg-[#E28906]/40 px-5 text-[13px] font-semibold text-[#080808]/50"
                     >
                       <Play size={14} />
 
@@ -483,8 +483,8 @@ export default function PlaylistDetailPage() {
                     }
                     className={`inline-flex min-h-11 items-center gap-2 rounded-lg border px-5 text-[13px] font-medium transition ${
                       editMode
-                        ? "border-[#C8A35A] bg-[#C8A35A]/10 text-[#C8A35A]"
-                        : "border-white/15 text-white/65 hover:border-[#C8A35A]/50"
+                        ? "border-[#E28906] bg-[#E28906]/10 text-[#E28906]"
+                        : "border-white/15 text-white/65 hover:border-[#E28906]/50"
                     }`}
                   >
                     {editMode ? (
@@ -519,7 +519,7 @@ export default function PlaylistDetailPage() {
                 </div>
 
                 {message && (
-                  <p className="mt-4 text-[13px] text-[#C8A35A]">
+                  <p className="mt-4 text-[13px] text-[#E28906]">
                     {message}
                   </p>
                 )}
@@ -545,7 +545,7 @@ export default function PlaylistDetailPage() {
                         key={
                           nugget.id
                         }
-                        className="grid gap-4 rounded-lg border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/35 sm:grid-cols-[28px_36px_64px_minmax(0,1fr)_auto] sm:items-center"
+                        className="grid gap-4 rounded-lg border border-white/10 bg-[#111111] p-4 transition hover:border-[#E28906]/35 sm:grid-cols-[28px_36px_64px_minmax(0,1fr)_auto] sm:items-center"
                       >
                         {/* DRAG DECORATION */}
                         <GripVertical
@@ -580,14 +580,14 @@ export default function PlaylistDetailPage() {
 
                         {/* DETAILS */}
                         <div className="min-w-0">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#C8A35A]">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#E28906]">
                             {nugget.tag ||
                               nugget.topic}
                           </p>
 
                           <Link
                             href={`/nugget/${nugget.slug}`}
-                            className="mt-1 block truncate font-serif text-[16px] text-[#FAF9F6] transition hover:text-[#E0C48A]"
+                            className="mt-1 block truncate font-serif text-[16px] text-[#FAF9F6] transition hover:text-[#E28906]"
                           >
                             {nugget.title}
                           </Link>
@@ -604,7 +604,7 @@ export default function PlaylistDetailPage() {
                           <Link
                             href={`/nugget/${nugget.slug}/musical`}
                             aria-label="Open Musical"
-                            className="text-[#C8A35A] transition hover:text-[#E0C48A]"
+                            className="text-[#E28906] transition hover:text-[#E28906]"
                           >
                             <Headphones
                               size={
@@ -640,7 +640,7 @@ export default function PlaylistDetailPage() {
                           <Link
                             href={`/nugget/${nugget.slug}/audio?playlist=${playlist.id}`}
                             aria-label={`Play ${nugget.title}`}
-                            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#C8A35A]/40 text-[#C8A35A] transition hover:bg-[#C8A35A] hover:text-[#080808]"
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E28906]/40 text-[#E28906] transition hover:bg-[#E28906] hover:text-[#080808]"
                           >
                             <Play
                               size={
@@ -682,7 +682,7 @@ export default function PlaylistDetailPage() {
               <div className="rounded-xl border border-white/10 bg-[#111111] p-10 text-center">
                 <ListMusic
                   size={28}
-                  className="mx-auto text-[#C8A35A]"
+                  className="mx-auto text-[#E28906]"
                 />
 
                 <h2 className="mt-4 font-serif text-[28px]">
@@ -697,7 +697,7 @@ export default function PlaylistDetailPage() {
 
                 <Link
                   href="/library"
-                  className="bn-button mt-6 inline-flex rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
+                  className="bn-button mt-6 inline-flex rounded-lg bg-[#E28906] px-5 py-3 text-[13px] font-semibold text-[#080808]"
                 >
                   Browse Library
                 </Link>

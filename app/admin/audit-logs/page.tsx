@@ -249,7 +249,7 @@ export default function AdminAuditLogsPage() {
               logs.length ===
               0
             }
-            className="h-9 w-fit rounded-md border border-white/10 px-5 text-[8px] text-white/50 transition hover:border-[#C8A35A]/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+            className="h-9 w-fit rounded-md border border-white/10 px-5 text-[8px] text-white/50 transition hover:border-[#E28906]/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
           >
             Export Logs
           </button>

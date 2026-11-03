@@ -59,7 +59,7 @@ export const docsHtml = `<!doctype html>
       .swagger-ui .topbar-wrapper img { display: none; }
       .swagger-ui .topbar-wrapper::before {
         content: "BUSINESS NUGGETS API";
-        color: #e0c48a;
+        color: #E28906;
         font: 700 15px/1.2 Arial, sans-serif;
         letter-spacing: .08em;
       }

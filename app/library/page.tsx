@@ -533,7 +533,7 @@ function LibraryContent() {
   return (
     <main>
       <dialog ref={upgradeDialog} aria-labelledby="library-upgrade-title"
-        className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-32px)] max-w-[520px] overflow-y-auto rounded-xl border border-[#C8A35A]/40 bg-[#111111] p-6 text-[#FAF9F6] shadow-2xl backdrop:bg-black/75 sm:p-8">
+        className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-32px)] max-w-[520px] overflow-y-auto rounded-xl border border-[#E28906]/40 bg-[#111111] p-6 text-[#FAF9F6] shadow-2xl backdrop:bg-black/75 sm:p-8">
         <LibraryUpgradePrompt onReturn={() => upgradeDialog.current?.close()} dialog />
       </dialog>
       {/* PAGE HEADER */}
@@ -561,14 +561,14 @@ function LibraryContent() {
                 }
                 className={`relative shrink-0 pb-4 text-[13px] transition ${
                   activeTab === tab
-                    ? "font-medium text-[#C8A35A]"
+                    ? "font-medium text-[#E28906]"
                     : "text-white/50 hover:text-white"
                 }`}
               >
                 {tab}
 
                 {activeTab === tab && (
-                  <span className="absolute bottom-0 left-0 h-[2px] w-full bg-[#C8A35A]" />
+                  <span className="absolute bottom-0 left-0 h-[2px] w-full bg-[#E28906]" />
                 )}
               </button>
             ))}
@@ -660,7 +660,7 @@ function LibraryContent() {
                   selectedBook) && (
                   <Link
                     href="/library"
-                    className="mt-7 inline-block text-[13px] font-medium text-[#C8A35A] hover:text-[#E0C48A]"
+                    className="mt-7 inline-block text-[13px] font-medium text-[#E28906] hover:text-[#E28906]"
                   >
                     Clear filters
                   </Link>
@@ -745,7 +745,7 @@ function LibraryContent() {
 
                     <Link
                       href="/library"
-                      className="bn-button mt-6 inline-flex rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
+                      className="bn-button mt-6 inline-flex rounded-lg bg-[#E28906] px-5 py-3 text-[13px] font-semibold text-[#080808]"
                     >
                       Clear filters
                     </Link>
@@ -804,7 +804,7 @@ function LibraryContent() {
                           className={`flex h-9 w-9 items-center justify-center rounded-md border text-[13px] ${
                             safePage ===
                             number
-                              ? "border-[#C8A35A] bg-[#C8A35A] font-semibold text-[#080808]"
+                              ? "border-[#E28906] bg-[#E28906] font-semibold text-[#080808]"
                               : "border-white/10 text-white/50"
                           }`}
                         >
@@ -888,7 +888,7 @@ function LibraryContent() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/15" />
 
                     <div className="absolute inset-0 flex flex-col p-5">
-                      <div className="flex items-center justify-between text-[#C8A35A]">
+                      <div className="flex items-center justify-between text-[#E28906]">
                         <span className="text-xl">
                           ◎
                         </span>
@@ -917,7 +917,7 @@ function LibraryContent() {
                           }
                         </p>
 
-                        <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#C8A35A]">
+                        <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#E28906]">
                           Explore topic
 
                           <ArrowRight
@@ -964,13 +964,13 @@ function LibraryContent() {
                     href={`/challenges/${slugify(
                    item.title,
                    )}`}
-                    className={`flex min-w-0 flex-col overflow-hidden rounded-xl border bg-[#111111] p-6 transition hover:border-[#C8A35A]/50 ${
+                    className={`flex min-w-0 flex-col overflow-hidden rounded-xl border bg-[#111111] p-6 transition hover:border-[#E28906]/50 ${
                       index === 1
-                        ? "border-[#C8A35A]/70"
+                        ? "border-[#E28906]/70"
                         : "border-white/10"
                     }`}
                   >
-                    <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                    <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                       {
                         item.count
                       }{" "}
@@ -1007,7 +1007,7 @@ function LibraryContent() {
                       </p>
                     )}
 
-                    <span className="mt-auto inline-flex items-center gap-1.5 text-[13px] font-medium text-[#C8A35A]">
+                    <span className="mt-auto inline-flex items-center gap-1.5 text-[13px] font-medium text-[#E28906]">
                       Explore pathway
 
                       <ArrowRight
@@ -1070,7 +1070,7 @@ function LibraryContent() {
                                 href={`/scripture-index/${slugify(
                                   book.title,
                                 )}`}
-                                className="group flex items-center justify-between gap-5 rounded-lg border border-white/[0.08] bg-[#0B0B0B] px-5 py-4 transition hover:border-[#C8A35A]/45"
+                                className="group flex items-center justify-between gap-5 rounded-lg border border-white/[0.08] bg-[#0B0B0B] px-5 py-4 transition hover:border-[#E28906]/45"
                               >
                                 <div className="min-w-0">
                                   <h4 className="font-serif text-[16px]">
@@ -1086,7 +1086,7 @@ function LibraryContent() {
                                   </p>
                                 </div>
 
-                                <span className="shrink-0 text-[13px] font-medium text-[#C8A35A]">
+                                <span className="shrink-0 text-[13px] font-medium text-[#E28906]">
                                   Browse
                                   book →
                                 </span>
@@ -1129,14 +1129,14 @@ function LibraryContent() {
                     )
                   }
                   placeholder="Search scripture books..."
-                  className="mt-3 h-11 w-full rounded-lg border border-white/10 bg-[#181818] px-4 text-[13px] text-[#FAF9F6] outline-none placeholder:text-white/30 focus:border-[#C8A35A]/60"
+                  className="mt-3 h-11 w-full rounded-lg border border-white/10 bg-[#181818] px-4 text-[13px] text-[#FAF9F6] outline-none placeholder:text-white/30 focus:border-[#E28906]/60"
                 />
 
                 <Link
                   href="/scripture-index/proverbs"
-                  className="mt-5 block rounded-lg border border-[#C8A35A]/25 bg-[#C8A35A]/15 p-5 transition hover:border-[#C8A35A]/50"
+                  className="mt-5 block rounded-lg border border-[#E28906]/25 bg-[#E28906]/15 p-5 transition hover:border-[#E28906]/50"
                 >
-                  <p className="text-[13px] font-semibold text-[#C8A35A]">
+                  <p className="text-[13px] font-semibold text-[#E28906]">
                     Begin with Proverbs
                   </p>
 
@@ -1153,8 +1153,8 @@ function LibraryContent() {
                   </p>
                 </Link>
 
-                <div className="mt-4 rounded-lg border border-[#C8A35A]/20 bg-[#C8A35A]/10 p-5">
-                  <p className="text-[13px] font-semibold text-[#C8A35A]">
+                <div className="mt-4 rounded-lg border border-[#E28906]/20 bg-[#E28906]/10 p-5">
+                  <p className="text-[13px] font-semibold text-[#E28906]">
                     Read in context
                   </p>
 
@@ -1196,7 +1196,7 @@ function LibraryContent() {
             {collectionCards.length >
               0 && (
               <>
-                <div className="mt-8 overflow-hidden rounded-xl border border-[#C8A35A]/65 bg-[#111111] p-5">
+                <div className="mt-8 overflow-hidden rounded-xl border border-[#E28906]/65 bg-[#111111] p-5">
                   <div className="grid gap-6 md:grid-cols-[240px_1fr]">
                     <div className="relative min-h-[200px] overflow-hidden rounded-lg">
                       <Image
@@ -1215,7 +1215,7 @@ function LibraryContent() {
                     </div>
 
                     <div className="flex flex-col justify-center">
-                      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                         Featured Pathway
                       </p>
 
@@ -1250,7 +1250,7 @@ function LibraryContent() {
 
                       <Link
                         href={`/collection/${collectionCards[0].slug}`}
-                        className="bn-button mt-5 w-fit rounded-md bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
+                        className="bn-button mt-5 w-fit rounded-md bg-[#E28906] px-5 py-3 text-[13px] font-semibold text-[#080808]"
                       >
                         Explore Collection
                         →
@@ -1279,7 +1279,7 @@ function LibraryContent() {
                                 collection.slug
                               }
                               href={`/collection/${collection.slug}`}
-                              className="flex items-center gap-4 rounded-lg border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/40"
+                              className="flex items-center gap-4 rounded-lg border border-white/10 bg-[#111111] p-4 transition hover:border-[#E28906]/40"
                             >
                               <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-md">
                                 <Image
@@ -1309,7 +1309,7 @@ function LibraryContent() {
                                 </p>
                               </div>
 
-                              <span className="hidden shrink-0 text-[13px] font-medium text-[#C8A35A] sm:block">
+                              <span className="hidden shrink-0 text-[13px] font-medium text-[#E28906] sm:block">
                                 Explore
                                 Collection →
                               </span>
@@ -1357,7 +1357,7 @@ function NuggetCard({
   return (
     <Link
       href={`/nugget/${nugget.slug}`}
-      className="group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#C8A35A]/45"
+      className="group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#E28906]/45"
     >
       <div className="relative h-[165px] overflow-hidden">
         <Image
@@ -1371,7 +1371,7 @@ function NuggetCard({
 
       <div className="flex min-h-[210px] flex-col p-5">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[13px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+          <span className="text-[13px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
             {nugget.tag ||
               nugget.topic}
           </span>
@@ -1392,12 +1392,12 @@ function NuggetCard({
         </p>
 
         <div className="mt-auto flex items-end justify-between pt-5">
-          <span className="text-[13px] font-medium text-[#C8A35A]">
+          <span className="text-[13px] font-medium text-[#E28906]">
             Listen & Read
           </span>
 
           {nugget.isGold ? (
-            <span className="rounded border border-[#C8A35A]/40 bg-[#C8A35A]/10 px-2 py-1 text-[12px] font-semibold text-[#C8A35A]">
+            <span className="rounded border border-[#E28906]/40 bg-[#E28906]/10 px-2 py-1 text-[12px] font-semibold text-[#E28906]">
               GOLD
             </span>
           ) : (
@@ -1429,7 +1429,7 @@ function BackLabel() {
   return (
     <Link
       href="/library"
-      className="text-[13px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+      className="text-[13px] font-medium text-[#E28906] transition hover:text-[#E28906]"
     >
       ← All Nuggets
     </Link>
@@ -1445,8 +1445,8 @@ function CheckBox({
     <span
       className={`mt-[2px] flex h-[14px] w-[14px] shrink-0 items-center justify-center border ${
         selected
-          ? "border-[#C8A35A] bg-[#C8A35A]"
-          : "border-[#C8A35A]/70"
+          ? "border-[#E28906] bg-[#E28906]"
+          : "border-[#E28906]/70"
       }`}
     >
       {selected && (
@@ -1524,7 +1524,7 @@ function LibraryUpgradePrompt({ onReturn, dialog = false }: {
   dialog?: boolean;
 }) {
   return (
-    <section className={dialog ? "text-center" : "rounded-xl border border-[#C8A35A]/35 bg-[#111111] px-6 py-10 text-center"}>
+    <section className={dialog ? "text-center" : "rounded-xl border border-[#E28906]/35 bg-[#111111] px-6 py-10 text-center"}>
       <h2 id={dialog ? "library-upgrade-title" : undefined} className="font-serif text-[28px] text-[#FAF9F6]">
         Explore more with Premium
       </h2>
@@ -1532,10 +1532,10 @@ function LibraryUpgradePrompt({ onReturn, dialog = false }: {
         You can browse the first 2 pages of the Library. Upgrade to Premium to browse every page and unlock Gold Nuggets.
       </p>
       <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-        <Link href="/membership" className="bn-button rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]">
+        <Link href="/membership" className="bn-button rounded-lg bg-[#E28906] px-5 py-3 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E28906]">
           Upgrade to Premium
         </Link>
-        <button type="button" autoFocus={dialog} onClick={onReturn} className="bn-button rounded-lg border border-white/15 px-5 py-3 text-[13px] text-white/70 transition hover:border-[#C8A35A] hover:text-[#E0C48A]">
+        <button type="button" autoFocus={dialog} onClick={onReturn} className="bn-button rounded-lg border border-white/15 px-5 py-3 text-[13px] text-white/70 transition hover:border-[#E28906] hover:text-[#E28906]">
           {dialog ? "Keep browsing" : "Back to page 2"}
         </button>
       </div>
@@ -1560,7 +1560,7 @@ function PageButton({
       disabled={disabled}
       aria-label={label}
       onClick={onClick}
-      className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-white/45 transition hover:border-[#C8A35A]/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+      className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-white/45 transition hover:border-[#E28906]/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
     >
       {children}
     </button>

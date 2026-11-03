@@ -318,7 +318,7 @@ export default function AdminImportDialog({
       <p
         role="status"
         aria-live="polite"
-        className="mt-3 text-sm text-[#ead2a0]"
+        className="mt-3 text-sm text-[#E28906]"
       >
         {busy === "preview"
           ? "Reading and checking your file…"

@@ -66,7 +66,7 @@ export default function BulkActions({
             checked={all}
             disabled={busy || !total}
             onChange={toggleAll}
-            className="h-4 w-4 accent-[#cda762]"
+            className="h-4 w-4 accent-[#E28906]"
             ref={(element) => {
               if (element) element.indeterminate = ids.length > 0 && !all;
             }}

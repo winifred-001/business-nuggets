@@ -266,7 +266,7 @@ export default function FullAudioPlayer({
             </div>
 
             <div className="mx-auto mt-6 max-w-[520px] text-center sm:mt-7">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#C8A35A]">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#E28906]">
                 {nugget.scriptureRef} · {nugget.topic}
               </p>
 
@@ -293,7 +293,7 @@ export default function FullAudioPlayer({
                 disabled={!duration}
                 value={currentTime}
                 onChange={(event) => seekTo(Number(event.target.value))}
-                className="h-11 w-full cursor-pointer accent-[#C8A35A]"
+                className="h-11 w-full cursor-pointer accent-[#E28906]"
               />
 
               <div className="mt-1 flex justify-between text-[12px] text-white/40">
@@ -309,7 +309,7 @@ export default function FullAudioPlayer({
                 aria-pressed={Boolean(shuffledQueue)}
                 onClick={shuffleQueue}
                 disabled={queue.length < 2}
-                className={`flex h-11 w-11 items-center justify-center rounded-full transition disabled:opacity-30 ${shuffledQueue ? "text-[#cda762]" : "text-white/45"}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-full transition disabled:opacity-30 ${shuffledQueue ? "text-[#E28906]" : "text-white/45"}`}
               >
                 <Shuffle size={18} />
               </button>
@@ -329,7 +329,7 @@ export default function FullAudioPlayer({
                 onClick={togglePlay}
                 disabled={!audioSrc}
                 aria-label={playing ? "Pause" : "Play"}
-                className="flex h-14 w-14 items-center justify-center rounded-full bg-[#C8A35A] text-[#080808] transition hover:bg-[#E0C48A]"
+                className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E28906] text-[#080808] transition hover:bg-[#E28906]"
               >
                 {playing ? (
                   <Pause size={20} fill="currentColor" />
@@ -353,7 +353,7 @@ export default function FullAudioPlayer({
                 onClick={changeSpeed}
                 disabled={!audioSrc}
                 aria-label={`Playback speed ${speed} times`}
-                className="flex h-11 min-w-11 items-center justify-center rounded-lg border border-white/10 px-2 text-[12px] font-semibold text-[#C8A35A]"
+                className="flex h-11 min-w-11 items-center justify-center rounded-lg border border-white/10 px-2 text-[12px] font-semibold text-[#E28906]"
               >
                 {speed}x
               </button>
@@ -380,7 +380,7 @@ export default function FullAudioPlayer({
             </div>
 
             {(message || audioError || !audioSrc) && (
-              <p role="status" className="mt-5 text-center text-[14px] leading-6 text-[#C8A35A]">
+              <p role="status" className="mt-5 text-center text-[14px] leading-6 text-[#E28906]">
                 {message || audioError || "No audio file has been attached to this Nugget yet."}
               </p>
             )}
@@ -392,7 +392,7 @@ export default function FullAudioPlayer({
 
               <Link
                 href={`/nugget/${nugget.slug}/reader`}
-                className="bn-button inline-flex min-h-11 items-center text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                className="bn-button inline-flex min-h-11 items-center text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
               >
                 Open Full Reader View
               </Link>
@@ -414,7 +414,7 @@ export default function FullAudioPlayer({
 
       {playlistOpen && (
         <Modal title="Add to Playlist" onClose={() => setPlaylistOpen(false)}>
-          {message && <p role="alert" className="mb-4 text-[14px] text-[#ead2a0]">{message}</p>}
+          {message && <p role="alert" className="mb-4 text-[14px] text-[#E28906]">{message}</p>}
           {playlists.length > 0 ? (
             <div className="space-y-2">
               {playlists.map((playlist) => (
@@ -423,7 +423,7 @@ export default function FullAudioPlayer({
                   type="button"
                   disabled={busy}
                   onClick={() => addToPlaylist(playlist.id)}
-                  className="min-h-12 w-full rounded-lg border border-white/10 bg-[#111111] px-4 py-3 text-left text-[14px] transition hover:border-[#C8A35A]/50"
+                  className="min-h-12 w-full rounded-lg border border-white/10 bg-[#111111] px-4 py-3 text-left text-[14px] transition hover:border-[#E28906]/50"
                 >
                   {playlist.name}
                 </button>
@@ -431,7 +431,7 @@ export default function FullAudioPlayer({
             </div>
           ) : (
             <p className="text-[16px] leading-7 text-white/50">
-              You do not have any playlists yet. <Link href="/library/playlist/create" className="text-[#cda762] underline">Create a playlist</Link>.
+              You do not have any playlists yet. <Link href="/library/playlist/create" className="text-[#E28906] underline">Create a playlist</Link>.
             </p>
           )}
         </Modal>
@@ -439,7 +439,7 @@ export default function FullAudioPlayer({
 
       {noteOpen && (
         <Modal title="Write Note" onClose={() => setNoteOpen(false)}>
-          {message && <p role="alert" className="mb-4 text-[14px] text-[#ead2a0]">{message}</p>}
+          {message && <p role="alert" className="mb-4 text-[14px] text-[#E28906]">{message}</p>}
           <textarea
             value={note}
             onChange={(event) => setNote(event.target.value)}
@@ -447,14 +447,14 @@ export default function FullAudioPlayer({
             aria-label="Your note"
             maxLength={10000}
             placeholder="Write your note..."
-            className="w-full resize-none rounded-lg border border-white/10 bg-[#111111] p-4 text-[16px] leading-7 outline-none focus:border-[#C8A35A]"
+            className="w-full resize-none rounded-lg border border-white/10 bg-[#111111] p-4 text-[16px] leading-7 outline-none focus:border-[#E28906]"
           />
 
           <button
             type="button"
             onClick={saveNote}
             disabled={!note.trim() || busy}
-            className="mt-4 min-h-12 rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+            className="mt-4 min-h-12 rounded-lg bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
           >
             Save Note
           </button>
@@ -478,11 +478,11 @@ function QueueRow({
       href={`/nugget/${nugget.slug}/audio`}
       className={`bn-button ${`grid min-h-16 grid-cols-[24px_minmax(0,1fr)_56px] items-center gap-3 rounded-lg border px-3 py-3 transition sm:grid-cols-[28px_minmax(0,1fr)_70px] sm:px-4 sm:py-4 ${
         active
-          ? "border-[#C8A35A]/35 bg-[#111111]"
-          : "border-white/10 bg-[#111111] hover:border-[#C8A35A]/35"
+          ? "border-[#E28906]/35 bg-[#111111]"
+          : "border-white/10 bg-[#111111] hover:border-[#E28906]/35"
       }`}`}
     >
-      <span className="font-serif text-[15px] text-[#C8A35A]">
+      <span className="font-serif text-[15px] text-[#E28906]">
         {String(index).padStart(2, "0")}
       </span>
 
@@ -518,7 +518,7 @@ function PlayerAction({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex min-h-14 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 text-[14px] text-white/55 transition hover:border-[#C8A35A]/40 hover:text-[#C8A35A] sm:flex-col"
+      className="flex min-h-14 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 text-[14px] text-white/55 transition hover:border-[#E28906]/40 hover:text-[#E28906] sm:flex-col"
     >
       {children}
       {label}

@@ -207,14 +207,14 @@ export default async function HomePage() {
                     <Link
                       key={nugget.id}
                       href={`/nugget/${nugget.slug}`}
-                      className="group flex min-h-[112px] items-center gap-4 rounded-xl border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/40"
+                      className="group flex min-h-[112px] items-center gap-4 rounded-xl border border-white/10 bg-[#111111] p-4 transition hover:border-[#E28906]/40"
                     >
                       <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-[#181818]">
                         <ContentImage src={nugget.image} alt={nugget.title} />
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="text-[#C8A35A]">
+                        <p className="text-[#E28906]">
                           {nugget.tag || nugget.topic || "Business Nugget"}
                         </p>
 
@@ -224,13 +224,13 @@ export default async function HomePage() {
 
                         <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/10">
                           <div
-                            className="h-full bg-[#C8A35A]"
+                            className="h-full bg-[#E28906]"
                             style={{ width: `${progress}%` }}
                           />
                         </div>
                       </div>
 
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#C8A35A] font-semibold text-[#080808] transition group-hover:bg-[#E0C48A]">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#E28906] font-semibold text-[#080808] transition group-hover:bg-[#E28906]">
                         →
                       </span>
                     </Link>
@@ -245,7 +245,7 @@ export default async function HomePage() {
 
                 <Link
                   href="/library"
-                  className="bn-button mt-4 inline-flex min-h-11 items-center font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                  className="bn-button mt-4 inline-flex min-h-11 items-center font-medium text-[#E28906] transition hover:text-[#E28906]"
                 >
                   Browse Nuggets to read →
                 </Link>
@@ -267,7 +267,7 @@ export default async function HomePage() {
 
               <Link
                 href="/recommendations"
-                className="shrink-0 font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                className="shrink-0 font-medium text-[#E28906] transition hover:text-[#E28906]"
               >
                 More Recommendations →
               </Link>

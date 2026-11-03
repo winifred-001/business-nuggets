@@ -512,7 +512,7 @@ export default function AddToPlaylistPage() {
                 {/* NUGGET */}
 
                 {nugget ? (
-                  <div className="mt-7 flex items-center gap-4 rounded-lg border border-[#C8A35A]/35 bg-[#C8A35A]/[0.07] p-4">
+                  <div className="mt-7 flex items-center gap-4 rounded-lg border border-[#E28906]/35 bg-[#E28906]/[0.07] p-4">
                     {nugget.image ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -523,7 +523,7 @@ export default function AddToPlaylistPage() {
                         className="h-14 w-14 shrink-0 rounded-md object-cover"
                       />
                     ) : (
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-[#1A1A1A] text-[#C8A35A]">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-[#1A1A1A] text-[#E28906]">
                         <ListMusic
                           size={
                             18
@@ -556,7 +556,7 @@ export default function AddToPlaylistPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-7 rounded-lg border border-[#C8A35A]/25 bg-[#C8A35A]/[0.05] p-4">
+                  <div className="mt-7 rounded-lg border border-[#E28906]/25 bg-[#E28906]/[0.05] p-4">
                     <p className="text-[12px] text-white/50">
                       No Nugget was
                       selected for this
@@ -565,7 +565,7 @@ export default function AddToPlaylistPage() {
 
                     <Link
                       href="/library"
-                      className="mt-2 inline-block text-[11px] text-[#C8A35A]"
+                      className="mt-2 inline-block text-[11px] text-[#E28906]"
                     >
                       Choose a Nugget
                       from the Library →
@@ -576,7 +576,7 @@ export default function AddToPlaylistPage() {
                 {/* COUNT */}
 
                 <div className="mt-7 flex items-center justify-between">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                     Select Playlist
                   </p>
 
@@ -633,7 +633,7 @@ export default function AddToPlaylistPage() {
                             exists
                               ? "cursor-default border-white/[0.06] bg-[#0D0D0D] opacity-55"
                               : selected
-                                ? "border-[#C8A35A]/60 bg-[#C8A35A]/[0.12]"
+                                ? "border-[#E28906]/60 bg-[#E28906]/[0.12]"
                                 : "border-white/10 bg-[#19191D] hover:border-white/20"
                           }`}
                         >
@@ -642,9 +642,9 @@ export default function AddToPlaylistPage() {
                           <span
                             className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[2px] border ${
                               selected
-                                ? "border-[#C8A35A] bg-[#C8A35A]"
+                                ? "border-[#E28906] bg-[#E28906]"
                                 : exists
-                                  ? "border-[#C8A35A]/50 bg-[#C8A35A]/20"
+                                  ? "border-[#E28906]/50 bg-[#E28906]/20"
                                   : "border-white/25"
                             }`}
                           >
@@ -660,7 +660,7 @@ export default function AddToPlaylistPage() {
                                 className={
                                   selected
                                     ? "text-[#080808]"
-                                    : "text-[#C8A35A]"
+                                    : "text-[#E28906]"
                                 }
                               />
                             )}
@@ -685,7 +685,7 @@ export default function AddToPlaylistPage() {
                           </div>
 
                           {exists && (
-                            <span className="text-[9px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+                            <span className="text-[9px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
                               Already
                               Added
                             </span>
@@ -707,7 +707,7 @@ export default function AddToPlaylistPage() {
                           true,
                         )
                       }
-                      className="inline-flex items-center gap-2 text-[11px] font-medium text-white/65 transition hover:text-[#C8A35A]"
+                      className="inline-flex items-center gap-2 text-[11px] font-medium text-white/65 transition hover:text-[#E28906]"
                     >
                       <Plus
                         size={
@@ -742,7 +742,7 @@ export default function AddToPlaylistPage() {
                           )
                         }
                         placeholder="e.g. Wisdom for Strategic Decisions"
-                        className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#111111] px-3 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/50"
+                        className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#111111] px-3 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/50"
                       />
 
                       <div className="mt-3 flex justify-end gap-3">
@@ -774,7 +774,7 @@ export default function AddToPlaylistPage() {
                           onClick={
                             handleCreatePlaylist
                           }
-                          className="rounded-md bg-[#C8A35A] px-4 py-2 text-[10px] font-semibold text-[#080808] disabled:opacity-40"
+                          className="rounded-md bg-[#E28906] px-4 py-2 text-[10px] font-semibold text-[#080808] disabled:opacity-40"
                         >
                           {creating
                             ? "Creating..."
@@ -796,8 +796,8 @@ export default function AddToPlaylistPage() {
                 )}
 
                 {success && (
-                  <div className="mt-5 rounded-md border border-[#C8A35A]/25 bg-[#C8A35A]/[0.06] px-4 py-3">
-                    <p className="text-[11px] text-[#E0C48A]">
+                  <div className="mt-5 rounded-md border border-[#E28906]/25 bg-[#E28906]/[0.06] px-4 py-3">
+                    <p className="text-[11px] text-[#E28906]">
                       {
                         success
                       }
@@ -828,7 +828,7 @@ export default function AddToPlaylistPage() {
                       selectedIds.length ===
                         0
                     }
-                    className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#E28906] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {saving
                       ? "Adding..."

@@ -399,7 +399,7 @@ export default function SavedFolderDetailPage() {
         <main className="bn-member-library mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
           <Link
             href="/library/saved-nuggets"
-            className="text-[11px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="text-[11px] font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             ← Saved Nuggets
           </Link>
@@ -427,7 +427,7 @@ export default function SavedFolderDetailPage() {
 
                 <section className="mt-5 flex flex-col gap-6 border-b border-white/[0.07] pb-8 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                       Saved Folder
                     </p>
 
@@ -491,7 +491,7 @@ export default function SavedFolderDetailPage() {
                   <section className="mt-8 flex min-h-[300px] flex-col items-center justify-center rounded-[10px] border border-white/10 bg-[#111111] px-6 text-center">
                     <FolderOpen
                       size={28}
-                      className="text-[#C8A35A]"
+                      className="text-[#E28906]"
                     />
 
                     <h2 className="mt-4 font-serif text-[20px]">
@@ -509,7 +509,7 @@ export default function SavedFolderDetailPage() {
 
                     <Link
                       href="/library/saved-nuggets"
-                      className="bn-button mt-5 rounded-md bg-[#C8A35A] px-5 py-2.5 text-[11px] font-semibold text-[#080808]"
+                      className="bn-button mt-5 rounded-md bg-[#E28906] px-5 py-2.5 text-[11px] font-semibold text-[#080808]"
                     >
                       Back to Saved
                       Nuggets
@@ -547,7 +547,7 @@ export default function SavedFolderDetailPage() {
                             </Link>
 
                             <div className="p-4">
-                              <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                              <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                                 {
                                   nugget.tag
                                 }
@@ -556,7 +556,7 @@ export default function SavedFolderDetailPage() {
                               <Link
                                 href={`/nugget/${nugget.slug}`}
                               >
-                                <h2 className="mt-3 line-clamp-2 font-serif text-[18px] leading-6 text-white/90 transition group-hover:text-[#C8A35A]">
+                                <h2 className="mt-3 line-clamp-2 font-serif text-[18px] leading-6 text-white/90 transition group-hover:text-[#E28906]">
                                   {
                                     nugget.title
                                   }
@@ -572,7 +572,7 @@ export default function SavedFolderDetailPage() {
                               <div className="mt-5 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
                                 <Link
                                   href={`/nugget/${nugget.slug}`}
-                                  className="text-[10px] font-medium text-[#C8A35A]"
+                                  className="text-[10px] font-medium text-[#E28906]"
                                 >
                                   Listen &amp;
                                   Read →

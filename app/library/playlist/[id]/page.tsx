@@ -201,7 +201,7 @@ export default function PlaylistDetailPage() {
                   {playlist.description && <p className="mt-2 whitespace-pre-wrap">{playlist.description}</p>}
                   {playlist.shareToken && (
                     <div className="mt-3">
-                      <button type="button" className="bn-button text-[#C8A35A]" onClick={async () => {
+                      <button type="button" className="bn-button text-[#E28906]" onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(new URL(`/shared-playlist/${playlist.shareToken}`, window.location.origin).href);
                           setShareStatus("Share link copied.");
@@ -225,7 +225,7 @@ export default function PlaylistDetailPage() {
                 <div className="flex flex-wrap gap-3">
   <Link
     href={`/library/playlist/${playlist.id}/edit`}
-    className="bn-button rounded-md border border-[#C8A35A]/40 px-4 py-2 text-[11px] text-[#C8A35A] transition hover:bg-[#C8A35A]/10"
+    className="bn-button rounded-md border border-[#E28906]/40 px-4 py-2 text-[11px] text-[#E28906] transition hover:bg-[#E28906]/10"
   >
     Edit Playlist
   </Link>

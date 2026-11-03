@@ -211,7 +211,7 @@ export default function RecommendationsPage() {
         <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
           <Link
             href="/home"
-            className="font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             ← My Homepage
           </Link>
@@ -262,7 +262,7 @@ export default function RecommendationsPage() {
                   </p>
                   <Link
                     href="/onboarding"
-                    className="mt-4 inline-flex font-medium text-[#C8A35A]"
+                    className="mt-4 inline-flex font-medium text-[#E28906]"
                   >
                     Complete Onboarding →
                   </Link>
@@ -287,7 +287,7 @@ export default function RecommendationsPage() {
                             {nugget.title}
                           </h3>
 
-                          <p className="mt-2 text-[#C8A35A]">
+                          <p className="mt-2 text-[#E28906]">
                             {nugget.scriptureRef || nugget.topic}
                           </p>
 
@@ -302,7 +302,7 @@ export default function RecommendationsPage() {
 
                           <Link
                             href={`/nugget/${nugget.slug}`}
-                            className="mt-4 inline-flex font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                            className="mt-4 inline-flex font-medium text-[#E28906] transition hover:text-[#E28906]"
                           >
                             Start Reading →
                           </Link>
@@ -328,9 +328,9 @@ export default function RecommendationsPage() {
                   {preferences.interests.map((interest) => (
                     <div
                       key={interest}
-                      className="flex items-start gap-3 rounded-md border border-[#C8A35A]/35 bg-[#C8A35A]/10 px-4 py-3"
+                      className="flex items-start gap-3 rounded-md border border-[#E28906]/35 bg-[#E28906]/10 px-4 py-3"
                     >
-                      <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-sm bg-[#C8A35A] text-[#080808]">
+                      <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-sm bg-[#E28906] text-[#080808]">
                         <Check size={12} strokeWidth={3} />
                       </span>
 
@@ -351,7 +351,7 @@ export default function RecommendationsPage() {
 
               <Link
                 href="/onboarding?edit=1"
-                className="bn-button mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 text-white/70 transition hover:border-[#C8A35A]/30 hover:text-[#C8A35A]"
+                className="bn-button mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 text-white/70 transition hover:border-[#E28906]/30 hover:text-[#E28906]"
               >
                 <SlidersHorizontal size={15} />
                 Adjust Interests
@@ -361,7 +361,7 @@ export default function RecommendationsPage() {
                 id="how-recommendations-work"
                 className="mt-6 border-t border-white/10 pt-5"
               >
-                <p className="font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                <p className="font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                   Why These Teachings?
                 </p>
                 <p className="mt-3 leading-6 text-white/40">
@@ -370,7 +370,7 @@ export default function RecommendationsPage() {
                 </p>
                 <a
                   href="#how-recommendations-work"
-                  className="mt-4 inline-flex font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                  className="mt-4 inline-flex font-medium text-[#E28906] transition hover:text-[#E28906]"
                 >
                   Learn how recommendations work →
                 </a>
@@ -378,7 +378,7 @@ export default function RecommendationsPage() {
             </aside>
           </section>
 
-          <section className="mt-8 rounded-[10px] border border-[#C8A35A]/20 bg-[#C8A35A]/10 p-5 sm:p-6">
+          <section className="mt-8 rounded-[10px] border border-[#E28906]/20 bg-[#E28906]/10 p-5 sm:p-6">
             <h2 className="font-serif">Keep Your Discovery Open</h2>
             <p className="mt-2 max-w-[900px] text-white/40">
               Recommendations are a starting point, not a limit. Explore the full Library
@@ -386,7 +386,7 @@ export default function RecommendationsPage() {
             </p>
             <Link
               href="/library"
-              className="mt-4 inline-flex font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="mt-4 inline-flex font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Explore Library →
             </Link>

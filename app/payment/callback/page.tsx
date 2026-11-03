@@ -19,7 +19,7 @@ export default function PaymentCallbackPage() {
           <main className="mx-auto flex w-full max-w-[760px] flex-1 items-center justify-center px-5 py-16">
             <LoaderCircle
               size={34}
-              className="animate-spin text-[#C8A35A]"
+              className="animate-spin text-[#E28906]"
             />
           </main>
         }

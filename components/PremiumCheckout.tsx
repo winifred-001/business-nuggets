@@ -170,14 +170,14 @@ export default function PremiumCheckout({
   }
 
   return (
-    <section id="plans" className="mt-10 rounded-[14px] border border-[#C8A35A]/35 bg-[#111111] p-5 sm:p-7 lg:p-8">
+    <section id="plans" className="mt-10 rounded-[14px] border border-[#E28906]/35 bg-[#111111] p-5 sm:p-7 lg:p-8">
       <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-[#C8A35A]/25 bg-[#C8A35A]/10 text-[#C8A35A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-[#E28906]/25 bg-[#E28906]/10 text-[#E28906]">
           <Crown size={20} />
         </div>
 
         <div>
-          <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+          <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
             {isPremium
               ? "Manage Premium Plan"
               : "Upgrade to Premium"}
@@ -203,7 +203,7 @@ export default function PremiumCheckout({
         </div>
       )}
 
-      {!loading && (error || plans.length === 0) && <button type="button" onClick={() => setRetryCount(value => value + 1)} className="mt-4 rounded border border-[#cda762]/40 px-4 py-3 text-[#ead2a0]">Retry Loading Plans</button>}
+      {!loading && (error || plans.length === 0) && <button type="button" onClick={() => setRetryCount(value => value + 1)} className="mt-4 rounded border border-[#E28906]/40 px-4 py-3 text-[#E28906]">Retry Loading Plans</button>}
 
       {loading ? (
         <div className="mt-7 grid gap-5 md:grid-cols-2">
@@ -235,8 +235,8 @@ export default function PremiumCheckout({
                 key={plan.id}
                 className={`rounded-[12px] border bg-[#080808] p-5 sm:p-6 ${
                   isCurrentPlan
-                    ? "border-[#C8A35A]/65"
-                    : "border-[#C8A35A]/30"
+                    ? "border-[#E28906]/65"
+                    : "border-[#E28906]/30"
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
@@ -247,7 +247,7 @@ export default function PremiumCheckout({
                       </h3>
 
                       {isCurrentPlan && (
-                        <span className="rounded-full bg-[#C8A35A]/15 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+                        <span className="rounded-full bg-[#E28906]/15 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
                           Current Plan
                         </span>
                       )}
@@ -258,7 +258,7 @@ export default function PremiumCheckout({
                     </p>
                   </div>
 
-                  <p className="font-serif text-[30px] leading-none text-[#C8A35A]">
+                  <p className="font-serif text-[30px] leading-none text-[#E28906]">
                     {formatMoney(
                       plan.priceCents,
                       plan.currency,
@@ -274,7 +274,7 @@ export default function PremiumCheckout({
                     >
                       <Check
                         size={16}
-                        className="mt-1 shrink-0 text-[#C8A35A]"
+                        className="mt-1 shrink-0 text-[#E28906]"
                       />
                       {feature}
                     </p>
@@ -290,7 +290,7 @@ export default function PremiumCheckout({
                   onClick={() =>
                     startCheckout(plan.slug)
                   }
-                  className="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isCurrentPlan
                     ? "Current Plan"

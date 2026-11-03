@@ -39,15 +39,15 @@ export default function NuggetLibraryActions({ id, slug }: { id: string; slug: s
     try { await request(`/playlists/${playlistId}/items`, { method: "POST", body: JSON.stringify({ nuggetId: id }) }); setPlaylists(null); setMessage("Added to playlist."); }
     catch { setMessage("Could not add this Nugget to the playlist. Please try again."); } finally { setBusy(false); }
   }
-  const button = "flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[14px] text-white/65 transition hover:bg-white/[0.04] hover:text-[#ead2a0] disabled:opacity-40";
+  const button = "flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[14px] text-white/65 transition hover:bg-white/[0.04] hover:text-[#E28906] disabled:opacity-40";
   return <>
     <button type="button" onClick={save} disabled={busy} className={button}>{saved ? <Check size={16} /> : <Bookmark size={16} />}{saved ? "Saved to Library" : "Save to Library"}</button>
     <button type="button" onClick={openPlaylists} disabled={busy} className={button}><ListPlus size={16} />Add to Playlist</button>
-    {message && <p role="status" className="px-3 py-2 text-[13px] text-[#ead2a0]">{message}</p>}
+    {message && <p role="status" className="px-3 py-2 text-[13px] text-[#E28906]">{message}</p>}
     {playlists && <dialog aria-label="Add to Playlist" ref={element => { if (element && !element.open) element.showModal(); }} onClose={() => setPlaylists(null)} className="m-auto w-[calc(100%-32px)] max-w-md rounded-xl border border-white/15 bg-[#191b18] p-6 text-[#f9f5ed] backdrop:bg-black/75">
       <div className="mb-5 flex items-center justify-between gap-4"><h2 className="font-serif text-[28px]">Add to Playlist</h2><button type="button" onClick={() => setPlaylists(null)} aria-label="Close dialog"><X size={20} /></button></div>
-      {message && <p role="alert" className="mb-4 text-[#ead2a0]">{message}</p>}
-      {playlists.length ? playlists.map(playlist => <button key={playlist.id} type="button" disabled={busy} onClick={() => add(playlist.id)} className={button}>{playlist.name}</button>) : <Link href="/library/playlist/create" className="text-[#ead2a0] underline">Create your first playlist</Link>}
+      {message && <p role="alert" className="mb-4 text-[#E28906]">{message}</p>}
+      {playlists.length ? playlists.map(playlist => <button key={playlist.id} type="button" disabled={busy} onClick={() => add(playlist.id)} className={button}>{playlist.name}</button>) : <Link href="/library/playlist/create" className="text-[#E28906] underline">Create your first playlist</Link>}
     </dialog>}
   </>;
 }

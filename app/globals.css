@@ -18,7 +18,7 @@
   --bnb-ivory: var(--bnb-white);
   --bnb-slate: color-mix(in srgb, var(--bnb-mist) 72%, var(--bnb-navy) 28%);
   --bnb-success: var(--bnb-teal);
-  --bnb-warning: #b7791f;
+  --bnb-warning: #E28906;
   --bnb-error: #b54a4a;
   --bnb-info: var(--bnb-blue);
 
@@ -276,29 +276,29 @@ p[class~="text-[14px]"] {
 [class~="bg-[#111111]/60"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 60%, transparent) !important; }
 [class~="bg-[#111111]/50"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 50%, transparent) !important; }
 
-[class~="bg-[#C8A35A]"],
-[class~="bg-[#D0A85C]"],
-[class~="bg-[#9A7839]"] {
+[class~="bg-[#E28906]"],
+[class~="bg-[#E28906]"],
+[class~="bg-[#E28906]"] {
   background-color: var(--bnb-blue) !important;
 }
 
-[class~="bg-[#E0C48A]"] {
+[class~="bg-[#E28906]"] {
   background-color: var(--bnb-teal) !important;
 }
 
-[class~="hover:bg-[#C8A35A]"]:hover,
-[class~="hover:bg-[#D0A85C]"]:hover,
-[class~="hover:bg-[#E0C48A]"]:hover {
+[class~="hover:bg-[#E28906]"]:hover,
+[class~="hover:bg-[#E28906]"]:hover,
+[class~="hover:bg-[#E28906]"]:hover {
   background-color: var(--bnb-teal) !important;
 }
 
-[class~="text-[#C8A35A]"],
-[class~="text-[#D0A85C]"],
-[class~="text-[#9A7839]"] {
+[class~="text-[#E28906]"],
+[class~="text-[#E28906]"],
+[class~="text-[#E28906]"] {
   color: var(--bnb-blue) !important;
 }
 
-[class~="text-[#E0C48A]"] {
+[class~="text-[#E28906]"] {
   color: var(--bnb-teal) !important;
 }
 
@@ -311,19 +311,19 @@ p[class~="text-[14px]"] {
   color: var(--bnb-mist) !important;
 }
 
-[class~="border-[#C8A35A]"],
-[class~="border-[#D0A85C]"] {
+[class~="border-[#E28906]"],
+[class~="border-[#E28906]"] {
   border-color: var(--bnb-blue) !important;
 }
 
-[class~="focus:border-[#C8A35A]"]:focus,
-[class~="focus:ring-[#C8A35A]"]:focus {
+[class~="focus:border-[#E28906]"]:focus,
+[class~="focus:ring-[#E28906]"]:focus {
   border-color: var(--bnb-blue) !important;
   --tw-ring-color: var(--bnb-blue) !important;
 }
 
-[class~="hover:text-[#C8A35A]"]:hover,
-[class~="hover:text-[#E0C48A]"]:hover {
+[class~="hover:text-[#E28906]"]:hover,
+[class~="hover:text-[#E28906]"]:hover {
   color: var(--bnb-teal) !important;
 }
 

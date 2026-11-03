@@ -8,7 +8,7 @@ import { BIBLE_BOOKS } from "@/lib/bible-books";
 type Verse = { book: string; chapter: number; verse: number; translation: string; text: string; row?: number; action?: "create" | "skip" };
 type Preview = { versesToCreate: number; skipped: number; rows: Verse[] };
 type Page = { rows: Verse[]; total: number; page: number; totalPages: number };
-const button = "bn-button rounded-md border border-[#C8A35A]/40 px-4 py-2 text-[13px] text-[#E0C48A] transition hover:bg-[#C8A35A]/15 disabled:cursor-not-allowed disabled:opacity-40";
+const button = "bn-button rounded-md border border-[#E28906]/40 px-4 py-2 text-[13px] text-[#E28906] transition hover:bg-[#E28906]/15 disabled:cursor-not-allowed disabled:opacity-40";
 const field = "mt-2 w-full rounded-md border border-white/15 bg-[#080808] p-3 text-[13px] text-white";
 async function readResponse(response: Response) {
   const data = await response.json().catch(() => null);
@@ -64,7 +64,7 @@ export default function ScriptureVerseDialog({ initialMode, close, completed }: 
   const rows = mode === "import" ? preview?.rows : result?.rows;
   return (
     <dialog ref={dialog} aria-labelledby="verse-dialog-title" onCancel={event => { if (busy) event.preventDefault(); else close(); }}
-      className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-24px)] max-w-[900px] overflow-y-auto rounded-xl border border-[#C8A35A]/30 bg-[#111111] p-5 text-white shadow-2xl backdrop:bg-black/75 sm:p-7">
+      className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-24px)] max-w-[900px] overflow-y-auto rounded-xl border border-[#E28906]/30 bg-[#111111] p-5 text-white shadow-2xl backdrop:bg-black/75 sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <h2 id="verse-dialog-title" className="font-serif text-[20px]">Scripture Verses</h2>
         <button type="button" autoFocus disabled={busy} onClick={close} className={button}>Close</button>
@@ -91,7 +91,7 @@ export default function ScriptureVerseDialog({ initialMode, close, completed }: 
         </label>
         <div className="mt-4 flex flex-wrap gap-3">
           <button type="button" disabled={!file || busy} onClick={() => void run("preview")} className={button}>{busy ? "Working…" : "Preview Import"}</button>
-          <button type="button" disabled={!preview || !preview.versesToCreate || busy} onClick={() => void run("commit")} className={`${button} bg-[#C8A35A]/10`}>Import {preview?.versesToCreate ?? 0} Verses</button>
+          <button type="button" disabled={!preview || !preview.versesToCreate || busy} onClick={() => void run("commit")} className={`${button} bg-[#E28906]/10`}>Import {preview?.versesToCreate ?? 0} Verses</button>
         </div>
         {preview && <p className="mt-4 text-sm">{preview.versesToCreate} new verses · {preview.skipped} exact duplicates</p>}
       </> : <>
@@ -105,7 +105,7 @@ export default function ScriptureVerseDialog({ initialMode, close, completed }: 
       </>}
       {rows && <div className="mt-5 max-h-[360px] space-y-3 overflow-y-auto">
         {rows.length ? rows.map(row => <article key={`${row.book}-${row.chapter}-${row.verse}-${row.translation}`} className="rounded-md border border-white/10 p-4">
-          <h3 className="text-[15px] text-[#E0C48A]">{row.book} {row.chapter}:{row.verse} · {row.translation}{row.action ? ` · ${row.action === "skip" ? "Skip duplicate" : "New"}` : ""}</h3>
+          <h3 className="text-[15px] text-[#E28906]">{row.book} {row.chapter}:{row.verse} · {row.translation}{row.action ? ` · ${row.action === "skip" ? "Skip duplicate" : "New"}` : ""}</h3>
           <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-white/65">{row.text}</p>
         </article>) : <p className="text-sm text-white/50">No verses saved for this selection.</p>}
       </div>}

@@ -8,7 +8,7 @@
   max-height: calc(var(--topic-row-height) * 5 + 80px);
   overflow-y: auto;
   overscroll-behavior: contain;
-  scrollbar-color: #c8a35a #191b18;
+  scrollbar-color: #E28906 #191b18;
   scrollbar-gutter: stable;
   padding-right: 8px;
   min-width: 0;
@@ -22,7 +22,7 @@
 @media (min-width: 1024px) {
   .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-.grid:focus-visible { outline: 2px solid #c8a35a; outline-offset: 4px; }
+.grid:focus-visible { outline: 2px solid #E28906; outline-offset: 4px; }
 
 @media (min-width: 1024px) {
   .fourColumns { grid-template-columns: repeat(4, minmax(0, 1fr)); }

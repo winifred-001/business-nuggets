@@ -77,24 +77,24 @@ export default async function KingdomPrinciplesPage() {
         {/* HERO */}
         <section className="relative overflow-hidden border-b border-white/10">
           {/* subtle gold glow */}
-          <div className="pointer-events-none absolute left-1/2 top-[-260px] h-[520px] w-[720px] -translate-x-1/2 rounded-full bg-[#C8A35A]/10 blur-[120px]" />
+          <div className="pointer-events-none absolute left-1/2 top-[-260px] h-[520px] w-[720px] -translate-x-1/2 rounded-full bg-[#E28906]/10 blur-[120px]" />
 
           <div className="relative mx-auto max-w-[1280px] px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
             <div className="mx-auto max-w-4xl text-center">
-              <div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-[#C8A35A]/20 bg-[#C8A35A]/5 px-4 py-2">
+              <div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-[#E28906]/20 bg-[#E28906]/5 px-4 py-2">
                 <Sparkles
                   size={14}
-                  className="text-[#E0C48A]"
+                  className="text-[#E28906]"
                 />
 
-                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#E0C48A]">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#E28906]">
                   Biblical Business Foundations
                 </span>
               </div>
 
               <h1 className="bn-hero-title mt-7 font-serif text-4xl leading-[1.05] sm:text-5xl lg:text-7xl">
                 Kingdom Principles
-                <span className="block text-[#C8A35A]">
+                <span className="block text-[#E28906]">
                   for the Marketplace
                 </span>
               </h1>
@@ -109,7 +109,7 @@ export default async function KingdomPrinciplesPage() {
               <div className="mt-9 flex flex-wrap justify-center gap-3">
                 <Link
                   href="#principles"
-                  className="bn-button inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#C8A35A] px-6 text-sm font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                  className="bn-button inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#E28906] px-6 text-sm font-semibold text-[#080808] transition hover:bg-[#E28906]"
                 >
                   Explore the Principles
                   <ArrowRight size={16} />
@@ -117,7 +117,7 @@ export default async function KingdomPrinciplesPage() {
 
                 <Link
                   href="/scripture-index"
-                  className="bn-button inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-white/15 px-6 text-sm text-[#FAF9F6]/80 transition hover:border-[#C8A35A]/60 hover:text-[#E0C48A]"
+                  className="bn-button inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-white/15 px-6 text-sm text-[#FAF9F6]/80 transition hover:border-[#E28906]/60 hover:text-[#E28906]"
                 >
                   <BookOpen size={16} />
                   Scripture Index
@@ -135,7 +135,7 @@ export default async function KingdomPrinciplesPage() {
           <div className="mx-auto max-w-[1280px] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A35A]">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#E28906]">
                   Core Frameworks
                 </p>
 
@@ -160,7 +160,7 @@ export default async function KingdomPrinciplesPage() {
                     href={`/topics/${slugify(
                       principle.topic,
                     )}`}
-                    className="group relative min-h-[320px] overflow-hidden rounded-2xl border border-white/10 bg-[#111111] p-7 transition duration-300 hover:-translate-y-1 hover:border-[#C8A35A]/50 sm:p-8"
+                    className="group relative min-h-[320px] overflow-hidden rounded-2xl border border-white/10 bg-[#111111] p-7 transition duration-300 hover:-translate-y-1 hover:border-[#E28906]/50 sm:p-8"
                   >
                     <div className="absolute right-6 top-3 font-serif text-[90px] leading-none text-white/[0.025]">
                       {principle.number}
@@ -168,10 +168,10 @@ export default async function KingdomPrinciplesPage() {
 
                     <div className="relative flex h-full flex-col">
                       <div className="flex items-start justify-between gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#C8A35A]/25 bg-[#C8A35A]/10">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#E28906]/25 bg-[#E28906]/10">
                           <Icon
                             size={20}
-                            className="text-[#E0C48A]"
+                            className="text-[#E28906]"
                           />
                         </div>
 
@@ -182,7 +182,7 @@ export default async function KingdomPrinciplesPage() {
                       </div>
 
                       <div className="mt-auto pt-14">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#C8A35A]">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#E28906]">
                           {principle.label}
                         </p>
 
@@ -194,7 +194,7 @@ export default async function KingdomPrinciplesPage() {
                           {principle.description}
                         </p>
 
-                        <div className="mt-6 flex items-center gap-2 text-sm font-medium text-[#E0C48A]">
+                        <div className="mt-6 flex items-center gap-2 text-sm font-medium text-[#E28906]">
                           Explore pathway
 
                           <ArrowRight
@@ -215,7 +215,7 @@ export default async function KingdomPrinciplesPage() {
         <section className="border-b border-white/10 bg-[#0B0B0B]">
           <div className="mx-auto max-w-[1280px] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
             <div className="mx-auto max-w-3xl text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A35A]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#E28906]">
                 Learn. Reflect. Apply.
               </p>
 
@@ -226,7 +226,7 @@ export default async function KingdomPrinciplesPage() {
 
             <div className="mt-12 grid gap-5 md:grid-cols-3">
               <div className="rounded-2xl border border-white/10 bg-[#111111] p-7">
-                <span className="font-serif text-3xl text-[#C8A35A]">
+                <span className="font-serif text-3xl text-[#E28906]">
                   01
                 </span>
 
@@ -241,7 +241,7 @@ export default async function KingdomPrinciplesPage() {
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-[#111111] p-7">
-                <span className="font-serif text-3xl text-[#C8A35A]">
+                <span className="font-serif text-3xl text-[#E28906]">
                   02
                 </span>
 
@@ -256,7 +256,7 @@ export default async function KingdomPrinciplesPage() {
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-[#111111] p-7">
-                <span className="font-serif text-3xl text-[#C8A35A]">
+                <span className="font-serif text-3xl text-[#E28906]">
                   03
                 </span>
 
@@ -278,17 +278,17 @@ export default async function KingdomPrinciplesPage() {
           <div className="mx-auto max-w-[1280px] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
             <div className="grid overflow-hidden rounded-3xl border border-white/10 bg-[#111111] lg:grid-cols-[0.9fr_1.1fr]">
               <div className="flex items-center justify-center border-b border-white/10 p-12 lg:border-b-0 lg:border-r">
-                <div className="flex h-32 w-32 items-center justify-center rounded-full border border-[#C8A35A]/20 bg-[#C8A35A]/5">
+                <div className="flex h-32 w-32 items-center justify-center rounded-full border border-[#E28906]/20 bg-[#E28906]/5">
                   <BookOpen
                     size={48}
                     strokeWidth={1.2}
-                    className="text-[#E0C48A]"
+                    className="text-[#E28906]"
                   />
                 </div>
               </div>
 
               <div className="p-7 sm:p-10 lg:p-14">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A35A]">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#E28906]">
                   Start with Scripture
                 </p>
 
@@ -304,7 +304,7 @@ export default async function KingdomPrinciplesPage() {
 
                 <Link
                   href="/scripture-index"
-                  className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-[#E0C48A]"
+                  className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-[#E28906]"
                 >
                   Open Scripture Index
                   <ArrowRight size={15} />
@@ -317,11 +317,11 @@ export default async function KingdomPrinciplesPage() {
         {/* ACCESS CTA */}
         <section>
           <div className="mx-auto max-w-[1280px] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-            <div className="relative overflow-hidden rounded-3xl border border-[#C8A35A]/25 bg-[#111111] px-6 py-12 text-center sm:px-10 lg:py-16">
-              <div className="pointer-events-none absolute left-1/2 top-0 h-40 w-96 -translate-x-1/2 bg-[#C8A35A]/10 blur-[90px]" />
+            <div className="relative overflow-hidden rounded-3xl border border-[#E28906]/25 bg-[#111111] px-6 py-12 text-center sm:px-10 lg:py-16">
+              <div className="pointer-events-none absolute left-1/2 top-0 h-40 w-96 -translate-x-1/2 bg-[#E28906]/10 blur-[90px]" />
 
               <div className="relative mx-auto max-w-2xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C8A35A]">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#E28906]">
                   Continue the Journey
                 </p>
 
@@ -338,14 +338,14 @@ export default async function KingdomPrinciplesPage() {
                 <div className="mt-8 flex flex-wrap justify-center gap-3">
                   <Link
                     href="/library"
-                    className="bn-button inline-flex min-h-12 items-center justify-center rounded-lg border border-white/15 px-6 text-sm text-[#FAF9F6] transition hover:border-[#C8A35A]/60"
+                    className="bn-button inline-flex min-h-12 items-center justify-center rounded-lg border border-white/15 px-6 text-sm text-[#FAF9F6] transition hover:border-[#E28906]/60"
                   >
                     Explore Library
                   </Link>
 
                   <Link
                     href="/get-access"
-                    className="bn-button inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#C8A35A] px-6 text-sm font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                    className="bn-button inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#E28906] px-6 text-sm font-semibold text-[#080808] transition hover:bg-[#E28906]"
                   >
                     Get Access
                     <ArrowRight size={15} />

@@ -172,14 +172,14 @@ export default async function ScriptureIndexDetailPage({
           <div className="mx-auto max-w-[1280px] px-5 py-14 sm:px-8 lg:px-10 lg:py-16">
             <Link
               href="/library?tab=Scripture+Matrix"
-              className="text-[13px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="text-[13px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               ← Scripture Index
             </Link>
 
             <div className="mt-7 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-[800px]">
-                <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-[#C8A35A]">
+                <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-[#E28906]">
                   Scripture Index Detail
                 </p>
 
@@ -193,8 +193,8 @@ export default async function ScriptureIndexDetailPage({
               </div>
 
               {/* ASSOCIATED COUNT */}
-              <div className="w-fit min-w-[150px] rounded-lg border border-[#C8A35A]/50 bg-[#111111] px-6 py-5">
-                <p className="font-serif text-[28px] leading-none text-[#C8A35A]">
+              <div className="w-fit min-w-[150px] rounded-lg border border-[#E28906]/50 bg-[#111111] px-6 py-5">
+                <p className="font-serif text-[28px] leading-none text-[#E28906]">
                   {bookNuggets.length}
                 </p>
 
@@ -227,7 +227,7 @@ export default async function ScriptureIndexDetailPage({
                         nugget.slug
                       }
                       href={`/nugget/${nugget.slug}`}
-                      className="group flex min-h-[145px] overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#C8A35A]/45"
+                      className="group flex min-h-[145px] overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#E28906]/45"
                     >
                       {/* IMAGE */}
                       <div className="relative w-[145px] shrink-0 sm:w-[180px]">
@@ -246,7 +246,7 @@ export default async function ScriptureIndexDetailPage({
 
                       {/* CONTENT */}
                       <div className="flex min-w-0 flex-1 flex-col justify-center p-5">
-                        <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
+                        <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-[#E28906]">
                           {
                             nugget.scriptureRef
                           }
@@ -310,7 +310,7 @@ export default async function ScriptureIndexDetailPage({
 
               <div className="text-[13px] text-white/40">
                 Sort by:{" "}
-                <span className="text-[#C8A35A]">
+                <span className="text-[#E28906]">
                   Verse Order
                 </span>
               </div>
@@ -329,7 +329,7 @@ export default async function ScriptureIndexDetailPage({
                     >
                       <Link
                         href={`/nugget/${nugget.slug}`}
-                        className="text-[13px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                        className="text-[13px] font-medium text-[#E28906] transition hover:text-[#E28906]"
                       >
                         {
                           nugget.scriptureRef
@@ -338,7 +338,7 @@ export default async function ScriptureIndexDetailPage({
 
                       <Link
                         href={`/nugget/${nugget.slug}`}
-                        className="min-w-0 font-serif text-[16px] leading-5 text-[#FAF9F6] transition hover:text-[#E0C48A]"
+                        className="min-w-0 font-serif text-[16px] leading-5 text-[#FAF9F6] transition hover:text-[#E28906]"
                       >
                         {
                           nugget.title
@@ -353,7 +353,7 @@ export default async function ScriptureIndexDetailPage({
 
                       <Link
                         href={`/nugget/${nugget.slug}`}
-                        className="bn-button w-fit rounded border border-[#C8A35A]/50 px-3 py-1.5 text-[12px] font-medium text-[#C8A35A] transition hover:bg-[#C8A35A] hover:text-[#080808]"
+                        className="bn-button w-fit rounded border border-[#E28906]/50 px-3 py-1.5 text-[12px] font-medium text-[#E28906] transition hover:bg-[#E28906] hover:text-[#080808]"
                       >
                         Access
                       </Link>
@@ -388,7 +388,7 @@ export default async function ScriptureIndexDetailPage({
                       href={`/scripture-index/${slugify(
                         item.title,
                       )}`}
-                      className="bn-button inline-flex items-center gap-3 rounded-lg border border-white/10 bg-[#111111] px-4 py-3 text-[13px] text-white/55 transition hover:border-[#C8A35A]/45 hover:text-white"
+                      className="bn-button inline-flex items-center gap-3 rounded-lg border border-white/10 bg-[#111111] px-4 py-3 text-[13px] text-white/55 transition hover:border-[#E28906]/45 hover:text-white"
                     >
                       {
                         item.title
@@ -402,7 +402,7 @@ export default async function ScriptureIndexDetailPage({
 
                       <ArrowRight
                         size={13}
-                        className="text-[#C8A35A]"
+                        className="text-[#E28906]"
                       />
                     </Link>
                   ),

@@ -515,14 +515,14 @@ export default function AdminNuggetsPage() {
             <button
               type="button"
               onClick={() => setImportOpen(true)}
-              className="min-h-9 rounded-md border border-[#C8A35A]/40 px-4 text-[13px] text-[#E0C48A] transition hover:bg-white/[0.08] active:translate-y-px focus-visible:outline-2 focus-visible:outline-[#E0C48A]"
+              className="min-h-9 rounded-md border border-[#E28906]/40 px-4 text-[13px] text-[#E28906] transition hover:bg-white/[0.08] active:translate-y-px focus-visible:outline-2 focus-visible:outline-[#E28906]"
             >
               Import
             </button>
 
             <Link
               href="/admin/nuggets/new"
-              className="bn-button inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button inline-flex min-h-9 items-center gap-2 rounded-md bg-[#E28906] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
             >
               <Plus
                 size={12}
@@ -572,7 +572,7 @@ export default function AdminNuggetsPage() {
                 )
               }
               placeholder="Search nuggets..."
-              className="h-10 w-full rounded-md border border-white/10 bg-[#111111] pl-9 pr-4 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+              className="h-10 w-full rounded-md border border-white/10 bg-[#111111] pl-9 pr-4 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
             />
           </div>
 
@@ -757,7 +757,7 @@ export default function AdminNuggetsPage() {
                       ref={(element) => {
                         if (element) element.indeterminate = pageSelectedCount > 0 && !allOnPageSelected;
                       }}
-                      className="h-4 w-4 accent-[#cda762]"
+                      className="h-4 w-4 accent-[#E28906]"
                     />
                   </th>
                   <th className="px-5 py-3 font-medium">
@@ -822,13 +822,13 @@ export default function AdminNuggetsPage() {
                         }
                         className="border-b border-white/[0.05] last:border-0"
                       >
-                        <td className="px-3 py-4"><input type="checkbox" aria-label={`Select ${nugget.title}`} checked={selection.selected.has(nugget.id)} onChange={()=>selection.toggle(nugget.id)} className="h-4 w-4 accent-[#cda762]" /></td>
+                        <td className="px-3 py-4"><input type="checkbox" aria-label={`Select ${nugget.title}`} checked={selection.selected.has(nugget.id)} onChange={()=>selection.toggle(nugget.id)} className="h-4 w-4 accent-[#E28906]" /></td>
                         {/* TITLE */}
 
                         <td className="max-w-[310px] px-5 py-4">
                           <Link
                             href={`/admin/nuggets/${nugget.id}/edit`}
-                            className="block truncate text-[9px] text-white/70 transition hover:text-[#C8A35A]"
+                            className="block truncate text-[9px] text-white/70 transition hover:text-[#E28906]"
                           >
                             {
                               nugget.title
@@ -836,11 +836,11 @@ export default function AdminNuggetsPage() {
                           </Link>
 
                           {nugget.isGold && (
-                            <span className="mt-1 inline-block text-[7px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
+                            <span className="mt-1 inline-block text-[7px] font-semibold uppercase tracking-[0.06em] text-[#E28906]">
                               Gold
                             </span>
                           )}
-                          {nugget.isGold && <span className="mt-1 inline-block rounded bg-[#C8A35A]/15 px-2 py-1 text-[12px] font-semibold text-[#C8A35A]">Gold / Premium</span>}
+                          {nugget.isGold && <span className="mt-1 inline-block rounded bg-[#E28906]/15 px-2 py-1 text-[12px] font-semibold text-[#E28906]">Gold / Premium</span>}
                         </td>
 
                         {/* TOPIC */}
@@ -1022,7 +1022,7 @@ export default function AdminNuggetsPage() {
                       ),
                   )
                 }
-                className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 text-white/35 transition hover:border-[#C8A35A]/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-25"
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 text-white/35 transition hover:border-[#E28906]/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-25"
               >
                 <ChevronLeft
                   size={12}
@@ -1057,7 +1057,7 @@ export default function AdminNuggetsPage() {
                         className={`flex h-7 min-w-7 items-center justify-center rounded-md border px-2 text-[8px] transition ${
                           safePage ===
                           page
-                            ? "border-[#C8A35A]/40 bg-[#C8A35A]/15 text-[#E0C48A]"
+                            ? "border-[#E28906]/40 bg-[#E28906]/15 text-[#E28906]"
                             : "border-white/10 text-white/35 hover:text-white"
                         }`}
                       >
@@ -1085,7 +1085,7 @@ export default function AdminNuggetsPage() {
                       ),
                   )
                 }
-                className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 text-white/35 transition hover:border-[#C8A35A]/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-25"
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 text-white/35 transition hover:border-[#E28906]/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-25"
               >
                 <ChevronRight
                   size={12}
@@ -1122,14 +1122,14 @@ function TabButton({
       onClick={onClick}
       className={`relative shrink-0 pb-3 text-[9px] transition ${
         active
-          ? "text-[#C8A35A]"
+          ? "text-[#E28906]"
           : "text-white/35 hover:text-white"
       }`}
     >
       {label}
 
       {active && (
-        <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#C8A35A]" />
+        <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#E28906]" />
       )}
     </button>
   );
@@ -1158,7 +1158,7 @@ function StatusBadge({
   }
 
   return (
-    <span className="inline-flex rounded-full border border-[#C8A35A]/20 bg-[#C8A35A]/10 px-2.5 py-1 text-[7px] font-medium text-[#E0C48A]">
+    <span className="inline-flex rounded-full border border-[#E28906]/20 bg-[#E28906]/10 px-2.5 py-1 text-[7px] font-medium text-[#E28906]">
       Draft
     </span>
   );

@@ -139,14 +139,14 @@ export default async function ChallengeDetailPage({
           <div className="mx-auto max-w-[1280px] px-5 py-14 sm:px-8 lg:px-10 lg:py-16">
             <Link
               href="/library?tab=Challenges"
-              className="text-[13px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="text-[13px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               ← Challenges
             </Link>
 
             <div className="mt-7 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-[820px]">
-                <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[#C8A35A]">
+                <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[#E28906]">
                   I Need Wisdom About...
                 </p>
 
@@ -190,7 +190,7 @@ export default async function ChallengeDetailPage({
                 <Link
                   key={nugget.slug}
                   href={`/nugget/${nugget.slug}`}
-                  className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#C8A35A]/45"
+                  className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#E28906]/45"
                 >
                   <div className="relative h-[165px] shrink-0 overflow-hidden">
                     <Image
@@ -202,7 +202,7 @@ export default async function ChallengeDetailPage({
                     />
 
                     {nugget.isGold && (
-                      <span className="absolute right-3 top-3 rounded border border-[#C8A35A]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E0C48A]">
+                      <span className="absolute right-3 top-3 rounded border border-[#E28906]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E28906]">
                         GOLD
                       </span>
                     )}
@@ -210,7 +210,7 @@ export default async function ChallengeDetailPage({
 
                   <div className="flex min-h-0 flex-1 flex-col p-5">
                     <div className="flex items-center justify-between gap-3">
-                      <span className="min-w-0 line-clamp-1 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
+                      <span className="min-w-0 line-clamp-1 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#E28906]">
                         {nugget.tag || nugget.topic}
                       </span>
 
@@ -228,7 +228,7 @@ export default async function ChallengeDetailPage({
                       {nugget.scriptureRef}
                     </p>
 
-                    <span className="mt-auto inline-flex items-center gap-2 pt-5 text-[13px] font-medium text-[#C8A35A]">
+                    <span className="mt-auto inline-flex items-center gap-2 pt-5 text-[13px] font-medium text-[#E28906]">
                       Listen & Read
                       <ArrowRight size={13} />
                     </span>
@@ -263,7 +263,7 @@ export default async function ChallengeDetailPage({
                   <Link
                     key={item.title}
                     href={`/challenges/${slugify(item.title)}`}
-                    className="bn-button group inline-flex items-center gap-3 rounded-lg border border-white/10 bg-[#111111] px-4 py-3 transition hover:border-[#C8A35A]/45"
+                    className="bn-button group inline-flex items-center gap-3 rounded-lg border border-white/10 bg-[#111111] px-4 py-3 transition hover:border-[#E28906]/45"
                   >
                     <span className="text-[13px] text-white/65 transition group-hover:text-white">
                       {item.title}
@@ -275,7 +275,7 @@ export default async function ChallengeDetailPage({
 
                     <ArrowRight
                       size={13}
-                      className="text-[#C8A35A]"
+                      className="text-[#E28906]"
                     />
                   </Link>
                 ))}

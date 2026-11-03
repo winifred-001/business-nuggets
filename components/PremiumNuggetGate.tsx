@@ -8,8 +8,8 @@ export default function PremiumNuggetGate() {
       <Navbar />
 
       <main className="flex flex-1 items-center justify-center px-5 py-12 sm:px-8 lg:px-10">
-        <section className="w-full max-w-[620px] rounded-2xl border border-[#C8A35A]/35 bg-[#111111] p-6 text-center sm:p-9">
-          <span className="inline-flex rounded-full border border-[#C8A35A]/50 bg-[#C8A35A]/10 px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-[#E0C48A]">
+        <section className="w-full max-w-[620px] rounded-2xl border border-[#E28906]/35 bg-[#111111] p-6 text-center sm:p-9">
+          <span className="inline-flex rounded-full border border-[#E28906]/50 bg-[#E28906]/10 px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-[#E28906]">
             Gold
           </span>
 
@@ -24,14 +24,14 @@ export default function PremiumNuggetGate() {
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/membership"
-              className="bn-button inline-flex min-h-12 items-center justify-center rounded-lg bg-[#C8A35A] px-6 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button inline-flex min-h-12 items-center justify-center rounded-lg bg-[#E28906] px-6 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
             >
               Upgrade to Premium
             </Link>
 
             <Link
               href="/library"
-              className="bn-button inline-flex min-h-12 items-center justify-center rounded-lg border border-white/12 px-6 text-[14px] font-medium text-white/65 transition hover:border-[#C8A35A]/40 hover:text-[#E0C48A]"
+              className="bn-button inline-flex min-h-12 items-center justify-center rounded-lg border border-white/12 px-6 text-[14px] font-medium text-white/65 transition hover:border-[#E28906]/40 hover:text-[#E28906]"
             >
               Return to Library
             </Link>

@@ -156,7 +156,7 @@ export default function AccountSecurityTab() {
 
           <Link
             href="/forgot-password"
-            className="inline-block text-[12px] text-[#C8A35A]"
+            className="inline-block text-[12px] text-[#E28906]"
           >
             Forgot Password? → Request
             Reset Link
@@ -170,7 +170,7 @@ export default function AccountSecurityTab() {
         )}
 
         {message && (
-          <p className="mt-4 text-[13px] text-[#C8A35A]">
+          <p className="mt-4 text-[13px] text-[#E28906]">
             {message}
           </p>
         )}
@@ -193,7 +193,7 @@ export default function AccountSecurityTab() {
           <button
             disabled={loading}
             type="submit"
-            className="rounded-md bg-[#C8A35A] px-5 py-2.5 text-[12px] font-semibold text-[#080808] disabled:opacity-50"
+            className="rounded-md bg-[#E28906] px-5 py-2.5 text-[12px] font-semibold text-[#080808] disabled:opacity-50"
           >
             {loading
               ? "Saving..."
@@ -207,8 +207,8 @@ export default function AccountSecurityTab() {
           Two-Factor Authentication
         </h2>
 
-        <div className="mt-5 rounded-md border border-[#C8A35A]/20 bg-[#C8A35A]/15 p-4">
-          <p className="text-[12px] font-medium text-[#C8A35A]">
+        <div className="mt-5 rounded-md border border-[#E28906]/20 bg-[#E28906]/15 p-4">
+          <p className="text-[12px] font-medium text-[#E28906]">
             Not enabled — premium status
           </p>
 
@@ -264,7 +264,7 @@ function PasswordField({
           )
         }
         placeholder={placeholder}
-        className="h-12 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[13px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/60"
+        className="h-12 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[13px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/60"
       />
     </div>
   );

@@ -384,7 +384,7 @@ export default function NewNuggetPage() {
 
             <Link
               href="/admin/nuggets"
-              className="bn-button inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 px-4 text-[14px] text-white/60 transition hover:border-[#C8A35A]/35 hover:text-[#E0C48A]"
+              className="bn-button inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 px-4 text-[14px] text-white/60 transition hover:border-[#E28906]/35 hover:text-[#E28906]"
             >
               <ArrowLeft size={16} />
               Back to Nuggets
@@ -519,7 +519,7 @@ export default function NewNuggetPage() {
               <div className="space-y-3">
                 {actionSteps.map((step, index) => (
                   <div key={index} className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#C8A35A]/10 text-[13px] font-semibold text-[#E0C48A]">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E28906]/10 text-[13px] font-semibold text-[#E28906]">
                       {index + 1}
                     </div>
 
@@ -548,7 +548,7 @@ export default function NewNuggetPage() {
               <button
                 type="button"
                 onClick={() => setActionSteps((current) => [...current, ""])}
-                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#C8A35A]/25 px-4 text-[13px] font-medium text-[#E0C48A] transition hover:bg-[#C8A35A]/10"
+                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#E28906]/25 px-4 text-[13px] font-medium text-[#E28906] transition hover:bg-[#E28906]/10"
               >
                 <Plus size={15} />
                 Add Action Step
@@ -593,7 +593,7 @@ export default function NewNuggetPage() {
               <button
                 type="button"
                 onClick={() => setChallenges((current) => [...current, ""])}
-                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/10 px-4 text-[13px] font-medium text-white/55 transition hover:border-[#C8A35A]/25 hover:text-[#E0C48A]"
+                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/10 px-4 text-[13px] font-medium text-white/55 transition hover:border-[#E28906]/25 hover:text-[#E28906]"
               >
                 <Plus size={15} />
                 Add Challenge
@@ -683,9 +683,9 @@ export default function NewNuggetPage() {
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploading}
-                      className="flex min-h-[150px] w-full flex-col items-center justify-center rounded-lg border border-dashed border-white/15 bg-[#080808] px-5 text-center transition hover:border-[#C8A35A]/40 hover:bg-[#C8A35A]/[0.03] disabled:cursor-wait"
+                      className="flex min-h-[150px] w-full flex-col items-center justify-center rounded-lg border border-dashed border-white/15 bg-[#080808] px-5 text-center transition hover:border-[#E28906]/40 hover:bg-[#E28906]/[0.03] disabled:cursor-wait"
                     >
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#C8A35A]/10 text-[#E0C48A]">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E28906]/10 text-[#E28906]">
                         <Upload size={19} />
                       </div>
                       <p className="mt-3 text-[14px] font-medium text-white/70">
@@ -795,7 +795,7 @@ export default function NewNuggetPage() {
                   type="button"
                   onClick={() => submitNugget("draft")}
                   disabled={saving !== null || uploading}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/10 px-5 text-[14px] font-medium text-white/65 transition hover:border-[#C8A35A]/30 hover:text-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/10 px-5 text-[14px] font-medium text-white/65 transition hover:border-[#E28906]/30 hover:text-[#E28906] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Save size={16} />
                   {saving === "draft" ? "Saving..." : "Save as Draft"}
@@ -805,7 +805,7 @@ export default function NewNuggetPage() {
                   type="button"
                   onClick={() => submitNugget("published")}
                   disabled={saving !== null || uploading}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#E28906] px-5 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Send size={16} />
                   {saving === "published" ? "Publishing..." : "Publish Nugget"}
@@ -820,10 +820,10 @@ export default function NewNuggetPage() {
 }
 
 const inputClass =
-  "h-11 w-full rounded-lg border border-white/10 bg-[#080808] px-3.5 text-[14px] text-white/75 outline-none transition placeholder:text-white/20 focus:border-[#C8A35A]/45 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-11 w-full rounded-lg border border-white/10 bg-[#080808] px-3.5 text-[14px] text-white/75 outline-none transition placeholder:text-white/20 focus:border-[#E28906]/45 disabled:cursor-not-allowed disabled:opacity-50";
 
 const textareaClass =
-  "w-full resize-y rounded-lg border border-white/10 bg-[#080808] px-3.5 py-3 text-[14px] leading-6 text-white/75 outline-none transition placeholder:text-white/20 focus:border-[#C8A35A]/45";
+  "w-full resize-y rounded-lg border border-white/10 bg-[#080808] px-3.5 py-3 text-[14px] leading-6 text-white/75 outline-none transition placeholder:text-white/20 focus:border-[#E28906]/45";
 
 function FormSection({
   icon,
@@ -840,8 +840,8 @@ function FormSection({
     <section className="rounded-[10px] border border-white/10 bg-[#111111] p-4 sm:p-5 lg:p-6">
       <div className="grid gap-5 lg:grid-cols-[210px_minmax(0,1fr)] lg:gap-8">
         <div>
-          <div className="flex items-center gap-3 text-[#E0C48A]">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#C8A35A]/10">
+          <div className="flex items-center gap-3 text-[#E28906]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#E28906]/10">
               {icon}
             </div>
             <h2 className="font-serif text-[20px] text-[#FAF9F6]">{title}</h2>
@@ -872,7 +872,7 @@ function Field({
     <label className={`block min-w-0 ${className}`}>
       <span className="mb-2 block text-[13px] font-medium text-white/65">
         {label}
-        {required && <span className="ml-1 text-[#C8A35A]">*</span>}
+        {required && <span className="ml-1 text-[#E28906]">*</span>}
       </span>
       {children}
     </label>
@@ -896,7 +896,7 @@ function ToggleCard({
       onClick={() => onChange(!checked)}
       role="switch"
       aria-checked={checked}
-      className="flex min-h-[92px] w-full items-center justify-between gap-4 rounded-lg border border-white/10 bg-[#080808] p-4 text-left transition hover:border-[#C8A35A]/25"
+      className="flex min-h-[92px] w-full items-center justify-between gap-4 rounded-lg border border-white/10 bg-[#080808] p-4 text-left transition hover:border-[#E28906]/25"
     >
       <div>
         <p className="text-[13px] font-medium text-white/70">{label}</p>
@@ -905,7 +905,7 @@ function ToggleCard({
 
       <span
         className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-          checked ? "bg-[#C8A35A]" : "bg-white/10"
+          checked ? "bg-[#E28906]" : "bg-white/10"
         }`}
       >
         <span

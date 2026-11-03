@@ -50,12 +50,12 @@ export default async function SearchPage({
             type="search"
             defaultValue={query}
             placeholder="Try Joseph, Genesis, or negotiation"
-            className="min-h-12 min-w-0 flex-1 rounded-xl border border-white/10 bg-[#111111] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
+            className="min-h-12 min-w-0 flex-1 rounded-xl border border-white/10 bg-[#111111] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#E28906]"
           />
 
           <button
             type="submit"
-            className="min-h-12 rounded-xl bg-[#C8A35A] px-6 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] sm:min-w-[120px]"
+            className="min-h-12 rounded-xl bg-[#E28906] px-6 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906] sm:min-w-[120px]"
           >
             Search
           </button>
@@ -73,7 +73,7 @@ export default async function SearchPage({
           {query && (
             <Link
               href="/search"
-              className="bn-button inline-flex min-h-11 items-center text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="bn-button inline-flex min-h-11 items-center text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Clear search
             </Link>
@@ -98,7 +98,7 @@ export default async function SearchPage({
 
             <Link
               href="/search"
-              className="bn-button mt-6 inline-flex min-h-11 items-center justify-center rounded-lg bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button mt-6 inline-flex min-h-11 items-center justify-center rounded-lg bg-[#E28906] px-5 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
             >
               Clear search
             </Link>

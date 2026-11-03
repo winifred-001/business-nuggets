@@ -602,7 +602,7 @@ export default function EditNuggetPage() {
 
           <Link
             href="/admin/nuggets"
-            className="bn-button inline-flex min-h-9 w-fit items-center justify-center rounded-md border border-white/10 px-4 text-[9px] text-white/55 transition hover:border-[#C8A35A]/30 hover:text-white"
+            className="bn-button inline-flex min-h-9 w-fit items-center justify-center rounded-md border border-white/10 px-4 text-[9px] text-white/55 transition hover:border-[#E28906]/30 hover:text-white"
           >
             Discard
           </Link>
@@ -662,7 +662,7 @@ export default function EditNuggetPage() {
                     .value,
                 )
               }
-              className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#C8A35A]/40"
+              className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#E28906]/40"
             />
 
             {/* SLUG */}
@@ -686,7 +686,7 @@ export default function EditNuggetPage() {
                       .value,
                   )
                 }
-                className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#C8A35A]/40"
+                className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#E28906]/40"
               />
             </div>
 
@@ -714,7 +714,7 @@ export default function EditNuggetPage() {
                     )
                   }
                   placeholder="Proverbs 11:1"
-                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
                 />
               </div>
 
@@ -738,7 +738,7 @@ export default function EditNuggetPage() {
                     )
                   }
                   placeholder="Negotiation & Justice"
-                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
                 />
               </div>
             </div>
@@ -765,7 +765,7 @@ export default function EditNuggetPage() {
                   )
                 }
                 rows={4}
-                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none focus:border-[#C8A35A]/40"
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none focus:border-[#E28906]/40"
               />
             </div>
 
@@ -790,7 +790,7 @@ export default function EditNuggetPage() {
                 }
                 rows={6}
                 placeholder="Main biblical-business principle..."
-                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
               />
             </div>
 
@@ -802,7 +802,7 @@ export default function EditNuggetPage() {
                 onChange={(event) => updateField("details", event.target.value)}
                 rows={8}
                 placeholder="Add the full explanation and supporting details..."
-                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
               />
               <p className="mt-2 text-[12px] text-white/45">All teaching sections support HTML formatting: &lt;p&gt;, &lt;br&gt;, &lt;strong&gt; (or &lt;bold&gt;), &lt;em&gt;, &lt;u&gt;, lists, headings and links. Markdown **bold** and ## headings still work. Scripts and embedded content are not supported.</p>
             </div>
@@ -831,7 +831,7 @@ export default function EditNuggetPage() {
                 }
                 rows={5}
                 placeholder="How this principle applies in business..."
-                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
               />
             </div>
 
@@ -861,7 +861,7 @@ export default function EditNuggetPage() {
                 placeholder={
                   "Enter one action per line\nReview your contracts\nAudit pricing practices"
                 }
-                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
               />
 
               <p className="mt-2 text-[8px] text-white/25">
@@ -894,7 +894,7 @@ export default function EditNuggetPage() {
                   )
                 }
                 placeholder="Enter one challenge or reflection prompt per line"
-                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
               />
 
               <p className="mt-2 text-[8px] text-white/25">
@@ -925,7 +925,7 @@ export default function EditNuggetPage() {
                     )
                   }
                   placeholder="Integrity & Character"
-                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
                 />
               </div>
 
@@ -949,7 +949,7 @@ export default function EditNuggetPage() {
                     )
                   }
                   placeholder="6 min"
-                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
                 />
               </div>
             </div>
@@ -966,7 +966,7 @@ export default function EditNuggetPage() {
                   aria-label="Bible Book"
                   value={form.book}
                   onChange={(event) => updateField("book", event.target.value)}
-                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#C8A35A]/40"
+                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#E28906]/40"
                 >
                   <option value="">Select a book</option>
                   {form.book && !BIBLE_BOOKS.includes(form.book) && (
@@ -1046,7 +1046,7 @@ export default function EditNuggetPage() {
                     "draft",
                   )
                 }
-                className="inline-flex min-h-9 items-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 text-[9px] text-white/60 transition hover:border-[#C8A35A]/30 hover:text-white disabled:opacity-40"
+                className="inline-flex min-h-9 items-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 text-[9px] text-white/60 transition hover:border-[#E28906]/30 hover:text-white disabled:opacity-40"
               >
                 <Save
                   size={12}
@@ -1062,7 +1062,7 @@ export default function EditNuggetPage() {
                 onClick={
                   previewNugget
                 }
-                className="inline-flex min-h-9 items-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 text-[9px] text-white/60 transition hover:border-[#C8A35A]/30 hover:text-white"
+                className="inline-flex min-h-9 items-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 text-[9px] text-white/60 transition hover:border-[#E28906]/30 hover:text-white"
               >
                 <Eye
                   size={12}
@@ -1079,7 +1079,7 @@ export default function EditNuggetPage() {
                     "published",
                   )
                 }
-                className="ml-auto inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:opacity-40"
+                className="ml-auto inline-flex min-h-9 items-center gap-2 rounded-md bg-[#E28906] px-5 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:opacity-40"
               >
                 {saving
                   ? "Publishing..."
@@ -1145,7 +1145,7 @@ export default function EditNuggetPage() {
                   )
                 }
                 placeholder="/media-placeholder.svg"
-                className="mt-2 h-9 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[9px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                className="mt-2 h-9 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[9px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
               />
 
               <ImageMediaPicker value={form.image} disabled={saving} onSelect={url => updateField("image", url)} />
@@ -1189,7 +1189,7 @@ export default function EditNuggetPage() {
 
             {/* GOLD + FEATURED */}
 
-            <section className="rounded-[10px] border border-[#C8A35A]/30 bg-[#111111] p-4">
+            <section className="rounded-[10px] border border-[#E28906]/30 bg-[#111111] p-4">
               <h2 className="font-serif text-[17px]">
                 Visibility
               </h2>
@@ -1221,7 +1221,7 @@ export default function EditNuggetPage() {
                         .checked,
                     )
                   }
-                  className="h-4 w-4 accent-[#C8A35A]"
+                  className="h-4 w-4 accent-[#E28906]"
                 />
               </label>
 
@@ -1254,7 +1254,7 @@ export default function EditNuggetPage() {
                         .checked,
                     )
                   }
-                  className="h-4 w-4 accent-[#C8A35A]"
+                  className="h-4 w-4 accent-[#E28906]"
                 />
               </label>
             </section>
@@ -1268,7 +1268,7 @@ export default function EditNuggetPage() {
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {form.tag && (
-                  <span className="rounded-full bg-[#C8A35A]/15 px-2.5 py-1 text-[7px] text-[#C8A35A]">
+                  <span className="rounded-full bg-[#E28906]/15 px-2.5 py-1 text-[7px] text-[#E28906]">
                     {
                       form.tag
                     }
@@ -1276,7 +1276,7 @@ export default function EditNuggetPage() {
                 )}
 
                 {form.topic && (
-                  <span className="rounded-full bg-[#C8A35A]/15 px-2.5 py-1 text-[7px] text-[#C8A35A]">
+                  <span className="rounded-full bg-[#E28906]/15 px-2.5 py-1 text-[7px] text-[#E28906]">
                     {
                       form.topic
                     }
@@ -1326,7 +1326,7 @@ function StatusBadge({
         status ===
         "published"
           ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-          : "border-[#C8A35A]/20 bg-[#C8A35A]/10 text-[#E0C48A]"
+          : "border-[#E28906]/20 bg-[#E28906]/10 text-[#E28906]"
       }`}
     >
       {status ===
