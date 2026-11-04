@@ -7,16 +7,17 @@ import { Pause, Play, Repeat2, Shuffle, SkipBack, SkipForward, Volume2, VolumeX,
 import { useAudioPlayback, audioTime } from "@/lib/use-audio-playback";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 import type { Nugget } from "@/types/nugget";
-export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage = "/media-placeholder.svg" }: { title: string; subtitle: string; audioSrc: string | null; slug: string; coverImage?: string }) {
+export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage = "/media-placeholder.svg", trackKind }: { title: string; subtitle: string; audioSrc: string | null; slug: string; coverImage?: string; trackKind?: "nugget" | "music" }) {
   const { audioRef, audioProps, playing, currentTime, duration, muted, repeat, audioError, togglePlay, seekTo, toggleRepeat, toggleMute } = useAudioPlayback(audioSrc);
+  const label = trackKind === "nugget" ? "Nugget Audio" : "Music Audio";
   const router = useRouter();
   const [tracks, setTracks] = useState<Nugget[]>([]);
   const [shuffle, setShuffle] = useState(false);
   useEffect(() => {
     let active = true;
-    void getPublishedNuggets().then(data => { if (active) setTracks(data.filter(item => (item.nuggetAudioUrl || item.audioUrl) && !item.locked)); }).catch(() => {});
+    void getPublishedNuggets().then(data => { if (active) setTracks(data.filter(item => !item.locked && (trackKind === "nugget" ? item.nuggetAudioUrl : trackKind === "music" ? item.audioUrl : item.nuggetAudioUrl || item.audioUrl))); }).catch(() => {});
     return () => { active = false; };
-  }, []);
+  }, [trackKind]);
   function move(direction: number) {
     if (tracks.length < 2) return;
     const index = tracks.findIndex(item => item.slug === slug);
@@ -25,8 +26,15 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
     if (next) router.push(`/nugget/${next.slug}`);
   }
   return (
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[#111111]">
-        <audio ref={audioRef} {...audioProps} />
+      <div className={`${trackKind ? "" : "fixed inset-x-0 bottom-0 z-50 "}border-t border-white/10 bg-[#111111]`}>
+        <audio ref={audioRef} {...audioProps} onPlay={event => {
+          audioProps.onPlay();
+          if (!trackKind) return;
+          const current = event.currentTarget;
+          current.closest("[data-nugget-audio-stack]")?.querySelectorAll("audio").forEach(player => {
+            if (player !== current) player.pause();
+          });
+        }} />
         <div className="mx-auto flex min-h-[84px] max-w-[1440px] items-center gap-5 px-4 sm:px-6 lg:px-10">
           {/* TRACK INFO */}
           <div className="flex min-w-0 items-center gap-3 sm:w-[270px]">
@@ -41,6 +49,7 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
             </div>
 
             <div className="min-w-0">
+              {trackKind && <p className="text-[12px] font-semibold text-[#E28906]">{label}</p>}
               <p className="truncate font-serif text-[13px] text-[#FAF9F6]">
                 {title}
               </p>
@@ -77,7 +86,7 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
 
               <button
                 type="button"
-                aria-label={playing ? "Pause" : "Play"}
+                aria-label={`${playing ? "Pause" : "Play"}${trackKind ? ` ${label}` : ""}`}
                 onClick={togglePlay}
                 disabled={!audioSrc}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E28906] text-[#080808]"
@@ -126,7 +135,7 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
           {/* MOBILE PLAY */}
           <button
             type="button"
-            aria-label={playing ? "Pause" : "Play"}
+            aria-label={`${playing ? "Pause" : "Play"}${trackKind ? ` ${label}` : ""}`}
                 onClick={togglePlay}
                 disabled={!audioSrc}
             className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E28906] text-[#080808] md:hidden"
@@ -139,7 +148,7 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
             <button type="button" onClick={toggleMute} disabled={!audioSrc} aria-label={muted ? "Unmute" : "Mute"} className="text-white/55 hover:text-white">{muted ? <VolumeX size={15} /> : <Volume2 size={15} />}</button>
 
             <Link
-              href={`/nugget/${slug}/audio`}
+              href={`/nugget/${slug}/${trackKind === "music" ? "musical" : "audio"}`}
               aria-label="Full screen"
               className="text-white/55 hover:text-white"
             >
@@ -147,7 +156,7 @@ export default function AudioBar({ title, subtitle, audioSrc, slug, coverImage =
             </Link>
           </div>
         </div>
-        {(audioError || !audioSrc) && <p role="status" className="mx-auto max-w-[1440px] px-4 pb-2 text-[12px] text-[#E28906] sm:px-6 lg:px-10">{audioError || "No audio has been attached to this Nugget yet."}</p>}
+        {(audioError || !audioSrc) && <p role="status" className="mx-auto max-w-[1440px] px-4 pb-2 text-[12px] text-[#E28906] sm:px-6 lg:px-10">{audioError || (trackKind ? `No ${label.toLowerCase()} has been attached yet.` : "No audio has been attached to this Nugget yet.")}</p>}
       </div>
   );
 }
