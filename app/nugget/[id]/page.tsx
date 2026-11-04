@@ -51,7 +51,7 @@ export default async function NuggetDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] pb-[96px] text-[#FAF9F6]">
+    <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
      <NuggetAnalyticsTracker nuggetId={nugget.id}/>
       <Navbar />
 
@@ -168,7 +168,22 @@ export default async function NuggetDetailPage({
         </section>
       </main>
 
-      <AudioBar key={nugget.slug} title={nugget.title} subtitle={`${nugget.scriptureRef} · ${nugget.topic}`} audioSrc={nugget.nuggetAudioUrl || nugget.audioUrl || null} slug={nugget.slug} />
+      <div key={nugget.slug} data-nugget-audio-stack className="sticky bottom-0 z-50 max-h-[50dvh] overflow-y-auto">
+        <AudioBar
+          trackKind="nugget"
+          title={nugget.title}
+          subtitle={`${nugget.scriptureRef} · ${nugget.topic}`}
+          audioSrc={nugget.nuggetAudioUrl || null}
+          slug={nugget.slug}
+        />
+        <AudioBar
+          trackKind="music"
+          title={nugget.title}
+          subtitle={`${nugget.scriptureRef} · ${nugget.topic}`}
+          audioSrc={nugget.audioUrl || null}
+          slug={nugget.slug}
+        />
+      </div>
     </div>
   );
 }
