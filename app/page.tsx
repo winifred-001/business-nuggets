@@ -1,200 +1,340 @@
-import Navbar from "../components/navbar";
-import Footer from "../components/Footer";
-import { Compass, ArrowRight, Images } from "lucide-react";
- 
-const topics = [
-  { title: "Leadership & Governance", count: "42 NUGGETS", img: "/images/visiting-homepage2.png" },
-  { title: "Money & Stewardship", count: "38 NUGGETS", img: "/images/visiting-homepage3.png" },
-  { title: "Strategy & Planning", count: "29 NUGGETS", img: "/images/visiting-homepage4.png" },
-  { title: "Perseverance Under Pressure", count: "31 NUGGETS", img: "/images/visiting-homepage5.png" },
-  { title: "Vision & Innovation", count: "50 NUGGETS", img: "/images/visiting-homepage6.png" },
-  { title: "Team Building & Culture", count: "25 NUGGETS", img: "/images/visiting-homepage7.png" },
-];
- 
-const wisdomTags = [
-  "Starting a Business",
-  "Money & Cashflow Problems",
-  "Managing Difficult People",
-  "Strategic Decision Making",
-  "Scaling & Growth Pressures",
-  "Leadership Burnout",
-];
- 
-const musicalTracks = [
+import BrandMark from "@/components/BrandMark";
+import Link from "next/link";
+import { DM_Sans, Manrope, Playfair_Display } from "next/font/google";
+
+import VisitorOnly from "@/components/VisitorOnly";
+import VisitorHomeHeader from "@/components/VisitorHomeHeader";
+import VisitorNuggetCounter from "@/components/VisitorNuggetCounter";
+import VisitorHomeLibrary from "@/components/VisitorHomeLibrary";
+import PageEyebrow from "@/components/PageEyebrow";
+import { getPublishedNuggets } from "@/lib/nuggets-api";
+import type { Nugget } from "@/types/nugget";
+import styles from "./visitor-home.module.css";
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--visitor-dm",
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--visitor-manrope",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--visitor-playfair",
+});
+
+const sampleNuggets = [
   {
-    reference: "Genesis 41",
-    title: "Joseph's Seven-Year Reserve Blueprint",
-    artist: "David O. & London Symphony",
-    time: "12:45",
-    Images:"/images/playlist-details1.png",
+    slug: "integrity-is-a-leadership-advantage",
+    number: 1,
+    title: "Integrity Is a Leadership Advantage",
+    topic: "Leadership & Integrity",
+    tag: "leadership",
+    scriptureRef: "PROVERBS 11:3",
+    keyPrinciple:
+      "Trust is an asset no balance sheet can fully capture. Consider how honest decisions shape sustainable influence.",
+    marketplaceApplication: "",
   },
   {
-    reference: "Nehemiah 3",
-    title: "The Architectural Mind: Building with Nehemiah",
-    artist: "Amina Vance & BNB Sound",
-    time: "15:10",
-    Images:"/images/playlist-details3.png",
+    slug: "count-the-cost-before-you-build",
+    number: 2,
+    title: "Count the Cost Before You Build",
+    topic: "Stewardship & Finance",
+    tag: "finance",
+    scriptureRef: "LUKE 14:28",
+    keyPrinciple:
+      "A compelling vision deserves a practical plan. Learn the value of preparing responsibly before committing resources.",
+    marketplaceApplication: "",
+  },
+  {
+    slug: "the-quiet-power-of-diligent-planning",
+    number: 3,
+    title: "The Quiet Power of Diligent Planning",
+    topic: "Vision & Execution",
+    tag: "strategy",
+    scriptureRef: "PROVERBS 21:5",
+    keyPrinciple:
+      "Consistency, clarity and deliberate action often matter more than dramatic moves in building lasting enterprises.",
+    marketplaceApplication: "",
+  },
+  {
+    slug: "listen-before-you-lead",
+    number: 4,
+    title: "Listen Before You Lead",
+    topic: "People & Leadership",
+    tag: "leadership",
+    scriptureRef: "JAMES 1:19",
+    keyPrinciple:
+      "Sound judgment starts with attention. Listening well is a disciplined leadership practice.",
+    marketplaceApplication: "",
+  },
+  {
+    slug: "build-with-patient-consistency",
+    number: 5,
+    title: "Build With Patient Consistency",
+    topic: "Enterprise & Growth",
+    tag: "growth",
+    scriptureRef: "ECCLESIASTES 11:6",
+    keyPrinciple:
+      "Faithfulness in daily action invites a long-term perspective on effort, opportunity and uncertainty.",
+    marketplaceApplication: "",
+  },
+  {
+    slug: "understand-the-weight-of-debt",
+    number: 6,
+    title: "Understand the Weight of Debt",
+    topic: "Finance & Responsibility",
+    tag: "finance",
+    scriptureRef: "PROVERBS 22:7",
+    keyPrinciple:
+      "Borrowing decisions carry responsibilities. Consider the cost of leverage and the importance of financial resilience.",
+    marketplaceApplication: "",
+  },
+  {
+    slug: "serve-your-customers-well",
+    number: 7,
+    title: "Serve Your Customers Well",
+    topic: "Service & Character",
+    tag: "character",
+    scriptureRef: "MARK 10:45",
+    keyPrinciple: "Approach leadership and customer relationships with a willingness to serve and a commitment to doing good work.",
+    marketplaceApplication: "",
+  },
+  {
+    slug: "seek-wise-counsel",
+    number: 8,
+    title: "Seek Wise Counsel",
+    topic: "Strategy & Decisions",
+    tag: "strategy",
+    scriptureRef: "PROVERBS 15:22",
+    keyPrinciple: "Invite thoughtful advice before making important decisions. Wise counsel can reveal gaps and strengthen a plan.",
+    marketplaceApplication: "",
+  },
+  {
+    slug: "be-faithful-in-small-things",
+    number: 9,
+    title: "Be Faithful in Small Things",
+    topic: "Stewardship & Growth",
+    tag: "growth",
+    scriptureRef: "LUKE 16:10",
+    keyPrinciple: "Care for the responsibilities already in your hands. Trust grows through consistent attention to everyday commitments.",
+    marketplaceApplication: "",
   },
 ];
- 
-export default function Home() {
+
+export default async function HomePage() {
+  let nuggets: Nugget[] = [];
+  let totalCount: number | null = null;
+
+  try {
+    nuggets = (await getPublishedNuggets()) as Nugget[];
+    totalCount = nuggets.length;
+  } catch (error) {
+    console.error("Failed to load visitor homepage Nuggets:", error);
+  }
+
+  const homeNuggets =
+    nuggets.length > 0
+      ? nuggets.slice(0, 9).map((nugget) => ({
+          slug: nugget.slug,
+          number: nugget.number,
+          title: nugget.title,
+          topic: nugget.topic,
+          tag: nugget.tag,
+          scriptureRef: nugget.scriptureRef,
+          keyPrinciple: nugget.keyPrinciple,
+          marketplaceApplication: nugget.marketplaceApplication,
+        }))
+      : sampleNuggets;
+
+  const year = new Date().getFullYear();
+
   return (
-    <div className="min-h-screen bg-black flex flex-col">
-      <Navbar />
- 
-      <main className="flex-1">
-        {/* Hero */}
-        <section
-          className="relative min-h-[450px] bg-cover bg-[position:center_15%] py-16 sm:py-24 px-4 sm:px-6 text-center"
-          style={{ backgroundImage: "url('/images/visiting-homepage.png')" }}
-        >
-          <div className="absolute inset-0 bg-black/70" />
-          <div className="relative max-w-3xl mx-auto mt-12">
-            <p className="text-amber-300 text-xs tracking-widest uppercase mb-3">
-              Timeless Biblical Wisdom for Today&apos;s Marketplace
-            </p>
-            <h1 className="text-white text-3xl sm:text-4xl md:text-5xl font-serif font-semibold mb-6 leading-tight">
-              Command Your Business with Absolute Clarity
-            </h1>
- 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xl mx-auto">
-              <input
-                type="text"
-                placeholder="Search by scripture, business challenge, or book..."
-                className="w-full bg-neutral-900 border border-gray-700 rounded-md px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
-              />
-              <button className="w-full sm:w-auto bg-amber-300 text-black font-medium px-6 py-2 rounded-md hover:bg-amber-400 transition whitespace-nowrap">
-                Start Discovering
-              </button>
-            </div>
-          </div>
-        </section>
- 
-        {/* Today's Business Nugget */}
-        <section className=" max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16 ">
-          <h2 className="text-white text-xl font-serif font-semibold mb-6">Today&apos;s Business Nugget</h2>
- 
-          <div className=" flex flex-col sm:flex-row bg-neutral-950 h-auto border border-amber-900/40 rounded-xl overflow-hidden md:flex">
-            <div
-              className="w-full h-48 bg-cover bg-center sm:h-auto sm:w-[40%] "
-              style={{ backgroundImage: "url('/images/visiting-homepage1.png')" }}
-            />
-            <div className="p-5 sm:p-6 md:w-1/2 flex flex-col justify-center">
-              <p className="text-amber-300 text-xs tracking-wide uppercase mb-2">
-                Integrity &amp; Character &middot; 6 Min Listen
-              </p>
-              <h3 className="text-white text-lg font-semibold mb-3">
-                The Law of Just Balances in Corporate Negotiation
-              </h3>
-              <p className="text-gray-400 text-sm italic mb-6">
-                &ldquo;A false balance is an abomination to the Lord, but a just weight is His delight.&rdquo; &mdash; Proverbs 11:1
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button className="bg-amber-300 text-black text-sm font-medium px-4 py-2 rounded-md hover:bg-amber-400 transition">
-                  Listen Audio (Musical)
-                </button>
-                <button className="border border-gray-700 text-gray-300 text-sm px-4 py-2 rounded-md hover:border-gray-500 transition">
-                  Read Commentary
-                </button>
-              </div>  
-            </div>
-          </div>
-        </section>
- 
-        {/* I Need Wisdom About */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16">
-          <h2 className="text-white text-xl font-serif font-semibold mb-6">I Need Wisdom About...</h2>
-          <div className="flex flex-wrap  gap-3">
-            {wisdomTags.map((tag, i) => (
-              <span
-                key={tag}
-                className={`text-12 px-4 py-2 rounded-full border ${
-                  i === 0
-                    ? "bg-amber-300 text-black border-amber-300"
-                    : "text-gray-300 border-gray-700 hover:border-gray-500"
-                }`}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </section>
- 
-        {/* Browse by Core Topic */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16">
-          <h2 className="text-white text-xl font-serif font-semibold mb-6">Browse by Core Topic</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {topics.map((topic) => (
-              <div
-                key={topic.title}
-                className="relative h-40 rounded-lg overflow-hidden bg-cover bg-center flex items-end p-4"
-                style={{ backgroundImage: `url('${topic.img}')` }}
-              >
-                <div className="absolute inset-0 bg-black/50" />
-                <div className="absolute top-3 left-3 w-7 h-7 rounded-full border border-amber-300/40 flex items-center justify-center">
-                  <Compass size={13} className="text-amber-300" />
-                </div>
-                <span className="absolute top-3 right-3 text-[10px] bg-black/60 text-amber-300 px-2 py-1 rounded">
-                  {topic.count}
-                </span>
-                <p className="relative text-white font-medium">{topic.title}</p>
-              </div>
-            ))}
-          </div>
-        </section>
- 
-        {/* Featured Wisdom Musicals */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16">
-          <h2 className="text-white text-xl font-serif font-semibold mb-1">Featured Wisdom Musicals</h2>
-          <p className="text-gray-400 text-sm mb-6">
-            Immersive audio teachings layered over professional cinematic soundtracks and ambient orchestration.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {musicalTracks.map((track) => (
-              <div
-                key={track.title}
-                className="flex items-center gap-3 sm:gap-4 bg-neutral-950 border border-gray-800 rounded-lg p-3"
-              >
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-neutral-800 shrink-0 overflow-hidden">
-                  <img src={track.Images} 
-                  alt={track.title} 
-                  className="w-full h-full object-cover" />
+    <VisitorOnly>
+      <div
+        className={`visitor-home ${styles.page} ${dmSans.variable} ${manrope.variable} ${playfair.variable}`}
+      >
+        <VisitorHomeHeader />
+
+        <main>
+          <section className={styles.hero} id="home">
+            <div className={`${styles.container} ${styles.heroInner}`}>
+              <div>
+                <PageEyebrow>Faith. Wisdom. Enterprise.</PageEyebrow>
+
+                <h1 className="bn-hero-title">
+                  Ancient Wisdom.
+                  <br />
+                  <span>Extraordinary</span>
+                  <br />
+                  Business Insight.
+                </h1>
+
+                <p>
+                  Discover timeless principles from Scripture to help you lead
+                  with integrity, make wiser decisions, and build a business
+                  rooted in purpose.
+                </p>
+
+                <div className={styles.actions}>
+                  <Link href="/library" className={`bn-button ${styles.btn}`}>
+                    Explore The Nuggets <span>↗</span>
+                  </Link>
+                  <Link href="/philosophy" className={`bn-button ${styles.btn} ${styles.btnOutline}`}>
+                    More About Us <span>↗</span>
+                  </Link>
                 </div>
 
-                <div className="flex-1 min-w-0 flex flex-col gap-1">
-                  <p className="text-amber-300 text-xs truncate">{track.reference}</p>
-                  <p className="text-white text-sm font-medium truncate">{track.title}</p>
-                  <p className="text-gray-500 text-xs truncate">{track.artist}</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-gray-500 text-xs hidden sm:inline">{track.time}</span>
-                  <button className="w-8 h-8 rounded-full bg-amber-300 text-black flex items-center justify-center">
-                    <ArrowRight size={16} />
-                  </button>
+                <div className={styles.micro}>
+                  <b>Scripture-rooted</b>
+                  <i />
+                  Practical insights
+                  <i />
+                  Everyday leadership
                 </div>
               </div>
-            ))}
+
+              <aside className={styles.verseCard}>
+                <small>A SCRIPTURE TO LEAD BY</small>
+                <div className={styles.quote}>
+                  “Commit thy works unto the LORD, and thy thoughts shall be
+                  established.”
+                </div>
+                <div className={styles.scripture}>PROVERBS 16:3 · KJV</div>
+              </aside>
+            </div>
+          </section>
+
+          <div className={styles.stats}>
+            <div className={`${styles.container} ${styles.statsInner}`}>
+              <div className={styles.stat}>
+                <strong>Faith &amp; Enterprise</strong>
+                <span>Where principles meet practice</span>
+              </div>
+              <div className={styles.stat}>
+                <strong>Biblical Perspective</strong>
+                <span>Rooted in timeless Scripture</span>
+              </div>
+              <div className={styles.stat}>
+                <strong>Purposeful Growth</strong>
+                <span>For leaders and entrepreneurs</span>
+              </div>
+            </div>
           </div>
-        </section>
- 
-        {/* Latest Biblical Nuggets */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16">
-          <h2 className="text-white text-xl font-serif font-semibold mb-6">Latest Biblical Nuggets</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            {["/images/saved-nugget1.png", "/images/saved-nugget2.png", "/images/saved-nugget3.png", "/images/saved-nugget4.png"].map(
-              (img, i) => (
-                <div
-                  key={i}
-                  className="h-28 sm:h-32 rounded-lg bg-cover bg-center"
-                  style={{ backgroundImage: `url('${img}')` }}
-                />
-              )
-            )}
+
+          <section className={`${styles.section} ${styles.light}`} id="library">
+            <div className={styles.container}>
+              <div className={styles.sectiontop}>
+                <div>
+                  <div className={styles.kicker}>The wisdom library</div>
+                  <h2>
+                    Find insight for every
+                    <br />
+                    business decision.
+                  </h2>
+                </div>
+
+                <div className={styles.introColumn}>
+                  <VisitorNuggetCounter totalCount={totalCount} />
+                  <p className={styles.intro}>
+                    Explore thoughtful, practical reflections on leadership,
+                    stewardship, diligence, money, vision and the demands of the
+                    marketplace.
+                  </p>
+                </div>
+              </div>
+
+              <div id="discover">
+                <VisitorHomeLibrary nuggets={homeNuggets} />
+              </div>
+
+              {nuggets.length === 0 && (
+                <p className={styles.previewNote}>
+                  Preview content: sample nuggets shown for design demonstration.
+                  Connect to your published library for production.
+                </p>
+              )}
+            </div>
+          </section>
+
+          <section className={styles.section} id="approach">
+            <div className={`${styles.container} ${styles.features}`}>
+              <div
+                className={styles.photo}
+                role="img"
+                aria-label="Contemporary professional workspace"
+              >
+                <div />
+              </div>
+
+              <div>
+                <div className={styles.kicker}>The philosophy behind the platform</div>
+                <h2>
+                  Build with conviction.
+                  <br />
+                  Lead with wisdom.
+                </h2>
+                <p>
+                  Business Nuggets from the Bible brings the enduring wisdom of
+                  Scripture into the real decisions entrepreneurs, professionals
+                  and leaders face every day.
+                </p>
+                <ul>
+                  <li>Understand the biblical principle in context</li>
+                  <li>Translate wisdom into ethical business practice</li>
+                  <li>Reflect, apply and grow with intention</li>
+                </ul>
+                <Link href="/library?tab=Topics%20Index" className={`bn-button ${styles.btn}`}>
+                  Begin Your Discovery ↗
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.banner}>
+            <div className={`${styles.container} ${styles.bannerInner}`}>
+              <div>
+                <h2>Better decisions begin with wisdom.</h2>
+                <p>
+                  Explore timeless biblical insight for today&apos;s changing
+                  marketplace.
+                </p>
+              </div>
+              <Link href="/library?tab=Challenges" className={`bn-button ${styles.btn}`}>
+                Explore The Library ↗
+              </Link>
+            </div>
+          </section>
+        </main>
+
+        <footer className={styles.footer}>
+          <div className={styles.container}>
+            <div className={styles.footerInner}>
+              <div>
+                <Link href="/" className={styles.brand} aria-label="Business Nuggets home">
+                  <BrandMark />
+                </Link>
+                <p>Biblical principles. Practical wisdom. Purposeful enterprise.</p>
+              </div>
+
+              <nav className={styles.footerLinks} aria-label="Footer navigation">
+                <Link href="/">Home</Link>
+                <Link href="/library">Library</Link>
+                <Link href="/privacy-policy">Privacy Policy</Link>
+                <Link href="/terms-of-use">Terms of Use</Link>
+              </nav>
+            </div>
+
+            <div className={styles.bottom}>
+              <span>© {year} Business Nuggets from the Bible. All rights reserved.</span>
+              <span>Faith • Wisdom • Enterprise</span>
+            </div>
           </div>
-        </section>
-      </main>
- 
-      <Footer />
-    </div>
+        </footer>
+      </div>
+    </VisitorOnly>
   );
 }

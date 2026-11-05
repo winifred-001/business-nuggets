@@ -1,0 +1,96 @@
+/* Compact only the plan editor inside Admin > Subscriptions. */
+div.fixed.inset-0[class*="z-[90]"] {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  overflow-y: auto;
+}
+
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"]) {
+  max-width: 440px;
+  padding: 18px;
+}
+
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  > div:first-child
+  h2 {
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  > div:first-child
+  p {
+  margin-top: 4px;
+}
+
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  > div:nth-child(2) {
+  margin-top: 14px;
+}
+
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  > div:nth-child(2)
+  > * + * {
+  margin-top: 10px !important;
+}
+
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  input:not([type="checkbox"]),
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  select {
+  height: 36px;
+}
+
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  label + input,
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  label + select,
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  label + textarea {
+  margin-top: 6px !important;
+}
+
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  textarea {
+  height: 88px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  line-height: 18px;
+}
+
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  textarea + p {
+  margin-top: 3px;
+}
+
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  label:has(input[type="checkbox"]) {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  > div:last-child {
+  margin-top: 16px;
+}
+
+div.fixed.inset-0[class*="z-[90]"]
+  > div:has(textarea[placeholder^="Full archive"])
+  > div:last-child
+  button {
+  height: 34px;
+}

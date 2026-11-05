@@ -1,126 +1,453 @@
+"use client";
+
+import { nuggetExcerpt } from "@/lib/nugget-text";
+
+import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+
+import {
+  ArrowRight,
+  ListMusic,
+  Plus,
+} from "lucide-react";
+
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
-import Link from "next/link";
-import { ArrowRight, Plus } from "lucide-react";
- 
-const playlists = [
-  {
-    title: "Capital Stewardship & Debt",
-    count: "7 Nuggets linked",
-    duration: "42 mins",
-    description:
-      "Critical lessons on managing cash flow buffers and staying leverage-free.",
-    image: "/images/capital-stewardship.png",
-  },
-  {
-    title: "Conflict Resolution & Scale",             
-    count: "12 Nuggets linked",
-    duration: "1h 15m",
-    description:
-      "Biblical infrastructure rules for establishing delegation standards in scaling startups.",
-    image: "/images/conflict-resolution.png",
-  },
-  {
-    title: "Integrity As A Premium Brand",
-    count: "5 Nuggets linked",
-    duration: "28 mins",
-    description:
-      "Understanding how radical transparency commands supreme brand value in B2B.",
-    image: "/images/integrity-brand.png",
-  },
-];
- 
+import { API_URL } from "@/lib/api";
+import { nuggets } from "@/lib/nuggets";
+
+type PlaylistItem = {
+  id: number;
+  playlistId: number;
+  nuggetId: string;
+  createdAt: string;
+};
+
+type Playlist = {
+  id: number;
+  name: string;
+  userId: number;
+  createdAt: string;
+  items: PlaylistItem[];
+};
+
 export default function PlaylistsPage() {
+  const [playlists, setPlaylists] =
+    useState<Playlist[]>([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+  /* =========================================================
+     LOAD PLAYLISTS
+  ========================================================= */
+
+  async function loadPlaylists() {
+    const token =
+      localStorage.getItem("token");
+
+    if (!token) {
+      setError(
+        "Please log in to view your playlists.",
+      );
+
+      setLoading(false);
+
+      return;
+    }
+
+    try {
+      const response =
+        await fetch(
+          `${API_URL}/playlists`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          },
+        );
+
+      const data =
+        await response
+          .json()
+          .catch(() => []);
+
+      if (!response.ok) {
+        setError(
+          Array.isArray(
+            data.message,
+          )
+            ? data.message.join(
+                ", ",
+              )
+            : data.message ||
+                "Could not load playlists.",
+        );
+
+        return;
+      }
+
+      setPlaylists(
+        Array.isArray(data)
+          ? data
+          : [],
+      );
+
+      setError("");
+    } catch {
+      setError(
+        "Could not connect to the server.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadPlaylists();
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#050505] text-[#EDEAE3]">
+    <div className="flex min-h-screen flex-col bg-[#080808] text-white">
       <Navbar />
- 
-      <main className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-14">
- 
-        {/* ================= HEADER ================= */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
- 
+
+      <main className="bn-member-library mx-auto w-full max-w-[1280px] flex-1 px-5 py-12 sm:px-8 lg:px-10 lg:py-16">
+        {/* HEADER */}
+
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="font-serif text-[28px] text-white">
+            <h1 className="bn-hero-title font-serif text-[40px] leading-tight text-white">
               My Playlists
             </h1>
- 
-            <p className="mt-2 text-[12px] text-white/40">
-              Premium audio modules structured for specific executive
-              development paths.
+
+            <p className="mt-3 max-w-2xl text-[13px] leading-6 text-white/40">
+              Premium audio modules
+              structured for specific
+              executive development paths.
             </p>
           </div>
- 
-          <button className="flex items-center gap-2 self-start rounded-md bg-[#C9A227] px-5 py-2.5 text-[12px] font-medium text-black transition hover:bg-[#DDB93A] sm:self-auto">
+
+          <Link
+            href="/library/playlist/create"
+            className="bn-button flex w-fit items-center gap-2 rounded-md bg-[#E28906] px-4 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
+          >
             <Plus size={14} />
+
             Create New Playlist
-          </button>
- 
+          </Link>
         </div>
- 
- 
-        {/* ================= PLAYLIST CARDS ================= */}
-        <section className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
- 
-          {playlists.map((playlist) => (
-            <div
-              key={playlist.title}
-              className="overflow-hidden rounded-md border p-5 border-white/10 bg-[#0d0d0d] transition hover:border-[#C9A227]/40"
-            >
- 
-              {/* Image + heading */}
-              <div className="flex gap-3 p-3">
- 
-                <div className="h-[52px] w-[52px] shrink-0 overflow-hidden rounded-sm bg-[#17130d]">
-                  <img
-                 
-                  />
-                </div>
- 
-                <div className="min-w-0 pt-1">
- 
-                  <h2 className="font-serif text-[14px] leading-tight text-white">
-                    {playlist.title}
-                  </h2>
- 
-                  <p className="mt-2 text-[10px] text-white/35">
-                    {playlist.count} · {playlist.duration}
-                  </p>
- 
-                </div>
- 
-              </div>
- 
- 
-              {/* Description */}
-              <div className="px-3 pb-3">
- 
-                <p className="min-h-[35px] text-[10px] leading-relaxed text-white/45">
-                  {playlist.description}
-                </p>
- 
- 
-                {/* Bottom action */}
-                <Link
-                  href="/library/player"
-                  className="mt-4 flex items-center justify-between text-[10px] text-[#C9A227] hover:text-[#DDB93A]"
-                >
-                  <span>Open Playlist</span>
- 
-                  <ArrowRight size={15} />
- 
-                </Link>
- 
-              </div>
- 
+
+        {/* LOADING */}
+
+        {loading && (
+          <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map(
+              (item) => (
+                <div
+                  key={item}
+                  className="h-[190px] animate-pulse rounded-xl border border-white/10 bg-[#101010]"
+                />
+              ),
+            )}
+          </div>
+        )}
+
+        {/* ERROR */}
+
+        {!loading &&
+          error && (
+            <div className="mt-10 rounded-lg border border-red-500/20 bg-red-500/[0.04] p-4 text-[12px] text-red-300">
+              {error}
             </div>
-          ))}
- 
-        </section>
- 
+          )}
+
+        {/* EMPTY STATE */}
+
+        {!loading &&
+          !error &&
+          playlists.length ===
+            0 && (
+            <div className="mt-10 flex min-h-[260px] flex-col items-center justify-center rounded-xl border border-white/10 bg-[#101010] px-6 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black">
+                <ListMusic
+                  size={20}
+                  className="text-[#E28906]"
+                />
+              </div>
+
+              <h2 className="mt-4 font-serif text-[20px] text-white">
+                No playlists yet
+              </h2>
+
+              <p className="mt-2 max-w-md text-[11px] leading-6 text-white/40">
+                Create a playlist
+                to organise Business
+                Nuggets into focused
+                learning paths.
+              </p>
+
+              <Link
+                href="/library/playlist/create"
+                className="bn-button mt-5 flex items-center gap-2 rounded-md bg-[#E28906] px-4 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
+              >
+                <Plus
+                  size={14}
+                />
+
+                Create New Playlist
+              </Link>
+            </div>
+          )}
+
+        {/* PLAYLIST CARDS */}
+
+        {!loading &&
+          !error &&
+          playlists.length >
+            0 && (
+            <div className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {playlists.map(
+                (
+                  playlist,
+                ) => (
+                  <PlaylistCard
+                    key={
+                      playlist.id
+                    }
+                    playlist={
+                      playlist
+                    }
+                  />
+                ),
+              )}
+            </div>
+          )}
       </main>
- 
+
       <Footer />
+    </div>
+  );
+}
+
+/* =========================================================
+   PLAYLIST CARD
+========================================================= */
+
+function PlaylistCard({
+  playlist,
+}: {
+  playlist: Playlist;
+}) {
+  const playlistNuggets =
+    useMemo(() => {
+      const ids =
+        new Set(
+          playlist.items.map(
+            (item) =>
+              item.nuggetId,
+          ),
+        );
+
+      return nuggets.filter(
+        (nugget) =>
+          ids.has(
+            nugget.id,
+          ),
+      );
+    }, [
+      playlist.items,
+    ]);
+
+  const previewNuggets =
+    playlistNuggets.slice(
+      0,
+      4,
+    );
+
+  const totalSeconds =
+    playlistNuggets.reduce(
+      (
+        total,
+        nugget,
+      ) => {
+        if (
+          !nugget.duration
+        ) {
+          return total;
+        }
+
+        const parts =
+          nugget.duration
+            .split(":")
+            .map(Number);
+
+        if (
+          parts.some(
+            Number.isNaN,
+          )
+        ) {
+          return total;
+        }
+
+        if (
+          parts.length ===
+          2
+        ) {
+          return (
+            total +
+            parts[0] *
+              60 +
+            parts[1]
+          );
+        }
+
+        if (
+          parts.length ===
+          3
+        ) {
+          return (
+            total +
+            parts[0] *
+              3600 +
+            parts[1] *
+              60 +
+            parts[2]
+          );
+        }
+
+        return total;
+      },
+      0,
+    );
+
+  const totalMinutes =
+    Math.ceil(
+      totalSeconds /
+        60,
+    );
+
+  const description =
+    playlistNuggets.length >
+    0
+      ? nuggetExcerpt(playlistNuggets[0].keyPrinciple)
+      : "Build a focused collection of business nuggets for your learning path.";
+
+  return (
+    <article className="group flex min-h-[195px] flex-col rounded-xl border border-white/10 bg-[#101010] p-5 transition hover:border-[#E28906]/30">
+      <div className="flex gap-4">
+        <PlaylistPreview
+          nuggets={
+            previewNuggets
+          }
+        />
+
+        <div className="min-w-0 flex-1">
+          <h2 className="font-serif text-[18px] leading-snug text-white">
+            {playlist.name}
+          </h2>
+
+          <p className="mt-1 text-[10px] text-white/35">
+            {
+              playlist.items
+                .length
+            }{" "}
+            {playlist.items
+              .length === 1
+              ? "Nugget"
+              : "Nuggets"}
+
+            {totalMinutes >
+              0 && (
+              <>
+                {" "}
+                •{" "}
+                {
+                  totalMinutes
+                }{" "}
+                mins
+              </>
+            )}
+          </p>
+        </div>
+      </div>
+
+      <p className="mt-5 line-clamp-2 text-[11px] leading-5 text-white/40">
+        {description}
+      </p>
+
+      <Link
+        href={`/library/playlist/${playlist.id}`}
+        className="mt-auto flex items-center justify-between pt-5 text-[11px] font-medium text-[#E28906]"
+      >
+        <span>
+          Open Playlist
+        </span>
+
+        <ArrowRight
+          size={14}
+          className="transition-transform group-hover:translate-x-1"
+        />
+      </Link>
+    </article>
+  );
+}
+
+/* =========================================================
+   PREVIEW
+========================================================= */
+
+function PlaylistPreview({
+  nuggets: playlistNuggets,
+}: {
+  nuggets: typeof nuggets;
+}) {
+  if (
+    playlistNuggets.length ===
+    0
+  ) {
+    return (
+      <div className="flex h-[82px] w-[82px] shrink-0 items-center justify-center rounded-md border border-white/10 bg-[#181818]">
+        <ListMusic
+          size={20}
+          className="text-[#E28906]"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid h-[82px] w-[82px] shrink-0 grid-cols-2 grid-rows-2 overflow-hidden rounded-md bg-[#181818]">
+      {[0, 1, 2, 3].map(
+        (index) => {
+          const nugget =
+            playlistNuggets[
+              index %
+                playlistNuggets.length
+            ];
+
+          return (
+            <div
+              key={index}
+              className="relative overflow-hidden"
+            >
+              <Image
+                src={
+                  nugget.image
+                }
+                alt=""
+                fill
+                sizes="41px"
+                className="object-cover"
+              />
+            </div>
+          );
+        },
+      )}
     </div>
   );
 }

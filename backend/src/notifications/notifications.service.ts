@@ -1,0 +1,543 @@
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from "@nestjs/common";
+
+import {
+  Cron,
+  CronExpression,
+} from "@nestjs/schedule";
+
+import { db } from "../prisma/db";
+
+import {
+  UserNotificationsService,
+} from "../user-notifications/user-notifications.service";
+
+type CreateCampaignInput = {
+  title: string;
+  message: string;
+
+  channel?: "in-app";
+
+  audience: string;
+  platform: string;
+
+  sendAt?: string;
+};
+
+@Injectable()
+export class NotificationsService
+  implements OnModuleInit
+{
+  private readonly logger =
+    new Logger(
+      NotificationsService.name,
+    );
+
+  private processing = false;
+
+  constructor(
+    private readonly userNotificationsService:
+      UserNotificationsService,
+  ) {}
+
+  /* =========================================================
+     START SCHEDULED CAMPAIGN CHECKER
+  ========================================================= */
+
+  onModuleInit() {
+    void this.processDueCampaigns();
+  }
+
+  @Cron(
+    CronExpression.EVERY_MINUTE,
+  )
+  async handleScheduledCampaigns() {
+    await this.processDueCampaigns();
+  }
+
+  /* =========================================================
+     ADMIN HISTORY
+  ========================================================= */
+
+  async getCampaigns() {
+    const campaigns =
+      await db.orm.public.NotificationCampaign.all();
+
+    return [...campaigns].sort(
+      (a, b) =>
+        new Date(
+          b.createdAt,
+        ).getTime() -
+        new Date(
+          a.createdAt,
+        ).getTime(),
+    );
+  }
+
+  /* =========================================================
+     CREATE / SCHEDULE CAMPAIGN
+  ========================================================= */
+
+  async createCampaign(
+    data: CreateCampaignInput,
+  ) {
+    const title =
+      data.title.trim();
+
+    const message =
+      data.message.trim();
+
+    if (!title) {
+      throw new BadRequestException(
+        "Notification title is required",
+      );
+    }
+
+    if (!message) {
+      throw new BadRequestException(
+        "Notification message is required",
+      );
+    }
+
+    const audiences = [
+      "all",
+      "free",
+      "premium",
+    ];
+
+    const platforms = [
+      "all",
+      "web",
+      "ios",
+      "android",
+      "ios-android",
+    ];
+
+    if (
+      !audiences.includes(
+        data.audience,
+      )
+    ) {
+      throw new BadRequestException(
+        "Invalid audience",
+      );
+    }
+
+    if (
+      !platforms.includes(
+        data.platform,
+      )
+    ) {
+      throw new BadRequestException(
+        "Invalid platform",
+      );
+    }
+
+    /*
+     * Only in-app delivery is currently
+     * implemented.
+     *
+     * Push and email will be added later
+     * when their providers are connected.
+     */
+    const channel =
+      data.channel ??
+      "in-app";
+
+    if (
+      channel !== "in-app"
+    ) {
+      throw new BadRequestException(
+        "This notification channel is not configured yet",
+      );
+    }
+
+    let sendAt:
+      | string
+      | null = null;
+
+    let status =
+      "draft";
+
+    if (data.sendAt) {
+      const date =
+        new Date(
+          data.sendAt,
+        );
+
+      if (
+        Number.isNaN(
+          date.getTime(),
+        )
+      ) {
+        throw new BadRequestException(
+          "Invalid send date",
+        );
+      }
+
+      sendAt =
+        date.toISOString();
+
+      status =
+        "scheduled";
+    }
+
+    const eligibleUsers =
+      await this.getEligibleUsers(
+        data.audience,
+      );
+
+    const created =
+      await db.orm.public.NotificationCampaign.create({
+        title,
+
+        message,
+
+        channel,
+
+        audience:
+          data.audience,
+
+        platform:
+          data.platform,
+
+        sendAt,
+
+        status,
+
+        reach:
+          eligibleUsers.length,
+      });
+
+    if (!created) {
+      throw new BadRequestException(
+        "Could not create notification campaign",
+      );
+    }
+
+    return created;
+  }
+
+  /* =========================================================
+     ELIGIBLE USERS
+  ========================================================= */
+
+  private async getEligibleUsers(
+    audience: string,
+  ) {
+    const users =
+      await db.orm.public.User.all();
+
+    /*
+     * Suspended accounts must not receive
+     * campaigns.
+     */
+    const activeUsers =
+      users.filter(
+        (user) =>
+          user.accountStatus !==
+          "suspended",
+      );
+
+    if (
+      audience ===
+      "free"
+    ) {
+      return activeUsers.filter(
+        (user) =>
+          user.membershipTier ===
+          "free",
+      );
+    }
+
+    if (
+      audience ===
+      "premium"
+    ) {
+      return activeUsers.filter(
+        (user) =>
+          user.membershipTier ===
+          "premium",
+      );
+    }
+
+    return activeUsers;
+  }
+
+  /* =========================================================
+     DELIVER ONE CAMPAIGN
+  ========================================================= */
+
+  async deliverCampaign(
+    id: number,
+  ) {
+    const campaign =
+      await db.orm.public.NotificationCampaign
+        .where({
+          id,
+        })
+        .first();
+
+    if (!campaign) {
+      throw new NotFoundException(
+        "Notification campaign not found",
+      );
+    }
+
+    /*
+     * Already completed campaigns should
+     * never be delivered again.
+     */
+    if (
+      campaign.status ===
+      "sent"
+    ) {
+      return campaign;
+    }
+
+    if (
+      campaign.status ===
+      "cancelled"
+    ) {
+      return campaign;
+    }
+
+    /*
+     * Protect older campaigns that may
+     * have been stored as push/email before
+     * those providers were implemented.
+     */
+    if (
+      campaign.channel !==
+      "in-app"
+    ) {
+      await db.orm.public.NotificationCampaign
+        .where({
+          id,
+        })
+        .update({
+          status:
+            "failed",
+        });
+
+      throw new BadRequestException(
+        "This notification channel is not configured yet",
+      );
+    }
+
+    const users =
+      await this.getEligibleUsers(
+        campaign.audience,
+      );
+
+    /*
+     * UserNotificationsService handles
+     * duplicate campaign/user protection.
+     */
+    await this.userNotificationsService.createForUsers(
+      users.map(
+        (user) =>
+          user.id,
+      ),
+
+      {
+        campaignId:
+          campaign.id,
+
+        type:
+          "campaign",
+
+        title:
+          campaign.title,
+
+        message:
+          campaign.message,
+
+        href:
+          "/notifications",
+      },
+    );
+
+    const updated =
+      await db.orm.public.NotificationCampaign
+        .where({
+          id,
+        })
+        .update({
+          status:
+            "sent",
+
+          reach:
+            users.length,
+        });
+
+    if (!updated) {
+      throw new BadRequestException(
+        "Could not update notification campaign",
+      );
+    }
+
+    return updated;
+  }
+
+  /* =========================================================
+     PROCESS SCHEDULED CAMPAIGNS
+  ========================================================= */
+
+  async processDueCampaigns() {
+    /*
+     * Prevent two scheduler executions
+     * from overlapping in this Nest process.
+     */
+    if (this.processing) {
+      return;
+    }
+
+    this.processing = true;
+
+    try {
+      const campaigns =
+        await db.orm.public.NotificationCampaign.all();
+
+      const now =
+        Date.now();
+
+      const dueCampaigns =
+        campaigns.filter(
+          (campaign) => {
+            if (
+              campaign.status !==
+              "scheduled"
+            ) {
+              return false;
+            }
+
+            if (
+              !campaign.sendAt
+            ) {
+              return false;
+            }
+
+            const scheduledTime =
+              new Date(
+                campaign.sendAt,
+              ).getTime();
+
+            if (
+              Number.isNaN(
+                scheduledTime,
+              )
+            ) {
+              return false;
+            }
+
+            return (
+              scheduledTime <=
+              now
+            );
+          },
+        );
+
+      for (
+        const campaign
+        of dueCampaigns
+      ) {
+        try {
+          await this.deliverCampaign(
+            campaign.id,
+          );
+
+          this.logger.log(
+            `Delivered notification campaign ${campaign.id}`,
+          );
+        } catch (error) {
+          this.logger.error(
+            `Could not deliver notification campaign ${campaign.id}`,
+            error instanceof Error
+              ? error.stack
+              : undefined,
+          );
+        }
+      }
+    } finally {
+      this.processing =
+        false;
+    }
+  }
+
+  /* =========================================================
+     UPDATE CAMPAIGN STATUS
+  ========================================================= */
+
+  async updateStatus(
+    id: number,
+    status: string,
+  ) {
+    const allowed = [
+      "draft",
+      "scheduled",
+      "sent",
+      "failed",
+      "cancelled",
+    ];
+
+    if (
+      !allowed.includes(
+        status,
+      )
+    ) {
+      throw new BadRequestException(
+        "Invalid campaign status",
+      );
+    }
+
+    const campaign =
+      await db.orm.public.NotificationCampaign
+        .where({
+          id,
+        })
+        .first();
+
+    if (!campaign) {
+      throw new NotFoundException(
+        "Notification campaign not found",
+      );
+    }
+
+    /*
+     * Manually changing a campaign to sent
+     * must actually perform delivery first.
+     */
+    if (
+      status === "sent" &&
+      campaign.status !==
+        "sent"
+    ) {
+      return this.deliverCampaign(
+        id,
+      );
+    }
+
+    const updated =
+      await db.orm.public.NotificationCampaign
+        .where({
+          id,
+        })
+        .update({
+          status,
+        });
+
+    if (!updated) {
+      throw new NotFoundException(
+        "Notification campaign not found",
+      );
+    }
+
+    return updated;
+  }
+}

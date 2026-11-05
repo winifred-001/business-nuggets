@@ -1,0 +1,331 @@
+"use client";
+
+import Link from "next/link";
+
+import {
+  Bell,
+  Bookmark,
+  Headphones,
+  ListMusic,
+  LogOut,
+  NotebookPen,
+  Settings,
+  UserRoundCheck,
+} from "lucide-react";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+import Navbar from "@/components/navbar";
+import Footer from "@/components/Footer";
+import AuthRouteGuard from "@/components/AuthRouteGuard";
+import {
+  ProfileAvatar,
+  ProfileImageEditor,
+} from "@/components/ProfileImage";
+
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  role?: string;
+};
+
+type WorkspaceCard = {
+  title: string;
+  description: string;
+  action: string;
+  href: string;
+  count?: number;
+  icon:
+    | "saved"
+    | "notes"
+    | "playlists"
+    | "history"
+    | "following"
+    | "notifications";
+};
+
+export default function WorkspacePage() {
+  const router = useRouter();
+
+  const [user, setUser] = useState<User | null>(null);
+  const [savedCount, setSavedCount] = useState(0);
+  const [notesCount, setNotesCount] = useState(0);
+  const [playlistCount, setPlaylistCount] = useState(0);
+  const [historyCount, setHistoryCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadWorkspace() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const [
+          userResponse,
+          savedResponse,
+          notesResponse,
+          playlistsResponse,
+          historyResponse,
+          followingResponse,
+        ] = await Promise.all([
+          fetch("/api/member/proxy/users/me", { cache: "no-store" }),
+          fetch("/api/member/proxy/saved-nuggets", { cache: "no-store" }),
+          fetch("/api/member/proxy/notes", { cache: "no-store" }),
+          fetch("/api/member/proxy/playlists", { cache: "no-store" }),
+          fetch("/api/member/proxy/history", { cache: "no-store" }),
+          fetch("/api/member/proxy/following/topics", { cache: "no-store" }),
+        ]);
+
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          setUser(userData);
+        }
+
+        if (savedResponse.ok) {
+          const data = await savedResponse.json();
+          setSavedCount(Array.isArray(data) ? data.length : 0);
+        }
+
+        if (notesResponse.ok) {
+          const data = await notesResponse.json();
+          setNotesCount(Array.isArray(data) ? data.length : 0);
+        }
+
+        if (playlistsResponse.ok) {
+          const data = await playlistsResponse.json();
+          setPlaylistCount(Array.isArray(data) ? data.length : 0);
+        }
+
+        if (historyResponse.ok) {
+          const data = await historyResponse.json();
+          setHistoryCount(Array.isArray(data) ? data.length : 0);
+        }
+
+        if (followingResponse.ok) {
+          const data = await followingResponse.json();
+          setFollowingCount(Array.isArray(data) ? data.length : 0);
+        }
+      } catch {
+        console.error("Could not load workspace.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadWorkspace();
+  }, []);
+
+  function signOut() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.dispatchEvent(new Event("auth-change"));
+    router.replace("/");
+  }
+
+  const cards: WorkspaceCard[] = [
+    {
+      title: "Saved Nuggets",
+      description: "Your bookmarked scripture and business teachings.",
+      action: "Open Saved Nuggets",
+      href: "/library/saved-nuggets",
+      count: savedCount,
+      icon: "saved",
+    },
+    {
+      title: "My Journal & Notes",
+      description: "Reflect on principles and practical applications.",
+      action: "Open My Journal & Notes",
+      href: "/library/personal-notes",
+      count: notesCount,
+      icon: "notes",
+    },
+    {
+      title: "My Playlists",
+      description: "Organize your executive listening paths.",
+      action: "Open My Playlists",
+      href: "/library/playlist",
+      count: playlistCount,
+      icon: "playlists",
+    },
+    {
+      title: "Listening Activity & Logs",
+      description: "Review listening history or recently viewed pages.",
+      action: "Open Listening Activity & Logs",
+      href: "/library/history",
+      count: historyCount,
+      icon: "history",
+    },
+    {
+      title: "Following",
+      description: "Manage topics, challenges and collections.",
+      action: "Open Following",
+      href: "/library/following",
+      count: followingCount,
+      icon: "following",
+    },
+    {
+      title: "Notifications",
+      description: "Daily wisdom and followed channel updates.",
+      action: "Open Notifications",
+      href: "/notifications",
+      icon: "notifications",
+    },
+  ];
+
+  return (
+    <AuthRouteGuard type="protected">
+      <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+        <Navbar />
+
+        <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10">
+          <Link
+            href="/home"
+            className="text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
+          >
+            ← My Homepage
+          </Link>
+
+          <section className="mt-3">
+            <h1 className="bn-hero-title font-serif text-[45px] leading-tight">
+              My Wisdom Workspace
+            </h1>
+
+            <p className="mt-3 text-[14px] leading-6 text-white/40">
+              Your personal library, reflections and account in one place.
+            </p>
+          </section>
+
+          <section className="mt-8 rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-6">
+            {loading ? (
+              <p className="text-[14px] text-white/30">Loading workspace...</p>
+            ) : (
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-4">
+                    <ProfileAvatar className="h-14 w-14" iconSize={30} />
+
+                    <div className="min-w-0">
+                      <h2 className="truncate font-serif !text-[20px] !leading-6">
+                        {user?.name || "Business Nuggets Member"}
+                      </h2>
+
+                      <p className="mt-1 truncate text-[14px] text-white/35">
+                        {user?.email || ""}
+                      </p>
+
+                      <span className="mt-3 inline-flex rounded-sm bg-[#E28906]/15 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
+                        BNB Member
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 border-t border-white/[0.06] pt-4">
+                    <p className="mb-3 text-[14px] font-medium text-white/70">
+                      Profile Picture
+                    </p>
+                    <ProfileImageEditor />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href="/membership"
+                    className="bn-button inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 bg-[#080808] px-4 text-[10px] font-medium text-white/70 transition hover:border-[#E28906]/30 hover:text-white"
+                  >
+                    Membership Details →
+                  </Link>
+
+                  <Link
+                    href="/library/account"
+                    className="bn-button inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#E28906] px-5 text-[10px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
+                  >
+                    <Settings size={13} />
+                    Settings →
+                  </Link>
+                </div>
+              </div>
+            )}
+          </section>
+
+          <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {cards.map((card) => (
+              <WorkspaceCard key={card.title} card={card} />
+            ))}
+          </section>
+
+          <section className="mt-7 flex flex-col gap-5 border-t border-white/[0.06] pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <Link
+              href="/library/account"
+              className="inline-flex items-center gap-2 text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
+            >
+              <Settings size={13} />
+              Account &amp; Workspace Settings →
+            </Link>
+
+            <button
+              type="button"
+              onClick={signOut}
+              className="inline-flex w-fit items-center gap-2 rounded-md border border-white/10 px-4 py-2.5 text-[10px] text-white/60 transition hover:border-red-500/30 hover:text-red-400"
+            >
+              <LogOut size={13} />
+              Sign Out
+            </button>
+          </section>
+        </main>
+
+        <Footer />
+      </div>
+    </AuthRouteGuard>
+  );
+}
+
+function WorkspaceCard({ card }: { card: WorkspaceCard }) {
+  const Icon =
+    card.icon === "saved"
+      ? Bookmark
+      : card.icon === "notes"
+        ? NotebookPen
+        : card.icon === "playlists"
+          ? ListMusic
+          : card.icon === "history"
+            ? Headphones
+            : card.icon === "following"
+              ? UserRoundCheck
+              : Bell;
+
+  return (
+    <Link
+      href={card.href}
+      className="group flex min-h-[190px] flex-col rounded-[10px] border border-white/10 bg-[#111111] p-5 transition hover:border-[#E28906]/35"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <Icon size={16} className="text-[#E28906]" />
+
+        {card.count !== undefined && (
+          <span className="rounded-full border border-white/[0.07] px-2 py-1 text-[8px] text-white/30">
+            {card.count}
+          </span>
+        )}
+      </div>
+
+      <h2 className="mt-5 font-serif !text-[20px] !leading-6 text-white/90 transition group-hover:text-[#E28906]">
+        {card.title}
+      </h2>
+
+      <p className="mt-3 text-[14px] leading-5 text-white/35">
+        {card.description}
+      </p>
+
+      <span className="mt-auto pt-5 text-[14px] font-medium text-[#E28906]">
+        {card.action} →
+      </span>
+    </Link>
+  );
+}

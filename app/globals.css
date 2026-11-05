@@ -1,26 +1,642 @@
+@layer bn-typography-overrides;
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Option 1 — Corporate Excellence */
+  --bnb-navy: #102A43;
+  --bnb-blue: #2463A6;
+  --bnb-mist: #E8EEF4;
+  --bnb-white: #FFFFFF;
+  --bnb-teal: #35A69A;
+
+  /* Legacy aliases keep older screens on the new brand system. */
+  --bnb-obsidian: var(--bnb-navy);
+  --bnb-charcoal: color-mix(in srgb, var(--bnb-navy) 88%, var(--bnb-white) 12%);
+  --bnb-gold: var(--bnb-blue);
+  --bnb-soft-gold: var(--bnb-teal);
+  --bnb-parchment: var(--bnb-mist);
+  --bnb-ivory: var(--bnb-white);
+  --bnb-slate: color-mix(in srgb, var(--bnb-mist) 72%, var(--bnb-navy) 28%);
+  --bnb-success: var(--bnb-teal);
+  --bnb-warning: #E28906;
+  --bnb-error: #b54a4a;
+  --bnb-info: var(--bnb-blue);
+
+  --background: var(--bnb-navy);
+  --foreground: var(--bnb-white);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-eb-garamond);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--bnb-navy);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-width: 320px;
+  overflow-x: clip;
+  background: var(--bnb-navy);
+  color: var(--bnb-white);
+  font-family: var(--font-inter), Inter, Arial, Helvetica, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+.font-serif,
+.bnb-display {
+  font-family: var(--font-eb-garamond), "EB Garamond", Georgia, "Times New Roman", serif;
+}
+
+h1 {
+  font-size: 44px;
+  line-height: 1.08;
+}
+
+h2 {
+  font-size: 32px;
+  line-height: 1.15;
+}
+
+h3 {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--bnb-blue);
+}
+
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+main,
+section,
+article,
+nav,
+header,
+footer,
+aside,
+div {
+  min-width: 0;
+}
+
+p,
+li,
+label,
+button,
+a,
+input,
+textarea,
+select,
+th,
+td {
+  overflow-wrap: anywhere;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--bnb-blue) 38%, transparent);
+  color: var(--bnb-white);
+}
+
+:focus-visible {
+  outline: 2px solid var(--bnb-teal);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   GLOBAL BUSINESS NUGGETS TYPOGRAPHY
+   Inter stays the UI/body font; EB Garamond stays the display font.
+   These rules prevent older hard-coded micro text classes from
+   making the product look undersized on desktop and tablet.
+========================================================= */
+
+[class~="text-[6px]"],
+[class~="text-[7px]"],
+[class~="text-[8px]"],
+[class~="text-[9px]"] {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+[class~="text-[10px]"],
+[class~="text-[11px]"],
+[class~="text-[12px]"] {
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+}
+
+[class~="text-[13px]"],
+[class~="text-[14px]"] {
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+
+p[class~="text-[10px]"],
+p[class~="text-[11px]"],
+p[class~="text-[12px]"],
+p[class~="text-[13px]"],
+p[class~="text-[14px]"] {
+  font-size: 16px !important;
+  line-height: 1.65 !important;
+}
+
+.text-xs {
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.text-sm {
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+}
+
+/* =========================================================
+   LEGACY CLASS NORMALIZATION
+========================================================= */
+
+[class~="bg-black"] {
+  background-color: var(--bnb-navy) !important;
+}
+
+[class~="bg-neutral-950"],
+[class~="bg-gray-950"] {
+  background-color: var(--bnb-charcoal) !important;
+}
+
+[class~="bg-gray-900"] {
+  background-color: var(--bnb-navy) !important;
+}
+
+[class~="bg-amber-300"] {
+  background-color: var(--bnb-blue) !important;
+}
+
+[class~="hover:bg-amber-400"]:hover,
+[class~="hover:bg-amber-300"]:hover {
+  background-color: var(--bnb-teal) !important;
+}
+
+[class~="text-white"] {
+  color: var(--bnb-white) !important;
+}
+
+[class~="text-black"] {
+  color: var(--bnb-navy) !important;
+}
+
+[class~="text-amber-300"],
+[class~="text-amber-400"] {
+  color: var(--bnb-blue) !important;
+}
+
+[class~="hover:text-amber-300"]:hover,
+[class~="hover:text-amber-400"]:hover {
+  color: var(--bnb-teal) !important;
+}
+
+[class~="text-gray-300"] {
+  color: color-mix(in srgb, var(--bnb-mist) 86%, transparent) !important;
+}
+
+[class~="text-gray-400"],
+[class~="text-gray-500"] {
+  color: var(--bnb-slate) !important;
+}
+
+[class~="border-gray-700"],
+[class~="border-gray-800"] {
+  border-color: color-mix(in srgb, var(--bnb-mist) 18%, transparent) !important;
+}
+
+[class~="border-amber-300"],
+[class~="focus:border-amber-500"]:focus {
+  border-color: var(--bnb-blue) !important;
+}
+
+/* =========================================================
+   OPTION 1 — CORPORATE EXCELLENCE COMPATIBILITY
+   Maps the old black/gold arbitrary utilities to the new brand
+   palette project-wide while screens are gradually cleaned up.
+========================================================= */
+
+[class~="bg-[#080808]"],
+[class~="bg-[#0B0B0B]"],
+[class~="bg-[#0D0D0D]"] {
+  background-color: var(--bnb-navy) !important;
+}
+
+[class~="bg-[#111111]"],
+[class~="bg-[#151515]"],
+[class~="bg-[#171717]"],
+[class~="bg-[#181818]"] {
+  background-color: var(--bnb-charcoal) !important;
+}
+
+[class~="bg-[#080808]/95"] { background-color: color-mix(in srgb, var(--bnb-navy) 95%, transparent) !important; }
+[class~="bg-[#080808]/90"] { background-color: color-mix(in srgb, var(--bnb-navy) 90%, transparent) !important; }
+[class~="bg-[#080808]/80"] { background-color: color-mix(in srgb, var(--bnb-navy) 80%, transparent) !important; }
+[class~="bg-[#080808]/75"] { background-color: color-mix(in srgb, var(--bnb-navy) 75%, transparent) !important; }
+[class~="bg-[#080808]/60"] { background-color: color-mix(in srgb, var(--bnb-navy) 60%, transparent) !important; }
+[class~="bg-[#080808]/50"] { background-color: color-mix(in srgb, var(--bnb-navy) 50%, transparent) !important; }
+[class~="bg-[#080808]/30"] { background-color: color-mix(in srgb, var(--bnb-navy) 30%, transparent) !important; }
+[class~="bg-[#080808]/20"] { background-color: color-mix(in srgb, var(--bnb-navy) 20%, transparent) !important; }
+[class~="bg-[#080808]/10"] { background-color: color-mix(in srgb, var(--bnb-navy) 10%, transparent) !important; }
+
+[class~="bg-[#111111]/95"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 95%, transparent) !important; }
+[class~="bg-[#111111]/90"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 90%, transparent) !important; }
+[class~="bg-[#111111]/80"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 80%, transparent) !important; }
+[class~="bg-[#111111]/60"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 60%, transparent) !important; }
+[class~="bg-[#111111]/50"] { background-color: color-mix(in srgb, var(--bnb-charcoal) 50%, transparent) !important; }
+
+[class~="bg-[#E28906]"],
+[class~="bg-[#E28906]"],
+[class~="bg-[#E28906]"] {
+  background-color: var(--bnb-blue) !important;
+}
+
+[class~="bg-[#E28906]"] {
+  background-color: var(--bnb-teal) !important;
+}
+
+[class~="hover:bg-[#E28906]"]:hover,
+[class~="hover:bg-[#E28906]"]:hover,
+[class~="hover:bg-[#E28906]"]:hover {
+  background-color: var(--bnb-teal) !important;
+}
+
+[class~="text-[#E28906]"],
+[class~="text-[#E28906]"],
+[class~="text-[#E28906]"] {
+  color: var(--bnb-blue) !important;
+}
+
+[class~="text-[#E28906]"] {
+  color: var(--bnb-teal) !important;
+}
+
+[class~="text-[#FAF9F6]"],
+[class~="text-[#F7F3E8]"] {
+  color: var(--bnb-white) !important;
+}
+
+[class~="text-[#8A8781]"] {
+  color: var(--bnb-mist) !important;
+}
+
+[class~="border-[#E28906]"],
+[class~="border-[#E28906]"] {
+  border-color: var(--bnb-blue) !important;
+}
+
+[class~="focus:border-[#E28906]"]:focus,
+[class~="focus:ring-[#E28906]"]:focus {
+  border-color: var(--bnb-blue) !important;
+  --tw-ring-color: var(--bnb-blue) !important;
+}
+
+[class~="hover:text-[#E28906]"]:hover,
+[class~="hover:text-[#E28906]"]:hover {
+  color: var(--bnb-teal) !important;
+}
+
+/* =========================================================
+   RESPONSIVE PRODUCT TYPOGRAPHY
+========================================================= */
+
+@media (max-width: 767px) {
+  body {
+    font-size: 16px;
+    line-height: 1.5625;
+  }
+
+  h1 {
+    font-size: 34px !important;
+    line-height: 40px !important;
+  }
+
+  .bnb-display {
+    font-size: 42px !important;
+    line-height: 46px !important;
+  }
+
+  h2 {
+    font-size: 28px !important;
+    line-height: 34px !important;
+  }
+
+  h3 {
+    font-size: 22px !important;
+    line-height: 28px !important;
+  }
+
+  input,
+  textarea,
+  select {
+    min-height: 44px;
+    font-size: 16px !important;
+  }
+
+  button,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  a[class*="rounded"] {
+    min-height: 44px;
+  }
+
+  a[aria-label][class*="rounded"] {
+    min-width: 44px;
+  }
+
+  [class~="text-[6px]"],
+  [class~="text-[7px]"],
+  [class~="text-[8px]"],
+  [class~="text-[9px]"] {
+    font-size: 12px !important;
+    line-height: 18px !important;
+  }
+
+  [class~="text-[10px]"],
+  [class~="text-[11px]"],
+  [class~="text-[12px]"],
+  [class~="text-[13px]"] {
+    font-size: 14px !important;
+    line-height: 21px !important;
+  }
+
+  p[class~="text-[11px]"],
+  p[class~="text-[12px]"],
+  p[class~="text-[13px]"] {
+    font-size: 16px !important;
+    line-height: 25px !important;
+  }
+
+  table {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  h1 {
+    font-size: min(42px, 6vw) !important;
+    line-height: 1.15 !important;
+  }
+
+  .bnb-display {
+    font-size: 52px !important;
+    line-height: 1.05 !important;
+  }
+
+  h2 {
+    font-size: min(32px, 4vw) !important;
+    line-height: 1.2 !important;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* =========================================================
+   ADMIN TYPOGRAPHY SYSTEM
+========================================================= */
+
+.admin-typography {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.admin-typography h1 {
+  font-size: 40px !important;
+  line-height: 1.15;
+}
+
+.admin-typography h2,
+.admin-typography h3 {
+  font-size: 28px !important;
+  line-height: 1.25;
+}
+
+.admin-typography p,
+.admin-typography span,
+.admin-typography label,
+.admin-typography button,
+.admin-typography a,
+.admin-typography li,
+.admin-typography th,
+.admin-typography td,
+.admin-typography code,
+.admin-typography small {
+  font-size: 14px;
+}
+
+.admin-typography input,
+.admin-typography textarea,
+.admin-typography select {
+  font-size: 16px;
+}
+
+.admin-typography [class~="text-[6px]"],
+.admin-typography [class~="text-[7px]"],
+.admin-typography [class~="text-[8px]"],
+.admin-typography [class~="text-[9px]"],
+.admin-typography [class~="text-[10px]"],
+.admin-typography [class~="text-[11px]"],
+.admin-typography [class~="text-[12px]"],
+.admin-typography [class~="text-[13px]"] {
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.admin-typography .text-xs,
+.admin-typography .text-sm {
+  font-size: 14px !important;
+}
+
+.admin-typography .text-base {
+  font-size: 16px !important;
+}
+
+@media (max-width: 767px) {
+  .admin-typography h1 {
+    font-size: 34px !important;
+    line-height: 40px !important;
+  }
+
+  .admin-typography h2,
+  .admin-typography h3 {
+    font-size: 28px !important;
+    line-height: 34px !important;
+  }
+
+  .admin-typography p:not([class*="text-"]),
+  .admin-typography li:not([class*="text-"]) {
+    font-size: 16px;
+    line-height: 25px;
+  }
+}
+
+/* =========================================================
+   MOBILE/TABLET SAFETY RULES
+========================================================= */
+
+@media (max-width: 1023px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  [class*="grid-cols-"] > *,
+  [class*="flex"] > * {
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* Shared sizes. This first layer gives these explicit sizes priority over
+   older global !important rules and responsive utility font sizes. */
+@layer bn-typography-overrides {
+  :root {
+    --bn-button-font-size: 13px;
+    --bn-hero-font-size: 45px;
+    --bn-admin-heading-font-size: 20px;
+  }
+
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  .bn-button {
+    font-size: var(--bn-button-font-size) !important;
+  }
+
+  :is(button, [role="button"], .bn-button) :where(span, strong, em, p):not([data-button-icon]) {
+    font-size: inherit !important;
+  }
+
+  .bn-hero-title {
+    font-size: var(--bn-hero-font-size) !important;
+  }
+
+  /* Homepage heading sizes take precedence over shared hero and mobile rules. */
+  .visitor-home :is(h1, h2, h3, h4, h5, h6) {
+    font-size: 40px !important;
+    line-height: 50px !important;
+  }
+
+  .bn-nugget-section-title {
+    font-size: 20px !important;
+    text-transform: uppercase;
+  }
+
+  .visitor-home .visitor-nugget-card h3 {
+    font-size: 25px !important;
+    line-height: 30px !important;
+  }
+
+  .bn-topic-content :is(h2, h3, h4),
+  .bn-challenge-content :is(h2, h3, h4),
+  .bn-collection-content :is(h2, h3, h4),
+  .bn-collection-card-title,
+  .bn-topic-card-title {
+    font-size: 20px !important;
+    line-height: 30px !important;
+  }
+
+  /* Keep every admin page/section heading compact, including module overrides. */
+  .admin-typography :is(h1, h2, h3, h4, h5, h6) {
+    font-size: var(--bn-admin-heading-font-size) !important;
+  }
+
+  /* Member library screens share the site's current fonts and type scale. */
+  .bn-member-library {
+    font-family: var(--font-dm-sans), "DM Sans", Arial, sans-serif !important;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .bn-member-library :where(h1, h2, h3, h4, h5, h6, .font-serif) {
+    font-family: var(--font-playfair), "Playfair Display", Georgia, serif !important;
+    overflow-wrap: anywhere;
+  }
+
+  .bn-member-library .bn-hero-title {
+    font-size: var(--bn-hero-font-size) !important;
+    line-height: 1.15 !important;
+  }
+
+  .bn-member-library :where(p, label, input, textarea, select, li) {
+    font-size: 14px !important;
+    line-height: 1.65 !important;
+  }
+
+  .bn-member-library :where(span, small, time) {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  .bn-member-library a {
+    font-size: 13px !important;
+  }
+
+  .bn-member-library :is(h2, h3, h4, h5, h6, .font-serif):not(.bn-hero-title):not(h1) {
+    font-size: 20px !important;
+    line-height: 30px !important;
+  }
+
+  .bn-member-library :is(h1, h2, h3, h4, h5, h6, .font-serif) a {
+    font-size: inherit !important;
+  }
+
+  [data-button-icon] {
+    font-size: 26px !important;
+  }
+
+  [data-button-icon="small"] {
+    font-size: 18px !important;
+  }
 }

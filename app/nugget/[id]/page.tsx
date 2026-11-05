@@ -1,134 +1,188 @@
-import Navbar from "@/components/navbar";
-import { Bookmark, ListPlus, Share2, SkipBack, SkipForward, Play, Volume2, Maximize2 } from "lucide-react";
+import FormattedNuggetText from "@/components/FormattedNuggetText";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Share2 } from "lucide-react";
+import NuggetLibraryActions from "@/components/NuggetLibraryActions";
+import AudioBar from "@/components/AudioBar";
 
-export default function NuggetDetailPage() {
+import Navbar from "@/components/navbar";
+import PremiumNuggetGate from "@/components/PremiumNuggetGate";
+import NuggetAnalyticsTracker from "@/components/analytics/NuggetAnalyticsTracker";
+import {
+  getNuggetBySlugFromApi,
+  PremiumRequiredError,
+} from "@/lib/nuggets-api";
+import {
+  getServerMemberToken,
+} from "@/lib/server-member-token";
+
+export default async function NuggetDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const token =
+    await getServerMemberToken();
+
+  let nugget = null;
+
+  try {
+    nugget =
+      await getNuggetBySlugFromApi(
+        id,
+        token,
+      );
+  } catch (error) {
+    if (
+      error instanceof
+      PremiumRequiredError
+    ) {
+      return (
+        <PremiumNuggetGate />
+      );
+    }
+
+    throw error;
+  }
+
+  if (!nugget) {
+    notFound();
+  }
+
   return (
-    <div className="min-h-screen bg-black text-white pb-24">
+    <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
+     <NuggetAnalyticsTracker nuggetId={nugget.id}/>
       <Navbar />
 
-      {/* Hero */}
-      <div className="relative h-[340px] w-full overflow-hidden">
-        <img
-          src="/images/scales-hero.jpg"
-          alt="The Law of Just Balances in Corporate Negotiation"
-          className="absolute inset-0 w-full h-full object-cover"
+      <main>
+        {/* HERO */}
+        <section className="relative min-h-[350px] overflow-hidden border-b border-white/[0.06]">
+          <div className="relative mx-auto flex min-h-[350px] max-w-[1280px] items-end px-5 pb-12 sm:px-8 lg:px-10">
+            <div className="max-w-[950px]">
+              <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
+                Nugget #{nugget.number} · {nugget.topic}
+              </p>
+
+              <h1 className="bn-hero-title mt-4 max-w-[1000px] font-serif text-[40px] leading-[1.08] text-[#FAF9F6]">
+                {nugget.title}
+              </h1>
+            </div>
+          </div>
+        </section>
+
+        {/* BODY */}
+        <section className="mx-auto max-w-[1280px] px-5 py-10 sm:px-8 lg:px-10">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_270px]">
+            {/* LEFT CONTENT */}
+            <div className="min-w-0">
+              {/* SCRIPTURE */}
+              {nugget.scriptureText && (
+                <blockquote className="rounded-xl border border-white/10 bg-[#111111] p-6">
+                  <FormattedNuggetText className="font-serif whitespace-pre-line break-words text-[18px] italic leading-8 text-[#FAF9F6]/80" text={`“${nugget.scriptureText}”`} />
+
+                  <p className="mt-4 text-[13px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
+                    {nugget.scriptureRef}
+                  </p>
+                </blockquote>
+              )}
+
+              {/* TABS */}
+              <div className="mt-8 flex gap-7 overflow-x-auto border-b border-white/[0.08]">
+                <Link
+                  href={`/nugget/${nugget.slug}`}
+                  className="relative shrink-0 pb-4 text-[13px] font-medium text-[#E28906]"
+                >
+                  Read Wisdom
+
+                  <span className="absolute bottom-0 left-0 h-[2px] w-full bg-[#E28906]" />
+                </Link>
+
+                <Link
+                  href={`/nugget/${nugget.slug}/musical`}
+                  className="shrink-0 pb-4 text-[13px] text-white/45 transition hover:text-[#E28906]"
+                >
+                  Listen Musical
+                </Link>
+
+                <Link
+                  href={`/nugget/${nugget.slug}/audio`}
+                  className="shrink-0 pb-4 text-[13px] text-white/45 transition hover:text-[#E28906]"
+                >
+                  Listen Commentary
+                </Link>
+              </div>
+
+              {/* KEY PRINCIPLE */}
+              <section className="pt-8">
+                <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#FAF9F6]">
+                  Key Principles
+                </h2>
+
+                <FormattedNuggetText preview className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-white/50" text={nugget.keyPrinciple ||
+                    "Commentary for this Nugget will be added soon."} />
+              </section>
+
+              {/* MARKETPLACE APPLICATION */}
+              {nugget.marketplaceApplication && (
+                <section className="pt-9">
+                  <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#FAF9F6]">
+                    Marketplace Application
+                  </h2>
+
+                  <FormattedNuggetText preview className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-white/50" text={nugget.marketplaceApplication} />
+                </section>
+              )}
+
+              <Link
+                href={`/nugget/${nugget.slug}/reader`}
+                className="bn-button mt-8 inline-flex rounded-lg border border-[#E28906]/40 px-5 py-3 text-[13px] font-semibold text-[#E28906] transition hover:bg-[#E28906]/10 hover:text-[#E28906] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E28906]"
+              >
+                Read full teaching →
+              </Link>
+            </div>
+
+            {/* RIGHT ACTIONS */}
+            <aside className="self-start rounded-xl border border-white/10 bg-[#111111] p-5 lg:sticky lg:top-24">
+              <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#FAF9F6]">
+                Nugget Actions
+              </h2>
+
+              <div className="mt-5 space-y-2">
+                <NuggetLibraryActions key={nugget.slug} id={nugget.id} slug={nugget.slug} />
+
+                <Link
+  href={`/share-nugget/${nugget.slug}`}
+  className="bn-button flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[14px] text-white/65 transition hover:bg-white/[0.04] hover:text-[#E28906]"
+>
+  <Share2
+    size={16}
+    className="text-[#E28906]"
+  />
+
+  Share Commentary
+</Link>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </main>
+
+      <div key={nugget.slug} data-nugget-audio-stack className="sticky bottom-0 z-50 max-h-[50dvh] overflow-y-auto">
+        <AudioBar
+          trackKind="nugget"
+          title={nugget.title}
+          subtitle={`${nugget.scriptureRef} · ${nugget.topic}`}
+          audioSrc={nugget.nuggetAudioUrl || null}
+          slug={nugget.slug}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
-
-        <div className="relative max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-8">
-          <p className="text-amber-300 text-xs font-semibold tracking-wide uppercase mb-2">
-            Nugget #14 &middot; Integrity &amp; Character
-          </p>
-          <h1 className="font-serif text-3xl md:text-4xl font-semibold max-w-2xl leading-tight">
-            The Law of Just Balances in Corporate Negotiation
-          </h1>
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="max-w-7xl mx-auto px-6 mt-8 grid grid-cols-1 md:grid-cols-[1fr_280px] gap-8">
-        {/* Main column */}
-        <div>
-          {/* Quote */}
-          <blockquote className="border border-gray-800 rounded-lg p-6 bg-neutral-950">
-            <p className="font-serif text-lg italic text-gray-100">
-              &ldquo;A false balance is an abomination to the Lord, but a just weight is his delight.&rdquo;
-            </p>
-            <p className="text-amber-300 text-xs font-semibold tracking-wide mt-3">
-              PROVERBS 11:1
-            </p>
-          </blockquote>
-
-          {/* Action links */}
-          <div className="flex items-center gap-6 mt-4 text-sm text-gray-300">
-            <button className="hover:text-amber-300 transition">Read Wisdom</button>
-            <span className="text-gray-700">|</span>
-            <button className="hover:text-amber-300 transition">Listen Musical</button>
-            <span className="text-gray-700">|</span>
-            <button className="hover:text-amber-300 transition">Listen Commentary</button>
-          </div>
-
-          {/* Key Principle */}
-          <section className="mt-10">
-            <h2 className="font-serif text-xl font-semibold mb-3">Key Principle</h2>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              In classical Near Eastern commerce, merchants used weights on physical balances
-              to determine price. A dishonest merchant used double standards—heavier weights
-              for buying, lighter weights for selling. Today, this manifests as asymmetric
-              information disclosure, hidden corporate traps, and misleading contract phrasing.
-              The Principle of Just Balances asserts that absolute pricing and negotiation
-              transparency is not a moral concession; it is a foundational framework for
-              sustainable marketplace dominion.
-            </p>
-          </section>
-
-          {/* Marketplace Application */}
-          <section className="mt-8">
-            <h2 className="font-serif text-xl font-semibold mb-3">Marketplace Application</h2>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Establish negotiations where both parties can audit the metrics of exchange.
-              When you draft standard vendor agreements, ensure indemnity and penalty clauses
-              operate reciprocally. Over-disclosing hidden risks upfront establishes a premium
-              brand of character that commands long-term respect and client loyalty.
-            </p>
-          </section>
-        </div>
-
-        {/* Sidebar */}
-        <aside className="border border-gray-800 rounded-lg p-5 bg-neutral-950 h-fit">
-          <h3 className="text-sm font-semibold text-gray-300 mb-4">Nugget Actions</h3>
-          <div className="flex flex-col gap-3 text-sm text-gray-300">
-            <button className="flex items-center gap-2 hover:text-amber-300 transition">
-              <Bookmark className="w-4 h-4" />
-              Save to Library
-            </button>
-            <button className="flex items-center gap-2 hover:text-amber-300 transition">
-              <ListPlus className="w-4 h-4" />
-              Add to Playlist
-            </button>
-            <button className="flex items-center gap-2 hover:text-amber-300 transition">
-              <Share2 className="w-4 h-4" />
-              Share Commentary
-            </button>
-          </div>
-        </aside>
-      </div>
-
-      {/* Audio player bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-neutral-950 border-t border-gray-800 px-6 py-3">
-        <div className="max-w-7xl mx-auto flex items-center gap-4">
-          <img
-            src="/images/joseph-storage.jpg"
-            alt="The Joseph Storage Blueprint"
-            className="w-10 h-10 rounded object-cover"
-          />
-          <div className="min-w-[180px]">
-            <p className="text-sm font-medium leading-none">The Joseph Storage Blueprint</p>
-            <p className="text-gray-500 text-xs mt-1">Genesis 41 &middot; Strategic Planning</p>
-          </div>
-
-          <div className="flex-1 flex flex-col items-center gap-1">
-            <div className="flex items-center gap-4">
-              <button className="text-gray-300 hover:text-white">
-                <SkipBack className="w-4 h-4" />
-              </button>
-              <button className="bg-amber-300 text-black rounded-full p-2 hover:bg-amber-400 transition">
-                <Play className="w-4 h-4" fill="black" />
-              </button>
-              <button className="text-gray-300 hover:text-white">
-                <SkipForward className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="w-full max-w-md h-1 bg-gray-800 rounded-full overflow-hidden">
-              <div className="h-full w-1/3 bg-amber-300" />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 text-gray-400">
-            <Volume2 className="w-4 h-4" />
-            <Maximize2 className="w-4 h-4" />
-          </div>
-        </div>
+        <AudioBar
+          trackKind="music"
+          title={nugget.title}
+          subtitle={`${nugget.scriptureRef} · ${nugget.topic}`}
+          audioSrc={nugget.audioUrl || null}
+          slug={nugget.slug}
+        />
       </div>
     </div>
   );

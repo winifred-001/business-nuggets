@@ -1,68 +1,109 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
+import { getPublishedNuggets } from "@/lib/nuggets-api";
+import { getServerMemberToken } from "@/lib/server-member-token";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
-import { nuggets } from "@/types/nugget";
+import NuggetCard from "@/components/NuggetCard";
+import { filterNuggets } from "@/lib/nuggets";
 
-export default function SearchPage() {
-  const [query, setQuery] = useState("integrity in negotiations");
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const rawQuery = Array.isArray(params.q) ? params.q[0] : params.q;
+  const query = (rawQuery ?? "").trim();
+  const token = await getServerMemberToken();
 
-  // Swap for a real search/match-score endpoint later
-  const results = nuggets.filter((n) => typeof n.matchScore === "number");
+  const apiNuggets = await getPublishedNuggets(token);
+  const results = filterNuggets({ query }, apiNuggets);
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-10">
-        <div className="flex flex-col sm:flex-row gap-3 mb-2">
+      <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-6 sm:py-12 md:px-8 lg:px-10 lg:py-14">
+        <section className="max-w-3xl">
+          <h1 className="bn-hero-title font-serif text-[40px] leading-tight text-[#FAF9F6]">
+            Search the Wisdom Library
+          </h1>
+
+          <p className="mt-3 text-[16px] leading-7 text-white/50">
+            Search by title, scripture, topic, or business challenge.
+          </p>
+        </section>
+
+        <form
+          key={query}
+          action="/search"
+          method="get"
+          className="mt-7 flex max-w-4xl flex-col gap-3 sm:flex-row"
+        >
+          <label htmlFor="nugget-search" className="sr-only">
+            Search nuggets
+          </label>
+
           <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search nuggets, scriptures, or business challenges..."
-            className="flex-1 bg-slate-700 border border-gray-800 text-white rounded-md px-4 py-3 text-sm focus:outline-none focus:border-amber-300"
+            id="nugget-search"
+            name="q"
+            type="search"
+            defaultValue={query}
+            placeholder="Try Joseph, Genesis, or negotiation"
+            className="min-h-12 min-w-0 flex-1 rounded-xl border border-white/10 bg-[#111111] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#E28906]"
           />
-          <button className="bg-amber-300 text-black font-medium px-5 py-3 rounded-md hover:bg-amber-400 transition whitespace-nowrap w-full sm:w-auto">
-            Search Platform
+
+          <button
+            type="submit"
+            className="min-h-12 rounded-xl bg-[#E28906] px-6 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906] sm:min-w-[120px]"
+          >
+            Search
           </button>
-        </div>
+        </form>
 
-        <p className="text-gray-500 text-sm mb-8">
-          Found {results.length} Nuggets matching your search query
-        </p>
+        <div className="my-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p
+            role="status"
+            className="break-words text-[14px] leading-6 text-[#8A8781]"
+          >
+            {results.length} nugget{results.length === 1 ? "" : "s"}{" "}
+            {query ? `matching “${query}”` : "in the wisdom library"}
+          </p>
 
-        <h2 className="text-white font-serif text-lg font-semibold mb-4">Nuggets Results</h2>
-
-        <div className="space-y-4">
-          {results.map((nugget) => (
-            <div
-              key={nugget.slug}
-              className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          {query && (
+            <Link
+              href="/search"
+              className="bn-button inline-flex min-h-11 items-center text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
-              <div className="min-w-0">
-                <h3 className="text-white font-serif font-semibold mb-1">{nugget.title}</h3>
-                <p className="text-amber-300 text-xs mb-2">
-                  {nugget.scripture} • {nugget.category === "CHARACTER" ? "Character & Ethics" : nugget.category}
-                </p>
-                {nugget.excerpt && (
-                  <p className="text-gray-400 text-sm max-w-xl">{nugget.excerpt}</p>
-                )}
-              </div>
-
-              <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 shrink-0">
-                <Link
-                  href={`/nugget/${nugget.slug}`}
-                  className="bg-amber-300 text-black text-sm font-medium px-4 py-1.5 rounded-md hover:bg-amber-400 transition"
-                >
-                  Open
-                </Link>
-                <span className="text-gray-500 text-xs">{nugget.matchScore}% Match</span>
-              </div>
-            </div>
-          ))}
+              Clear search
+            </Link>
+          )}
         </div>
+
+        {results.length > 0 ? (
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {results.map((nugget) => (
+              <NuggetCard key={nugget.slug} nugget={nugget} />
+            ))}
+          </div>
+        ) : (
+          <section className="rounded-xl border border-white/10 bg-[#111111] px-5 py-10 text-center sm:px-8 sm:py-12">
+            <h2 className="font-serif text-[28px] text-[#FAF9F6]">
+              No nuggets found
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-lg text-[16px] leading-7 text-white/50">
+              Try a different word, a Bible book, or a topic.
+            </p>
+
+            <Link
+              href="/search"
+              className="bn-button mt-6 inline-flex min-h-11 items-center justify-center rounded-lg bg-[#E28906] px-5 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
+            >
+              Clear search
+            </Link>
+          </section>
+        )}
       </main>
 
       <Footer />

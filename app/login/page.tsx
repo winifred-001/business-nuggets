@@ -1,123 +1,190 @@
 "use client";
 
-import Navbar from "@/components/navbar";
-import Footer from "@/components/Footer";
+import { postAuthDestination } from "@/lib/auth-return";
+import AuthContinueLink from "@/components/AuthContinueLink";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // TODO: real auth, then navigate only on success
-    router.push("/home");
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/member/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          rememberMe,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setError(
+          Array.isArray(data.message)
+            ? data.message.join(", ")
+            : data.message || "Login failed",
+        );
+        return;
+      }
+
+      if (!data.token || !data.user) {
+        setError("The server did not return a complete member session.");
+        return;
+      }
+
+      // This is a harmless session marker, not the real JWT.
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      window.dispatchEvent(new Event("auth-change"));
+
+      router.push(postAuthDestination());
+    } catch {
+      setError("Could not connect to the server");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
-      <Navbar />
+    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
 
-      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-        <div className="w-full max-w-md sm:max-w-lg bg-neutral-950 border border-gray-800 rounded-xl p-5 sm:p-8 md:p-10 shadow-lg">
-          
-          {/* Header */}
-          <div className="flex flex-col items-center mb-6 sm:mb-8">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-amber-300 rounded-md flex items-center justify-center font-bold text-black mb-2">
+      <main className="flex flex-1 items-center justify-center px-5 py-10 sm:px-6 sm:py-14 md:px-8 lg:px-10 lg:py-16">
+        <section className="w-full max-w-[520px] rounded-2xl border border-white/10 bg-[#111111] p-5 sm:p-8 md:p-10">
+          <div className="mb-7 flex flex-col items-center text-center sm:mb-8">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-[#E28906] font-serif text-[20px] font-bold text-[#080808]">
               B
             </div>
 
-            <p className="text-amber-300 text-[10px] sm:text-xs tracking-[0.2em] uppercase mb-3 sm:mb-4 text-center">
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#E28906]">
               Business Nuggets
             </p>
 
-            <h1 className="text-white text-xl sm:text-2xl md:text-3xl font-serif font-semibold text-center">
+            <h1 className="bn-hero-title font-serif text-[45px]! font-semibold leading-tight text-[#FAF9F6]">
               Welcome Back
             </h1>
 
-            <p className="text-gray-400 text-xs sm:text-sm mt-2 text-center leading-relaxed max-w-sm">
+            <p className="mt-3 max-w-sm text-[16px] leading-7 text-white/50">
               Reclaim your leadership with eternal wisdom today.
             </p>
           </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-            
-            {/* Email */}
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label
                 htmlFor="email"
-                className="block text-gray-300 text-xs sm:text-sm mb-1.5"
+                className="mb-2 block text-[14px] font-medium text-white/70"
               >
-                Email Address
+                Email address
               </label>
 
               <input
                 id="email"
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. solomon@kingdomventures.com"
-                className="w-full h-11 sm:h-12 bg-black border border-gray-700 rounded-md px-3 sm:px-4 text-sm sm:text-base text-white placeholder-gray-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
+                required
+                autoComplete="email"
+                className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#E28906]"
               />
             </div>
 
-            {/* Password */}
             <div>
               <label
                 htmlFor="password"
-                className="block text-gray-300 text-xs sm:text-sm mb-1.5"
+                className="mb-2 block text-[14px] font-medium text-white/70"
               >
                 Password
               </label>
 
-              <input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                className="w-full h-11 sm:h-12 bg-black border border-gray-700 rounded-md px-3 sm:px-4 text-sm sm:text-base text-white placeholder-gray-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  autoComplete="current-password"
+                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 pr-12 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#E28906]"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-white/45 transition hover:text-[#E28906]"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
 
-            {/* Remember / Forgot */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs sm:text-sm pt-1">
-              <label className="flex items-center gap-2 text-gray-400 cursor-pointer">
+            <div className="flex flex-col gap-3 pt-1 text-[14px] sm:flex-row sm:items-center sm:justify-between">
+              <label className="flex cursor-pointer items-center gap-2 text-white/50">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 accent-amber-300 cursor-pointer flex-shrink-0"
+                  checked={rememberMe}
+                  onChange={(event) => setRememberMe(event.target.checked)}
+                  className="h-4 w-4 shrink-0 cursor-pointer"
                 />
                 <span>Remember me</span>
               </label>
 
               <Link
                 href="/forgot-password"
-                className="text-amber-300 hover:text-amber-400 hover:underline transition"
+                className="bn-button inline-flex min-h-11 items-center font-medium text-[#E28906] transition hover:text-[#E28906]"
               >
-                Forgot Password?
+                Forgot password?
               </Link>
             </div>
 
-            {/* Sign In Button */}
+            {error && (
+              <p className="rounded-lg border border-[#B54A4A]/30 bg-[#B54A4A]/10 px-4 py-3 text-center text-[14px] text-[#D98383]">
+                {error}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="w-full h-11 sm:h-12 bg-amber-300 text-black text-sm sm:text-base font-medium rounded-md hover:bg-amber-400 active:bg-amber-500 transition mt-2"
+              disabled={loading}
+              className="min-h-12 w-full rounded-lg bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Sign In
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
-          {/* Register */}
-          <p className="text-center text-gray-400 text-xs sm:text-sm mt-6 sm:mt-8 leading-relaxed">
+          <p className="mt-7 text-center text-[14px] leading-6 text-white/50">
             New to the platform?{" "}
-            <Link
+            <AuthContinueLink
               href="/register"
-              className="text-amber-300 hover:text-amber-400 hover:underline transition"
+              className="font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Create an account
-            </Link>
+            </AuthContinueLink>
           </p>
-        </div>
+        </section>
       </main>
 
-      <Footer />
     </div>
   );
 }

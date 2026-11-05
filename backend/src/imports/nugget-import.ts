@@ -1,0 +1,173 @@
+import { BadRequestException } from '@nestjs/common';
+import { parseCsvRecords, taxonomySlug } from '../topics/topics-csv';
+
+const textFields = [
+  'title',
+  'topic',
+  'tag',
+  'scriptureRef',
+  'scriptureText',
+  'image',
+  'keyPrinciple',
+  'details',
+  'marketplaceApplication',
+  'duration',
+  'book',
+  'bibleSection',
+  'audioUrl',
+  'nuggetAudioUrl',
+] as const;
+const listFields = ['practicalActionPlan', 'challenges'] as const;
+const aliases: Record<string, string> = {
+  songurl: 'audioUrl',
+  nuggeturl: 'nuggetAudioUrl',
+  scripturereference: 'scriptureRef',
+  keyprinciples: 'keyPrinciple',
+  keyprinciplesandboundaries: 'keyPrinciple',
+  explanation: 'details',
+  explanationfullbiblicalcontextandteaching: 'details',
+  fullbiblicalcontextandteaching: 'details',
+  challengesreflection: 'challenges',
+  challengesandreflection: 'challenges',
+};
+const key = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+export const nuggetImportColumnKey = (value: string) => key(aliases[key(value)] || value);
+export function parseNuggets(csv: string) {
+  const records = parseCsvRecords(csv);
+  const fields = [
+    'number',
+    'category',
+    'slug',
+    ...textFields,
+    ...listFields,
+    'isGold',
+    'featured',
+    'status',
+  ];
+  const byKey = new Map(fields.map((field) => [key(field), field]));
+  const headers = records
+    .shift()!
+    .fields.map((header) => byKey.get(nuggetImportColumnKey(header)));
+  if (
+    headers.some((header) => !header) ||
+    new Set(headers).size !== headers.length ||
+    !['number', 'title', 'topic'].every((field) => headers.includes(field))
+  )
+    throw new BadRequestException(
+      'Nuggets require number,title,topic. Download the template for supported optional fields.',
+    );
+  const numbers = new Set<number>(),
+    slugs = new Set<string>();
+  return records.map((record) => {
+    const fail = (message: string): never => {
+      throw new BadRequestException(`Row ${record.line}: ${message}`);
+    };
+    if (record.fields.length !== headers.length)
+      fail('Fields do not match the header. Quote text containing commas.');
+    const values = Object.fromEntries(
+      headers.map((header, i) => [header!, record.fields[i]]),
+    );
+    const number = Number(values.number);
+    if (
+      !/^\d+$/.test(values.number) ||
+      !Number.isSafeInteger(number) ||
+      number < 1 ||
+      number > 2147483647
+    )
+      fail('Number must be a positive whole number.');
+    if (
+      !values.title ||
+      values.title.length > 500 ||
+      !values.topic ||
+      values.topic.length > 120
+    )
+      fail('Title (up to 500 characters) and topic (up to 120) are required.');
+    if (!taxonomySlug(values.topic))
+      fail('Topic must contain letters or numbers.');
+    if (
+      (values.category || '').length > 120 ||
+      (values.category && !taxonomySlug(values.category))
+    )
+      fail('Category must be a valid name of at most 120 characters.');
+    const slug = values.slug || taxonomySlug(values.title);
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 250)
+      fail('Slug must contain lowercase letters, numbers and single hyphens.');
+    if (numbers.has(number) || slugs.has(slug))
+      fail('Duplicate number or slug in this file.');
+    numbers.add(number);
+    slugs.add(slug);
+    const text = Object.fromEntries(
+      textFields.map((field) => [
+        field,
+        values[field] || (field === 'duration' ? '00:00' : ''),
+      ]),
+    ) as Record<(typeof textFields)[number], string>;
+    for (const [field, value] of Object.entries(text))
+      if (value.length > 50000)
+        fail(`${field} is too long (maximum 50,000 characters).`);
+    for (const field of ['audioUrl', 'nuggetAudioUrl', 'image'] as const) {
+      const value = text[field];
+      if (value && !(field === 'image' && /^\/(?!\/)/.test(value))) {
+        try {
+          const url = new URL(value);
+          if (url.protocol !== 'https:' || url.username || url.password)
+            fail(`${field} must be a public HTTPS URL.`);
+        } catch {
+          fail(`${field} must be a public HTTPS URL.`);
+        }
+      }
+    }
+    const lists = Object.fromEntries(
+      listFields.map((field) => {
+        const value = values[field] || '';
+        let items: unknown;
+        if (value.startsWith('[')) {
+          try {
+            items = JSON.parse(value);
+          } catch {
+            fail(`${field} must be a list of text.`);
+          }
+        } else
+          items = value
+            .split(/\r?\n|\|/)
+            .map((item) => item.trim())
+            .filter(Boolean);
+        if (
+          !Array.isArray(items) ||
+          items.some((item) => typeof item !== 'string') ||
+          items.length > 100
+        )
+          fail(`${field} must contain at most 100 text items.`);
+        return [field, items];
+      }),
+    ) as Record<(typeof listFields)[number], string[]>;
+    const bool = (field: string) => {
+      const value = (values[field] || 'false').toLowerCase();
+      if (!['true', 'false', 'yes', 'no', '1', '0'].includes(value))
+        fail(`${field} must be true or false.`);
+      return ['true', 'yes', '1'].includes(value);
+    };
+    if (
+      values.status &&
+      !['draft', 'published'].includes(values.status.toLowerCase())
+    )
+      fail('Status must be draft or published. Imports are saved as drafts.');
+    return {
+      row: record.line,
+      category: values.category || '',
+      data: {
+        ...text,
+        ...lists,
+        id: `nugget-${number}`,
+        number,
+        slug,
+        isGold: bool('isGold'),
+        featured: bool('featured'),
+        status: 'draft',
+        audioUrl: text.audioUrl || null,
+        nuggetAudioUrl: text.nuggetAudioUrl || null,
+        publishedAt: null,
+      },
+    };
+  });
+}

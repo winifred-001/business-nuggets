@@ -1,157 +1,297 @@
-import Image from "next/image";
 import Link from "next/link";
-import Navbar from "@/components/navbar";
+
+import AuthRouteGuard from "@/components/AuthRouteGuard";
+import ContentImage from "@/components/ContentImage";
 import Footer from "@/components/Footer";
+import Navbar from "@/components/navbar";
+import NuggetCard from "@/components/NuggetCard";
 
-const continueListening = [
-  {
-    reference: "EXODUS 18",
-    title: "The Jethro Leadership Protocol",
-    image: "/images/topic.png",
-    progress: 30,
-    timeLeft: "4:20 left",
-    href: "/library/cinematic-musical1.png",
-  },
-  {
-    reference: "PROVERBS 6",
-    title: "The Hazard of Early Suretyship",
-    image: "/images/cinematic-musical2.png",
-    progress: 16,
-    timeLeft: "6:15 left",
-    href: "/library/hazard-of-early-suretyship",
-  },
-];
+import { API_URL } from "@/lib/api";
+import { getPublishedNuggets } from "@/lib/nuggets-api";
+import {
+  rankPersonalizedNuggets,
+  type UserPreferences,
+} from "@/lib/personalization";
+import { getServerMemberToken } from "@/lib/server-member-token";
 
-const recommended = [
-  { title: "Rebuilding the Wall", image: "/images/nugget-card4.png", href: "/library/rebuilding-the-wall" },
-  { title: "The Treasure Chest", image: "/images/nugget-card2.png", href: "/library/treasure-chest" },
-  { title: "The Ancient Boundary", image: "/images/nuggetCard.png", href: "/library/ancient-boundary" },
-  { title: "The Palace Hall", image: "/images/collection-main.png", href: "/library/palace-hall" },
-];
+import type { Nugget } from "@/types/nugget";
 
-export default function HomePage() {
+import styles from "./home-typography.module.css";
+
+type FollowedTopic = {
+  topic?: string;
+};
+
+type HistoryItem = {
+  nuggetId: string;
+  progress?: number;
+  lastOpenedAt?: string;
+};
+
+function authHeaders(token: string | null) {
+  return token
+    ? {
+        Authorization: `Bearer ${token}`,
+      }
+    : undefined;
+}
+
+async function loadMemberPersonalization(token: string | null) {
+  if (!token) {
+    return {
+      preferences: {
+        interests: [],
+        wisdomNeeds: [],
+      } as UserPreferences,
+      followedTopics: [] as string[],
+      history: [] as HistoryItem[],
+    };
+  }
+
+  const headers = authHeaders(token);
+
+  try {
+    const [preferencesResponse, followingResponse, historyResponse] =
+      await Promise.all([
+        fetch(`${API_URL}/users/me/preferences`, {
+          headers,
+          cache: "no-store",
+        }),
+        fetch(`${API_URL}/following/topics`, {
+          headers,
+          cache: "no-store",
+        }),
+        fetch(`${API_URL}/history`, {
+          headers,
+          cache: "no-store",
+        }),
+      ]);
+
+    const preferencesData = preferencesResponse.ok
+      ? await preferencesResponse.json().catch(() => ({}))
+      : {};
+
+    const followingData = followingResponse.ok
+      ? await followingResponse.json().catch(() => [])
+      : [];
+
+    const historyData = historyResponse.ok
+      ? await historyResponse.json().catch(() => [])
+      : [];
+
+    const preferences: UserPreferences = {
+      interests: Array.isArray(preferencesData.interests)
+        ? preferencesData.interests
+        : [],
+      wisdomNeeds: Array.isArray(preferencesData.wisdomNeeds)
+        ? preferencesData.wisdomNeeds
+        : [],
+    };
+
+    const followedTopics = Array.isArray(followingData)
+      ? followingData
+          .map((item: string | FollowedTopic) =>
+            typeof item === "string" ? item : item.topic,
+          )
+          .filter((value): value is string => Boolean(value))
+      : [];
+
+    const history = Array.isArray(historyData)
+      ? historyData.filter(
+          (item): item is HistoryItem =>
+            Boolean(item) && typeof item.nuggetId === "string",
+        )
+      : [];
+
+    return {
+      preferences,
+      followedTopics,
+      history,
+    };
+  } catch {
+    return {
+      preferences: {
+        interests: [],
+        wisdomNeeds: [],
+      } as UserPreferences,
+      followedTopics: [] as string[],
+      history: [] as HistoryItem[],
+    };
+  }
+}
+
+function getContinueListening(
+  nuggets: Nugget[],
+  history: HistoryItem[],
+) {
+  const byId = new Map(nuggets.map((nugget) => [nugget.id, nugget]));
+
+  return [...history]
+    .sort((a, b) => {
+      const aTime = a.lastOpenedAt ? new Date(a.lastOpenedAt).getTime() : 0;
+      const bTime = b.lastOpenedAt ? new Date(b.lastOpenedAt).getTime() : 0;
+      return bTime - aTime;
+    })
+    .map((item) => ({
+      history: item,
+      nugget: byId.get(item.nuggetId),
+    }))
+    .filter(
+      (
+        item,
+      ): item is {
+        history: HistoryItem;
+        nugget: Nugget;
+      } => Boolean(item.nugget),
+    )
+    .slice(0, 2);
+}
+
+export default async function HomePage() {
+  const token = await getServerMemberToken();
+
+  let nuggets: Nugget[] = [];
+
+  try {
+    nuggets = await getPublishedNuggets(token);
+  } catch (error) {
+    console.error("Could not load member home Nuggets:", error);
+  }
+
+  const { preferences, followedTopics, history } =
+    await loadMemberPersonalization(token);
+
+  const recommendations = rankPersonalizedNuggets(
+    nuggets,
+    preferences,
+    followedTopics,
+    4,
+  );
+
+  const continueListening = getContinueListening(nuggets, history);
+
   return (
-    <div className="min-h-screen bg-[#080808] text-white">
-      <Navbar />
+    <AuthRouteGuard type="protected">
+      <div
+        className={`${styles.home} flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]`}
+      >
+        <Navbar />
 
-      
+        <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
+          <section>
+            <h1 className="bn-hero-title font-serif text-[45px] leading-tight">
+              Your wisdom workspace
+            </h1>
 
-<main className="mx-auto w-full max-w-[1200px] px-4 sm:px-6">
-  {/* Continue Listening */}
-  <section className="pt-8 sm:pt-16">
-    <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl">
-      Continue Listening
-    </h2>
-
-    <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 sm:mt-8 sm:gap-5">
-      {continueListening.map((item) => (
-        <div
-          key={item.title}
-          className="flex min-w-0 flex-col gap-4 rounded-2xl border border-white/10 bg-[#111] p-4 sm:flex-row sm:items-center sm:gap-5 sm:p-5"
-        >
-          <div className="flex min-w-0 items-center gap-3 sm:contents">
-            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg sm:h-16 sm:w-16">
-              <Image
-                src={item.image}
-                alt={item.title}
-                fill
-                sizes="(min-width: 640px) 64px, 56px"
-                className="object-cover"
-              />
-            </div>
-
-            <p className="min-w-0 flex-1 text-xs font-semibold tracking-wide text-[#C9A55C] sm:hidden">
-              {item.reference}
+            <p className="mt-3 max-w-[700px] text-white/50">
+              Continue learning and discover Business Nuggets shaped by your onboarding choices.
             </p>
-          </div>
+          </section>
 
-          <div className="min-w-0 flex-1">
-            <p className="hidden text-sm font-semibold tracking-wide text-[#C9A55C] sm:block">
-              {item.reference}
-            </p>
+          <section className="mt-10">
+            <h2 className="font-serif text-[20px]">
+              Continue Listening
+            </h2>
 
-            <h3 className="break-words font-serif text-lg text-white sm:mt-1 sm:text-xl">
-              {item.title}
-            </h3>
+            {continueListening.length > 0 ? (
+              <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                {continueListening.map(({ history: item, nugget }) => {
+                  const progress =
+                    typeof item.progress === "number" &&
+                    item.progress > 0 &&
+                    item.progress <= 100
+                      ? item.progress
+                      : 0;
 
-            <div className="mt-3 flex min-w-0 items-center gap-2">
-              <div className="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full rounded-full bg-[#C9A55C]"
-                  style={{ width: `${item.progress}%` }}
-                />
+                  return (
+                    <Link
+                      key={nugget.id}
+                      href={`/nugget/${nugget.slug}`}
+                      className="group flex min-h-[112px] items-center gap-4 rounded-xl border border-white/10 bg-[#111111] p-4 transition hover:border-[#E28906]/40"
+                    >
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-[#181818]">
+                        <ContentImage src={nugget.image} alt={nugget.title} />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[#E28906]">
+                          {nugget.tag || nugget.topic || "Business Nugget"}
+                        </p>
+
+                        <h3 className="mt-1 font-serif text-[20px] text-white/90">
+                          {nugget.title}
+                        </h3>
+
+                        <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-full bg-[#E28906]"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#E28906] font-semibold text-[#080808] transition group-hover:bg-[#E28906]">
+                        →
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="mt-5 rounded-xl border border-white/10 bg-[#111111] p-5">
+                <p className="text-white/45">
+                  Your recent listening activity will appear here as you use the audio library.
+                </p>
+
+                <Link
+                  href="/library"
+                  className="bn-button mt-4 inline-flex min-h-11 items-center font-medium text-[#E28906] transition hover:text-[#E28906]"
+                >
+                  Browse Nuggets to read →
+                </Link>
+              </div>
+            )}
+          </section>
+
+          <section className="mt-12">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="font-serif text-[20px]">
+                  Recommended for Your Business Profile
+                </h2>
+
+                <p className="mt-2 text-white/40">
+                  Tailored from the same saved onboarding choices used by your Recommendation Guide.
+                </p>
               </div>
 
-              <span className="shrink-0 text-xs text-gray-500 sm:text-sm">
-                {item.timeLeft}
-              </span>
+              <Link
+                href="/recommendations"
+                className="shrink-0 font-medium text-[#E28906] transition hover:text-[#E28906]"
+              >
+                More Recommendations →
+              </Link>
             </div>
-          </div>
 
-          <Link
-            href={item.href}
-            aria-label={`Continue ${item.title}`}
-            className="flex h-10 w-full shrink-0 items-center justify-center rounded-lg bg-[#C9A55C] text-[#0a0a0a] transition-colors hover:bg-[#d8b56c] sm:h-11 sm:w-11 sm:rounded-full"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </Link>
-        </div>
-      ))}
-    </div>
-  </section>
+            {recommendations.length > 0 ? (
+              <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                {recommendations.map((nugget) => (
+                  <NuggetCard
+                    key={nugget.slug}
+                    nugget={nugget}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="mt-6 rounded-xl border border-white/10 bg-[#111111] p-6 text-white/45">
+                No published Nuggets are available yet.
+              </p>
+            )}
+          </section>
+        </main>
 
-  {/* Recommended */}
-  <section className="pt-12 pb-10 sm:pt-24 sm:pb-16">
-    <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div className="w-full min-w-0">
-        <h2 className="break-words font-serif text-2xl sm:text-3xl md:text-4xl">
-          Recommended for Your Business Profile
-        </h2>
-
-        <p className="mt-2 text-sm leading-relaxed text-gray-400 sm:text-base">
-          Tailored teachings based on your interest in Strategy and Leadership.
-        </p>
+        <Footer />
       </div>
-
-      <Link
-        href="/recommendations"
-        className="shrink-0 text-sm font-semibold text-[#C9A55C] hover:underline sm:text-base"
-      >
-        View Recommendation Guide
-      </Link>
-    </div>
-
-    <div className="mt-6 grid grid-cols-1 gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
-      {recommended.map((item) => (
-        <Link
-          key={item.title}
-          href={item.href}
-          className="group relative block h-[220px] w-full min-w-0 overflow-hidden rounded-2xl border border-white/10 sm:h-[235px]"
-        >
-          <Image
-            src={item.image}
-            alt={item.title}
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        </Link>
-      ))}
-    </div>
-  </section>
-</main>
-      <Footer />
-    </div>
+    </AuthRouteGuard>
   );
 }

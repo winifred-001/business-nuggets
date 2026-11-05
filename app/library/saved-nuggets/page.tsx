@@ -1,226 +1,700 @@
-import Navbar from "@/components/navbar";
-import Footer from "@/components/Footer";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+
 import {
-  Search,
   Bookmark,
-  Clock,
+  Clock3,
+  FolderOpen,
+  FolderPlus,
+  Search,
+  Trash2,
 } from "lucide-react";
 
-const savedNuggets = [
-  {
-    image: "/images/saved-nugget1.png",
-    category: "LEADERSHIP",
-    duration: "5 Mins",
-    title: "The Hazard of Swift Ascent in...",
-    description: "Isaiah 41:10",
-  },
-  {
-    image: "/images/saved-nugget2.png",
-    category: "STRATEGY",
-    duration: "8 Mins",
-    title: "Delegation Infrastructure & J...",
-    description: "Exodus 18:21",
-  },
-  {
-    image: "/images/saved-nugget3.png",
-    category: "STRATEGY",
-    duration: "7 Mins",
-    title: "Strategic Hedging & Global T...",
-    description: "Habakkuk 2:2",
-  },
-  {
-    image: "/images/saved-nugget4.png",
-    category: "CHARACTER",
-    duration: "6 Mins",
-    title: "The Integrity Premium: Uniqu...",
-    description: "Proverbs 11:1",
-  },
-];
+import AuthRouteGuard from "@/components/AuthRouteGuard";
+import ContentImage from "@/components/ContentImage";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/navbar";
+import type { Nugget } from "@/types/nugget";
 
-const filters = [
-  "All Saved",
-  "Stewardship",
-  "Leadership",
-  "Covenant Strategy",
-];
+type SavedNuggetRecord = {
+  id: number;
+  nuggetId: string;
+  userId: number;
+  createdAt: string;
+};
+
+type SavedFolderItem = {
+  id: number;
+  folderId: number;
+  nuggetId: string;
+  createdAt: string;
+};
+
+type SavedFolder = {
+  id: number;
+  name: string;
+  description?: string | null;
+  items: SavedFolderItem[];
+};
+
+type NuggetsEnvelope = {
+  data?: Nugget[];
+  pagination?: {
+    hasNextPage?: boolean;
+    totalPages?: number;
+  };
+};
+
+type ClassificationTab = {
+  value: string;
+  label: string;
+  count: number;
+};
+
+const ALL_SAVED = "__all_saved__";
+
+function nuggetClassification(nugget: Nugget) {
+  return nugget.topic?.trim() || "Unclassified";
+}
+
+async function loadPublishedNuggets() {
+  const nuggets: Nugget[] = [];
+  let page = 1;
+
+  while (true) {
+    const response = await fetch(
+      `/api/member/proxy/nuggets?limit=100&page=${page}`,
+      { cache: "no-store" },
+    );
+
+    if (!response.ok) {
+      throw new Error("Unable to load published Nuggets.");
+    }
+
+    const result: unknown = await response.json();
+
+    if (Array.isArray(result)) {
+      return result as Nugget[];
+    }
+
+    if (!result || typeof result !== "object") {
+      break;
+    }
+
+    const envelope = result as NuggetsEnvelope;
+
+    if (!Array.isArray(envelope.data)) {
+      break;
+    }
+
+    nuggets.push(...envelope.data);
+
+    if (
+      !envelope.pagination?.hasNextPage ||
+      page >= (envelope.pagination.totalPages ?? page)
+    ) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return nuggets;
+}
 
 export default function SavedNuggetsPage() {
+  const [savedRecords, setSavedRecords] = useState<SavedNuggetRecord[]>([]);
+  const [apiNuggets, setApiNuggets] = useState<Nugget[]>([]);
+  const [folders, setFolders] = useState<SavedFolder[]>([]);
+  const [activeFilter, setActiveFilter] = useState(ALL_SAVED);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [folderMenuFor, setFolderMenuFor] = useState<string | null>(null);
+  const [addingToFolder, setAddingToFolder] = useState(false);
+  const [folderMessage, setFolderMessage] = useState("");
+
+  useEffect(() => {
+    void loadSavedNuggets();
+    void loadFolders();
+  }, []);
+
+  async function loadSavedNuggets() {
+    try {
+      const [savedResponse, publishedNuggets] = await Promise.all([
+        fetch("/api/member/proxy/saved-nuggets", {
+          cache: "no-store",
+        }),
+        loadPublishedNuggets(),
+      ]);
+
+      const data = await savedResponse.json().catch(() => []);
+
+      if (!savedResponse.ok) {
+        setError(
+          data?.message || "Unable to load saved Nuggets.",
+        );
+        return;
+      }
+
+      setSavedRecords(Array.isArray(data) ? data : []);
+      setApiNuggets(publishedNuggets);
+      setError("");
+    } catch {
+      setError("Could not connect to the server.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadFolders() {
+    try {
+      const response = await fetch(
+        "/api/member/proxy/saved-folders",
+        { cache: "no-store" },
+      );
+
+      const data = await response.json().catch(() => []);
+
+      if (response.ok) {
+        setFolders(Array.isArray(data) ? data : []);
+      }
+    } catch {
+      console.error("Could not load saved folders");
+    }
+  }
+
+  async function removeSavedNugget(nuggetId: string) {
+    try {
+      const response = await fetch(
+        `/api/member/proxy/saved-nuggets/${encodeURIComponent(nuggetId)}`,
+        { method: "DELETE" },
+      );
+
+      if (!response.ok) {
+        return;
+      }
+
+      setSavedRecords((current) =>
+        current.filter((record) => record.nuggetId !== nuggetId),
+      );
+    } catch {
+      console.error("Unable to remove saved Nugget.");
+    }
+  }
+
+  async function addNuggetToFolder(folderId: number, nuggetId: string) {
+    setAddingToFolder(true);
+    setFolderMessage("");
+
+    try {
+      const response = await fetch(
+        `/api/member/proxy/saved-folders/${folderId}/items`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ nuggetId }),
+        },
+      );
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setFolderMessage(
+          Array.isArray(data.message)
+            ? data.message.join(", ")
+            : data.message || "Could not add Nugget to folder.",
+        );
+        return;
+      }
+
+      setFolderMessage(data.message || "Nugget added to folder.");
+      await loadFolders();
+
+      window.setTimeout(() => {
+        setFolderMenuFor(null);
+        setFolderMessage("");
+      }, 1000);
+    } catch {
+      setFolderMessage("Could not add Nugget to folder.");
+    } finally {
+      setAddingToFolder(false);
+    }
+  }
+
+  const savedNuggets = useMemo(() => {
+    const savedIds = new Set(
+      savedRecords.map((record) => record.nuggetId),
+    );
+
+    return apiNuggets.filter((nugget) => savedIds.has(nugget.id));
+  }, [savedRecords, apiNuggets]);
+
+  const classificationTabs = useMemo<ClassificationTab[]>(() => {
+    const counts = new Map<string, number>();
+
+    for (const nugget of savedNuggets) {
+      const classification = nuggetClassification(nugget);
+      counts.set(classification, (counts.get(classification) ?? 0) + 1);
+    }
+
+    const classifications = [...counts.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([label, count]) => ({
+        value: label,
+        label,
+        count,
+      }));
+
+    return [
+      {
+        value: ALL_SAVED,
+        label: "All Saved",
+        count: savedNuggets.length,
+      },
+      ...classifications,
+    ];
+  }, [savedNuggets]);
+
+  useEffect(() => {
+    if (
+      activeFilter !== ALL_SAVED &&
+      !classificationTabs.some((tab) => tab.value === activeFilter)
+    ) {
+      setActiveFilter(ALL_SAVED);
+    }
+  }, [activeFilter, classificationTabs]);
+
+  const visibleNuggets = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return savedNuggets.filter((nugget) => {
+      const matchesSearch =
+        !query ||
+        nugget.title.toLowerCase().includes(query) ||
+        nugget.topic.toLowerCase().includes(query) ||
+        nugget.tag.toLowerCase().includes(query) ||
+        nugget.scriptureRef.toLowerCase().includes(query);
+
+      const matchesClassification =
+        activeFilter === ALL_SAVED ||
+        nuggetClassification(nugget) === activeFilter;
+
+      return matchesSearch && matchesClassification;
+    });
+  }, [savedNuggets, searchQuery, activeFilter]);
+
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#050505] text-[#EDEAE3]">
+    <AuthRouteGuard type="protected">
+      <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+        <Navbar />
 
-      <Navbar />
+        <main className="bn-member-library mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
+          <section className="border-b border-white/[0.07] pb-10">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
+                  Saved Nuggets
+                </h1>
 
-      <main className="mx-auto max-w-[1200px] px-5 py-9 sm:px-8 sm:py-12 lg:px-10 lg:py-14">
+                <p className="mt-3 text-[13px] leading-6 text-white/40">
+                  Your personal library of timeless business frameworks.
+                </p>
+              </div>
 
-        {/* ================= HEADER ================= */}
-
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-
-          <div className="min-w-0">
-
-            <h1 className="font-serif text-[40px] text-white sm:text-[25px]">
-              Saved Nuggets
-            </h1>
-
-            <p className="mt-2 text-[16px] leading-relaxed text-white/40 sm:text-[14px]">
-              Your personal library of timeless business frameworks.
-            </p>
-
-          </div>
-
-
-          {/* Search */}
-
-          <div className="flex h-9 w-full items-center gap-2 rounded-md border border-white/10 bg-[#111111] px-3 sm:h-10 lg:w-[280px]">
-
-            <Search
-              size={16}
-              className="shrink-0 text-white/35"
-            />
-
-            <input
-              type="text"
-              placeholder="Search saved nuggets..."
-              className="min-w-0 w-full bg-transparent text-[14px] text-white outline-none placeholder:text-white/30 sm:text-[14px]"
-            />
-
-          </div>
-
-        </div>
-
-
-        {/* ================= FILTERS ================= */}
-
-        <div className="mt-6 flex gap-2 overflow-x-auto pb-1 sm:mt-7">
-          {filters.map((filter, index) => (
-            <button
-              key={filter}
-              type="button"
-              className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[14px] transition sm:px-4 sm:text-[13px] ${
-                index === 0
-                  ? "border-[#C9A227] bg-[#C9A227] text-black"
-                  : "border-white/10 bg-[#151515] text-white/60 hover:border-[#C9A227]/50 hover:text-white"
-              }`}
-            >
-              {filter}
-            </button>
-          ))}
-        </div>
-
-
-        {/* ================= SAVED CARDS ================= */}
-
-        <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-          {savedNuggets.map((nugget) => (
-            <Link
-              href="/library/reader"
-              key={nugget.title}
-              className="group min-w-0 overflow-hidden rounded-md border border-white/10 bg-[#0d0d0d] transition hover:border-[#C9A227]/40"
-            >
-
-              {/* Image */}
-
-              <div className="h-[150px] w-full overflow-hidden bg-[#17130d] sm:h-[135px] lg:h-[120px]">
-
-                <img
-                  src={nugget.image}
-                  alt={nugget.title}
-                  className="h-full w-full object-cover"
+              <div className="relative w-full lg:w-[360px]">
+                <Search
+                  size={15}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"
                 />
 
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Search saved Nuggets..."
+                  className="h-11 w-full rounded-md border border-white/10 bg-[#111111] pl-11 pr-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/50"
+                />
               </div>
+            </div>
 
+            {!loading && !error && savedNuggets.length > 0 && (
+              <div className="mt-7 overflow-x-auto pb-1">
+                <div className="flex min-w-max gap-2">
+                  {classificationTabs.map((tab) => {
+                    const active = activeFilter === tab.value;
 
-              {/* Card content */}
-
-              <div className="px-3.5 py-3">
-
-                <div className="flex items-center justify-between gap-2">
-
-                  <p className="min-w-0 text-[12px] font-bold uppercase tracking-wide text-[#C9A227] sm:text-[11px]">
-                    {nugget.category}
-                  </p>
-
-                  <span className=" shrink-0 text-[10px] flex items-center justify-center gap-2 text-white/35 sm:text-[11px]">
-                   <Clock size={15}
-                    className=" mt-0 text-white/35"/>
-                    {nugget.duration}
-                  </span>
-
+                    return (
+                      <button
+                        key={tab.value}
+                        type="button"
+                        onClick={() => setActiveFilter(tab.value)}
+                        className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[10px] font-medium transition ${
+                          active
+                            ? "bg-[#E28906] text-[#080808]"
+                            : "border border-white/10 bg-[#111111] text-white/45 hover:border-[#E28906]/40 hover:text-[#E28906]"
+                        }`}
+                      >
+                        <span>{tab.label}</span>
+                        <span
+                          className={`rounded-full px-1.5 py-0.5 text-[8px] ${
+                            active
+                              ? "bg-black/10 text-[#080808]/70"
+                              : "bg-white/[0.06] text-white/35"
+                          }`}
+                        >
+                          {tab.count}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
+              </div>
+            )}
 
+            {loading && (
+              <div className="py-16 text-center text-[12px] text-white/30">
+                Loading saved Nuggets...
+              </div>
+            )}
 
-                <h2 className="mt-2 font-serif text-[20px] leading-snug text-white sm:text-[14px]">
-                  {nugget.title}
+            {!loading && error && (
+              <div className="mt-8 rounded-lg border border-red-500/20 bg-red-500/[0.04] p-4">
+                <p className="text-[12px] text-red-400">{error}</p>
+              </div>
+            )}
+
+            {!loading && !error && visibleNuggets.length > 0 && (
+              <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {visibleNuggets.map((nugget) => (
+                  <article
+                    key={nugget.id}
+                    className="group overflow-hidden rounded-[10px] border border-white/10 bg-[#111111]"
+                  >
+                    <Link href={`/nugget/${nugget.slug}`}>
+                      <div className="relative h-40 w-full overflow-hidden bg-[#181818]">
+                        <ContentImage
+                          src={nugget.image}
+                          alt={nugget.title}
+                        />
+                      </div>
+                    </Link>
+
+                    <div className="p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
+                          {nugget.topic || nugget.tag}
+                        </span>
+
+                        <div className="flex items-center gap-1 text-[9px] text-white/25">
+                          <Clock3 size={11} />
+                          <span>{nugget.duration}</span>
+                        </div>
+                      </div>
+
+                      <Link href={`/nugget/${nugget.slug}`}>
+                        <h2 className="mt-3 line-clamp-2 font-serif text-[18px] leading-6 text-white/90 transition group-hover:text-[#E28906]">
+                          {nugget.title}
+                        </h2>
+                      </Link>
+
+                      <p className="mt-2 text-[10px] italic text-white/30">
+                        {nugget.scriptureRef}
+                      </p>
+
+                      <div className="mt-5 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+                        <Link
+                          href={`/nugget/${nugget.slug}`}
+                          className="text-[10px] font-medium text-[#E28906] transition hover:text-[#E28906]"
+                        >
+                          Listen &amp; Read
+                        </Link>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFolderMenuFor(nugget.id);
+                              setFolderMessage("");
+                            }}
+                            className="rounded-md border border-white/10 px-2.5 py-1.5 text-[9px] text-white/50 transition hover:border-[#E28906]/40 hover:text-[#E28906]"
+                          >
+                            Add to Folder
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => removeSavedNugget(nugget.id)}
+                            aria-label={`Remove ${nugget.title} from saved Nuggets`}
+                            className="text-[#E28906] transition hover:text-red-400"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            {!loading &&
+              !error &&
+              savedNuggets.length > 0 &&
+              visibleNuggets.length === 0 && (
+                <div className="py-16 text-center">
+                  <Search size={27} className="mx-auto text-white/20" />
+                  <h2 className="mt-4 font-serif text-[20px]">
+                    No matching Nuggets
+                  </h2>
+                  <p className="mt-2 text-[11px] text-white/30">
+                    Try another search or classification.
+                  </p>
+                </div>
+              )}
+
+            {!loading && !error && savedNuggets.length === 0 && (
+              <div className="py-16 text-center">
+                <Bookmark size={29} className="mx-auto text-[#E28906]" />
+                <h2 className="mt-4 font-serif text-[20px]">
+                  No saved Nuggets yet
+                </h2>
+                <p className="mt-2 text-[11px] text-white/30">
+                  Save Nuggets from the Library and their classifications will appear here automatically.
+                </p>
+                <Link
+                  href="/library"
+                  className="bn-button mt-5 inline-flex rounded-md bg-[#E28906] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
+                >
+                  Browse Library
+                </Link>
+              </div>
+            )}
+          </section>
+
+          <section className="py-12">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="font-serif text-[28px] leading-tight">
+                  Custom Folders
                 </h2>
 
-
-                <p className="mt-2 text-[12px] leading-relaxed  italic text-white/40 sm:text-[11px]">
-                  {nugget.description}
+                <p className="mt-2 text-[13px] leading-6 text-white/35">
+                  Organize your saved Nuggets into focused business folders.
                 </p>
-
-
-                <div className="mt-3 flex items-center justify-between">
-
-                  <span className="text-[13px] text-[#C9A227] sm:text-[12px]">
-                    Listen & Read
-                  </span>
-
-                  <Bookmark
-                    size={15}
-                    className="shrink-0 text-[#C9A227]"
-                  />
-
-                </div>
-
               </div>
 
-            </Link>
-          ))}
+              <Link
+                href="/library/saved-nuggets/create-folder"
+                className="bn-button flex w-fit items-center gap-2 rounded-md bg-[#E28906] px-5 py-2.5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
+              >
+                <FolderPlus size={15} />
+                Create Folder
+              </Link>
+            </div>
 
-        </section>
+            {folders.length === 0 ? (
+              <div className="mt-8 flex min-h-[220px] flex-col items-center justify-center rounded-[10px] border border-white/10 bg-[#111111] px-6 text-center">
+                <FolderOpen size={27} className="text-[#E28906]" />
+                <h3 className="mt-4 font-serif text-[20px]">
+                  No custom folders yet
+                </h3>
+                <p className="mt-2 max-w-md text-[11px] leading-6 text-white/35">
+                  Create folders to group saved Nuggets around specific business topics.
+                </p>
+                <Link
+                  href="/library/saved-nuggets/create-folder"
+                  className="mt-5 text-[11px] font-medium text-[#E28906]"
+                >
+                  Create your first folder →
+                </Link>
+              </div>
+            ) : (
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {folders.map((folder) => (
+                  <Link
+                    key={folder.id}
+                    href={`/library/saved-nuggets/folder/${folder.id}`}
+                    className="group rounded-[10px] border border-white/10 bg-[#111111] p-5 transition hover:border-[#E28906]/40"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-md border border-[#E28906]/20 bg-[#E28906]/[0.05] text-[#E28906]">
+                        <FolderOpen size={16} />
+                      </div>
 
+                      <span className="text-[9px] uppercase tracking-[0.08em] text-white/20">
+                        {folder.items?.length ?? 0}{" "}
+                        {(folder.items?.length ?? 0) === 1 ? "Nugget" : "Nuggets"}
+                      </span>
+                    </div>
 
-        {/* ================= EMPTY FOLDER ================= */}
+                    <p className="mt-5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
+                      Saved Folder
+                    </p>
 
-        <section className="flex min-h-[260px] flex-col items-center justify-center px-4 py-10 sm:min-h-[300px]">
+                    <h3 className="mt-2 font-serif text-[18px] text-white/90 transition group-hover:text-[#E28906]">
+                      {folder.name}
+                    </h3>
 
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-[#0d0d0d]">
+                    {folder.description && (
+                      <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-white/35">
+                        {folder.description}
+                      </p>
+                    )}
 
-            <Bookmark
-              size={18}
-              className="text-[#C9A227]"
-            />
+                    <span className="mt-5 inline-block text-[10px] font-medium text-[#E28906]">
+                      Open Folder →
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        </main>
 
-          </div>
-
-
-          <h2 className="mt-5 text-center font-serif text-[14px] text-white sm:mt-6 sm:text-[15px]">
-            No custom folders created yet
-          </h2>
-
-
-          <p className="mt-2 max-w-[330px] text-center text-[11px] leading-relaxed text-white/40 sm:text-[12px]">
-            Organize your bookmarked scriptures and teachings into specific
-            business playlists.
-          </p>
-
-
-          <button
-            type="button"
-            className="mt-5 rounded-md bg-[#C9A227] px-6 py-2 text-[11px] font-medium text-black transition hover:bg-[#DDB93A] sm:px-7 sm:text-[12px]"
+        {folderMenuFor && (
+          <div
+            className="bn-member-library fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-5"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                setFolderMenuFor(null);
+                setFolderMessage("");
+              }
+            }}
           >
-            Create Folder
-          </button>
+            <div className="w-full max-w-[460px] rounded-[10px] border border-white/10 bg-[#111111] p-6 shadow-2xl">
+              <div className="flex items-start justify-between gap-5">
+                <div>
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
+                    Saved Nuggets
+                  </p>
+                  <h2 className="mt-2 font-serif text-[24px]">
+                    Add to Folder
+                  </h2>
+                  <p className="mt-2 text-[11px] leading-5 text-white/35">
+                    Choose one of your saved folders for this Nugget.
+                  </p>
+                </div>
 
-        </section>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={() => {
+                    setFolderMenuFor(null);
+                    setFolderMessage("");
+                  }}
+                  className="text-[18px] text-white/30 transition hover:text-white"
+                >
+                  <span aria-hidden="true" data-button-icon="small">×</span>
+                </button>
+              </div>
 
-      </main>
+              {folderMessage && (
+                <div className="mt-4 rounded-md border border-[#E28906]/25 bg-[#E28906]/[0.06] px-4 py-3">
+                  <p className="text-[11px] text-[#E28906]">
+                    {folderMessage}
+                  </p>
+                </div>
+              )}
 
-      <Footer />
+              <div className="mt-6 max-h-[340px] space-y-3 overflow-y-auto pr-1">
+                {folders.length === 0 ? (
+                  <div className="rounded-lg border border-white/10 bg-[#18181B] px-5 py-7 text-center">
+                    <FolderPlus size={22} className="mx-auto text-[#E28906]" />
+                    <h3 className="mt-3 font-serif text-[17px]">
+                      No saved folders
+                    </h3>
+                    <p className="mt-2 text-[10px] leading-5 text-white/35">
+                      Create a folder before organising your saved Nuggets.
+                    </p>
+                  </div>
+                ) : (
+                  folders.map((folder) => {
+                    const alreadyAdded =
+                      folder.items?.some(
+                        (item) => String(item.nuggetId) === String(folderMenuFor),
+                      ) ?? false;
 
-    </div>
+                    return (
+                      <button
+                        key={folder.id}
+                        type="button"
+                        disabled={addingToFolder || alreadyAdded}
+                        onClick={() =>
+                          addNuggetToFolder(folder.id, folderMenuFor)
+                        }
+                        className={`flex w-full items-center justify-between gap-4 rounded-lg border px-4 py-4 text-left transition ${
+                          alreadyAdded
+                            ? "cursor-default border-[#E28906]/20 bg-[#E28906]/[0.05]"
+                            : "border-white/10 bg-[#19191D] hover:border-[#E28906]/40"
+                        } disabled:opacity-60`}
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate font-serif text-[15px] text-white/85">
+                            {folder.name}
+                          </p>
+                          <p className="mt-1 text-[10px] text-white/30">
+                            {folder.items?.length ?? 0}{" "}
+                            {(folder.items?.length ?? 0) === 1
+                              ? "Nugget"
+                              : "Nuggets"}
+                          </p>
+                          {folder.description && (
+                            <p className="mt-1 line-clamp-1 text-[9px] text-white/25">
+                              {folder.description}
+                            </p>
+                          )}
+                        </div>
+
+                        <span
+                          className={`shrink-0 text-[10px] font-medium ${
+                            alreadyAdded
+                              ? "text-[#E28906]/60"
+                              : "text-[#E28906]"
+                          }`}
+                        >
+                          {alreadyAdded
+                            ? "Added"
+                            : addingToFolder
+                              ? "..."
+                              : "Add"}
+                        </span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="mt-6 border-t border-white/[0.07] pt-5">
+                <Link
+                  href="/library/saved-nuggets/create-folder"
+                  className="bn-button flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-[#E28906] px-4 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
+                >
+                  <FolderPlus size={14} />
+                  Create New Folder
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFolderMenuFor(null);
+                    setFolderMessage("");
+                  }}
+                  className="mt-2 w-full px-4 py-2 text-[10px] text-white/35 transition hover:text-white"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <Footer />
+      </div>
+    </AuthRouteGuard>
   );
 }

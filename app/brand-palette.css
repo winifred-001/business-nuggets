@@ -1,0 +1,45 @@
+/* Business Nuggets reference palette.
+   Exact color and font language from the supplied visitor-home design. */
+
+:root {
+  --bnb-navy: #10110f;
+  --bnb-blue: #E28906;
+  --bnb-mist: #f6f2e9;
+  --bnb-white: #f9f5ed;
+  --bnb-teal: #E28906;
+
+  --bnb-obsidian: #10110f;
+  --bnb-charcoal: #191b18;
+  --bnb-gold: #E28906;
+  --bnb-soft-gold: #E28906;
+  --bnb-parchment: #f6f2e9;
+  --bnb-ivory: #f9f5ed;
+  --bnb-slate: #b4b2ab;
+
+  /* Backward-compatible font aliases for existing utility rules. */
+  --font-inter: var(--font-dm-sans);
+  --font-eb-garamond: var(--font-playfair);
+
+  --background: #10110f;
+  --foreground: #f9f5ed;
+}
+
+[class~="bg-white"] {
+  background-color: #fff !important;
+}
+
+[class~="bg-gray-50"],
+[class~="bg-neutral-50"] {
+  background-color: #f6f2e9 !important;
+}
+
+[class~="bg-gray-100"],
+[class~="bg-neutral-100"] {
+  background-color: #eee8dc !important;
+}
+
+[class~="text-gray-700"],
+[class~="text-gray-800"],
+[class~="text-gray-900"] {
+  color: #211f1b !important;
+}

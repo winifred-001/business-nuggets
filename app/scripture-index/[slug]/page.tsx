@@ -1,163 +1,419 @@
+import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import {
+  ArrowRight,
+  Clock3,
+} from "lucide-react";
 
-// TODO: replace with real data from lib (e.g. getScriptureBook(slug), getVersesByBook(slug))
-const book = {
-  title: "The Book of Proverbs",
-  description:
+import Navbar from "@/components/navbar";
+import Footer from "@/components/Footer";
+
+import { BIBLE_BOOKS } from "@/lib/bible-books";
+import { getPublishedNuggets } from "@/lib/nuggets-api";
+import { slugify } from "@/lib/nuggets";
+
+import type { Nugget } from "@/types/nugget";
+
+const bookDescriptions: Record<
+  string,
+  string
+> = {
+  Genesis:
+    "Origins, enterprise, stewardship, negotiation and long-term strategy.",
+
+  Exodus:
+    "Leadership systems, delegation, organizational structure and governance.",
+
+  Leviticus:
+    "Standards, integrity, ethical transactions and marketplace justice.",
+
+  Numbers:
+    "Order, responsibility, preparation and collective accountability.",
+
+  Deuteronomy:
+    "Stewardship, remembrance, covenant responsibility and wise leadership.",
+
+  Proverbs:
     "Solomonic core wisdom dedicated to character cultivation, market ethics, and tactical operational intelligence.",
-  nuggetCount: 128,
+
+  Ecclesiastes:
+    "Capital evaluation, diversification, perspective and the limits of material success.",
+
+  Psalms:
+    "Reflection, trust, resilience and leadership rooted in dependence on God.",
+
+  Nehemiah:
+    "Building, adversity, operational leadership and financial justice.",
+
+  Matthew:
+    "Stewardship, accountability and marketplace principles through the teachings of Christ.",
+
+  Luke:
+    "Faithful resource management, responsibility and practical stewardship.",
 };
 
-const featured = [
-  {
-    reference: "Proverbs 11:1",
-    title: "The Law of Just Balances in Corporate Negotiation",
-    tag: "Integrity",
-    duration: "6 Min Listen",
-    slug: "law-of-just-balances-corporate-negotiation",
-    image: "/images/proverbs-11-1.jpg",
-  },
-  {
-    reference: "Proverbs 22:7",
-    title: "Sovereign Capital & Lender Bondage Control",
-    tag: "Finance",
-    duration: "9 Min Listen",
-    slug: "sovereign-capital-lender-bondage-control",
-    image: "/images/proverbs-22-7.jpg",
-  },
-];
+export default async function ScriptureIndexDetailPage({
+  params,
+}: {
+  params: Promise<{
+    slug: string;
+  }>;
+}) {
+  const { slug } = await params;
 
-const verses = [
-  {
-    reference: "Proverbs 11:1",
-    title: "The Law of Just Balances in Corporate Negotiation",
-    duration: "6 Min",
-    slug: "law-of-just-balances-corporate-negotiation",
-  },
-  {
-    reference: "Proverbs 6:1-5",
-    title: "The Hazard of Swift Assent in Partnerships",
-    duration: "5 Min",
-    slug: "hazard-of-swift-assent-partnerships",
-  },
-  {
-    reference: "Proverbs 22:7",
-    title: "Sovereign Capital: The Borrower as Slave to the Lender",
-    duration: "9 Min",
-    slug: "sovereign-capital-borrower-slave-lender",
-  },
-  {
-    reference: "Proverbs 13:22",
-    title: "Generational Wealth Transfer and Enterprise Legacy",
-    duration: "7 Min",
-    slug: "generational-wealth-transfer-enterprise-legacy",
-  },
-];
+  let nuggets: Nugget[] = [];
 
-const relatedBooks = ["Ecclesiastes", "Psalms", "Exodus", "Genesis", "Deuteronomy"];
+  try {
+    nuggets =
+      await getPublishedNuggets();
+  } catch (error) {
+    console.error(
+      "Failed to load Scripture Nuggets:",
+      error,
+    );
+  }
 
-export default function ScriptureIndexDetailPage({ params }: { params: { slug: string } }) {
-  // TODO: look up the real book by params.slug and notFound() if missing
+  const availableBooks = BIBLE_BOOKS;
+
+  const book = availableBooks.find(
+    (item) =>
+      slugify(item) === slug,
+  );
+
+  if (!book) {
+    notFound();
+  }
+
+  /*
+   * Nuggets belonging to this book.
+   */
+  const bookNuggets = nuggets
+    .filter(
+      (nugget) =>
+        nugget.book === book,
+    )
+    .sort((a, b) =>
+      a.scriptureRef.localeCompare(
+        b.scriptureRef,
+        undefined,
+        {
+          numeric: true,
+        },
+      ),
+    );
+
+  /*
+   * Prefer Gold Nuggets for featured
+   * wisdom, then use remaining entries.
+   */
+  const featuredNuggets = [
+    ...bookNuggets,
+  ]
+    .sort((a, b) => {
+      if (
+        a.isGold &&
+        !b.isGold
+      ) {
+        return -1;
+      }
+
+      if (
+        !a.isGold &&
+        b.isGold
+      ) {
+        return 1;
+      }
+
+      return 0;
+    })
+    .slice(0, 2);
+
+  /*
+   * Related books come from actual
+   * backend data.
+   */
+  const relatedBooks =
+    availableBooks
+      .filter(
+        (item) =>
+          item !== book,
+      )
+      .map((item) => ({
+        title: item,
+
+        count: nuggets.filter(
+          (nugget) =>
+            nugget.book === item,
+        ).length,
+      }))
+      .sort(
+        (a, b) =>
+          b.count - a.count,
+      )
+      .slice(0, 6);
+
+  const featuredHeading =
+    book === "Proverbs"
+      ? "Featured Solomon Wisdom"
+      : `Featured ${book} Wisdom`;
+
+  const description =
+    bookDescriptions[book] ??
+    `Explore published biblical business wisdom, marketplace principles and practical applications from the book of ${book}.`;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 sm:py-10">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-amber-500">
-            Scripture Index Detailed
-          </p>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-bold text-zinc-100">{book.title}</h1>
-          <p className="mt-2 text-sm text-zinc-500 max-w-xl leading-relaxed">
-            {book.description}
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
+      <Navbar />
 
-        <div className="border border-zinc-800 rounded-md px-4 py-3 text-center w-full sm:w-auto shrink-0">
-          <p className="text-xl font-bold text-zinc-100">{book.nuggetCount}</p>
-          <p className="text-[10px] uppercase tracking-wide text-zinc-500">Associated Nuggets</p>
-        </div>
-      </div>
-
-      {/* Featured Solomon Wisdom */}
-      <section className="mt-8 sm:mt-10">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Featured Solomon Wisdom
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {featured.map((item) => (
+      <main>
+        {/* HEADER */}
+        <section className="border-b border-white/[0.06]">
+          <div className="mx-auto max-w-[1280px] px-5 py-14 sm:px-8 lg:px-10 lg:py-16">
             <Link
-              key={item.slug}
-              href={`/nuggets/${item.slug}`}
-              className="flex gap-3 bg-neutral-950 border border-zinc-800 rounded-lg p-3 hover:border-zinc-600 transition"
+              href="/library?tab=Scripture+Matrix"
+              className="text-[13px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
-              <div
-                className="w-16 h-16 sm:w-20 sm:h-20 rounded bg-cover bg-center shrink-0"
-                style={{ backgroundImage: `url('${item.image}')` }}
-              />
-              <div className="min-w-0">
-                <p className="text-amber-400 text-[10px] uppercase tracking-wide mb-1">
-                  {item.reference} &middot; {item.tag}
-                </p>
-                <h3 className="text-zinc-100 text-sm font-semibold leading-snug">
-                  {item.title}
-                </h3>
-                <p className="text-zinc-500 text-xs mt-1">{item.duration}</p>
-              </div>
+              ← Scripture Index
             </Link>
-          ))}
-        </div>
-      </section>
 
-      {/* Full Scripture Listing */}
-      <section className="mt-8 sm:mt-10">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            Full Scripture Listing
-          </h2>
-          <span className="text-xs text-zinc-500 hidden sm:inline">Sort by: Verse Order</span>
-        </div>
+            <div className="mt-7 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-[800px]">
+                <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-[#E28906]">
+                  Scripture Index Detail
+                </p>
 
-        <div className="divide-y divide-zinc-800 border border-zinc-800 rounded-lg overflow-hidden">
-          {verses.map((verse) => (
-            <div
-              key={verse.slug}
-              className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-4"
-            >
-              <span className="text-amber-400 text-xs font-medium w-28 shrink-0">
-                {verse.reference}
-              </span>
-              <p className="text-zinc-200 text-sm flex-1 min-w-0">{verse.title}</p>
-              <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
-                <span className="text-zinc-500 text-xs">{verse.duration}</span>
-                <Link
-                  href={`/nuggets/${verse.slug}`}
-                  className="text-amber-400 text-xs font-medium hover:underline"
-                >
-                  Access
-                </Link>
+                <h1 className="bn-hero-title mt-3 font-serif text-[40px] leading-tight text-[#FAF9F6]">
+                  The Book of {book}
+                </h1>
+
+                <p className="mt-4 max-w-[760px] text-[14px] leading-7 text-white/50">
+                  {description}
+                </p>
+              </div>
+
+              {/* ASSOCIATED COUNT */}
+              <div className="w-fit min-w-[150px] rounded-lg border border-[#E28906]/50 bg-[#111111] px-6 py-5">
+                <p className="font-serif text-[28px] leading-none text-[#E28906]">
+                  {bookNuggets.length}
+                </p>
+
+                <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
+                  Associated{" "}
+                  {bookNuggets.length ===
+                  1
+                    ? "Nugget"
+                    : "Nuggets"}
+                </p>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* Related Wisdom Books */}
-      <section className="mt-8 sm:mt-10">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Related Wisdom Books
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {relatedBooks.map((name) => (
-            <span
-              key={name}
-              className="text-xs px-3 py-1.5 rounded-full border border-zinc-800 text-zinc-400 hover:border-zinc-600 transition cursor-pointer"
-            >
-              {name}
-            </span>
-          ))}
-        </div>
-      </section>
+        <section className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10">
+          {/* FEATURED */}
+          <section>
+            <h2 className="font-serif text-[28px]">
+              {featuredHeading}
+            </h2>
+
+            {featuredNuggets.length >
+            0 ? (
+              <div className="mt-6 grid gap-5 lg:grid-cols-2">
+                {featuredNuggets.map(
+                  (nugget) => (
+                    <Link
+                      key={
+                        nugget.slug
+                      }
+                      href={`/nugget/${nugget.slug}`}
+                      className="group flex min-h-[145px] overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#E28906]/45"
+                    >
+                      {/* IMAGE */}
+                      <div className="relative w-[145px] shrink-0 sm:w-[180px]">
+                        <Image
+                          src={
+                            nugget.image
+                          }
+                          alt={
+                            nugget.title
+                          }
+                          fill
+                          sizes="180px"
+                          className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                        />
+                      </div>
+
+                      {/* CONTENT */}
+                      <div className="flex min-w-0 flex-1 flex-col justify-center p-5">
+                        <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-[#E28906]">
+                          {
+                            nugget.scriptureRef
+                          }
+                        </p>
+
+                        <h3 className="mt-2 font-serif text-[18px] leading-[1.2]">
+                          {
+                            nugget.title
+                          }
+                        </h3>
+
+                        <div className="mt-3 flex items-center gap-2 text-[13px] text-white/40">
+                          <Clock3
+                            size={
+                              13
+                            }
+                          />
+
+                          {
+                            nugget.duration
+                          }
+
+                          <span>
+                            •
+                          </span>
+
+                          <span>
+                            {
+                              nugget.topic
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ),
+                )}
+              </div>
+            ) : (
+              <div className="mt-6 rounded-xl border border-white/10 bg-[#111111] p-8 text-center">
+                <p className="text-[14px] text-white/45">
+                  No featured wisdom is
+                  available from {book} yet.
+                </p>
+              </div>
+            )}
+          </section>
+
+          {/* FULL LIST */}
+          <section className="mt-12">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 className="font-serif text-[28px]">
+                  Full Scripture Listing
+                </h2>
+
+                <p className="mt-2 text-[14px] text-white/40">
+                  All published Nuggets from
+                  the Book of {book}.
+                </p>
+              </div>
+
+              <div className="text-[13px] text-white/40">
+                Sort by:{" "}
+                <span className="text-[#E28906]">
+                  Verse Order
+                </span>
+              </div>
+            </div>
+
+            {bookNuggets.length >
+            0 ? (
+              <div className="mt-6 divide-y divide-white/[0.07] border-y border-white/[0.07]">
+                {bookNuggets.map(
+                  (nugget) => (
+                    <div
+                      key={
+                        nugget.slug
+                      }
+                      className="grid gap-3 py-5 sm:grid-cols-[150px_minmax(0,1fr)_90px_90px] sm:items-center"
+                    >
+                      <Link
+                        href={`/nugget/${nugget.slug}`}
+                        className="text-[13px] font-medium text-[#E28906] transition hover:text-[#E28906]"
+                      >
+                        {
+                          nugget.scriptureRef
+                        }
+                      </Link>
+
+                      <Link
+                        href={`/nugget/${nugget.slug}`}
+                        className="min-w-0 font-serif text-[16px] leading-5 text-[#FAF9F6] transition hover:text-[#E28906]"
+                      >
+                        {
+                          nugget.title
+                        }
+                      </Link>
+
+                      <span className="text-[13px] text-white/35">
+                        {
+                          nugget.duration
+                        }
+                      </span>
+
+                      <Link
+                        href={`/nugget/${nugget.slug}`}
+                        className="bn-button w-fit rounded border border-[#E28906]/50 px-3 py-1.5 text-[12px] font-medium text-[#E28906] transition hover:bg-[#E28906] hover:text-[#080808]"
+                      >
+                        Access
+                      </Link>
+                    </div>
+                  ),
+                )}
+              </div>
+            ) : (
+              <div className="mt-6 rounded-xl border border-white/10 bg-[#111111] p-8 text-center">
+                <p className="text-[14px] text-white/45">
+                  No published Nuggets are
+                  available from {book} yet.
+                </p>
+              </div>
+            )}
+          </section>
+
+          {/* RELATED BOOKS */}
+          {relatedBooks.length > 0 && (
+            <section className="mt-12">
+              <h2 className="font-serif text-[28px]">
+                Related Wisdom Books
+              </h2>
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                {relatedBooks.map(
+                  (item) => (
+                    <Link
+                      key={
+                        item.title
+                      }
+                      href={`/scripture-index/${slugify(
+                        item.title,
+                      )}`}
+                      className="bn-button inline-flex items-center gap-3 rounded-lg border border-white/10 bg-[#111111] px-4 py-3 text-[13px] text-white/55 transition hover:border-[#E28906]/45 hover:text-white"
+                    >
+                      {
+                        item.title
+                      }
+
+                      <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[11px] text-white/35">
+                        {
+                          item.count
+                        }
+                      </span>
+
+                      <ArrowRight
+                        size={13}
+                        className="text-[#E28906]"
+                      />
+                    </Link>
+                  ),
+                )}
+              </div>
+            </section>
+          )}
+        </section>
+      </main>
+
+      <Footer />
     </div>
   );
 }

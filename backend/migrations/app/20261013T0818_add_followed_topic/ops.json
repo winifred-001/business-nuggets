@@ -1,0 +1,164 @@
+[
+  {
+    "id": "table.FollowedTopic",
+    "label": "Create table \"FollowedTopic\"",
+    "summary": "Creates table \"FollowedTopic\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "FollowedTopic"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"FollowedTopic\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FollowedTopic\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"FollowedTopic\"",
+        "sql": "CREATE TABLE \"public\".\"FollowedTopic\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"topic\" text NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"FollowedTopic\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FollowedTopic\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.FollowedTopic.FollowedTopic_userId_topic_key",
+    "label": "Add unique constraint on \"FollowedTopic\" (userId, topic)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "FollowedTopic_userId_topic_key",
+        "table": "FollowedTopic"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"FollowedTopic_userId_topic_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FollowedTopic_userId_topic_key",
+          "public",
+          "\"public\".\"FollowedTopic\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"FollowedTopic_userId_topic_key\"",
+        "sql": "ALTER TABLE \"public\".\"FollowedTopic\" ADD CONSTRAINT \"FollowedTopic_userId_topic_key\" UNIQUE (\"userId\", \"topic\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"FollowedTopic_userId_topic_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FollowedTopic_userId_topic_key",
+          "public",
+          "\"public\".\"FollowedTopic\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.FollowedTopic.FollowedTopic_userId_idx_a489d58a",
+    "label": "Create index \"FollowedTopic_userId_idx_a489d58a\" on \"FollowedTopic\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "FollowedTopic_userId_idx_a489d58a",
+        "table": "FollowedTopic"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"FollowedTopic_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FollowedTopic_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"FollowedTopic_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"FollowedTopic_userId_idx_a489d58a\" ON \"public\".\"FollowedTopic\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"FollowedTopic_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"FollowedTopic_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.FollowedTopic.FollowedTopic_userId_fkey",
+    "label": "Add foreign key \"FollowedTopic_userId_fkey\" on \"FollowedTopic\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "FollowedTopic_userId_fkey",
+        "table": "FollowedTopic"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"FollowedTopic_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FollowedTopic_userId_fkey",
+          "public",
+          "\"public\".\"FollowedTopic\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"FollowedTopic_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"FollowedTopic\"\nADD CONSTRAINT \"FollowedTopic_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"FollowedTopic_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "FollowedTopic_userId_fkey",
+          "public",
+          "\"public\".\"FollowedTopic\""
+        ]
+      }
+    ]
+  }
+]
