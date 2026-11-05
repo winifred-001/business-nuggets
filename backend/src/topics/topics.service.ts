@@ -20,23 +20,8 @@ import {
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 @Injectable()
 export class TopicsService {
-  private coversReady?: Promise<void>;
-
-  private ensureCovers() {
-    this.coversReady ??= db.runtime().execute(db.raw.sql`
-      CREATE TABLE IF NOT EXISTS "TopicCover" (
-        "topicId" integer PRIMARY KEY REFERENCES "Topic" ("id") ON DELETE CASCADE,
-        "image" text NOT NULL
-      )
-    `.affectedCount().build()).then(() => undefined).catch(error => {
-      this.coversReady = undefined;
-      throw error;
-    });
-    return this.coversReady;
-  }
-
+  
   private async getCovers() {
-    await this.ensureCovers();
     const rows = await db.runtime().query(db.raw.sql`
       SELECT "topicId", "image" FROM "TopicCover"
     `.returnsRow({ topicId: 'pg/int4@1', image: 'pg/text@1' }).build());
@@ -180,7 +165,6 @@ export class TopicsService {
       .sort((a, b) => a.displayOrder - b.displayOrder || a.id - b.id);
   }
   async createTopic({ image, ...input }: CreateTopicDto) {
-    if (image !== undefined) await this.ensureCovers();
     return db.transaction(async (tx) => {
       const name = this.validateName(input.name),
         topics = await tx.orm.public.Topic.all();
@@ -204,7 +188,6 @@ export class TopicsService {
     });
   }
   async updateTopic(id: number, { image, ...input }: UpdateTopicDto) {
-    if (image !== undefined) await this.ensureCovers();
     return db.transaction(async (tx) => {
       const existing = await tx.orm.public.Topic.where({ id })
         .forUpdate()
