@@ -104,6 +104,8 @@ import {
   AdminRequestValidationInterceptor,
 } from "./admin/admin-request-validation.interceptor";
 
+import { R2AudioModule } from './r2-audio/r2-audio.module';
+
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -135,6 +137,7 @@ import {
     MobileAppModule,
     AppSettingsModule,
     PaymentsModule,
+    R2AudioModule,
 
     AdminModule,
   ],

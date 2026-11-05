@@ -734,10 +734,10 @@ export default function NewNuggetPage() {
                 </div>
 
                 <Field label="Song URL (optional)" className="lg:col-span-2">
-                  <AudioMediaInput label="Song URL" value={form.audioUrl} onChange={value => updateField("audioUrl", value)} />
+                  <AudioMediaInput label="Song URL" bucket="song" value={form.audioUrl} onChange={value => updateField("audioUrl", value)} />
                 </Field>
                 <Field label="Nugget URL (optional)" className="lg:col-span-2">
-                  <AudioMediaInput label="Nugget URL" value={form.nuggetAudioUrl} onChange={value => updateField("nuggetAudioUrl", value)} />
+                  <AudioMediaInput label="Nugget URL" bucket="nuggets" value={form.nuggetAudioUrl} onChange={value => updateField("nuggetAudioUrl", value)} />
                 </Field>
               </div>
             </FormSection>

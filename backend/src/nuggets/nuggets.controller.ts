@@ -6,7 +6,7 @@ import {
   Request,
   UseGuards,
 } from "@nestjs/common";
-
+import { R2AudioService } from '../r2-audio/r2-audio.service';
 import {
   OptionalJwtAuthGuard,
 } from "../auth/optional-jwt-auth.guard";
@@ -23,10 +23,11 @@ export class NuggetsController {
   constructor(
     private readonly nuggetsService:
       NuggetsService,
+    private readonly r2Audio: R2AudioService,
   ) {}
 
   @Get()
-  getPublishedNuggets(
+  async getPublishedNuggets(
     @Request()
     req: any,
 
@@ -57,7 +58,7 @@ export class NuggetsController {
     @Query("limit")
     limit?: string,
   ) {
-    return this.nuggetsService.getPublishedNuggets(
+    const result = await this.nuggetsService.getPublishedNuggets(
       {
         search,
         topic,
@@ -69,25 +70,46 @@ export class NuggetsController {
         page,
         limit,
       },
-      req.user?.sub
-        ? Number(req.user.sub)
-        : undefined,
+      req.user?.sub ? Number(req.user.sub) : undefined,
     );
+
+    return {
+      ...result,
+      data: await Promise.all(
+        result.data.map(async (nugget) => ({
+          ...nugget,
+          audioUrl: await this.r2Audio.resolvePlaybackUrl(
+            nugget.audioUrl,
+          ),
+          nuggetAudioUrl: await this.r2Audio.resolvePlaybackUrl(
+            nugget.nuggetAudioUrl,
+          ),
+        })),
+      ),
+    };
+
   }
 
   @Get(":slug")
-  getNuggetBySlug(
+  async getNuggetBySlug(
     @Request()
     req: any,
 
     @Param("slug")
     slug: string,
   ) {
-    return this.nuggetsService.getNuggetBySlug(
+    const nugget = await this.nuggetsService.getNuggetBySlug(
       slug,
-      req.user?.sub
-        ? Number(req.user.sub)
-        : undefined,
+      req.user?.sub ? Number(req.user.sub) : undefined
     );
+    return {
+      ...nugget,
+      audioUrl: await this.r2Audio.resolvePlaybackUrl(
+        nugget.audioUrl,
+      ),
+      nuggetAudioUrl: await this.r2Audio.resolvePlaybackUrl(
+        nugget.nuggetAudioUrl,
+      ),
+    };
   }
 }
