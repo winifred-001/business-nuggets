@@ -17,8 +17,8 @@ import {
   RequireAdminPermission,
 } from '../auth/admin-permission.guard';
 import { AdminIpAllowListGuard } from '../admin/admin-ip-allow-list.guard';
-import type { R2AudioService, R2AudioKind } from './r2-audio.service';
-
+import { R2AudioService } from './r2-audio.service';
+import type { R2AudioKind } from './r2-audio.service';
 class SignR2UploadDto {
   @IsIn(['song', 'nuggets'])
   kind: R2AudioKind;
