@@ -46,13 +46,16 @@ function isSameOriginMutation(
       "sec-fetch-site",
     );
 
-  if (
-    origin &&
-    origin !==
-      request.nextUrl.origin
-  ) {
+  
+  const allowedOrigins = new Set([
+    request.nextUrl.origin,
+    "https://businessnuggets.com.ng",
+  ]);
+
+  if (origin && !allowedOrigins.has(origin)) {
     return false;
   }
+
 
   if (
     fetchSite &&
