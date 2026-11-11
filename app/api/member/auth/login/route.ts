@@ -13,18 +13,18 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function sameOrigin(
-  request: NextRequest,
-) {
-  const origin =
-    request.headers.get("origin");
 
-  return (
-    !origin ||
-    origin ===
-      request.nextUrl.origin
-  );
+function sameOrigin(request: NextRequest) {
+  const origin = request.headers.get("origin");
+
+  const allowedOrigins = new Set([
+    request.nextUrl.origin,
+    "https://businessnuggets.com.ng",
+  ]);
+
+  return !origin || allowedOrigins.has(origin);
 }
+
 
 export async function POST(
   request: NextRequest,
