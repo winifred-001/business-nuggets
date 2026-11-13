@@ -7,10 +7,12 @@ import AudioBar from "@/components/AudioBar";
 
 import Navbar from "@/components/navbar";
 import PremiumNuggetGate from "@/components/PremiumNuggetGate";
+import NuggetAccessExpiryGate from "@/components/NuggetAccessExpiryGate";
 import NuggetAnalyticsTracker from "@/components/analytics/NuggetAnalyticsTracker";
 import {
   getNuggetBySlugFromApi,
   PremiumRequiredError,
+  NuggetAccessError,
 } from "@/lib/nuggets-api";
 import {
   getServerMemberToken,
@@ -43,6 +45,19 @@ export default async function NuggetDetailPage({
       );
     }
 
+    if (error instanceof NuggetAccessError) {
+      return (
+        <main className="flex min-h-screen items-center justify-center bg-[#080808] px-5 py-20 text-center text-[#FAF9F6]">
+          <section className="max-w-[560px] rounded-2xl border border-[#E28906]/35 bg-[#111111] p-8 sm:p-10">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#E28906]">Nugget access limit</p>
+            <h1 className="mt-4 font-serif text-[32px]">Your current selection is full</h1>
+            <p className="mt-4 text-[14px] leading-7 text-white/55">{error.message}</p>
+            <Link href="/library" className="bn-button mt-7 inline-flex rounded-lg bg-[#E28906] px-6 py-3 text-[13px] font-semibold text-[#080808]">Return to Library</Link>
+          </section>
+        </main>
+      );
+    }
+
     throw error;
   }
 
@@ -51,6 +66,7 @@ export default async function NuggetDetailPage({
   }
 
   return (
+    <NuggetAccessExpiryGate expiresAt={nugget.accessExpiresAt}>
     <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
      <NuggetAnalyticsTracker nuggetId={nugget.id}/>
       <Navbar />
@@ -185,5 +201,6 @@ export default async function NuggetDetailPage({
         />
       </div>
     </div>
+    </NuggetAccessExpiryGate>
   );
 }
