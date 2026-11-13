@@ -181,7 +181,7 @@ export class NuggetsService {
       throw new ForbiddenException({
         statusCode: 403,
         code: "NUGGET_ACCESS_EXPIRED",
-        message: "Your 24-hour access to this nugget has expired.",
+        message: `Your access to this nugget has expired after ${policy.accessDurationHours} hours.`,
         nextAvailableAt: new Date(new Date(existing.openedAt).getTime() + policy.quotaWindowHours * 60 * 60 * 1000).toISOString(),
       });
     }
