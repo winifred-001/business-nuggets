@@ -548,11 +548,11 @@ export default function AdminSubscriptionsPage() {
                     <div className="mt-4 grid grid-cols-3 gap-2 border-y border-white/[0.06] py-3">
                       <div>
                         <p className="text-[15px] font-serif text-white/80">{plan.maxNuggets ?? "—"}</p>
-                        <p className="mt-1 text-[7px] text-white/30">Nuggets / window</p>
+                        <p className="mt-1 text-[7px] text-white/30">Nuggets per period</p>
                       </div>
                       <div>
                         <p className="text-[15px] font-serif text-white/80">{plan.accessDurationHours ?? 24}h</p>
-                        <p className="mt-1 text-[7px] text-white/30">Per nugget</p>
+                        <p className="mt-1 text-[7px] text-white/30">Shared timer</p>
                       </div>
                       <div>
                         <p className="text-[15px] font-serif text-white/80">{plan.quotaWindowHours ?? 24}h</p>
@@ -826,12 +826,12 @@ export default function AdminSubscriptionsPage() {
 
                 <div className="grid grid-cols-3 gap-3">
                   <Field label="Nuggets allowed" type="number" value={maxNuggets} onChange={setMaxNuggets} />
-                  <Field label="Access hours / nugget" type="number" value={accessDurationHours} onChange={setAccessDurationHours} />
-                  <Field label="Quota window (hours)" type="number" value={quotaWindowHours} onChange={setQuotaWindowHours} />
+                  <Field label="Shared access period (hours)" type="number" value={accessDurationHours} onChange={setAccessDurationHours} />
+                  <Field label="" type="number" value={quotaWindowHours} onChange={setQuotaWindowHours} />
                 </div>
 
                 <p className="text-[7px] leading-4 text-white/30">
-                  Each first-opened nugget uses one slot. Its access expires after the configured hours; the slot becomes available again when its quota window has elapsed.
+                  The timer starts when the user opens their first nugget. All selected nuggets share this timer and lock together when the access period ends.
                 </p>
 
                 <div>
