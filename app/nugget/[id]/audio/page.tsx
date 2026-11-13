@@ -4,11 +4,14 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import FullAudioPlayer from "@/components/FullAudioPlayer";
 import PremiumNuggetGate from "@/components/PremiumNuggetGate";
+import NuggetAccessExpiryGate from "@/components/NuggetAccessExpiryGate";
+import NuggetAccessLimitGate from "@/components/NuggetAccessLimitGate";
 
 import {
   getNuggetBySlugFromApi,
   getPublishedNuggets,
   PremiumRequiredError,
+  NuggetAccessError,
 } from "@/lib/nuggets-api";
 import {
   getServerMemberToken,
@@ -48,13 +51,11 @@ export default async function AudioPlayerPage({
     nugget = current as AudioNugget;
     nuggets = all as AudioNugget[];
   } catch (error) {
-    if (
-      error instanceof
-      PremiumRequiredError
-    ) {
-      return (
-        <PremiumNuggetGate />
-      );
+    if (error instanceof PremiumRequiredError) {
+      return <PremiumNuggetGate />;
+    }
+    if (error instanceof NuggetAccessError) {
+      return <NuggetAccessLimitGate message={error.message} />;
     }
 
     console.error(
@@ -91,6 +92,7 @@ export default async function AudioPlayerPage({
     null;
 
   return (
+    <NuggetAccessExpiryGate expiresAt={nugget.accessExpiresAt}>
     <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
       <Navbar />
 
@@ -107,5 +109,6 @@ export default async function AudioPlayerPage({
 
       <Footer />
     </div>
+    </NuggetAccessExpiryGate>
   );
 }
