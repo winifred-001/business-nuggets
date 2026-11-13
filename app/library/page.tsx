@@ -1402,7 +1402,7 @@ function NuggetCard({
                     ? "Open to start"
                     : "Plan limit reached"
                   : nugget.accessExpiresAt
-                    ? `Access until ${new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(nugget.accessExpiresAt))}`
+                    ? `Batch access until ${new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(nugget.accessExpiresAt))}`
                     : "Listen & Read"}
           </span>
 
