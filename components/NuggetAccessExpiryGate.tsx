@@ -15,9 +15,11 @@ function formatRemaining(milliseconds: number) {
 
 export default function NuggetAccessExpiryGate({
   expiresAt,
+  durationHours = 24,
   children,
 }: {
   expiresAt?: string | null;
+  durationHours?: number;
   children: React.ReactNode;
 }) {
   const expiryTime = expiresAt ? new Date(expiresAt).getTime() : null;
@@ -43,7 +45,7 @@ export default function NuggetAccessExpiryGate({
             Access period ended
           </p>
           <h1 className="mt-4 font-serif text-[32px] text-[#FAF9F6]">
-            Your 24-hour reading window has closed
+            Your {durationHours}-hour reading window has closed
           </h1>
           <p className="mt-4 text-[14px] leading-7 text-white/55">
             The nuggets in your current selection are now locked. Return to the library and open any nugget to begin a new access period.
