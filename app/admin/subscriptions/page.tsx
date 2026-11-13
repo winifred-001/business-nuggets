@@ -545,7 +545,7 @@ export default function AdminSubscriptionsPage() {
                       subscribers
                     </p>
 
-                    <div className="mt-4 grid grid-cols-3 gap-2 border-y border-white/[0.06] py-3">
+                    <div className="mt-4 grid grid-cols-2 gap-2 border-y border-white/[0.06] py-3">
                       <div>
                         <p className="text-[15px] font-serif text-white/80">{plan.maxNuggets ?? "—"}</p>
                         <p className="mt-1 text-[7px] text-white/30">Nuggets per period</p>
@@ -553,10 +553,6 @@ export default function AdminSubscriptionsPage() {
                       <div>
                         <p className="text-[15px] font-serif text-white/80">{plan.accessDurationHours ?? 24}h</p>
                         <p className="mt-1 text-[7px] text-white/30">Shared timer</p>
-                      </div>
-                      <div>
-                        <p className="text-[15px] font-serif text-white/80">{plan.quotaWindowHours ?? 24}h</p>
-                        <p className="mt-1 text-[7px] text-white/30">Quota window</p>
                       </div>
                     </div>
 
@@ -824,10 +820,9 @@ export default function AdminSubscriptionsPage() {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <Field label="Nuggets allowed" type="number" value={maxNuggets} onChange={setMaxNuggets} />
                   <Field label="Shared access period (hours)" type="number" value={accessDurationHours} onChange={setAccessDurationHours} />
-                  <Field label="" type="number" value={quotaWindowHours} onChange={setQuotaWindowHours} />
                 </div>
 
                 <p className="text-[7px] leading-4 text-white/30">
