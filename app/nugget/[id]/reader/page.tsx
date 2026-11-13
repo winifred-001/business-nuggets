@@ -52,7 +52,7 @@ export default async function ReaderViewPage({
   }
 
   return (
-    <NuggetAccessExpiryGate expiresAt={nugget.accessExpiresAt}>
+    <NuggetAccessExpiryGate expiresAt={nugget.accessExpiresAt} durationHours={nugget.accessDurationHours}>
     <div className="min-h-screen bg-[#F5F0E8] pb-[96px] text-[#15120E]">
       <ReaderProgressTracker nuggetId={nugget.id} />
 
