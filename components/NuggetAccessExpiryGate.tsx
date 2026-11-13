@@ -21,7 +21,7 @@ export default function NuggetAccessExpiryGate({
   children: React.ReactNode;
 }) {
   const expiryTime = expiresAt ? new Date(expiresAt).getTime() : null;
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
     if (!expiryTime) return;
@@ -31,7 +31,7 @@ export default function NuggetAccessExpiryGate({
     return () => window.clearInterval(interval);
   }, [expiryTime]);
 
-  if (!expiryTime) return <>{children}</>;
+  if (!expiryTime || now === null) return <>{children}</>;
 
   const remaining = expiryTime - now;
 
