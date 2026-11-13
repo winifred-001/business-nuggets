@@ -14,6 +14,9 @@ type CreatePlanInput = {
   currency?: string;
   billingCycle: string;
   features?: string[];
+  maxNuggets?: number;
+  accessDurationHours?: number;
+  quotaWindowHours?: number;
 };
 
 type UpdatePlanInput = {
@@ -23,6 +26,9 @@ type UpdatePlanInput = {
   billingCycle?: string;
   features?: string[];
   active?: boolean;
+  maxNuggets?: number;
+  accessDurationHours?: number;
+  quotaWindowHours?: number;
 };
 
 type SubscriptionPlanRow = Awaited<
@@ -33,6 +39,52 @@ type SubscriptionPlanRow = Awaited<
 
 @Injectable()
 export class SubscriptionsService {
+  private accessPolicyTable?: Promise<void>;
+
+  private ensureAccessPolicyTable() {
+    if (!this.accessPolicyTable) {
+      this.accessPolicyTable = db.runtime().execute(db.raw.sql`
+        CREATE TABLE IF NOT EXISTS "SubscriptionAccessPolicy" (
+          "planSlug" text PRIMARY KEY,
+          "maxNuggets" integer NOT NULL DEFAULT 1 CHECK ("maxNuggets" >= 1),
+          "accessDurationHours" integer NOT NULL DEFAULT 24 CHECK ("accessDurationHours" BETWEEN 1 AND 8760),
+          "quotaWindowHours" integer NOT NULL DEFAULT 24 CHECK ("quotaWindowHours" BETWEEN 1 AND 8760),
+          "updatedAt" timestamptz NOT NULL DEFAULT NOW()
+        )
+      `.affectedCount().build()).then(() => undefined).catch(error => {
+        this.accessPolicyTable = undefined;
+        throw error;
+      });
+    }
+    return this.accessPolicyTable;
+  }
+
+  private async ensurePlanAccessPolicy(plan: SubscriptionPlanRow) {
+    await this.ensureAccessPolicyTable();
+    const defaultLimit = plan.billingCycle === "free" ? 1 : 5;
+    await db.runtime().execute(db.raw.sql`
+      INSERT INTO "SubscriptionAccessPolicy"
+        ("planSlug", "maxNuggets", "accessDurationHours", "quotaWindowHours")
+      VALUES (${plan.slug}, ${defaultLimit}, 24, 24)
+      ON CONFLICT ("planSlug") DO NOTHING
+    `.affectedCount().build());
+  }
+
+  private async getAccessPolicies() {
+    await this.ensureAccessPolicyTable();
+    const plans = await db.orm.public.SubscriptionPlan.all();
+    for (const plan of plans) await this.ensurePlanAccessPolicy(plan);
+    return db.runtime().query(db.raw.sql`
+      SELECT "planSlug", "maxNuggets", "accessDurationHours", "quotaWindowHours"
+      FROM "SubscriptionAccessPolicy"
+    `.returnsRow({
+      planSlug: "pg/text@1",
+      maxNuggets: "pg/int4@1",
+      accessDurationHours: "pg/int4@1",
+      quotaWindowHours: "pg/int4@1",
+    }).build());
+  }
+
   /* =========================================
      CURRENCY NORMALIZATION
   ========================================= */
@@ -221,10 +273,18 @@ export class SubscriptionsService {
     const transactions =
       await db.orm.public.BillingTransaction.all();
 
+    const accessPolicies = await this.getAccessPolicies();
+    const policyBySlug = new Map(accessPolicies.map(policy => [policy.planSlug, policy]));
+
     const plansWithCounts =
       plans
         .map((plan) => ({
           ...plan,
+          ...(policyBySlug.get(plan.slug) ?? {
+            maxNuggets: plan.billingCycle === "free" ? 1 : 5,
+            accessDurationHours: 24,
+            quotaWindowHours: 24,
+          }),
 
           subscriberCount:
             users.filter(
@@ -302,11 +362,22 @@ export class SubscriptionsService {
         rawPlans,
       );
 
+    const accessPolicies = await this.getAccessPolicies();
+    const policyBySlug = new Map(accessPolicies.map(policy => [policy.planSlug, policy]));
+
     return plans
       .filter(
         (plan) =>
           plan.active,
       )
+      .map(plan => ({
+        ...plan,
+        ...(policyBySlug.get(plan.slug) ?? {
+          maxNuggets: plan.billingCycle === "free" ? 1 : 5,
+          accessDurationHours: 24,
+          quotaWindowHours: 24,
+        }),
+      }))
       .sort(
         (a, b) =>
           a.displayOrder -
@@ -365,7 +436,7 @@ export class SubscriptionsService {
     const plans =
       await db.orm.public.SubscriptionPlan.all();
 
-    return db.orm.public.SubscriptionPlan.create({
+    const created = await db.orm.public.SubscriptionPlan.create({
       slug,
 
       name,
@@ -387,6 +458,30 @@ export class SubscriptionsService {
       displayOrder:
         plans.length,
     });
+
+    await this.ensureAccessPolicyTable();
+    await db.runtime().execute(db.raw.sql`
+      INSERT INTO "SubscriptionAccessPolicy"
+        ("planSlug", "maxNuggets", "accessDurationHours", "quotaWindowHours")
+      VALUES (
+        ${slug},
+        ${input.maxNuggets ?? (input.billingCycle === "free" ? 1 : 5)},
+        ${input.accessDurationHours ?? 24},
+        ${input.quotaWindowHours ?? 24}
+      )
+      ON CONFLICT ("planSlug") DO UPDATE SET
+        "maxNuggets" = EXCLUDED."maxNuggets",
+        "accessDurationHours" = EXCLUDED."accessDurationHours",
+        "quotaWindowHours" = EXCLUDED."quotaWindowHours",
+        "updatedAt" = NOW()
+    `.affectedCount().build());
+
+    return {
+      ...created,
+      maxNuggets: input.maxNuggets ?? (input.billingCycle === "free" ? 1 : 5),
+      accessDurationHours: input.accessDurationHours ?? 24,
+      quotaWindowHours: input.quotaWindowHours ?? 24,
+    };
   }
 
   /* =========================================
@@ -418,6 +513,16 @@ export class SubscriptionsService {
       throw new BadRequestException(
         "Price cannot be negative",
       );
+    }
+
+    if (input.maxNuggets !== undefined && (!Number.isInteger(input.maxNuggets) || input.maxNuggets < 1 || input.maxNuggets > 10000)) {
+      throw new BadRequestException("Maximum nuggets must be between 1 and 10,000.");
+    }
+    if (input.accessDurationHours !== undefined && (!Number.isInteger(input.accessDurationHours) || input.accessDurationHours < 1 || input.accessDurationHours > 8760)) {
+      throw new BadRequestException("Nugget access duration must be between 1 and 8,760 hours.");
+    }
+    if (input.quotaWindowHours !== undefined && (!Number.isInteger(input.quotaWindowHours) || input.quotaWindowHours < 1 || input.quotaWindowHours > 8760)) {
+      throw new BadRequestException("Quota reset period must be between 1 and 8,760 hours.");
     }
 
     const currency =
@@ -476,6 +581,26 @@ export class SubscriptionsService {
       );
     }
 
-    return updated;
+    await this.ensurePlanAccessPolicy(plan);
+    if (input.maxNuggets !== undefined || input.accessDurationHours !== undefined || input.quotaWindowHours !== undefined) {
+      await db.runtime().execute(db.raw.sql`
+        UPDATE "SubscriptionAccessPolicy"
+        SET
+          "maxNuggets" = COALESCE(${input.maxNuggets ?? null}, "maxNuggets"),
+          "accessDurationHours" = COALESCE(${input.accessDurationHours ?? null}, "accessDurationHours"),
+          "quotaWindowHours" = COALESCE(${input.quotaWindowHours ?? null}, "quotaWindowHours"),
+          "updatedAt" = NOW()
+        WHERE "planSlug" = ${plan.slug}
+      `.affectedCount().build());
+    }
+
+    const policies = await this.getAccessPolicies();
+    const policy = policies.find(item => item.planSlug === plan.slug);
+    return {
+      ...updated,
+      maxNuggets: policy?.maxNuggets ?? 1,
+      accessDurationHours: policy?.accessDurationHours ?? 24,
+      quotaWindowHours: policy?.quotaWindowHours ?? 24,
+    };
   }
 }
