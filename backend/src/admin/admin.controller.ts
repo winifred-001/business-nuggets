@@ -470,6 +470,9 @@ export class AdminController {
       currency?: string;
       billingCycle: string;
       features?: string[];
+      maxNuggets?: number;
+      accessDurationHours?: number;
+      quotaWindowHours?: number;
     },
   ) {
     return this.subscriptionsService.createPlan(
@@ -495,6 +498,9 @@ export class AdminController {
       billingCycle?: string;
       features?: string[];
       active?: boolean;
+      maxNuggets?: number;
+      accessDurationHours?: number;
+      quotaWindowHours?: number;
     },
   ) {
     return this.subscriptionsService.updatePlan(
