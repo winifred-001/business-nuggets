@@ -174,7 +174,7 @@ function LibraryContent() {
   const upgradeDialog = useRef<HTMLDialogElement>(null);
 
   const [loading, setLoading] = useState(true);
-  const [clockNow, setClockNow] = useState(() => Date.now());
+  const [clockNow, setClockNow] = useState(0);
   const expiredSessionRefresh = useRef<string | null>(null);
   const [error, setError] = useState("");
 
@@ -226,6 +226,7 @@ function LibraryContent() {
   }, []);
 
   useEffect(() => {
+    setClockNow(Date.now());
     const interval = window.setInterval(() => setClockNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
   }, []);
