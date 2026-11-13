@@ -175,6 +175,7 @@ function LibraryContent() {
 
   const [loading, setLoading] = useState(true);
   const [clockNow, setClockNow] = useState(() => Date.now());
+  const expiredSessionRefresh = useRef<string | null>(null);
   const [error, setError] = useState("");
 
   const [bookQuery, setBookQuery] =
@@ -228,6 +229,26 @@ function LibraryContent() {
     const interval = window.setInterval(() => setClockNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
   }, []);
+
+  const currentBatchExpiry = apiNuggets.find(nugget => nugget.accessExpiresAt)?.accessExpiresAt ?? null;
+
+  useEffect(() => {
+    if (!currentBatchExpiry) return;
+    const expiryTime = new Date(currentBatchExpiry).getTime();
+    if (clockNow < expiryTime || expiredSessionRefresh.current === currentBatchExpiry) return;
+
+    expiredSessionRefresh.current = currentBatchExpiry;
+    let active = true;
+    getPublishedNuggetsWithAccess()
+      .then(data => {
+        if (!active) return;
+        setApiNuggets(data.nuggets);
+        setPremiumAccess(data.premium);
+      })
+      .catch(error => console.error("Could not refresh expired nugget access:", error));
+
+    return () => { active = false; };
+  }, [currentBatchExpiry, clockNow]);
 
   const requestedTab =
     params.get("tab") ?? "";
