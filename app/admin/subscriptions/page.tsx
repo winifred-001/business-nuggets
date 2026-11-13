@@ -33,6 +33,9 @@ type SubscriptionPlan = {
   displayOrder: number;
 
   subscriberCount: number;
+  maxNuggets: number;
+  accessDurationHours: number;
+  quotaWindowHours: number;
 };
 
 type BillingTransaction = {
@@ -131,6 +134,10 @@ export default function AdminSubscriptionsPage() {
   const [active, setActive] =
     useState(true);
 
+  const [maxNuggets, setMaxNuggets] = useState("5");
+  const [accessDurationHours, setAccessDurationHours] = useState("24");
+  const [quotaWindowHours, setQuotaWindowHours] = useState("24");
+
   function getToken() {
     return (
       localStorage.getItem(
@@ -210,6 +217,9 @@ export default function AdminSubscriptionsPage() {
     );
     setFeatures("");
     setActive(true);
+    setMaxNuggets("5");
+    setAccessDurationHours("24");
+    setQuotaWindowHours("24");
 
     setModalOpen(true);
   }
@@ -253,6 +263,9 @@ export default function AdminSubscriptionsPage() {
     setActive(
       plan.active,
     );
+    setMaxNuggets(String(plan.maxNuggets ?? (plan.billingCycle === "free" ? 1 : 5)));
+    setAccessDurationHours(String(plan.accessDurationHours ?? 24));
+    setQuotaWindowHours(String(plan.quotaWindowHours ?? 24));
 
     setModalOpen(true);
   }
@@ -295,6 +308,16 @@ export default function AdminSubscriptionsPage() {
         "Enter a valid price.",
       );
 
+      return;
+    }
+
+    const parsedMaxNuggets = Number(maxNuggets);
+    const parsedAccessHours = Number(accessDurationHours);
+    const parsedQuotaHours = Number(quotaWindowHours);
+    if (!Number.isInteger(parsedMaxNuggets) || parsedMaxNuggets < 1 || parsedMaxNuggets > 10000 ||
+        !Number.isInteger(parsedAccessHours) || parsedAccessHours < 1 || parsedAccessHours > 8760 ||
+        !Number.isInteger(parsedQuotaHours) || parsedQuotaHours < 1 || parsedQuotaHours > 8760) {
+      setError("Enter valid whole-number access limits and durations.");
       return;
     }
 
@@ -351,6 +374,10 @@ export default function AdminSubscriptionsPage() {
                       features:
                         featureList,
 
+                      maxNuggets: parsedMaxNuggets,
+                      accessDurationHours: parsedAccessHours,
+                      quotaWindowHours: parsedQuotaHours,
+
                       active,
                     }
                   : {
@@ -374,6 +401,10 @@ export default function AdminSubscriptionsPage() {
 
                       features:
                         featureList,
+
+                      maxNuggets: parsedMaxNuggets,
+                      accessDurationHours: parsedAccessHours,
+                      quotaWindowHours: parsedQuotaHours,
                     },
               ),
           },
@@ -513,6 +544,21 @@ export default function AdminSubscriptionsPage() {
                       {plan.subscriberCount.toLocaleString()}{" "}
                       subscribers
                     </p>
+
+                    <div className="mt-4 grid grid-cols-3 gap-2 border-y border-white/[0.06] py-3">
+                      <div>
+                        <p className="text-[15px] font-serif text-white/80">{plan.maxNuggets ?? "—"}</p>
+                        <p className="mt-1 text-[7px] text-white/30">Nuggets / window</p>
+                      </div>
+                      <div>
+                        <p className="text-[15px] font-serif text-white/80">{plan.accessDurationHours ?? 24}h</p>
+                        <p className="mt-1 text-[7px] text-white/30">Per nugget</p>
+                      </div>
+                      <div>
+                        <p className="text-[15px] font-serif text-white/80">{plan.quotaWindowHours ?? 24}h</p>
+                        <p className="mt-1 text-[7px] text-white/30">Quota window</p>
+                      </div>
+                    </div>
 
                     <div className="mt-5 space-y-2">
                       {plan.features.map(
@@ -777,6 +823,16 @@ export default function AdminSubscriptionsPage() {
                     </option>
                   </select>
                 </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <Field label="Nuggets allowed" type="number" value={maxNuggets} onChange={setMaxNuggets} />
+                  <Field label="Access hours / nugget" type="number" value={accessDurationHours} onChange={setAccessDurationHours} />
+                  <Field label="Quota window (hours)" type="number" value={quotaWindowHours} onChange={setQuotaWindowHours} />
+                </div>
+
+                <p className="text-[7px] leading-4 text-white/30">
+                  Each first-opened nugget uses one slot. Its access expires after the configured hours; the slot becomes available again when its quota window has elapsed.
+                </p>
 
                 <div>
                   <label className="block text-[8px] text-white/35">
