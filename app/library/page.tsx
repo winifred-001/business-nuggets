@@ -174,6 +174,7 @@ function LibraryContent() {
   const upgradeDialog = useRef<HTMLDialogElement>(null);
 
   const [loading, setLoading] = useState(true);
+  const [clockNow, setClockNow] = useState(() => Date.now());
   const [error, setError] = useState("");
 
   const [bookQuery, setBookQuery] =
@@ -221,6 +222,11 @@ function LibraryContent() {
     return () => {
       mounted = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setClockNow(Date.now()), 1000);
+    return () => window.clearInterval(interval);
   }, []);
 
   const requestedTab =
@@ -721,12 +727,9 @@ function LibraryContent() {
                     {paginatedNuggets.map(
                       (nugget) => (
                         <NuggetCard
-                          key={
-                            nugget.slug
-                          }
-                          nugget={
-                            nugget
-                          }
+                          key={nugget.slug}
+                          nugget={nugget}
+                          now={clockNow}
                         />
                       ),
                     )}
@@ -1351,9 +1354,21 @@ export default function LibraryPage() {
 
 function NuggetCard({
   nugget,
+  now,
 }: {
   nugget: Nugget;
+  now: number;
 }) {
+  const batchExpired = Boolean(nugget.accessExpiresAt && new Date(nugget.accessExpiresAt).getTime() <= now);
+  const countdown = nugget.accessExpiresAt && !batchExpired
+    ? (() => {
+        const seconds = Math.max(0, Math.floor((new Date(nugget.accessExpiresAt!).getTime() - now) / 1000));
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainder = seconds % 60;
+        return [hours, minutes, remainder].map(value => String(value).padStart(2, "0")).join(":");
+      })()
+    : null;
   return (
     <Link
       href={`/nugget/${nugget.slug}`}
@@ -1401,14 +1416,16 @@ function NuggetCard({
                   ? nugget.accessAvailable
                     ? "Open to start"
                     : "Plan limit reached"
-                  : nugget.accessExpiresAt
-                    ? `Batch access until ${new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(nugget.accessExpiresAt))}`
-                    : "Listen & Read"}
+                  : batchExpired
+                    ? "Access period ended · open to restart"
+                    : countdown
+                      ? `Access ends in ${countdown}`
+                      : "Listen & Read"}
           </span>
 
-          {nugget.accessLocked ? (
+          {nugget.accessLocked || batchExpired ? (
             <span className="rounded border border-white/15 bg-white/[0.04] px-2 py-1 text-[10px] font-semibold text-white/45">
-              {nugget.accessAvailable ? "UNOPENED" : "LOCKED"}
+              {batchExpired ? "EXPIRED" : nugget.accessAvailable ? "UNOPENED" : "LOCKED"}
             </span>
           ) : nugget.isGold ? (
             <span className="rounded border border-[#E28906]/40 bg-[#E28906]/10 px-2 py-1 text-[12px] font-semibold text-[#E28906]">
