@@ -31,6 +31,18 @@ export class PremiumRequiredError extends Error {
   }
 }
 
+export class NuggetAccessError extends Error {
+  code: string;
+  nextAvailableAt?: string | null;
+
+  constructor(message: string, code: string, nextAvailableAt?: string | null) {
+    super(message);
+    this.name = "NuggetAccessError";
+    this.code = code;
+    this.nextAvailableAt = nextAvailableAt;
+  }
+}
+
 function resolveToken(
   token?: string | null,
 ) {
@@ -73,7 +85,7 @@ function normalizeFeed(
     .map(withBibleGroup)
     .map(
       (nugget) =>
-        premium
+        premium && !nugget.accessLocked
           ? {
               ...nugget,
               isGold: false,
@@ -175,6 +187,14 @@ export async function getNuggetBySlugFromApi(
     ) {
       throw new PremiumRequiredError(
         data.message,
+      );
+    }
+
+    if (data?.code === "NUGGET_QUOTA_REACHED" || data?.code === "NUGGET_ACCESS_EXPIRED") {
+      throw new NuggetAccessError(
+        data.message || "This nugget is not currently available.",
+        data.code,
+        data.nextAvailableAt,
       );
     }
   }
