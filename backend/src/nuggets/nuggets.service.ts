@@ -79,6 +79,13 @@ export class NuggetsService {
           )
         `.affectedCount().build());
         await db.runtime().execute(db.raw.sql`
+          CREATE TABLE IF NOT EXISTS "NuggetAccessSession" (
+            "userId" integer PRIMARY KEY,
+            "startedAt" timestamptz NOT NULL,
+            "expiresAt" timestamptz NOT NULL
+          )
+        `.affectedCount().build());
+        await db.runtime().execute(db.raw.sql`
           CREATE TABLE IF NOT EXISTS "NuggetAccessGrant" (
             "id" bigserial PRIMARY KEY,
             "userId" integer NOT NULL,
@@ -161,55 +168,72 @@ export class NuggetsService {
     }).build());
   }
 
+  private async getUserAccessSession(userId: number) {
+    await this.ensureAccessTables();
+    const rows = await db.runtime().query(db.raw.sql`
+      SELECT "startedAt", "expiresAt"
+      FROM "NuggetAccessSession"
+      WHERE "userId" = ${userId}
+      LIMIT 1
+    `.returnsRow({
+      startedAt: "pg/timestamptz-string@1",
+      expiresAt: "pg/timestamptz-string@1",
+    }).build());
+    return rows[0] ?? null;
+  }
+
   private async openNuggetAccess(userId: number, nuggetId: string, policy: {
     maxNuggets: number;
     accessDurationHours: number;
     quotaWindowHours: number;
   }) {
     const now = new Date();
-    const nowIso = now.toISOString();
-    const windowStart = new Date(now.getTime() - policy.quotaWindowHours * 60 * 60 * 1000);
-    const grants = await this.getUserGrants(userId);
-    const existing = grants.find(grant => grant.nuggetId === nuggetId);
-    const existingInWindow = existing && new Date(existing.openedAt).getTime() > windowStart.getTime();
-    const used = grants.filter(grant => new Date(grant.openedAt).getTime() > windowStart.getTime()).length;
+    let session = await this.getUserAccessSession(userId);
 
-    if (existingInWindow && existing) {
-      if (new Date(existing.expiresAt).getTime() > now.getTime()) {
-        return { openedAt: existing.openedAt, expiresAt: existing.expiresAt };
-      }
-      throw new ForbiddenException({
-        statusCode: 403,
-        code: "NUGGET_ACCESS_EXPIRED",
-        message: `Your access to this nugget has expired after ${policy.accessDurationHours} hours.`,
-        nextAvailableAt: new Date(new Date(existing.openedAt).getTime() + policy.quotaWindowHours * 60 * 60 * 1000).toISOString(),
-      });
+    // A new batch begins only when the user opens their first nugget
+    // after the previous shared access period has expired.
+    if (!session || new Date(session.expiresAt).getTime() <= now.getTime()) {
+      const expiresAt = new Date(now.getTime() + policy.accessDurationHours * 60 * 60 * 1000);
+      await db.runtime().execute(db.raw.sql`
+        INSERT INTO "NuggetAccessSession" ("userId", "startedAt", "expiresAt")
+        VALUES (${userId}, ${now.toISOString()}, ${expiresAt.toISOString()})
+        ON CONFLICT ("userId") DO UPDATE SET
+          "startedAt" = EXCLUDED."startedAt",
+          "expiresAt" = EXCLUDED."expiresAt"
+      `.affectedCount().build());
+      session = { startedAt: now.toISOString(), expiresAt: expiresAt.toISOString() };
     }
 
-    if (used >= policy.maxNuggets) {
+    const grants = await this.getUserGrants(userId);
+    const selected = grants.filter(grant =>
+      new Date(grant.openedAt).getTime() >= new Date(session!.startedAt).getTime()
+    );
+    const existing = selected.find(grant => grant.nuggetId === nuggetId);
+
+    if (existing) {
+      return { openedAt: session.startedAt, expiresAt: session.expiresAt };
+    }
+
+    if (selected.length >= policy.maxNuggets) {
       throw new ForbiddenException({
         statusCode: 403,
         code: "NUGGET_QUOTA_REACHED",
-        message: "You have used all the nuggets available in your current access window.",
+        message: `You have selected all ${policy.maxNuggets} nuggets available in this ${policy.accessDurationHours}-hour access period.`,
         maxNuggets: policy.maxNuggets,
-        quotaWindowHours: policy.quotaWindowHours,
-        nextAvailableAt: grants
-          .filter(grant => new Date(grant.openedAt).getTime() > windowStart.getTime())
-          .map(grant => new Date(new Date(grant.openedAt).getTime() + policy.quotaWindowHours * 60 * 60 * 1000))
-          .sort((a, b) => a.getTime() - b.getTime())[0]?.toISOString() ?? null,
+        accessDurationHours: policy.accessDurationHours,
+        nextAvailableAt: session.expiresAt,
       });
     }
 
-    const expiresAt = new Date(now.getTime() + policy.accessDurationHours * 60 * 60 * 1000);
     await db.runtime().execute(db.raw.sql`
       INSERT INTO "NuggetAccessGrant" ("userId", "nuggetId", "openedAt", "expiresAt")
-      VALUES (${userId}, ${nuggetId}, ${nowIso}, ${expiresAt.toISOString()})
+      VALUES (${userId}, ${nuggetId}, ${session.startedAt}, ${session.expiresAt})
       ON CONFLICT ("userId", "nuggetId") DO UPDATE SET
         "openedAt" = EXCLUDED."openedAt",
         "expiresAt" = EXCLUDED."expiresAt"
     `.affectedCount().build());
 
-    return { openedAt: nowIso, expiresAt: expiresAt.toISOString() };
+    return { openedAt: session.startedAt, expiresAt: session.expiresAt };
   }
 
   private toLockedPreview<
@@ -309,14 +333,14 @@ export class NuggetsService {
       const context = await this.getAccessContext(userId);
       if (!context.isAdmin) {
         const grants = await this.getUserGrants(userId);
+        const session = await this.getUserAccessSession(userId);
         const now = Date.now();
-        const windowStart = now - context.policy.quotaWindowHours * 60 * 60 * 1000;
-        const usedIds = new Set(
-          grants
-            .filter(grant => new Date(grant.openedAt).getTime() > windowStart)
-            .map(grant => grant.nuggetId),
-        );
-        const grantByNugget = new Map(grants.map(grant => [grant.nuggetId, grant]));
+        const sessionActive = Boolean(session && new Date(session.expiresAt).getTime() > now);
+        const selectedGrants = sessionActive
+          ? grants.filter(grant => new Date(grant.openedAt).getTime() >= new Date(session!.startedAt).getTime())
+          : [];
+        const usedIds = new Set(selectedGrants.map(grant => grant.nuggetId));
+        const grantByNugget = new Map(selectedGrants.map(grant => [grant.nuggetId, grant]));
 
         nuggets = nuggets.map((nugget: any) => {
           if (nugget.isGold && !premium) {
@@ -324,16 +348,17 @@ export class NuggetsService {
           }
 
           const grant = grantByNugget.get(nugget.id);
-          const active = Boolean(grant && new Date(grant.expiresAt).getTime() > now);
-          const alreadyUsed = usedIds.has(nugget.id);
-          const canOpen = !alreadyUsed && usedIds.size < context.policy.maxNuggets;
-          const expired = Boolean(grant && alreadyUsed && new Date(grant.expiresAt).getTime() <= now);
-          const availableAt = expired && grant
-            ? new Date(new Date(grant.openedAt).getTime() + context.policy.quotaWindowHours * 60 * 60 * 1000).toISOString()
-            : null;
+          const active = Boolean(sessionActive && grant);
+          const canOpen = !active && usedIds.size < context.policy.maxNuggets;
 
           if (active) {
-            return { ...nugget, locked: false, accessLocked: false, accessAvailable: true, accessExpiresAt: grant?.expiresAt ?? null };
+            return {
+              ...nugget,
+              locked: false,
+              accessLocked: false,
+              accessAvailable: true,
+              accessExpiresAt: session?.expiresAt ?? null,
+            };
           }
 
           return {
@@ -341,8 +366,10 @@ export class NuggetsService {
             locked: true,
             accessLocked: true,
             accessAvailable: canOpen,
-            accessReason: expired ? "NUGGET_ACCESS_EXPIRED" : canOpen ? "OPEN_TO_START" : "NUGGET_QUOTA_REACHED",
-            accessAvailableAt: availableAt,
+            accessReason: session && !sessionActive
+              ? "ACCESS_PERIOD_EXPIRED"
+              : canOpen ? "OPEN_TO_START" : "NUGGET_QUOTA_REACHED",
+            accessAvailableAt: sessionActive ? session?.expiresAt ?? null : null,
             accessExpiresAt: null,
             scriptureText: "",
             keyPrinciple: "",
@@ -357,7 +384,9 @@ export class NuggetsService {
         accessSummary = {
           maxNuggets: context.policy.maxNuggets,
           accessDurationHours: context.policy.accessDurationHours,
-          quotaWindowHours: context.policy.quotaWindowHours,
+          quotaWindowHours: context.policy.accessDurationHours,
+          startedAt: sessionActive ? session?.startedAt : null,
+          expiresAt: sessionActive ? session?.expiresAt : null,
           used: usedIds.size,
           remaining: Math.max(0, context.policy.maxNuggets - usedIds.size),
         };
