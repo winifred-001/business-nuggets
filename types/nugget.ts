@@ -28,6 +28,7 @@ export type Nugget = {
   accessAvailable?: boolean;
   accessReason?: string;
   accessExpiresAt?: string | null;
+  accessAvailableAt?: string | null;
   book: string;
   bibleSection: BibleSection;
   challenges: string[];
