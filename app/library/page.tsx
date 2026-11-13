@@ -1395,8 +1395,8 @@ function NuggetCard({
           <span className="text-[12px] font-medium text-[#E28906]">
             {nugget.accessReason === "PREMIUM_REQUIRED"
               ? "Premium required"
-              : nugget.accessReason === "NUGGET_ACCESS_EXPIRED"
-                ? `Expired · available ${nugget.accessAvailableAt ? new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(nugget.accessAvailableAt)) : "later"}`
+              : nugget.accessReason === "ACCESS_PERIOD_EXPIRED"
+                ? "Previous access period ended · open to start a new batch"
                 : nugget.accessLocked
                   ? nugget.accessAvailable
                     ? "Open to start"
