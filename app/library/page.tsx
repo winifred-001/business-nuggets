@@ -1395,13 +1395,15 @@ function NuggetCard({
           <span className="text-[12px] font-medium text-[#E28906]">
             {nugget.accessReason === "PREMIUM_REQUIRED"
               ? "Premium required"
-              : nugget.accessLocked
-                ? nugget.accessAvailable
-                  ? "Open to start"
-                  : "Access limit reached"
-                : nugget.accessExpiresAt
-                  ? `Access until ${new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(nugget.accessExpiresAt))}`
-                  : "Listen & Read"}
+              : nugget.accessReason === "NUGGET_ACCESS_EXPIRED"
+                ? `Expired · available ${nugget.accessAvailableAt ? new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(nugget.accessAvailableAt)) : "later"}`
+                : nugget.accessLocked
+                  ? nugget.accessAvailable
+                    ? "Open to start"
+                    : "Plan limit reached"
+                  : nugget.accessExpiresAt
+                    ? `Access until ${new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(nugget.accessExpiresAt))}`
+                    : "Listen & Read"}
           </span>
 
           {nugget.accessLocked ? (
