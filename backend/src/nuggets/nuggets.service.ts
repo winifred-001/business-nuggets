@@ -68,25 +68,31 @@ export class NuggetsService {
 
   private ensureAccessTables() {
     if (!this.accessTables) {
-      this.accessTables = db.runtime().execute(db.raw.sql`
-        CREATE TABLE IF NOT EXISTS "SubscriptionAccessPolicy" (
-          "planSlug" text PRIMARY KEY,
-          "maxNuggets" integer NOT NULL DEFAULT 1 CHECK ("maxNuggets" >= 1),
-          "accessDurationHours" integer NOT NULL DEFAULT 24 CHECK ("accessDurationHours" BETWEEN 1 AND 8760),
-          "quotaWindowHours" integer NOT NULL DEFAULT 24 CHECK ("quotaWindowHours" BETWEEN 1 AND 8760),
-          "updatedAt" timestamptz NOT NULL DEFAULT NOW()
-        );
-        CREATE TABLE IF NOT EXISTS "NuggetAccessGrant" (
-          "id" bigserial PRIMARY KEY,
-          "userId" integer NOT NULL,
-          "nuggetId" text NOT NULL,
-          "openedAt" timestamptz NOT NULL DEFAULT NOW(),
-          "expiresAt" timestamptz NOT NULL,
-          UNIQUE ("userId", "nuggetId")
-        );
-        CREATE INDEX IF NOT EXISTS "NuggetAccessGrant_user_opened_idx"
-          ON "NuggetAccessGrant" ("userId", "openedAt");
-      `.affectedCount().build()).then(() => undefined).catch(error => {
+      this.accessTables = (async () => {
+        await db.runtime().execute(db.raw.sql`
+          CREATE TABLE IF NOT EXISTS "SubscriptionAccessPolicy" (
+            "planSlug" text PRIMARY KEY,
+            "maxNuggets" integer NOT NULL DEFAULT 1 CHECK ("maxNuggets" >= 1),
+            "accessDurationHours" integer NOT NULL DEFAULT 24 CHECK ("accessDurationHours" BETWEEN 1 AND 8760),
+            "quotaWindowHours" integer NOT NULL DEFAULT 24 CHECK ("quotaWindowHours" BETWEEN 1 AND 8760),
+            "updatedAt" timestamptz NOT NULL DEFAULT NOW()
+          )
+        `.affectedCount().build());
+        await db.runtime().execute(db.raw.sql`
+          CREATE TABLE IF NOT EXISTS "NuggetAccessGrant" (
+            "id" bigserial PRIMARY KEY,
+            "userId" integer NOT NULL,
+            "nuggetId" text NOT NULL,
+            "openedAt" timestamptz NOT NULL DEFAULT NOW(),
+            "expiresAt" timestamptz NOT NULL,
+            UNIQUE ("userId", "nuggetId")
+          )
+        `.affectedCount().build());
+        await db.runtime().execute(db.raw.sql`
+          CREATE INDEX IF NOT EXISTS "NuggetAccessGrant_user_opened_idx"
+          ON "NuggetAccessGrant" ("userId", "openedAt")
+        `.affectedCount().build());
+      })().catch(error => {
         this.accessTables = undefined;
         throw error;
       });
@@ -168,7 +174,19 @@ export class NuggetsService {
     const existingInWindow = existing && new Date(existing.openedAt).getTime() > windowStart.getTime();
     const used = grants.filter(grant => new Date(grant.openedAt).getTime() > windowStart.getTime()).length;
 
-    if (!existingInWindow && used >= policy.maxNuggets) {
+    if (existingInWindow && existing) {
+      if (new Date(existing.expiresAt).getTime() > now.getTime()) {
+        return { openedAt: existing.openedAt, expiresAt: existing.expiresAt };
+      }
+      throw new ForbiddenException({
+        statusCode: 403,
+        code: "NUGGET_ACCESS_EXPIRED",
+        message: "Your 24-hour access to this nugget has expired.",
+        nextAvailableAt: new Date(new Date(existing.openedAt).getTime() + policy.quotaWindowHours * 60 * 60 * 1000).toISOString(),
+      });
+    }
+
+    if (used >= policy.maxNuggets) {
       throw new ForbiddenException({
         statusCode: 403,
         code: "NUGGET_QUOTA_REACHED",
@@ -308,7 +326,7 @@ export class NuggetsService {
           const grant = grantByNugget.get(nugget.id);
           const active = Boolean(grant && new Date(grant.expiresAt).getTime() > now);
           const alreadyUsed = usedIds.has(nugget.id);
-          const canOpen = alreadyUsed || usedIds.size < context.policy.maxNuggets;
+          const canOpen = !alreadyUsed && usedIds.size < context.policy.maxNuggets;
 
           if (active) {
             return { ...nugget, locked: false, accessLocked: false, accessAvailable: true, accessExpiresAt: grant?.expiresAt ?? null };
