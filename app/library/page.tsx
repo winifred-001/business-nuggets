@@ -1391,12 +1391,24 @@ function NuggetCard({
           {nugget.scriptureRef}
         </p>
 
-        <div className="mt-auto flex items-end justify-between pt-5">
-          <span className="text-[13px] font-medium text-[#E28906]">
-            Listen & Read
+        <div className="mt-auto flex items-end justify-between gap-3 pt-5">
+          <span className="text-[12px] font-medium text-[#E28906]">
+            {nugget.accessReason === "PREMIUM_REQUIRED"
+              ? "Premium required"
+              : nugget.accessLocked
+                ? nugget.accessAvailable
+                  ? "Open to start"
+                  : "Access limit reached"
+                : nugget.accessExpiresAt
+                  ? `Access until ${new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(nugget.accessExpiresAt))}`
+                  : "Listen & Read"}
           </span>
 
-          {nugget.isGold ? (
+          {nugget.accessLocked ? (
+            <span className="rounded border border-white/15 bg-white/[0.04] px-2 py-1 text-[10px] font-semibold text-white/45">
+              {nugget.accessAvailable ? "UNOPENED" : "LOCKED"}
+            </span>
+          ) : nugget.isGold ? (
             <span className="rounded border border-[#E28906]/40 bg-[#E28906]/10 px-2 py-1 text-[12px] font-semibold text-[#E28906]">
               GOLD
             </span>
