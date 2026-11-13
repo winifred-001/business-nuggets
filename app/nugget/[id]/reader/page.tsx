@@ -6,11 +6,14 @@ import ReaderAudioBar from "@/components/ReaderAudioBar";
 
 import Navbar from "@/components/navbar";
 import PremiumNuggetGate from "@/components/PremiumNuggetGate";
+import NuggetAccessExpiryGate from "@/components/NuggetAccessExpiryGate";
+import NuggetAccessLimitGate from "@/components/NuggetAccessLimitGate";
 import ReaderProgressTracker from "@/components/ReaderProgressTracker";
 
 import {
   getNuggetBySlugFromApi,
   PremiumRequiredError,
+  NuggetAccessError,
 } from "@/lib/nuggets-api";
 import {
   getServerMemberToken,
@@ -34,13 +37,11 @@ export default async function ReaderViewPage({
         token,
       );
   } catch (error) {
-    if (
-      error instanceof
-      PremiumRequiredError
-    ) {
-      return (
-        <PremiumNuggetGate />
-      );
+    if (error instanceof PremiumRequiredError) {
+      return <PremiumNuggetGate />;
+    }
+    if (error instanceof NuggetAccessError) {
+      return <NuggetAccessLimitGate message={error.message} />;
     }
 
     throw error;
@@ -51,6 +52,7 @@ export default async function ReaderViewPage({
   }
 
   return (
+    <NuggetAccessExpiryGate expiresAt={nugget.accessExpiresAt}>
     <div className="min-h-screen bg-[#F5F0E8] pb-[96px] text-[#15120E]">
       <ReaderProgressTracker nuggetId={nugget.id} />
 
@@ -161,5 +163,6 @@ export default async function ReaderViewPage({
         audioSrc={nugget.nuggetAudioUrl || null}
       />
     </div>
+    </NuggetAccessExpiryGate>
   );
 }
