@@ -420,6 +420,16 @@ export class SubscriptionsService {
       );
     }
 
+    if (input.maxNuggets !== undefined && (!Number.isInteger(input.maxNuggets) || input.maxNuggets < 1 || input.maxNuggets > 10000)) {
+      throw new BadRequestException("Maximum nuggets must be between 1 and 10,000.");
+    }
+    if (input.accessDurationHours !== undefined && (!Number.isInteger(input.accessDurationHours) || input.accessDurationHours < 1 || input.accessDurationHours > 8760)) {
+      throw new BadRequestException("Nugget access duration must be between 1 and 8,760 hours.");
+    }
+    if (input.quotaWindowHours !== undefined && (!Number.isInteger(input.quotaWindowHours) || input.quotaWindowHours < 1 || input.quotaWindowHours > 8760)) {
+      throw new BadRequestException("Quota reset period must be between 1 and 8,760 hours.");
+    }
+
     const existing =
       await db.orm.public.SubscriptionPlan
         .where({
