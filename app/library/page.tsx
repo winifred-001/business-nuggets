@@ -1382,6 +1382,7 @@ function NuggetCard({
   now: number;
 }) {
   const batchExpired = Boolean(nugget.accessExpiresAt && new Date(nugget.accessExpiresAt).getTime() <= now);
+  const unavailable = Boolean(nugget.accessLocked && !nugget.accessAvailable && nugget.accessReason !== "PREMIUM_REQUIRED" && !batchExpired);
   const countdown = nugget.accessExpiresAt && !batchExpired
     ? (() => {
         const seconds = Math.max(0, Math.floor((new Date(nugget.accessExpiresAt!).getTime() - now) / 1000));
@@ -1394,7 +1395,9 @@ function NuggetCard({
   return (
     <Link
       href={`/nugget/${nugget.slug}`}
-      className="group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#E28906]/45"
+      aria-disabled={unavailable}
+      onClick={event => { if (unavailable) event.preventDefault(); }}
+      className={`group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition ${unavailable ? "cursor-not-allowed opacity-65" : "hover:border-[#E28906]/45"}`}
     >
       <div className="relative h-[165px] overflow-hidden">
         <Image
