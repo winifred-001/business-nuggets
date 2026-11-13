@@ -327,6 +327,10 @@ export class NuggetsService {
           const active = Boolean(grant && new Date(grant.expiresAt).getTime() > now);
           const alreadyUsed = usedIds.has(nugget.id);
           const canOpen = !alreadyUsed && usedIds.size < context.policy.maxNuggets;
+          const expired = Boolean(grant && alreadyUsed && new Date(grant.expiresAt).getTime() <= now);
+          const availableAt = expired && grant
+            ? new Date(new Date(grant.openedAt).getTime() + context.policy.quotaWindowHours * 60 * 60 * 1000).toISOString()
+            : null;
 
           if (active) {
             return { ...nugget, locked: false, accessLocked: false, accessAvailable: true, accessExpiresAt: grant?.expiresAt ?? null };
@@ -337,7 +341,8 @@ export class NuggetsService {
             locked: true,
             accessLocked: true,
             accessAvailable: canOpen,
-            accessReason: canOpen ? "OPEN_TO_START" : "NUGGET_QUOTA_REACHED",
+            accessReason: expired ? "NUGGET_ACCESS_EXPIRED" : canOpen ? "OPEN_TO_START" : "NUGGET_QUOTA_REACHED",
+            accessAvailableAt: availableAt,
             accessExpiresAt: null,
             scriptureText: "",
             keyPrinciple: "",
