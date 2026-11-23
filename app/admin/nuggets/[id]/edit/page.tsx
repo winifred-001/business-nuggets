@@ -4,6 +4,9 @@ import { BIBLE_BOOKS, BIBLE_GROUPS, referenceWithBook, bibleGroupForBook, bibleB
 
 import ImageMediaPicker from "@/components/ImageMediaPicker";
 import AudioMediaInput from "@/components/AudioMediaInput";
+import R2ImagePicker from "@/components/R2ImagePicker";
+import R2MediaMatchStatus from "@/components/R2MediaMatchStatus";
+import { useR2MediaAutoMatch } from "@/lib/use-r2-media-auto-match";
 import { useR2SongAutoMatch } from "@/lib/use-r2-song-auto-match";
 
 import Image from "next/image";
@@ -180,6 +183,18 @@ export default function EditNuggetPage() {
           : { ...current, audioUrl: reference },
       );
     },
+  );
+
+  const nuggetAudioMatchStatus = useR2MediaAutoMatch(
+    "nuggets", originalNugget?.number, form.nuggetAudioUrl,
+    (reference) => setForm((current) => current.nuggetAudioUrl.trim()
+      ? current : { ...current, nuggetAudioUrl: reference }),
+  );
+
+  const imageMatchStatus = useR2MediaAutoMatch(
+    "images", originalNugget?.number, form.image,
+    (reference) => setForm((current) => current.image.trim()
+      ? current : { ...current, image: reference }),
   );
 
   /* =========================================
@@ -1078,10 +1093,12 @@ export default function EditNuggetPage() {
                 bucket="nuggets"
                 value={form.nuggetAudioUrl}
                 onChange={(value) => updateField("nuggetAudioUrl", value)}
+                detectDurationForValue={!form.duration.trim()}
                 onDurationDetected={(duration) =>
                   updateField("duration", duration)
                 }
               />
+              <R2MediaMatchStatus kind="nuggets" status={nuggetAudioMatchStatus} />
             </div>
 
             {/* BOTTOM BUTTONS */}
@@ -1198,6 +1215,8 @@ export default function EditNuggetPage() {
               />
 
               <ImageMediaPicker value={form.image} disabled={saving} onSelect={url => updateField("image", url)} />
+              <R2ImagePicker value={form.image} disabled={saving} onSelect={url => updateField("image", url)} />
+              <R2MediaMatchStatus kind="images" status={imageMatchStatus} />
             </section>
 
             {/* PUBLISHING */}

@@ -26,6 +26,7 @@ import AdminImportDialog from "@/components/admin/AdminImportDialog";
 import AdminShell from "@/components/admin/AdminShell";
 import { displayTopicName } from "@/lib/topic-display";
 import R2BulkSongMatchDialog from "@/components/admin/R2BulkSongMatchDialog";
+import R2BulkMediaMatchDialog from "@/components/admin/R2BulkMediaMatchDialog";
 import { API_URL } from "@/lib/api";
 
 import type { Nugget } from "@/types/nugget";
@@ -57,6 +58,7 @@ const PAGE_SIZE = 8;
 export default function AdminNuggetsPage() {
   const [importOpen, setImportOpen] = useState(false);
   const [r2BulkMatchOpen, setR2BulkMatchOpen] = useState(false);
+  const [r2MediaMatchKind, setR2MediaMatchKind] = useState<"nuggets" | "images" | null>(null);
   const [importSuccess, setImportSuccess] = useState("");
   const [nuggets, setNuggets] =
     useState<AdminNugget[]>([]);
@@ -531,6 +533,17 @@ export default function AdminNuggetsPage() {
               Auto-Match R2 Songs
             </button>
 
+            <button type="button"
+              onClick={() => setR2MediaMatchKind("nuggets")}
+              className="min-h-9 rounded-md border border-[#E28906]/40 px-4 text-[13px] text-[#E28906] transition hover:bg-white/[0.08]">
+              Auto-Match R2 Nugget Audio
+            </button>
+            <button type="button"
+              onClick={() => setR2MediaMatchKind("images")}
+              className="min-h-9 rounded-md border border-[#E28906]/40 px-4 text-[13px] text-[#E28906] transition hover:bg-white/[0.08]">
+              Auto-Match R2 Images
+            </button>
+
             <Link
               href="/admin/nuggets/new"
               className="bn-button inline-flex min-h-9 items-center gap-2 rounded-md bg-[#E28906] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
@@ -547,6 +560,15 @@ export default function AdminNuggetsPage() {
         {r2BulkMatchOpen && (
           <R2BulkSongMatchDialog
             onClose={() => setR2BulkMatchOpen(false)}
+            onApplied={loadNuggets}
+          />
+        )}
+
+        {r2MediaMatchKind && (
+          <R2BulkMediaMatchDialog
+            key={r2MediaMatchKind}
+            kind={r2MediaMatchKind}
+            onClose={() => setR2MediaMatchKind(null)}
             onApplied={loadNuggets}
           />
         )}

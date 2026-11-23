@@ -2,6 +2,7 @@ import {
   BadGatewayException,
   BadRequestException,
   Injectable,
+  NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import {
@@ -16,8 +17,10 @@ import { randomUUID } from 'crypto';
 import { detectMediaMime } from '../media/media-types';
 
 export type R2AudioKind = 'song' | 'nuggets';
+export type R2ListKind = R2AudioKind | 'images';
 
 const MAX_AUDIO_SIZE = 50 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const R2_REFERENCE = /^r2:\/\/(song|nuggets)\/(.+\.mp3)$/i;
 
 @Injectable()
@@ -47,11 +50,13 @@ export class R2AudioService {
     return this.clientInstance;
   }
 
-  private bucket(kind: R2AudioKind): string {
+  private bucket(kind: R2ListKind): string {
     const name =
       kind === 'song'
         ? process.env.R2_SONG_BUCKET
-        : process.env.R2_NUGGETS_BUCKET;
+        : kind === 'nuggets'
+          ? process.env.R2_NUGGETS_BUCKET
+          : process.env.R2_IMAGE_BUCKET;
 
     if (!name) {
       throw new ServiceUnavailableException(
@@ -62,18 +67,23 @@ export class R2AudioService {
     return name;
   }
 
-  // Keep the existing R2 key's original case, including folder paths.
-  private validAudioKey(key: string): boolean {
+  // Preserve original case and folder paths; reject traversal/control characters.
+  private validObjectKey(key: string): boolean {
     return (
       Buffer.byteLength(key, 'utf8') <= 1024 &&
       key.length > 0 &&
       !key.startsWith('/') &&
       !/[\x00-\x1f\x7f\\]/.test(key) &&
-      !key.split('/').some(
-        (part) => !part || part === '.' || part === '..',
-      ) &&
-      /\.mp3$/i.test(key)
+      !key.split('/').some((part) => !part || part === '.' || part === '..')
     );
+  }
+
+  private validAudioKey(key: string): boolean {
+    return this.validObjectKey(key) && /\.mp3$/i.test(key);
+  }
+
+  private validImageKey(key: string): boolean {
+    return this.validObjectKey(key) && /\.(?:jpg|jpeg|png|webp|gif)$/i.test(key);
   }
 
   private parseReference(reference: string) {
@@ -158,8 +168,8 @@ export class R2AudioService {
   }
 
   // List existing MP3 objects without uploading or copying them.
-  async listFiles(kind: R2AudioKind, continuationToken?: string) {
-    if (kind !== 'song' && kind !== 'nuggets') {
+  async listFiles(kind: R2ListKind, continuationToken?: string) {
+    if (kind !== 'song' && kind !== 'nuggets' && kind !== 'images') {
       throw new BadRequestException('Invalid R2 audio bucket');
     }
 
@@ -182,7 +192,9 @@ export class R2AudioService {
         .filter(
           (item) =>
             typeof item.Key === 'string' &&
-            this.validAudioKey(item.Key) &&
+            (kind === 'images'
+              ? this.validImageKey(item.Key) && (item.Size ?? 0) <= MAX_IMAGE_SIZE
+              : this.validAudioKey(item.Key)) &&
             (item.Size ?? 0) > 0,
         )
         .map((item) => {
@@ -192,7 +204,9 @@ export class R2AudioService {
             key,
             name: key.split('/').pop() ?? key,
             size: item.Size ?? 0,
-            reference: `r2://${kind}/${key}`,
+            reference: kind === 'images'
+              ? `/api/r2-image?key=${encodeURIComponent(key)}`
+              : `r2://${kind}/${key}`,
           };
         });
 
@@ -203,11 +217,60 @@ export class R2AudioService {
           : null,
       };
     } catch (error) {
-      if (error instanceof BadRequestException) {
+      if (error instanceof BadRequestException ||
+          error instanceof ServiceUnavailableException) {
         throw error;
       }
 
-      throw new BadGatewayException('Could not list audio files in R2');
+      throw new BadGatewayException(kind === 'images'
+        ? 'Could not list images in R2'
+        : 'Could not list audio files in R2');
+    }
+  }
+
+  // Public cover delivery through the site's stable /api/r2-image route.
+  // Never store expiring presigned URLs in the Nugget image column.
+  async getCoverImage(key: string) {
+    if (!key || !this.validImageKey(key)) {
+      throw new BadRequestException('Invalid image key');
+    }
+
+    try {
+      const object = await this.client().send(
+        new GetObjectCommand({ Bucket: this.bucket('images'), Key: key }),
+      );
+      const declaredSize = Number(object.ContentLength ?? 0);
+      if (!object.Body || declaredSize > MAX_IMAGE_SIZE) {
+        throw new NotFoundException('Cover image not found');
+      }
+
+      const bytes = Buffer.from(await object.Body.transformToByteArray());
+      if (bytes.length < 1 || bytes.length > MAX_IMAGE_SIZE) {
+        throw new NotFoundException('Cover image not found');
+      }
+
+      const mimeType = detectMediaMime(bytes);
+      const extensionMime = /\.jpe?g$/i.test(key)
+        ? 'image/jpeg'
+        : /\.png$/i.test(key)
+          ? 'image/png'
+          : /\.webp$/i.test(key)
+            ? 'image/webp'
+            : 'image/gif';
+      if (mimeType !== extensionMime) {
+        throw new NotFoundException('Cover image not found');
+      }
+      return { bytes, mimeType };
+    } catch (error) {
+      if (error instanceof BadRequestException ||
+          error instanceof NotFoundException ||
+          error instanceof ServiceUnavailableException) throw error;
+      if ((error as { $metadata?: {httpStatusCode?: number} })?.$metadata?.httpStatusCode === 404) {
+        throw new NotFoundException('Cover image not found');
+      }
+      console.error('R2 cover delivery failed',
+        error instanceof Error ? error.name : 'Unknown R2 error');
+      throw new BadGatewayException('Could not retrieve R2 cover image');
     }
   }
 

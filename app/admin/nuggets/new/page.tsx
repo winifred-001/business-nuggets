@@ -1,6 +1,9 @@
 "use client";
 
 import AudioMediaInput from "@/components/AudioMediaInput";
+import R2ImagePicker from "@/components/R2ImagePicker";
+import R2MediaMatchStatus from "@/components/R2MediaMatchStatus";
+import { useR2MediaAutoMatch } from "@/lib/use-r2-media-auto-match";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -122,6 +125,18 @@ export default function NewNuggetPage() {
     },
   );
 
+
+  const nuggetAudioMatchStatus = useR2MediaAutoMatch(
+    "nuggets", form.number, form.nuggetAudioUrl,
+    (reference) => setForm((current) => current.nuggetAudioUrl.trim()
+      ? current : { ...current, nuggetAudioUrl: reference }),
+  );
+
+  const imageMatchStatus = useR2MediaAutoMatch(
+    "images", form.number, form.image,
+    (reference) => setForm((current) => current.image.trim()
+      ? current : { ...current, image: reference }),
+  );
 
   function getToken() {
     return (
@@ -739,6 +754,8 @@ export default function NewNuggetPage() {
                       />
                     </Field>
                   </div>
+                  <R2ImagePicker value={form.image} onSelect={(url) => updateField("image", url)} disabled={uploading || saving !== null} />
+                  <R2MediaMatchStatus kind="images" status={imageMatchStatus} />
                 </div>
 
                 <div>
@@ -785,10 +802,12 @@ export default function NewNuggetPage() {
                     bucket="nuggets"
                     value={form.nuggetAudioUrl}
                     onChange={(value) => updateField("nuggetAudioUrl", value)}
+                    detectDurationForValue={!form.duration.trim()}
                     onDurationDetected={(duration) =>
                       updateField("duration", duration)
                     }
                   />
+                  <R2MediaMatchStatus kind="nuggets" status={nuggetAudioMatchStatus} />
                 </Field>
               </div>
             </FormSection>
