@@ -17,6 +17,7 @@ export default function AudioBar({
   slug,
   coverImage = "/media-placeholder.svg",
   trackKind,
+  compact = false,
 }: {
   title: string;
   subtitle: string;
@@ -24,6 +25,7 @@ export default function AudioBar({
   slug: string;
   coverImage?: string;
   trackKind?: "nugget" | "music";
+  compact?: boolean;
 }) {
   const player = useGlobalAudioPlayer();
   const kind = trackKind ?? "nugget";
@@ -93,6 +95,54 @@ export default function AudioBar({
       });
     }
     router.push(`/nugget/${next.slug}`);
+  }
+
+
+  if (compact) {
+    return (
+      <div className="min-w-0 rounded-lg border border-white/10 bg-[#111111] px-2 py-2 text-[#FAF9F6] sm:px-3">
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
+          <div className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-md sm:block">
+            <Image src={coverImage} alt="" fill sizes="36px" className="object-cover" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[10px] font-semibold text-[#E28906] sm:text-[12px]">{label}</p>
+            <p className="truncate font-serif text-[11px] text-[#FAF9F6] sm:text-[13px]">{title}</p>
+          </div>
+          <div className="hidden shrink-0 items-center gap-1.5 lg:flex">
+            <button type="button" aria-label="Shuffle" aria-pressed={shuffle} onClick={() => setShuffle(value => !value)} disabled={tracks.length < 2} className="p-1 text-white/55 hover:text-white">
+              <Shuffle size={14} className={shuffle ? "text-[#E28906]" : undefined} />
+            </button>
+            <button type="button" aria-label="Previous track" onClick={() => move(-1)} disabled={tracks.length < 2} className="p-1 text-white/55 hover:text-white">
+              <SkipBack size={14} />
+            </button>
+          </div>
+          <button type="button" aria-label={`${playing ? "Pause" : "Play"} ${label}`} onClick={togglePlay} disabled={!audioSrc} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E28906] text-[#080808] disabled:opacity-40 sm:h-9 sm:w-9">
+            {playing ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+          </button>
+          <div className="hidden shrink-0 items-center gap-1.5 lg:flex">
+            <button type="button" aria-label="Next track" onClick={() => move(1)} disabled={tracks.length < 2} className="p-1 text-white/55 hover:text-white">
+              <SkipForward size={14} />
+            </button>
+            <button type="button" aria-label="Repeat" aria-pressed={repeat} onClick={() => isCurrent && player.toggleRepeat()} disabled={!audioSrc || !isCurrent} className="p-1 text-white/55 hover:text-white">
+              <Repeat2 size={14} className={repeat ? "text-[#E28906]" : undefined} />
+            </button>
+            <button type="button" onClick={() => isCurrent && player.toggleMute()} disabled={!audioSrc || !isCurrent} aria-label={muted ? "Unmute" : "Mute"} className="p-1 text-white/55 hover:text-white">
+              {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            </button>
+          </div>
+          <Link href={`/nugget/${slug}/${kind === "music" ? "musical" : "audio"}`} aria-label={`Open full ${label} player`} className="flex h-8 w-5 shrink-0 items-center justify-center text-white/65 hover:text-white sm:w-8">
+            <Maximize2 size={13} />
+          </Link>
+        </div>
+        <div className="mt-1.5 flex min-w-0 items-center gap-1.5 sm:gap-2">
+          <span className="shrink-0 text-[9px] tabular-nums text-[#b4b2ab]">{formatTime(currentTime)}</span>
+          <input aria-label={`${label} progress`} type="range" min={0} max={duration || 1} value={Math.min(currentTime, duration || 1)} disabled={!duration || !isCurrent} onChange={event => player.seekTo(Number(event.target.value))} className="h-2 min-w-0 flex-1 cursor-pointer accent-[#E28906]" />
+          <span className="shrink-0 text-[9px] tabular-nums text-[#b4b2ab]">{formatTime(duration)}</span>
+        </div>
+        {(audioError || !audioSrc) && <p role="status" className="mt-1 break-words text-[10px] text-[#E28906]">{audioError || `No ${label.toLowerCase()} has been attached yet.`}</p>}
+      </div>
+    );
   }
 
   return (

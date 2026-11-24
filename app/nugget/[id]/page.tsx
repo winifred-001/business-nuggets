@@ -186,8 +186,9 @@ export default async function NuggetDetailPage({
         </section>
       </main>
 
-      <div key={nugget.slug} data-nugget-audio-stack className="sticky bottom-0 z-50 max-h-[50dvh] overflow-y-auto">
+      <div key={nugget.slug} data-nugget-audio-stack className="sticky bottom-0 z-50 mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-2 px-2 pb-2 sm:gap-3 sm:px-4">
         <AudioBar
+          compact
           trackKind="nugget"
           title={nugget.title}
           subtitle={`${nugget.scriptureRef} · ${displayTopicName(nugget.topic)}`}
@@ -196,6 +197,7 @@ export default async function NuggetDetailPage({
           coverImage={nugget.image}
         />
         <AudioBar
+          compact
           trackKind="music"
           title={nugget.title}
           subtitle={`${nugget.scriptureRef} · ${displayTopicName(nugget.topic)}`}
