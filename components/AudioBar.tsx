@@ -109,11 +109,10 @@ export default function AudioBar({
 
   if (compact) {
     return (
-      <div className="@container min-w-0 rounded-lg border border-white/10 bg-[#111111] px-2 py-2 text-[#FAF9F6]">
+      <div className="@container relative isolate min-w-0 overflow-hidden rounded-lg border border-white/10 bg-[#111111] px-2 py-2 text-[#FAF9F6]">
+        <Image src={coverImage || "/media-placeholder.svg"} alt="" fill sizes="(min-width: 1024px) 131px, 50vw" className="pointer-events-none -z-20 object-cover object-center" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-black/45 via-black/60 to-black/80" />
         <div className="flex min-w-0 items-center gap-1.5 @min-[220px]:gap-3">
-          <div className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-md @min-[220px]:block">
-            <Image src={coverImage} alt="" fill sizes="36px" className="object-cover" />
-          </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-[10px] font-semibold text-[#E28906] @min-[160px]:text-[12px]">{label}</p>
             <p className="truncate font-serif text-[11px] text-[#FAF9F6] @min-[160px]:text-[13px]">{title}</p>
