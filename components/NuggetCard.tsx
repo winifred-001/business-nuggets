@@ -1,3 +1,4 @@
+import { displayTopicName } from "@/lib/topic-display";
 import Link from "next/link";
 import type { Nugget } from "@/lib/nuggets";
 import ContentImage from "@/components/ContentImage";
@@ -18,7 +19,7 @@ export default function NuggetCard({
 
         <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
           <span className="min-w-0 break-words rounded-md bg-[#E28906] px-2.5 py-1.5 text-[12px] font-semibold leading-4 text-[#080808]">
-            {nugget.tag}
+            {displayTopicName(nugget.tag)}
           </span>
 
           {nugget.isGold && (

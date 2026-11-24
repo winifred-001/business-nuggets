@@ -1,3 +1,4 @@
+import { displayTopicName } from "@/lib/topic-display";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -181,7 +182,7 @@ export default async function MusicalsPage({
                 </h2>
 
                 <p className="mt-3 text-[13px] text-white/45">
-                  {featured.topic}
+                  {displayTopicName(featured.topic)}
                 </p>
 
                 {featured.keyPrinciple && (
@@ -305,7 +306,7 @@ export default async function MusicalsPage({
                     </Link>
 
                     <p className="mt-1 text-[13px] text-white/40">
-                      {nugget.scriptureRef} · {nugget.topic}
+                      {nugget.scriptureRef} · {displayTopicName(nugget.topic)}
                     </p>
                   </div>
 

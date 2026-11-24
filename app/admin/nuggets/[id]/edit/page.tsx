@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import { BIBLE_BOOKS, BIBLE_GROUPS, referenceWithBook, bibleGroupForBook, bibleBookFromReference, canonicalBibleBook } from "@/lib/bible-books";
 
 import ImageMediaPicker from "@/components/ImageMediaPicker";
@@ -279,8 +280,7 @@ export default function EditNuggetPage() {
             "",
 
           topic:
-            nugget.topic ||
-            "",
+            displayTopicName(nugget.topic || ""),
 
           tag:
             nugget.tag ||
@@ -476,7 +476,9 @@ export default function EditNuggetPage() {
                 form.title.trim(),
 
               topic:
-                form.topic.trim(),
+                originalNugget && form.topic.trim() === displayTopicName(originalNugget.topic)
+                  ? originalNugget.topic
+                  : form.topic.trim(),
 
               tag:
                 form.tag.trim(),
@@ -1338,7 +1340,7 @@ export default function EditNuggetPage() {
                 {form.tag && (
                   <span className="rounded-full bg-[#E28906]/15 px-2.5 py-1 text-[7px] text-[#E28906]">
                     {
-                      form.tag
+                      displayTopicName(form.tag)
                     }
                   </span>
                 )}
@@ -1346,7 +1348,7 @@ export default function EditNuggetPage() {
                 {form.topic && (
                   <span className="rounded-full bg-[#E28906]/15 px-2.5 py-1 text-[7px] text-[#E28906]">
                     {
-                      form.topic
+                      displayTopicName(form.topic)
                     }
                   </span>
                 )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import { useEffect, useMemo, useState } from "react";
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -266,7 +267,7 @@ export default function OnboardingPage() {
                           }`}
                         >
                           {selected && <Check size={14} strokeWidth={3} />}
-                          {interest}
+                          {displayTopicName(interest)}
                         </button>
                       );
                     })}
@@ -321,7 +322,7 @@ export default function OnboardingPage() {
                             {nugget.title}
                           </span>
                           <span className="mt-1 block text-white/35">
-                            {sourceLabel} · {nugget.topic}
+                            {sourceLabel} · {displayTopicName(nugget.topic)}
                           </span>
                         </span>
                       </button>

@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import { useRef, useState } from "react";
 import { Download, LoaderCircle, X } from "lucide-react";
 import {
@@ -354,7 +355,7 @@ export default function AdminImportDialog({
               <tbody>
                 {preview.rows.map((row) => (
                   <tr
-                    key={`${row.type}:${row.name}:${row.row}`}
+                    key={`${row.type}:${row.type === "topic" ? displayTopicName(row.name) : row.name}:${row.row}`}
                     className="border-b border-white/10"
                   >
                     <td className="p-3">{row.row}</td>
@@ -363,7 +364,7 @@ export default function AdminImportDialog({
                       {row.name}
                       {row.topic && (
                         <span className="block text-white/55">
-                          Topic: {row.topic}
+                          Topic: {displayTopicName(row.topic)}
                         </span>
                       )}
                       {row.category && (

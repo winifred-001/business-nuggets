@@ -131,7 +131,7 @@ export default function AdminTopicsPage() {
   }, []);
   function openEditor(nextKind: Kind, item: BaseItem | null = null) {
     setEditor({ kind: nextKind, item });
-    setName(item?.name || "");
+    setName(nextKind === "topic" ? displayTopicName(item?.name || "") : item?.name || "");
     setDescription(item?.description || "");
     setImage(item?.image || "");
     setVisible(item?.visible ?? true);
@@ -155,7 +155,7 @@ export default function AdminTopicsPage() {
         {
           method: editor.item ? "PATCH" : "POST",
           ...jsonBody({
-            name: name.trim(),
+            name: editor.kind === "topic" && editor.item && name.trim() === displayTopicName(editor.item.name) ? editor.item.name : name.trim(),
             description: description.trim(),
             visible,
             ...(editor.kind === "topic" && {
@@ -515,12 +515,12 @@ export default function AdminTopicsPage() {
               keep their current topics when categories are added.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              {topics.map((topic, index) => (
+              {topics.map((topic) => (
                 <span
                   key={topic.id}
                   className="rounded border border-white/10 bg-[#080808] px-3 py-2 text-[13px] text-white/50"
                 >
-                  {index + 1}. {displayTopicName(topic.name)}
+                  {displayTopicName(topic.name)}
                 </span>
               ))}
             </div>

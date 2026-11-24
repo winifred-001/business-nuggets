@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Plus, Trash2, X } from "lucide-react";
@@ -61,7 +62,7 @@ export default function AdminCollectionsPage() {
     catch (cause) { setError(cause instanceof Error ? cause.message : "Could not delete collection."); }
     finally { setBusy(false); }
   }
-  const filtered = nuggets.filter(item => `${item.title} ${item.topic} ${item.status}`.toLowerCase().includes(query.toLowerCase()));
+  const filtered = nuggets.filter(item => `${item.title} ${displayTopicName(item.topic)} ${item.status}`.toLowerCase().includes(query.toLowerCase()));
   return <AdminShell>
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-8">
       <div className="flex flex-wrap items-center justify-between gap-4"><div><h1 className="font-serif">Collections</h1><p className="mt-2 text-sm text-white/50">Create reading series from existing Nuggets and arrange their order.</p></div><button type="button" onClick={() => edit(empty)} disabled={busy} className={button}><Plus size={16} />New Collection</button></div>

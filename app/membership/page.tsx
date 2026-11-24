@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -254,7 +255,7 @@ export default function MembershipPage() {
                           <p className="mt-1 text-[14px] text-white/40">
                             {nugget.scriptureRef}
                             {nugget.topic &&
-                              ` • ${nugget.topic}`}
+                              ` • ${displayTopicName(nugget.topic)}`}
                             {nugget.duration &&
                               ` • ${nugget.duration}`}
                           </p>

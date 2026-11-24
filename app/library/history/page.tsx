@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { RotateCcw, Trash2 } from "lucide-react";
@@ -280,7 +281,7 @@ export default function HistoryPage() {
                           <div>
                             <div className="flex flex-wrap items-center gap-2 text-[14px]">
                               <span className="text-[#E28906]">
-                                {item.nugget.topic}
+                                {displayTopicName(item.nugget.topic)}
                               </span>
 
                               <span className="text-white/20">•</span>
@@ -364,7 +365,7 @@ export default function HistoryPage() {
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3 text-[14px]">
                         <span className="text-[#E28906]">
-                          {item.nugget.topic}
+                          {displayTopicName(item.nugget.topic)}
                         </span>
 
                         <span className="text-white/35">

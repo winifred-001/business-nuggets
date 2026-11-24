@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import AudioMediaInput from "@/components/AudioMediaInput";
 import R2ImagePicker from "@/components/R2ImagePicker";
 import R2MediaMatchStatus from "@/components/R2MediaMatchStatus";

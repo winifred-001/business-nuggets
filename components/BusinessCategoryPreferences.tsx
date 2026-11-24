@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import { Check } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -202,7 +203,7 @@ export default function BusinessCategoryPreferences({
                 }`}
               >
                 <span className="pr-3 text-[13px] text-white/75">
-                  {category}
+                  {displayTopicName(category)}
                 </span>
 
                 <span
@@ -229,7 +230,7 @@ export default function BusinessCategoryPreferences({
                   : "border-white/10 text-white/45 hover:border-white/20 hover:text-white/70"
               }`}
             >
-              {category}
+              {displayTopicName(category)}
             </button>
           );
         })}

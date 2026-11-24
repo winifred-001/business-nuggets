@@ -1,3 +1,4 @@
+import { displayTopicName } from "@/lib/topic-display";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -274,9 +275,7 @@ export default async function ScriptureIndexDetailPage({
                           </span>
 
                           <span>
-                            {
-                              nugget.topic
-                            }
+                            {displayTopicName(nugget.topic)}
                           </span>
                         </div>
                       </div>

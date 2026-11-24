@@ -31,3 +31,13 @@ test("does not mutate raw topic identifiers used for routes or Nugget matching",
   assert.equal(topic.slug, "b01t01-business-calling-and-purpose");
   assert.equal(topic.name, nugget.topic);
 });
+
+test("removes explicit numbered topic prefixes without stripping ordinary numbers", () => {
+  assert.equal(displayTopicName("01. Business Calling"), "Business Calling");
+  assert.equal(displayTopicName("2) Leadership"), "Leadership");
+  assert.equal(displayTopicName("03 - Stewardship"), "Stewardship");
+  assert.equal(displayTopicName("04 Money Management"), "Money Management");
+  assert.equal(displayTopicName("B01T01 05. Managing People"), "Managing People");
+  assert.equal(displayTopicName("1 John"), "1 John");
+  assert.equal(displayTopicName("7 Habits of Leadership"), "7 Habits of Leadership");
+});
