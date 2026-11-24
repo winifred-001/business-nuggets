@@ -69,8 +69,8 @@ export default async function NuggetDetailPage({
         {/* HERO */}
         <section className="relative isolate min-h-[350px] overflow-hidden border-b border-white/[0.06]">
           <Image src={nugget.image || "/media-placeholder.svg"} alt="" fill priority sizes="100vw" className="object-cover object-center" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#080808]/95 via-[#080808]/75 to-[#080808]/35" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#080808]/90 via-transparent to-[#080808]/15" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#080808]/60 via-[#080808]/30 to-[#080808]/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#080808]/60 via-transparent to-transparent" />
           <div className="relative mx-auto flex min-h-[350px] max-w-[1280px] items-end px-5 pb-12 sm:px-8 lg:px-10">
             <div className="max-w-[950px]">
               <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
