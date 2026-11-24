@@ -161,7 +161,8 @@ export default async function NuggetDetailPage({
             </div>
 
             {/* RIGHT ACTIONS */}
-            <aside className="self-start rounded-xl border border-white/10 bg-[#111111] p-5 text-[#f9f5ed] lg:sticky lg:top-24">
+            <aside className="min-w-0 self-start space-y-3 lg:sticky lg:top-24">
+              <div className="rounded-xl border border-white/10 bg-[#111111] p-5 text-[#f9f5ed]">
               <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#FAF9F6]">
                 Nugget Actions
               </h2>
@@ -181,31 +182,33 @@ export default async function NuggetDetailPage({
   Share Commentary
 </Link>
               </div>
+              </div>
+                <div key={nugget.slug} data-nugget-audio-stack className="grid w-full min-w-0 grid-cols-2 items-start gap-2">
+                  <AudioBar
+                    compact
+                    trackKind="nugget"
+                    title={nugget.title}
+                    subtitle={`${nugget.scriptureRef} · ${displayTopicName(nugget.topic)}`}
+                    audioSrc={nugget.nuggetAudioUrl || null}
+                    slug={nugget.slug}
+                    coverImage={nugget.image}
+                  />
+                  <AudioBar
+                    compact
+                    trackKind="music"
+                    title={nugget.title}
+                    subtitle={`${nugget.scriptureRef} · ${displayTopicName(nugget.topic)}`}
+                    audioSrc={nugget.musicalAudioUrl || nugget.audioUrl || null}
+                    coverImage={nugget.image}
+                    slug={nugget.slug}
+                  />
+                </div>
             </aside>
           </div>
         </section>
       </main>
 
-      <div key={nugget.slug} data-nugget-audio-stack className="sticky bottom-0 z-50 mx-auto grid w-full max-w-[1120px] grid-cols-2 gap-2 px-2 pb-2 sm:gap-3 sm:px-4">
-        <AudioBar
-          compact
-          trackKind="nugget"
-          title={nugget.title}
-          subtitle={`${nugget.scriptureRef} · ${displayTopicName(nugget.topic)}`}
-          audioSrc={nugget.nuggetAudioUrl || null}
-          slug={nugget.slug}
-          coverImage={nugget.image}
-        />
-        <AudioBar
-          compact
-          trackKind="music"
-          title={nugget.title}
-          subtitle={`${nugget.scriptureRef} · ${displayTopicName(nugget.topic)}`}
-          audioSrc={nugget.audioUrl || null}
-          coverImage={nugget.image}
-          slug={nugget.slug}
-        />
-      </div>
+
     </div>
     </NuggetAccessExpiryGate>
   );

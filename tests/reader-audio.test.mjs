@@ -61,3 +61,19 @@ test('compact and floating audio players expose previous and next track controls
   assert.match(provider, /getPlayableAudioNuggets\(track.kind\)/);
   assert.doesNotMatch(provider, /router\.push/);
 });
+
+test('Nugget detail players sit inside the actions sidebar rather than over the reading button', () => {
+  const page = read('app/nugget/[id]/page.tsx');
+  const sidebar = page.slice(page.indexOf('<aside '), page.indexOf('</aside>'));
+  assert.match(sidebar, /Nugget Actions/);
+  assert.match(sidebar, /data-nugget-audio-stack className="[^"]*grid-cols-2/);
+  assert.equal((sidebar.match(/<AudioBar\b/g) || []).length, 2);
+  assert.doesNotMatch(sidebar, /sticky bottom-0/);
+  assert.ok(page.indexOf('Read full teaching') < page.indexOf('<aside '));
+});
+
+test('both compact players receive the Nugget cover image', () => {
+  const page = read('app/nugget/[id]/page.tsx');
+  assert.match(page, /trackKind="nugget"[\s\S]*?coverImage=\{nugget\.image\}/);
+  assert.match(page, /trackKind="music"[\s\S]*?coverImage=\{nugget\.image\}/);
+});

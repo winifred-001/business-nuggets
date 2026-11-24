@@ -109,40 +109,39 @@ export default function AudioBar({
 
   if (compact) {
     return (
-      <div className="min-w-0 rounded-lg border border-white/10 bg-[#111111] px-2 py-2 text-[#FAF9F6] sm:px-3">
-        <div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
-          <div className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-md sm:block">
-            <Image src={coverImage} alt="" fill sizes="36px" className="object-cover" />
-          </div>
+      <div className="@container relative isolate min-w-0 overflow-hidden rounded-lg border border-white/10 bg-[#111111] px-2 py-2 text-[#FAF9F6]">
+        <Image src={coverImage || "/media-placeholder.svg"} alt="" fill sizes="(min-width: 1024px) 131px, 50vw" className="pointer-events-none -z-20 object-cover object-center" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-black/45 via-black/60 to-black/80" />
+        <div className="flex min-w-0 items-center gap-1.5 @min-[220px]:gap-3">
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[10px] font-semibold text-[#E28906] sm:text-[12px]">{label}</p>
-            <p className="truncate font-serif text-[11px] text-[#FAF9F6] sm:text-[13px]">{title}</p>
+            <p className="truncate text-[10px] font-semibold text-[#E28906] @min-[160px]:text-[12px]">{label}</p>
+            <p className="truncate font-serif text-[11px] text-[#FAF9F6] @min-[160px]:text-[13px]">{title}</p>
           </div>
-          <Link href={`/nugget/${slug}/${kind === "music" ? "musical" : "audio"}`} aria-label={`Open full ${label} player`} className="flex h-8 w-6 shrink-0 items-center justify-center text-white/65 hover:text-white sm:w-8">
+          <Link href={`/nugget/${slug}/${kind === "music" ? "musical" : "audio"}`} aria-label={`Open full ${label} player`} className="flex h-8 w-6 shrink-0 items-center justify-center text-white/65 hover:text-white @min-[220px]:w-8">
             <Maximize2 size={13} />
           </Link>
         </div>
-        <div className="mt-1 flex items-center justify-center gap-1 sm:gap-2">
-          <button type="button" aria-label="Shuffle" aria-pressed={shuffle} onClick={() => setShuffle(value => !value)} disabled={tracks.length < 2} className="hidden p-1 text-white/55 hover:text-white lg:block">
+        <div className="mt-1 flex items-center justify-center gap-1 @min-[220px]:gap-2">
+          <button type="button" aria-label="Shuffle" aria-pressed={shuffle} onClick={() => setShuffle(value => !value)} disabled={tracks.length < 2} className="hidden p-1 text-white/55 hover:text-white @min-[260px]:block">
             <Shuffle size={14} className={shuffle ? "text-[#E28906]" : undefined} />
           </button>
           <button type="button" aria-label={`Previous ${label} track`} onClick={() => void move(-1)} disabled={moving || !tracks.some(item => item.slug !== slug)} className="flex h-8 w-8 shrink-0 items-center justify-center text-white/70 hover:text-white disabled:opacity-30">
             <SkipBack size={15} />
           </button>
-          <button type="button" aria-label={`${playing ? "Pause" : "Play"} ${label}`} onClick={togglePlay} disabled={!audioSrc || moving} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E28906] text-[#080808] disabled:opacity-40 sm:h-9 sm:w-9">
+          <button type="button" aria-label={`${playing ? "Pause" : "Play"} ${label}`} onClick={togglePlay} disabled={!audioSrc || moving} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E28906] text-[#080808] disabled:opacity-40 @min-[160px]:h-9 @min-[160px]:w-9">
             {playing ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
           </button>
           <button type="button" aria-label={`Next ${label} track`} onClick={() => void move(1)} disabled={moving || !tracks.some(item => item.slug !== slug)} className="flex h-8 w-8 shrink-0 items-center justify-center text-white/70 hover:text-white disabled:opacity-30">
             <SkipForward size={15} />
           </button>
-          <button type="button" aria-label="Repeat" aria-pressed={repeat} onClick={() => isCurrent && player.toggleRepeat()} disabled={!audioSrc || !isCurrent} className="hidden p-1 text-white/55 hover:text-white lg:block">
+          <button type="button" aria-label="Repeat" aria-pressed={repeat} onClick={() => isCurrent && player.toggleRepeat()} disabled={!audioSrc || !isCurrent} className="hidden p-1 text-white/55 hover:text-white @min-[260px]:block">
             <Repeat2 size={14} className={repeat ? "text-[#E28906]" : undefined} />
           </button>
-          <button type="button" onClick={() => isCurrent && player.toggleMute()} disabled={!audioSrc || !isCurrent} aria-label={muted ? "Unmute" : "Mute"} className="hidden p-1 text-white/55 hover:text-white lg:block">
+          <button type="button" onClick={() => isCurrent && player.toggleMute()} disabled={!audioSrc || !isCurrent} aria-label={muted ? "Unmute" : "Mute"} className="hidden p-1 text-white/55 hover:text-white @min-[260px]:block">
             {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
           </button>
         </div>
-        <div className="mt-1.5 flex min-w-0 items-center gap-1.5 sm:gap-2">
+        <div className="mt-1.5 flex min-w-0 items-center gap-1.5 @min-[160px]:gap-2">
           <span className="shrink-0 text-[9px] tabular-nums text-[#b4b2ab]">{formatTime(currentTime)}</span>
           <input aria-label={`${label} progress`} type="range" min={0} max={duration || 1} value={Math.min(currentTime, duration || 1)} disabled={!duration || !isCurrent} onChange={event => player.seekTo(Number(event.target.value))} className="h-2 min-w-0 flex-1 cursor-pointer accent-[#E28906]" />
           <span className="shrink-0 text-[9px] tabular-nums text-[#b4b2ab]">{formatTime(duration)}</span>
