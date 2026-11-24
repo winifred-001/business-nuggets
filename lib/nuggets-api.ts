@@ -126,6 +126,21 @@ export async function getPublishedNuggets(
   return (await getPublishedNuggetsWithAccess(token)).nuggets;
 }
 
+// Read the same authoritative access flag as the Library without downloading every page.
+export async function hasPremiumNuggetAccess(token: string | null): Promise<boolean> {
+  if (!token) return false;
+  const response = await fetchWithRetry(`${API_URL}/nuggets?limit=1&page=1`, {
+    cache: "no-store",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error(`Could not verify Premium access: ${response.status}`);
+  const result: NuggetsApiResponse = await response.json();
+  if (typeof result?.access?.premium !== "boolean") {
+    throw new Error("Could not verify Premium access.");
+  }
+  return result.access.premium;
+}
+
 // Use the backend's access decision rather than trusting stored profile data.
 export async function getPublishedNuggetsWithAccess(
   token?: string | null,

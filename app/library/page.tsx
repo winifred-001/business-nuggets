@@ -772,15 +772,20 @@ function LibraryContent() {
                 ) : paginatedNuggets.length >
                 0 ? (
                   <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                    {paginatedNuggets.map(
-                      (nugget) => (
-                        <NuggetCard
-                          key={nugget.slug}
-                          nugget={nugget}
-                          now={clockNow}
-                        />
-                      ),
+                    {paginatedNuggets.slice(0, 3).map((nugget) => (
+                      <NuggetCard key={nugget.slug} nugget={nugget} now={clockNow} />
+                    ))}
+                    {!premiumAccess && safePage === 1 && paginatedNuggets.length >= 3 && (
+                      <section className="rounded-xl border border-[#E28906]/40 bg-[#111111] px-6 py-7 text-center text-[#f9f5ed] sm:col-span-2 xl:col-span-3">
+                        <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#E28906]">Premium membership</p>
+                        <h2 className="mt-2 font-serif text-[28px] leading-tight">Unlock the full Wisdom Archive</h2>
+                        <p className="mx-auto mt-3 max-w-xl text-[14px] leading-6 text-[#f9f5ed]">Sign up for Premium to read full teachings and access more biblical business wisdom.</p>
+                        <Link href="/membership" className="bn-button mt-5 inline-flex rounded-lg bg-[#E28906] px-5 py-3 text-[13px] font-semibold text-[#080808]">Sign up for Premium</Link>
+                      </section>
                     )}
+                    {paginatedNuggets.slice(3).map((nugget) => (
+                      <NuggetCard key={nugget.slug} nugget={nugget} now={clockNow} />
+                    ))}
                   </div>
                 ) : (
                   <div className="rounded-xl border border-black/15 bg-white px-6 py-12 text-center text-[#211E19]">
