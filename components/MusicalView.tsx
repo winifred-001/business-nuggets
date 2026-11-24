@@ -180,7 +180,7 @@ export default function MusicalView({
                 Related Cinematic Musicals
               </h2>
               <p className="mt-2 text-[13px] text-white/50">
-                More from {displayTopicName(nugget.topic)}
+                More from {displayTopicName(nugget.topic)} or {nugget.book}
               </p>
 
               {related.length > 0 ? (
@@ -216,7 +216,7 @@ export default function MusicalView({
                 </div>
               ) : (
                 <p className="mt-5 text-[14px] text-white/45">
-                  No other Musicals with available audio in this topic yet.
+                  No other Musicals with available audio in this topic or Bible book yet.
                 </p>
               )}
             </section>
