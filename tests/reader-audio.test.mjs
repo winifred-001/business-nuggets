@@ -46,3 +46,18 @@ test('the persistent player retains controls for play, pause, seek, mute, repeat
   assert.match(provider, /onTimeUpdate/);
   assert.match(provider, /onLoadedMetadata/);
 });
+
+test('compact and floating audio players expose previous and next track controls', () => {
+  const compact = read('components/AudioBar.tsx').split('if (compact) {')[1].split('return (\n    <div className={')[0];
+  const provider = read('components/GlobalAudioPlayerProvider.tsx');
+  assert.match(compact, /Previous \$\{label\} track/);
+  assert.match(compact, /Next \$\{label\} track/);
+  assert.match(compact, /onClick=\{\(\) => void move\(-1\)\}/);
+  assert.match(compact, /onClick=\{\(\) => void move\(1\)\}/);
+  assert.match(provider, /aria-label="Previous audio track"/);
+  assert.match(provider, /aria-label="Next audio track"/);
+  assert.match(provider, /moveMiniTrack\(-1\)/);
+  assert.match(provider, /moveMiniTrack\(1\)/);
+  assert.match(provider, /getPlayableAudioNuggets\(track.kind\)/);
+  assert.doesNotMatch(provider, /router\.push/);
+});

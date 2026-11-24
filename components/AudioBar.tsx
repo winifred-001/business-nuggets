@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Pause, Play, Repeat2, Shuffle, SkipBack, SkipForward, Volume2, VolumeX, Maximize2 } from "lucide-react";
 import { useGlobalAudioPlayer } from "@/components/GlobalAudioPlayerProvider";
 import { displayTopicName } from "@/lib/topic-display";
-import { getPublishedNuggets } from "@/lib/nuggets-api";
+import { getPlayableAudioNuggets } from "@/lib/nuggets-api";
 import type { Nugget } from "@/types/nugget";
 
 export default function AudioBar({
@@ -40,6 +40,7 @@ export default function AudioBar({
   const router = useRouter();
   const [tracks, setTracks] = useState<Nugget[]>([]);
   const [shuffle, setShuffle] = useState(false);
+  const [moving, setMoving] = useState(false);
 
   useEffect(() => {
     if (!audioSrc) return;
@@ -49,13 +50,11 @@ export default function AudioBar({
 
   useEffect(() => {
     let active = true;
-    void getPublishedNuggets().then(data => {
-      if (active) setTracks(data.filter(item => !item.locked && (
-        kind === "nugget" ? item.nuggetAudioUrl : item.audioUrl
-      )));
-    }).catch(() => {});
+    void getPlayableAudioNuggets(kind).then(data => {
+      if (active) setTracks(data);
+    }).catch(() => { if (active) setTracks([]); });
     return () => { active = false; };
-  }, [kind]);
+  }, [kind, slug]);
 
   function togglePlay() {
     if (!audioSrc) return;
@@ -74,16 +73,22 @@ export default function AudioBar({
     });
   }
 
-  function move(direction: number) {
-    if (tracks.length < 2) return;
-    const index = tracks.findIndex(item => item.slug === slug);
-    const candidates = tracks.filter(item => item.slug !== slug);
-    const next = shuffle
-      ? candidates[Math.floor(Math.random() * candidates.length)]
-      : tracks[(Math.max(index, 0) + direction + tracks.length) % tracks.length];
-    if (!next) return;
-    const nextSrc = kind === "nugget" ? next.nuggetAudioUrl : next.audioUrl;
-    if (nextSrc) {
+  async function move(direction: number) {
+    if (moving) return;
+    setMoving(true);
+    try {
+      const available = await getPlayableAudioNuggets(kind);
+      setTracks(available);
+      const candidates = available.filter(item => item.slug !== slug);
+      if (!candidates.length) return;
+      const index = available.findIndex(item => item.slug === slug);
+      const next = shuffle
+        ? candidates[Math.floor(Math.random() * candidates.length)]
+        : index < 0 ? available[direction > 0 ? 0 : available.length - 1]
+          : available[(index + direction + available.length) % available.length];
+      if (!next || next.slug === slug) return;
+      const nextSrc = kind === "nugget" ? next.nuggetAudioUrl : next.audioUrl;
+      if (!nextSrc) return;
       void player.playTrack({
         src: nextSrc,
         title: next.title,
@@ -93,8 +98,12 @@ export default function AudioBar({
         kind,
         href: `/nugget/${next.slug}/${kind === "music" ? "musical" : "audio"}`,
       });
+      router.push(`/nugget/${next.slug}`);
+    } catch {
+      setTracks([]);
+    } finally {
+      setMoving(false);
     }
-    router.push(`/nugget/${next.slug}`);
   }
 
 
@@ -109,31 +118,29 @@ export default function AudioBar({
             <p className="truncate text-[10px] font-semibold text-[#E28906] sm:text-[12px]">{label}</p>
             <p className="truncate font-serif text-[11px] text-[#FAF9F6] sm:text-[13px]">{title}</p>
           </div>
-          <div className="hidden shrink-0 items-center gap-1.5 lg:flex">
-            <button type="button" aria-label="Shuffle" aria-pressed={shuffle} onClick={() => setShuffle(value => !value)} disabled={tracks.length < 2} className="p-1 text-white/55 hover:text-white">
-              <Shuffle size={14} className={shuffle ? "text-[#E28906]" : undefined} />
-            </button>
-            <button type="button" aria-label="Previous track" onClick={() => move(-1)} disabled={tracks.length < 2} className="p-1 text-white/55 hover:text-white">
-              <SkipBack size={14} />
-            </button>
-          </div>
-          <button type="button" aria-label={`${playing ? "Pause" : "Play"} ${label}`} onClick={togglePlay} disabled={!audioSrc} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E28906] text-[#080808] disabled:opacity-40 sm:h-9 sm:w-9">
-            {playing ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
-          </button>
-          <div className="hidden shrink-0 items-center gap-1.5 lg:flex">
-            <button type="button" aria-label="Next track" onClick={() => move(1)} disabled={tracks.length < 2} className="p-1 text-white/55 hover:text-white">
-              <SkipForward size={14} />
-            </button>
-            <button type="button" aria-label="Repeat" aria-pressed={repeat} onClick={() => isCurrent && player.toggleRepeat()} disabled={!audioSrc || !isCurrent} className="p-1 text-white/55 hover:text-white">
-              <Repeat2 size={14} className={repeat ? "text-[#E28906]" : undefined} />
-            </button>
-            <button type="button" onClick={() => isCurrent && player.toggleMute()} disabled={!audioSrc || !isCurrent} aria-label={muted ? "Unmute" : "Mute"} className="p-1 text-white/55 hover:text-white">
-              {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-            </button>
-          </div>
-          <Link href={`/nugget/${slug}/${kind === "music" ? "musical" : "audio"}`} aria-label={`Open full ${label} player`} className="flex h-8 w-5 shrink-0 items-center justify-center text-white/65 hover:text-white sm:w-8">
+          <Link href={`/nugget/${slug}/${kind === "music" ? "musical" : "audio"}`} aria-label={`Open full ${label} player`} className="flex h-8 w-6 shrink-0 items-center justify-center text-white/65 hover:text-white sm:w-8">
             <Maximize2 size={13} />
           </Link>
+        </div>
+        <div className="mt-1 flex items-center justify-center gap-1 sm:gap-2">
+          <button type="button" aria-label="Shuffle" aria-pressed={shuffle} onClick={() => setShuffle(value => !value)} disabled={tracks.length < 2} className="hidden p-1 text-white/55 hover:text-white lg:block">
+            <Shuffle size={14} className={shuffle ? "text-[#E28906]" : undefined} />
+          </button>
+          <button type="button" aria-label={`Previous ${label} track`} onClick={() => void move(-1)} disabled={moving || !tracks.some(item => item.slug !== slug)} className="flex h-8 w-8 shrink-0 items-center justify-center text-white/70 hover:text-white disabled:opacity-30">
+            <SkipBack size={15} />
+          </button>
+          <button type="button" aria-label={`${playing ? "Pause" : "Play"} ${label}`} onClick={togglePlay} disabled={!audioSrc || moving} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E28906] text-[#080808] disabled:opacity-40 sm:h-9 sm:w-9">
+            {playing ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+          </button>
+          <button type="button" aria-label={`Next ${label} track`} onClick={() => void move(1)} disabled={moving || !tracks.some(item => item.slug !== slug)} className="flex h-8 w-8 shrink-0 items-center justify-center text-white/70 hover:text-white disabled:opacity-30">
+            <SkipForward size={15} />
+          </button>
+          <button type="button" aria-label="Repeat" aria-pressed={repeat} onClick={() => isCurrent && player.toggleRepeat()} disabled={!audioSrc || !isCurrent} className="hidden p-1 text-white/55 hover:text-white lg:block">
+            <Repeat2 size={14} className={repeat ? "text-[#E28906]" : undefined} />
+          </button>
+          <button type="button" onClick={() => isCurrent && player.toggleMute()} disabled={!audioSrc || !isCurrent} aria-label={muted ? "Unmute" : "Mute"} className="hidden p-1 text-white/55 hover:text-white lg:block">
+            {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+          </button>
         </div>
         <div className="mt-1.5 flex min-w-0 items-center gap-1.5 sm:gap-2">
           <span className="shrink-0 text-[9px] tabular-nums text-[#b4b2ab]">{formatTime(currentTime)}</span>
@@ -164,13 +171,13 @@ export default function AudioBar({
             <button type="button" aria-label="Shuffle" aria-pressed={shuffle} onClick={() => setShuffle(value => !value)} disabled={tracks.length < 2} className="text-white/40 hover:text-white">
               <Shuffle size={14} className={shuffle ? "text-[#E28906]" : undefined} />
             </button>
-            <button type="button" aria-label="Previous track" onClick={() => move(-1)} disabled={tracks.length < 2} className="text-white/55 hover:text-white">
+            <button type="button" aria-label="Previous track" onClick={() => void move(-1)} disabled={moving || !tracks.some(item => item.slug !== slug)} className="text-white/55 hover:text-white">
               <SkipBack size={15} />
             </button>
             <button type="button" aria-label={`${playing ? "Pause" : "Play"} ${label}`} onClick={togglePlay} disabled={!audioSrc} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E28906] text-[#080808]">
               {playing ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
             </button>
-            <button type="button" aria-label="Next track" onClick={() => move(1)} disabled={tracks.length < 2} className="text-white/55 hover:text-white">
+            <button type="button" aria-label="Next track" onClick={() => void move(1)} disabled={moving || !tracks.some(item => item.slug !== slug)} className="text-white/55 hover:text-white">
               <SkipForward size={15} />
             </button>
             <button type="button" aria-label="Repeat" aria-pressed={repeat} onClick={() => isCurrent && player.toggleRepeat()} disabled={!audioSrc || !isCurrent} className="text-white/40 hover:text-white">

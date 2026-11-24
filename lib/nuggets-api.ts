@@ -177,6 +177,18 @@ export function getFreePreviewSlugs(nuggets: Nugget[]): Set<string> {
     .map(nugget => nugget.slug));
 }
 
+// Only queue audio that the current visitor is already allowed to play.
+export async function getPlayableAudioNuggets(kind: "nugget" | "music"): Promise<Nugget[]> {
+  const { nuggets, premium } = await getPublishedNuggetsWithAccess();
+  const previews = getFreePreviewSlugs(nuggets);
+  return nuggets.filter(item =>
+    !item.locked && !item.accessLocked &&
+    (premium || (!item.isGold && previews.has(item.slug))) &&
+    (!item.accessExpiresAt || Date.parse(item.accessExpiresAt) > Date.now()) &&
+    Boolean(kind === "nugget" ? item.nuggetAudioUrl : item.audioUrl)
+  );
+}
+
 // Guard direct website routes as well as the Library cards. The existing
 // backend access policies still apply when the actual Nugget is opened.
 export async function requiresPremiumNuggetPreview(slug: string, token: string | null): Promise<boolean> {
