@@ -338,12 +338,46 @@ export class SubscriptionsService {
         )
         .slice(0, 20);
 
-    return {
-      plans:
-        plansWithCounts,
+    const now = Date.now();
+    const monthStart = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1);
+    const revenueByCurrency = new Map<string, number>();
+    let monthlyTopUpSales = 0;
+    let verifiedPayments = 0;
+    for (const transaction of transactions) {
+      if (transaction.status !== "paid") continue;
+      verifiedPayments++;
+      const time = Date.parse(transaction.paidAt || transaction.createdAt);
+      if (!Number.isFinite(time) || time < monthStart) continue;
+      const currency = this.normalizeCurrencyCode(transaction.currency, "USD");
+      revenueByCurrency.set(currency, (revenueByCurrency.get(currency) || 0) + transaction.amountCents);
+      if (transaction.planSlug.startsWith("topup:")) monthlyTopUpSales++;
+    }
+    const activeSubscribers = users.filter(user =>
+      user.membershipTier === "premium" &&
+      user.subscriptionPlan !== "free" &&
+      user.subscriptionStatus === "active" &&
+      Date.parse(user.subscriptionExpiresAt || "") > now
+    ).length;
+    const expiringSoon = users.filter(user => {
+      const expires = Date.parse(user.subscriptionExpiresAt || "");
+      return user.subscriptionPlan !== "free" && user.subscriptionStatus === "active" &&
+        Number.isFinite(expires) && expires > now && expires <= now + 7 * 24 * 3600_000;
+    }).length;
+    const graceMembers = users.filter(user => {
+      const expires = Date.parse(user.subscriptionExpiresAt || "");
+      return user.membershipTier === "premium" && user.subscriptionPlan !== "free" &&
+        (user.subscriptionStatus === "active" || user.subscriptionStatus === "grace") &&
+        Number.isFinite(expires) && expires <= now && now < expires + 72 * 3600_000;
+    }).length;
 
-      transactions:
-        transactionRows,
+    return {
+      plans: plansWithCounts,
+      transactions: transactionRows,
+      summary: {
+        activeSubscribers, expiringSoon, graceMembers,
+        monthlyTopUpSales, verifiedPayments,
+        monthlyRevenueByCurrency: [...revenueByCurrency].map(([currency, amountCents]) => ({ currency, amountCents })),
+      },
     };
   }
 

@@ -5,7 +5,8 @@ import {
 } from "@nestjs/common";
 
 import { db } from "../prisma/db";
-import { hasActivePaidSubscription, restoredPaidHistoryExpiry } from "./paid-history-access";
+import { hasActivePaidSubscription, hasPaidReadingAccess, isPaidSubscriptionInGrace, paidReadingExpiry, graceGrantExpiry, restoredPaidHistoryExpiry } from "./paid-history-access";
+import { TopUpsService } from "../topups/topups.service";
 import { monthlyNuggetAllowanceExpiry } from "./monthly-nugget-allowance";
 
 import {
@@ -40,6 +41,8 @@ type LockedNuggetPreview<T> = Omit<
 
 @Injectable()
 export class NuggetsService {
+  constructor(private readonly topups: TopUpsService) {}
+
   private async hasPremiumAccess(
     userId?: number,
   ) {
@@ -61,7 +64,7 @@ export class NuggetsService {
     return (
       user.role === "owner" ||
       Boolean(user.adminRole) ||
-      hasActivePaidSubscription(user)
+      hasPaidReadingAccess(user)
     );
   }
 
@@ -114,7 +117,7 @@ export class NuggetsService {
     if (!user) throw new ForbiddenException("A valid account is required to open this nugget.");
 
     const isAdmin = user.role === "owner" || Boolean(user.adminRole);
-    const paidActive = hasActivePaidSubscription(user);
+    const paidActive = hasPaidReadingAccess(user);
     const planSlug = paidActive && user.subscriptionPlan
       ? user.subscriptionPlan
       : "free";
@@ -155,7 +158,7 @@ export class NuggetsService {
       ? await db.orm.public.BillingTransaction.where({ userId, status: "paid" }).all()
       : [];
     const latestPaidAt = payments.reduce<string | null>((latest, transaction) => {
-      if (transaction.planSlug === "free" || !transaction.paidAt) return latest;
+      if (transaction.planSlug === "free" || transaction.planSlug.startsWith("topup:") || !transaction.paidAt) return latest;
       const paymentTime = Date.parse(transaction.paidAt);
       if (!Number.isFinite(paymentTime)) return latest;
       return !latest || paymentTime > Date.parse(latest) ? transaction.paidAt : latest;
@@ -215,8 +218,9 @@ export class NuggetsService {
     sessionExpiry: string,
     user: Awaited<ReturnType<NuggetsService["getAccessContext"]>>["user"],
   ): string {
-    const paidExpiry = hasActivePaidSubscription(user)
-      ? Date.parse(user.subscriptionExpiresAt ?? "")
+    // The three-day grace must not be cut off by a client-side expiry timer.
+    const paidExpiry = hasPaidReadingAccess(user)
+      ? Date.parse(paidReadingExpiry(user) ?? "")
       : NaN;
     return Number.isFinite(paidExpiry) && paidExpiry < Date.parse(sessionExpiry)
       ? user.subscriptionExpiresAt!
@@ -258,6 +262,11 @@ export class NuggetsService {
     }
 
     if (selected.length >= policy.maxNuggets) {
+      if (hasActivePaidSubscription(context.user)) {
+        // An unused paid Top-up credit can extend the selection allowance.
+        await this.topups.redeem(userId, nuggetId, paidReadingExpiry(context.user)!);
+        return { openedAt: now.toISOString(), expiresAt: paidReadingExpiry(context.user)! };
+      }
       throw new ForbiddenException({
         statusCode: 403,
         code: "NUGGET_QUOTA_REACHED",
@@ -378,6 +387,14 @@ export class NuggetsService {
         const grants = await this.getUserGrants(userId);
         const session = await this.getUserAccessSession(userId);
         const now = Date.now();
+        const inGrace = isPaidSubscriptionInGrace(context.user, now);
+        const canChooseNew = !inGrace;
+        const redeemedIds = hasPaidReadingAccess(context.user, now)
+          ? await this.topups.getRedeemedIds(userId).catch(() => new Set<string>())
+          : new Set<string>();
+        const topUpWallet = hasActivePaidSubscription(context.user, now)
+          ? await this.topups.getWallet(userId).catch(() => null)
+          : null;
         const sessionActive = !this.sessionNeedsReset(session, context, now);
         const selectedGrants = sessionActive
           ? grants.filter(grant => new Date(grant.openedAt).getTime() >= new Date(session!.startedAt).getTime())
@@ -391,7 +408,17 @@ export class NuggetsService {
             return { ...nugget, accessLocked: true, accessAvailable: false, accessReason: "PREMIUM_REQUIRED" };
           }
 
-          const restoredExpiry = restoredPaidHistoryExpiry(context.user, context.latestPaidAt, previousGrants.get(nugget.id));
+          const previousGrant = previousGrants.get(nugget.id);
+          const graceExpiry = graceGrantExpiry(context.user, previousGrant, now);
+          if (graceExpiry) {
+            return { ...nugget, locked: false, accessLocked: false, accessAvailable: true,
+              accessInGrace: true, accessExpiresAt: graceExpiry };
+          }
+          if (redeemedIds.has(nugget.id)) {
+            return { ...nugget, locked: false, accessLocked: false, accessAvailable: true,
+              accessFromTopUp: true, accessExpiresAt: paidReadingExpiry(context.user) };
+          }
+          const restoredExpiry = restoredPaidHistoryExpiry(context.user, context.latestPaidAt, previousGrant);
           if (restoredExpiry) {
             return {
               ...nugget, locked: false, accessLocked: false, accessAvailable: true,
@@ -401,7 +428,7 @@ export class NuggetsService {
 
           const grant = grantByNugget.get(nugget.id);
           const active = Boolean(sessionActive && grant);
-          const canOpen = !active && usedIds.size < context.policy.maxNuggets;
+          const canOpen = canChooseNew && !active && (usedIds.size < context.policy.maxNuggets || Boolean(topUpWallet?.balance));
 
           if (active) {
             return {
@@ -418,8 +445,8 @@ export class NuggetsService {
             locked: true,
             accessLocked: true,
             accessAvailable: canOpen,
-            accessReason: session && !sessionActive
-              ? "ACCESS_PERIOD_EXPIRED"
+            accessReason: inGrace ? "SUBSCRIPTION_GRACE"
+              : session && !sessionActive ? "ACCESS_PERIOD_EXPIRED"
               : canOpen ? "OPEN_TO_START" : "NUGGET_QUOTA_REACHED",
             accessAvailableAt: sessionActive && session ? this.effectiveAccessExpiry(session.expiresAt, context.user) : null,
             accessExpiresAt: null,
@@ -442,6 +469,9 @@ export class NuggetsService {
           expiresAt: sessionActive && session ? this.effectiveAccessExpiry(session.expiresAt, context.user) : null,
           used: usedIds.size,
           remaining: Math.max(0, context.policy.maxNuggets - usedIds.size),
+          topUpRemaining: topUpWallet?.balance ?? 0,
+          subscriptionInGrace: inGrace,
+          graceEndsAt: inGrace ? paidReadingExpiry(context.user) : null,
         };
       }
     }
@@ -754,11 +784,21 @@ export class NuggetsService {
       const context = await this.getAccessContext(userId);
       if (!context.isAdmin) {
         const previousGrant = (await this.getUserGrants(userId)).find(grant => grant.nuggetId === nugget.id);
+        const graceExpiry = graceGrantExpiry(context.user, previousGrant);
+        if (graceExpiry) return { ...nugget, accessExpiresAt: graceExpiry, accessInGrace: true };
+        if (hasPaidReadingAccess(context.user) &&
+          (await this.topups.getRedeemedIds(userId).catch(() => new Set<string>())).has(nugget.id)) {
+          return { ...nugget, accessExpiresAt: paidReadingExpiry(context.user), accessFromTopUp: true };
+        }
         const restoredExpiry = restoredPaidHistoryExpiry(context.user, context.latestPaidAt, previousGrant);
         if (restoredExpiry) {
           return { ...nugget, accessExpiresAt: restoredExpiry, accessRestored: true };
         }
 
+        if (isPaidSubscriptionInGrace(context.user)) throw new ForbiddenException({
+          code: "SUBSCRIPTION_GRACE",
+          message: "Your paid plan is in its three-day grace period. You can reread Nuggets already opened; renew to open new Nuggets.",
+        });
         const access = await this.openNuggetAccess(userId, nugget.id, context);
         return {
           ...nugget,

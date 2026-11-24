@@ -45,6 +45,8 @@ import { ScriptureService } from "../scripture/scripture.service";
 import { ScheduleService } from "../schedule/schedule.service";
 import { UsersService } from "../users/users.service";
 import { SubscriptionsService } from "../subscriptions/subscriptions.service";
+import { TopUpsService } from "../topups/topups.service";
+import { CreateTopUpBundleDto, UpdateTopUpBundleDto } from "../topups/topups.dto";
 import { ModerationService } from "../moderation/moderation.service";
 import { AnalyticsService } from "../analytics/analytics.service";
 import { MobileAppService } from "../mobile-app/mobile-app.service";
@@ -77,6 +79,7 @@ export class AdminController {
     private readonly scheduleService: ScheduleService,
     private readonly usersService: UsersService,
     private readonly subscriptionsService: SubscriptionsService,
+    private readonly topupsService: TopUpsService,
     private readonly moderationService: ModerationService,
     private readonly analyticsService: AnalyticsService,
     private readonly mobileAppService: MobileAppService,
@@ -512,6 +515,22 @@ export class AdminController {
   /* =========================================
      MODERATION
   ========================================= */
+
+  @Get("subscriptions/topups")
+  @RequireAdminPermission("billing")
+  listTopUpBundles() { return this.topupsService.listBundles(true); }
+
+  @Post("subscriptions/topups")
+  @RequireAdminPermission("billing")
+  createTopUpBundle(@Body() input: CreateTopUpBundleDto) {
+    return this.topupsService.createBundle(input);
+  }
+
+  @Patch("subscriptions/topups/:slug")
+  @RequireAdminPermission("billing")
+  updateTopUpBundle(@Param("slug") slug: string, @Body() input: UpdateTopUpBundleDto) {
+    return this.topupsService.updateBundle(slug, input);
+  }
 
   @Get("moderation")
   @RequireAdminPermission(

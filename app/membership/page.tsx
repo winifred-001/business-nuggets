@@ -17,6 +17,7 @@ import {
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import PremiumCheckout from "@/components/PremiumCheckout";
+import TopUpBundles from "@/components/TopUpBundles";
 
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 
@@ -75,10 +76,14 @@ export default function MembershipPage() {
     void loadMembership();
   }, []);
 
-  const isPremium =
-    user?.membershipTier
-      ?.toLowerCase() ===
-    "premium";
+  const expiry = Date.parse(user?.subscriptionExpiresAt || "");
+  const hasPaidPlan = user?.membershipTier?.toLowerCase() === "premium" &&
+    user?.subscriptionPlan !== "free" &&
+    user?.subscriptionStatus !== "cancelled" &&
+    user?.subscriptionStatus !== "revoked";
+  const isPremium = Boolean(hasPaidPlan && Number.isFinite(expiry) &&
+    Date.now() < expiry + 72 * 60 * 60 * 1000);
+  const inGrace = isPremium && Date.now() >= expiry;
 
   return (
     <>
@@ -122,16 +127,18 @@ export default function MembershipPage() {
                 <div className="mt-4">
                   <span className="inline-flex items-center gap-2 rounded-sm bg-[#E28906]/15 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
                     <Crown size={14} />
-                    {isPremium
+                    {inGrace ? "Paid Reading • 3-day Grace Period" : isPremium
                       ? "BNB Premium • Current Membership"
                       : "Free Access • Current Membership"}
                   </span>
                 </div>
 
                 <p className="mt-5 max-w-[850px] text-[16px] leading-7 text-white/55">
-                  {isPremium
-                    ? "Your account has full access to every published Business Nugget, including Reader, Audio and Musical experiences."
-                    : "Your account currently has Free Access. You can open all free Nuggets selected by the admin and upgrade to unlock the complete library."}
+                  {inGrace
+                    ? "Your plan has expired. For three days you can reread Nuggets you already opened. Renew your paid plan to resume new monthly selections and spend Top-up credits."
+                    : isPremium
+                    ? "Your paid subscription includes a monthly Nugget selection allowance. Previously opened Nuggets remain available according to your paid access and reading history."
+                    : "Your account currently has Free Access. Upgrade to unlock paid Nugget selections and Top-up bundles."}
                 </p>
 
                 {isPremium && (
@@ -182,49 +189,7 @@ export default function MembershipPage() {
             />
           )}
 
-          <section className="mt-10 grid gap-5 lg:grid-cols-2">
-            <article className="rounded-[12px] border border-white/10 bg-[#111111] p-5 sm:p-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md border border-white/10 bg-[#181818] text-white/50">
-                <Library size={18} />
-              </div>
-
-              <h2 className="mt-5 font-serif text-[28px]">
-                Free Access
-              </h2>
-
-              <p className="mt-4 text-[16px] leading-7 text-white/55">
-                The admin chooses which published Nuggets are free, with no limit. Gold Nuggets remain visible but require Premium membership to open.
-              </p>
-
-              <Link
-                href="/library"
-                className="mt-5 inline-block text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
-              >
-                Browse All Nuggets →
-              </Link>
-            </article>
-
-            <article className="rounded-[12px] border border-[#E28906]/45 bg-[#111111] p-5 sm:p-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md border border-[#E28906]/25 bg-[#E28906]/[0.06] text-[#E28906]">
-                <Crown size={18} />
-              </div>
-
-              <h2 className="mt-5 font-serif text-[28px]">
-                BNB Premium Access
-              </h2>
-
-              <p className="mt-4 text-[16px] leading-7 text-white/55">
-                Premium unlocks the complete published library. Once payment is verified, all Nuggets open normally without Gold lock messaging.
-              </p>
-
-              <Link
-                href="/library"
-                className="mt-5 inline-block text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
-              >
-                Explore Full Library →
-              </Link>
-            </article>
-          </section>
+          <TopUpBundles />
 
           {!isPremium && (
             <section className="mt-12">

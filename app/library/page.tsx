@@ -1452,6 +1452,8 @@ function NuggetCard({
           <span className="text-[12px] font-medium text-[#E28906]">
             {nugget.accessReason === "PREMIUM_REQUIRED"
               ? "Premium required"
+              : nugget.accessReason === "SUBSCRIPTION_GRACE"
+                ? "Renew your subscription to open new Nuggets"
               : nugget.accessReason === "ACCESS_PERIOD_EXPIRED"
                 ? "Previous access period ended · open to start a new batch"
                 : nugget.accessLocked
@@ -1461,7 +1463,7 @@ function NuggetCard({
                   : batchExpired
                     ? "Access period ended · open to restart"
                     : countdown
-                      ? `Access ends in ${countdown}`
+                      ? `${nugget.accessInGrace ? "Reading grace ends in" : "Access ends in"} ${countdown}`
                       : "Listen & Read"}
           </span>
 

@@ -21,6 +21,8 @@ export default function PaymentCallbackContent() {
       | "error"
     >("verifying");
 
+  const [isTopUp, setIsTopUp] = useState(false);
+
   const [message, setMessage] =
     useState(
       "Confirming your payment...",
@@ -99,10 +101,12 @@ export default function PaymentCallbackContent() {
           ),
         );
 
+        const topUpPayment = data?.purchaseType === "topup";
+        setIsTopUp(topUpPayment);
         setStatus("success");
-        setMessage(
-          "Payment verified. Premium access is now active on your account.",
-        );
+        setMessage(topUpPayment
+          ? "Payment verified. Your Top-up Nugget credits are now in your account and roll over until used."
+          : "Payment verified. Your Premium subscription is active.");
       } catch (error) {
         if (!mounted) {
           return;
@@ -152,7 +156,7 @@ export default function PaymentCallbackContent() {
           {status === "verifying"
             ? "Verifying Payment"
             : status === "success"
-              ? "Premium Unlocked"
+              ? isTopUp ? "Top-up Credits Added" : "Premium Unlocked"
               : "Payment Verification"}
         </h1>
 
@@ -166,7 +170,7 @@ export default function PaymentCallbackContent() {
               href="/library"
               className="bn-button inline-flex min-h-11 items-center justify-center rounded-md bg-[#E28906] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
             >
-              Open Full Library
+              {isTopUp ? "Use My Nuggets" : "Open Full Library"}
             </Link>
 
             <Link

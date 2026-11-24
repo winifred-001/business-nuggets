@@ -42,7 +42,7 @@ export default async function ReaderViewPage({
       return <PremiumNuggetGate />;
     }
     if (error instanceof NuggetAccessError) {
-      return <NuggetAccessLimitGate message={error.message} />;
+      return <NuggetAccessLimitGate message={error.message} code={error.code} />;
     }
 
     throw error;
@@ -53,7 +53,7 @@ export default async function ReaderViewPage({
   }
 
   return (
-    <NuggetAccessExpiryGate expiresAt={nugget.accessExpiresAt} durationHours={nugget.accessDurationHours} restored={nugget.accessRestored}>
+    <NuggetAccessExpiryGate expiresAt={nugget.accessExpiresAt} durationHours={nugget.accessDurationHours} restored={nugget.accessRestored} grace={nugget.accessInGrace}>
     <div className="min-h-screen bg-[#F5F0E8] pb-[96px] text-[#15120E]">
       <ReaderProgressTracker nuggetId={nugget.id} />
 

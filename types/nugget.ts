@@ -29,6 +29,8 @@ export type Nugget = {
   accessReason?: string;
   accessExpiresAt?: string | null;
   accessRestored?: boolean;
+  accessInGrace?: boolean;
+  accessFromTopUp?: boolean;
   accessDurationHours?: number;
   accessAvailableAt?: string | null;
   book: string;

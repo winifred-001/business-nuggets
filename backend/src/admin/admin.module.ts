@@ -5,6 +5,7 @@ import { ImportTicketGuard } from "../imports/import-ticket";
 import {
   Module,
 } from "@nestjs/common";
+import { TopUpsModule } from "../topups/topups.module";
 import {
   APP_INTERCEPTOR,
 } from "@nestjs/core";
@@ -68,6 +69,7 @@ import { EmailModule } from "../email/email.module";
     TopicsModule,
     ModerationModule,
     SubscriptionsModule,
+    TopUpsModule,
     ScriptureModule,
     ScheduleModule,
     AuditLogsModule,

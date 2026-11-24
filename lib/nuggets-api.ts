@@ -190,7 +190,7 @@ export async function getNuggetBySlugFromApi(
       );
     }
 
-    if (data?.code === "NUGGET_QUOTA_REACHED" || data?.code === "NUGGET_ACCESS_EXPIRED") {
+    if (["NUGGET_QUOTA_REACHED", "NUGGET_ACCESS_EXPIRED", "TOPUP_CREDITS_EXHAUSTED", "SUBSCRIPTION_GRACE"].includes(data?.code)) {
       throw new NuggetAccessError(
         data.message || "This nugget is not currently available.",
         data.code,

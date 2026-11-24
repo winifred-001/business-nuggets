@@ -14,6 +14,7 @@ import {
 import AdminShell from "@/components/admin/AdminShell";
 import { API_URL } from "@/lib/api";
 import { subscriptionPlanSlug } from "@/lib/subscription-plan-slug";
+import TopUpBundlesAdmin from "@/components/admin/TopUpBundlesAdmin";
 
 type SubscriptionPlan = {
   id: number;
@@ -58,7 +59,17 @@ type BillingTransaction = {
   createdAt: string;
 };
 
+type SubscriptionSummary = {
+  activeSubscribers: number;
+  expiringSoon: number;
+  graceMembers: number;
+  monthlyTopUpSales: number;
+  verifiedPayments: number;
+  monthlyRevenueByCurrency: { currency: string; amountCents: number }[];
+};
+
 type SubscriptionResponse = {
+  summary?: SubscriptionSummary;
   plans:
     SubscriptionPlan[];
 
@@ -67,6 +78,8 @@ type SubscriptionResponse = {
 };
 
 export default function AdminSubscriptionsPage() {
+  const [section, setSection] = useState<"overview" | "plans" | "topups" | "payments">("overview");
+  const [summary, setSummary] = useState<SubscriptionSummary | null>(null);
   const [
     plans,
     setPlans,
@@ -183,6 +196,7 @@ export default function AdminSubscriptionsPage() {
         );
       }
 
+      setSummary(data.summary || null);
       setPlans(
         data.plans || [],
       );
@@ -339,13 +353,11 @@ export default function AdminSubscriptionsPage() {
             </h1>
 
             <p className="mt-2 text-[10px] text-white/35">
-              Plans, pricing and
-              billing for premium
-              members.
+              Plans, monthly allowances, rollover Top-ups and verified payments.
             </p>
           </div>
 
-          <button
+          {section === "plans" && <button
             type="button"
             onClick={
               openCreate
@@ -357,7 +369,7 @@ export default function AdminSubscriptionsPage() {
             />
 
             New Plan
-          </button>
+          </button>}
         </section>
 
         {error && !modalOpen && (
@@ -379,7 +391,57 @@ export default function AdminSubscriptionsPage() {
           </div>
         )}
 
+
+        <nav aria-label="Subscription management sections" className="mt-6 flex flex-wrap gap-2 border-b border-white/10 pb-3">
+          {([
+            ["overview", "Overview"],
+            ["plans", "Plans"],
+            ["topups", "Top-ups"],
+            ["payments", "Payments"],
+          ] as const).map(([key, label]) => (
+            <button key={key} type="button" onClick={() => setSection(key)}
+              aria-current={section === key ? "page" : undefined}
+              className={"min-h-10 rounded-md px-4 text-sm font-medium transition " +
+                (section === key ? "bg-[#E28906] text-black" : "border border-white/10 text-white/60 hover:text-white")}>
+              {label}
+            </button>
+          ))}
+        </nav>
+
+        {section === "overview" && (
+          <section className="mt-6">
+            <h2 className="font-serif text-2xl">Subscription Overview</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                ["Active subscribers", String(summary?.activeSubscribers ?? "—")],
+                ["This month's revenue", summary?.monthlyRevenueByCurrency.length
+                  ? summary.monthlyRevenueByCurrency.map(row => formatMoney(row.amountCents, row.currency)).join(" · ")
+                  : "—"],
+                ["Top-up sales this month", String(summary?.monthlyTopUpSales ?? "—")],
+                ["Expiring in 7 days", String(summary?.expiringSoon ?? "—")],
+              ].map(([title, value]) => (
+                <article key={title} className="rounded-xl border border-white/10 bg-[#111] p-5">
+                  <p className="text-sm text-white/50">{title}</p>
+                  <p className="mt-3 font-serif text-3xl text-[#E28906]">{loading ? "—" : value}</p>
+                </article>
+              ))}
+            </div>
+            <p className="mt-4 text-xs leading-5 text-white/45">
+              {summary ? `${summary.graceMembers} paid members currently in their 3-day reading grace.` : "Loading billing summary."}
+              {" "}Monthly revenue uses verified paid transactions, with currencies kept separate.
+            </p>
+            <p className="mt-2 text-xs leading-5 text-white/45">
+              Subscription billing and monthly Nugget allowances are separate.
+              Annual subscribers receive fresh monthly allowances. Top-up credits roll over until used.
+              Paid readers retain previously opened Nuggets for three days after subscription expiry.
+            </p>
+          </section>
+        )}
+
+        {section === "topups" && <TopUpBundlesAdmin />}
+
         {/* PLAN CARDS */}
+        {section === "plans" && (
 
         <section className="mt-6 grid gap-4 lg:grid-cols-3">
           {loading
@@ -427,9 +489,12 @@ export default function AdminSubscriptionsPage() {
                       )}
                     </p>
 
-                    <p className="mt-3 text-[8px] text-white/30">
-                      {plan.subscriberCount.toLocaleString()}{" "}
-                      subscribers
+                    <p className="mt-2 text-sm text-white/60">
+                      {plan.billingCycle === "annual" ? "Billed annually" :
+                       plan.billingCycle === "monthly" ? "Billed monthly" : "Free access"}
+                    </p>
+                    <p className="mt-3 text-xs text-white/50">
+                      {plan.subscriberCount.toLocaleString()} subscribers
                     </p>
 
                     <div className="mt-4 grid grid-cols-2 gap-2 border-y border-white/[0.06] py-3">
@@ -479,7 +544,10 @@ export default function AdminSubscriptionsPage() {
               )}
         </section>
 
+        )}
+
         {/* TRANSACTIONS */}
+        {section === "payments" && (
 
         <section className="mt-5 overflow-hidden rounded-[10px] border border-white/10 bg-[#111111]">
           <div className="border-b border-white/[0.07] px-5 py-4">
@@ -541,7 +609,9 @@ export default function AdminSubscriptionsPage() {
 
                       <td className="px-4 py-4 text-[8px] text-white/40">
                         {
-                          transaction.planSlug
+                          transaction.planSlug.startsWith("topup:")
+                            ? "Top-up · " + transaction.planSlug.slice(6)
+                            : transaction.planSlug
                         }
                       </td>
 
@@ -584,14 +654,13 @@ export default function AdminSubscriptionsPage() {
                 </p>
 
                 <p className="mt-2 text-[8px] text-white/20">
-                  Transactions will
-                  appear here once a
-                  payment provider
-                  is connected.
+                  Payments for plans and Top-up bundles appear here after checkout.
                 </p>
               </div>
             )}
         </section>
+
+        )}
 
         {/* COMPACT PLAN MODAL */}
         {modalOpen && (

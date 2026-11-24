@@ -23,6 +23,7 @@ type SubscriptionPlan = {
   features: readonly string[];
   active: boolean;
   displayOrder: number;
+  maxNuggets?: number;
 };
 
 export default function PremiumCheckout({
@@ -33,6 +34,7 @@ export default function PremiumCheckout({
   currentPlan?: string | null;
 }) {
   const [retryCount, setRetryCount] = useState(0);
+  const [billingView, setBillingView] = useState<"monthly" | "annual">("monthly");
   const [plans, setPlans] =
     useState<SubscriptionPlan[]>([]);
 
@@ -75,6 +77,7 @@ export default function PremiumCheckout({
           return;
         }
 
+        if (Array.isArray(data) && !data.some((plan) => plan?.active && plan?.billingCycle === "monthly") && data.some((plan) => plan?.active && plan?.billingCycle === "annual")) setBillingView("annual");
         setPlans(
           Array.isArray(data)
             ? data.filter(
@@ -224,8 +227,17 @@ export default function PremiumCheckout({
           </p>
         </div>
       ) : (
-        <div className="mt-7 grid gap-5 md:grid-cols-2">
-          {plans.map((plan) => {
+        <div className="mt-7">
+          <div className="mb-5 flex w-fit rounded-md border border-white/15 bg-[#080808] p-1" role="group" aria-label="Choose a billing period">
+            {(["monthly", "annual"] as const).map(cycle => (
+              <button type="button" key={cycle} onClick={() => setBillingView(cycle)} aria-pressed={billingView === cycle}
+                className={"min-h-10 rounded px-5 text-sm font-semibold " + (billingView === cycle ? "bg-[#E28906] text-black" : "text-white/55 hover:text-white")}>
+                {cycle === "monthly" ? "Monthly" : "Annual"}
+              </button>
+            ))}
+          </div>
+          <div className="grid gap-5 md:grid-cols-2">
+          {plans.filter(plan => plan.billingCycle === billingView).map((plan) => {
             const isCurrentPlan =
               isPremium &&
               currentPlan === plan.slug;
@@ -254,7 +266,7 @@ export default function PremiumCheckout({
                     </div>
 
                     <p className="mt-2 text-[14px] font-medium uppercase tracking-[0.08em] text-white/40">
-                      {plan.billingCycle}
+                      {plan.billingCycle === "annual" ? "12-month billing · Monthly Nugget allowance" : "Monthly billing · Monthly Nugget allowance"}
                     </p>
                   </div>
 
@@ -265,6 +277,8 @@ export default function PremiumCheckout({
                     )}
                   </p>
                 </div>
+
+                <p className="mt-5 text-sm text-[#E28906]">{typeof plan.maxNuggets === "number" ? plan.maxNuggets + " Nuggets per month" : "Monthly allowance"}</p>
 
                 <div className="mt-6 space-y-3">
                   {plan.features.map((feature) => (
@@ -284,26 +298,27 @@ export default function PremiumCheckout({
                 <button
                   type="button"
                   disabled={
-                    payingSlug !== null ||
-                    isCurrentPlan
+                    payingSlug !== null
                   }
                   onClick={() =>
                     startCheckout(plan.slug)
                   }
                   className="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {isCurrentPlan
-                    ? "Current Plan"
-                    : payingSlug === plan.slug
-                      ? "Opening Paystack..."
-                      : isPremium &&
-                          plan.billingCycle === "annual"
-                        ? `Upgrade to ${plan.name}`
-                        : `Pay for ${plan.name}`}
+                  {payingSlug === plan.slug
+                    ? "Opening Paystack..."
+                    : isCurrentPlan ? "Renew " + plan.name
+                    : isPremium && plan.billingCycle === "annual"
+                      ? `Upgrade to ${plan.name}`
+                      : `Pay for ${plan.name}`}
                 </button>
               </article>
             );
           })}
+          </div>
+          {!plans.some(plan => plan.billingCycle === billingView) && (
+            <p className="rounded-md border border-white/10 p-5 text-sm text-white/50">No {billingView} plans are currently available.</p>
+          )}
         </div>
       )}
     </section>

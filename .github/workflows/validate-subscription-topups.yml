@@ -1,0 +1,57 @@
+name: Validate subscription topups and grace
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/src/payments/**"
+      - "backend/src/topups/**"
+      - "backend/src/nuggets/**"
+      - "backend/src/admin/**"
+      - "backend/src/**/**.module.ts"
+      - "app/admin/subscriptions/**"
+      - "app/membership/**"
+      - "components/PremiumCheckout.tsx"
+      - "components/TopUpBundles.tsx"
+      - "components/PaymentCallbackContent.tsx"
+      - ".github/workflows/validate-subscription-topups.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Test paid grace and module wiring
+        run: npm test -- --runInBand src/nuggets/paid-history-access.spec.ts src/nuggets/monthly-nugget-allowance.spec.ts src/topups/topups-policy.spec.ts src/topups/topups.service.spec.ts src/nuggets/nuggets.module.spec.ts
+      - name: Build backend
+        run: npm run build
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: node --test tests/*.test.mjs
+      - run: npx next typegen
+      - run: npx tsc --noEmit
+      - run: npm run build
