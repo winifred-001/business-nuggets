@@ -2,6 +2,7 @@ import { loadSiteBranding } from "@/lib/site-branding";
 import type { Metadata } from "next";
 import { DM_Sans, Manrope, Playfair_Display, Geist_Mono } from "next/font/google";
 import AuthCookieSync from "@/components/AuthCookieSync";
+import GlobalAudioPlayerProvider from "@/components/GlobalAudioPlayerProvider";
 import "./globals.css";
 import "./corporate-theme.css";
 import "./brand-palette.css";
@@ -48,7 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <AuthCookieSync />
-        {children}
+        <GlobalAudioPlayerProvider>{children}</GlobalAudioPlayerProvider>
       </body>
     </html>
   );

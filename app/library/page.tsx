@@ -591,14 +591,14 @@ function LibraryContent() {
         <LibraryUpgradePrompt onReturn={() => upgradeDialog.current?.close()} dialog />
       </dialog>
       {/* PAGE HEADER */}
-      <section className="border-b border-white/[0.06]">
+      <section className="border-b border-black/10">
         <div className="mx-auto w-[calc(100%-38px)] max-w-[1190px] pt-16 sm:pt-24 lg:w-[calc(100%-64px)]">
           <PageEyebrow>Library</PageEyebrow>
-          <h1 className="bn-hero-title mt-[27px] font-serif text-[45px]! leading-tight text-[#FAF9F6]">
+          <h1 className="bn-hero-title mt-[27px] font-serif text-[45px]! leading-tight text-[#211E19]">
             The Wisdom Archive
           </h1>
 
-          <p className="mt-4 max-w-[650px] text-[14px] leading-6 text-white/50">
+          <p className="mt-4 max-w-[650px] text-[14px] leading-6 text-[#6D655B]">
             Discover premium biblical
             business strategies. Filter by
             topic, challenge, or scripture
@@ -616,7 +616,7 @@ function LibraryContent() {
                 className={`relative shrink-0 pb-4 text-[13px] transition ${
                   activeTab === tab
                     ? "font-medium text-[#E28906]"
-                    : "text-white/50 hover:text-white"
+                    : "text-[#746B60] hover:text-[#211E19]"
                 }`}
               >
                 {tab}
@@ -1374,7 +1374,7 @@ export default function LibraryPage() {
     <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
       <Navbar />
 
-      <div className="flex-1">
+      <div className="flex-1 bg-[#F5F0E8]">
         <Suspense
           fallback={
             <StatusPanel>

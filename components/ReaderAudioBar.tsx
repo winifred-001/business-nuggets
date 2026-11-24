@@ -5,17 +5,51 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Maximize2, Pause, Play, Repeat2, Shuffle, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
-import { useAudioPlayback, audioTime } from "@/lib/use-audio-playback";
+import { useGlobalAudioPlayer } from "@/components/GlobalAudioPlayerProvider";
+import { audioTime } from "@/lib/use-audio-playback";
+import { displayTopicName } from "@/lib/topic-display";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 import type { Nugget } from "@/types/nugget";
 
 export default function ReaderAudioBar({ title, subtitle, slug, coverImage, audioSrc }: {
   title: string; subtitle: string; slug: string; coverImage: string; audioSrc: string | null;
 }) {
-  const { audioRef, audioProps, playing, currentTime, duration, muted, repeat, audioError, togglePlay, seekTo, toggleRepeat, toggleMute } = useAudioPlayback(audioSrc);
+  const player = useGlobalAudioPlayer();
+  const isCurrentTrack = Boolean(audioSrc && player.track?.src === audioSrc);
+  const playing = isCurrentTrack && player.playing;
+  const currentTime = isCurrentTrack ? player.currentTime : 0;
+  const duration = isCurrentTrack ? player.duration : 0;
+  const muted = isCurrentTrack && player.muted;
+  const repeat = isCurrentTrack && player.repeat;
+  const audioError = isCurrentTrack ? player.error : "";
+  function togglePlay() {
+    if (!audioSrc) return;
+    if (isCurrentTrack) {
+      void player.togglePlay();
+      return;
+    }
+    void player.playTrack({
+      src: audioSrc,
+      title,
+      subtitle,
+      slug,
+      coverImage,
+      kind: "nugget",
+      href: `/nugget/${slug}/reader`,
+    });
+  }
+  function seekTo(value: number) {
+    if (isCurrentTrack) player.seekTo(value);
+  }
   const router = useRouter();
   const [tracks, setTracks] = useState<Nugget[]>([]);
   const [shuffle, setShuffle] = useState(false);
+  useEffect(() => {
+    if (!audioSrc) return;
+    player.registerLocalControl(audioSrc, true);
+    return () => player.registerLocalControl(audioSrc, false);
+  }, [audioSrc, player.registerLocalControl]);
+
   useEffect(() => {
     let active = true;
     void getPublishedNuggets().then(data => {
@@ -28,11 +62,23 @@ export default function ReaderAudioBar({ title, subtitle, slug, coverImage, audi
     if (!candidates.length) return;
     const index = tracks.findIndex(item => item.slug === slug);
     const next = shuffle ? candidates[Math.floor(Math.random() * candidates.length)] : tracks[(index + direction + tracks.length) % tracks.length];
-    if (next) router.push(`/nugget/${next.slug}/reader`);
+    if (next) {
+      if (next.nuggetAudioUrl) {
+        void player.playTrack({
+          src: next.nuggetAudioUrl,
+          title: next.title,
+          subtitle: `${next.scriptureRef} · ${displayTopicName(next.topic)}`,
+          slug: next.slug,
+          coverImage: next.image,
+          kind: "nugget",
+          href: `/nugget/${next.slug}/reader`,
+        });
+      }
+      router.push(`/nugget/${next.slug}/reader`);
+    }
   }
   return (
       <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#DDD2C0] bg-[#F5F0E8]">
-        <audio ref={audioRef} {...audioProps} />
         <div className="mx-auto flex min-h-[82px] max-w-[1180px] items-center gap-5 px-5 sm:px-8 lg:px-10">
           <div className="flex min-w-0 items-center gap-3 sm:w-[270px]">
             <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded">
@@ -103,8 +149,8 @@ export default function ReaderAudioBar({ title, subtitle, slug, coverImage, audi
                 type="button"
                 aria-label="Repeat"
                 aria-pressed={repeat}
-                disabled={!audioSrc}
-                onClick={toggleRepeat}
+                disabled={!audioSrc || !isCurrentTrack}
+                onClick={() => isCurrentTrack && player.toggleRepeat()}
                 className="text-[#756E64] transition hover:text-[#15120E]"
               >
                 <Repeat2 size={14} className={repeat ? "text-[#E28906]" : undefined} />
@@ -118,7 +164,7 @@ export default function ReaderAudioBar({ title, subtitle, slug, coverImage, audi
 
               <div className="relative h-[3px] flex-1 rounded-full bg-[#D8CDBB]">
                 <div className="h-full rounded-full bg-[#E28906]" style={{ width: `${duration ? currentTime / duration * 100 : 0}%` }} />
-                <input aria-label="Audio progress" type="range" min={0} max={duration || 1} value={currentTime} disabled={!duration} onChange={event => seekTo(Number(event.target.value))} className="absolute inset-x-0 -top-2 h-5 w-full cursor-pointer opacity-0" />
+                <input aria-label="Audio progress" type="range" min={0} max={duration || 1} value={currentTime} disabled={!duration || !isCurrentTrack} onChange={event => seekTo(Number(event.target.value))} className="absolute inset-x-0 -top-2 h-5 w-full cursor-pointer opacity-0" />
               </div>
 
               <span className="text-[10px] text-[#8A8175]">
@@ -138,7 +184,7 @@ export default function ReaderAudioBar({ title, subtitle, slug, coverImage, audi
           </button>
 
           <div className="hidden items-center justify-end gap-4 sm:w-[150px] md:flex">
-            <button type="button" aria-label={muted ? "Unmute" : "Mute"} onClick={toggleMute} disabled={!audioSrc} className="text-[#756E64] transition hover:text-[#15120E]">
+            <button type="button" aria-label={muted ? "Unmute" : "Mute"} onClick={() => isCurrentTrack && player.toggleMute()} disabled={!audioSrc || !isCurrentTrack} className="text-[#756E64] transition hover:text-[#15120E]">
               {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
             </button>
 

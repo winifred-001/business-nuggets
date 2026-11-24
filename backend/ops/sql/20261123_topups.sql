@@ -34,12 +34,18 @@ CREATE TABLE IF NOT EXISTS "NuggetTopUpCreditLot" (
   "totalCredits" integer NOT NULL CHECK ("totalCredits" > 0),
   "remainingCredits" integer NOT NULL CHECK ("remainingCredits" >= 0),
   "purchasedAt" timestamptz NOT NULL,
-  "originalExpiresAt" timestamptz NOT NULL -- actual credit expiry: purchasedAt + 3 calendar months
+  "originalExpiresAt" timestamptz NOT NULL, -- actual credit expiry: purchasedAt + 3 calendar months
+  "invalidatedAt" timestamptz -- set when a later verified subscription renewal/upgrade forfeits unused credits
 );
+ALTER TABLE "NuggetTopUpCreditLot"
+  ADD COLUMN IF NOT EXISTS "invalidatedAt" timestamptz;
 CREATE INDEX IF NOT EXISTS "NuggetTopUpCreditLot_user_idx"
 ON "NuggetTopUpCreditLot" ("userId", "purchasedAt", "id");
 CREATE INDEX IF NOT EXISTS "NuggetTopUpCreditLot_expiry_idx"
 ON "NuggetTopUpCreditLot" ("userId", "originalExpiresAt", "purchasedAt", "id");
+CREATE INDEX IF NOT EXISTS "NuggetTopUpCreditLot_available_idx"
+ON "NuggetTopUpCreditLot" ("userId", "originalExpiresAt", "purchasedAt", "id")
+WHERE "invalidatedAt" IS NULL AND "remainingCredits" > 0;
 
 -- Normalize any pre-release/test lots created under the old indefinite-rollover rule.
 UPDATE "NuggetTopUpCreditLot"

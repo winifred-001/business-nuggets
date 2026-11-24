@@ -162,7 +162,7 @@ export default function TopUpBundlesAdmin() {
                     className="mt-1 h-10 w-full rounded-md border border-white/15 bg-[#080808] px-3 text-white" />
                 </label>
               </div>
-              <p className="text-xs leading-5 text-white/50">Credits expire exactly 3 months after purchase. If the subscription expires first, unused credits remain valid until their own expiry date and can be redeemed after renewal.</p>
+              <p className="text-xs leading-5 text-white/50">Credits expire 3 months after purchase. If the subscription expires first, they remain on the account until their expiry date, but any unused credits are forfeited when the member renews or upgrades. Credits never roll over.</p>
               {editing && <label className="flex items-center gap-2 text-sm text-white/70">
                 <input type="checkbox" checked={active} onChange={e => setActive(e.target.checked)} /> Active and available for purchase
               </label>}

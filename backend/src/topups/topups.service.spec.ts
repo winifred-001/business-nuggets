@@ -1,7 +1,7 @@
 import { ForbiddenException } from "@nestjs/common";
 import { TopUpsService } from "./topups.service";
 
-type Lot = { reference: string; bundleSlug: string; totalCredits: number; remainingCredits: number; purchasedAt: string; originalExpiresAt: string };
+type Lot = { reference: string; bundleSlug: string; totalCredits: number; remainingCredits: number; purchasedAt: string; originalExpiresAt: string; invalidatedAt?: string | null };
 const mock = {
   lots: [] as Lot[],
   redeemed: new Set<string>(),
@@ -44,7 +44,7 @@ jest.mock("../prisma/db", () => {
       expiresAt.setUTCMonth(expiresAt.getUTCMonth() + 3);
       mock.lots.push({
         reference, bundleSlug: "mini", totalCredits: 2, remainingCredits: 2,
-        purchasedAt: purchaseDate.toISOString(), originalExpiresAt: expiresAt.toISOString(),
+        purchasedAt: purchaseDate.toISOString(), originalExpiresAt: expiresAt.toISOString(), invalidatedAt: null,
       });
       return { affectedRows: 1 };
     }
@@ -54,8 +54,15 @@ jest.mock("../prisma/db", () => {
       mock.redeemed.add(id);
       return { affectedRows: 1 };
     }
+    if (plan.statement.includes('UPDATE "NuggetTopUpCreditLot"') && plan.statement.includes('SET "invalidatedAt"')) {
+      const paidAt = Date.parse(String(plan.args[0]));
+      const affected = mock.lots.filter(lot => !lot.invalidatedAt && lot.remainingCredits > 0 &&
+        Date.parse(lot.purchasedAt) < paidAt && Date.parse(lot.originalExpiresAt) > paidAt);
+      for (const lot of affected) lot.invalidatedAt = new Date(paidAt).toISOString();
+      return { affectedRows: affected.length };
+    }
     if (plan.statement.includes('UPDATE "NuggetTopUpCreditLot"')) {
-      const lot = mock.lots.filter(x => x.remainingCredits > 0 && Date.parse(x.originalExpiresAt) > Date.now())
+      const lot = mock.lots.filter(x => !x.invalidatedAt && x.remainingCredits > 0 && Date.parse(x.originalExpiresAt) > Date.now())
         .sort((a, b) => Date.parse(a.originalExpiresAt) - Date.parse(b.originalExpiresAt))[0];
       if (!lot) return { affectedRows: 0 };
       lot.remainingCredits--;
@@ -130,6 +137,37 @@ describe("verified Top-up credit ledger", () => {
     await expect(topups.redeem(7, "nugget-expired", "2099-12-31T00:00:00Z")).rejects.toThrow();
     expect(mock.lots[0].remainingCredits).toBe(2);
     expect(mock.redeemed.has("nugget-expired")).toBe(false);
+  });
+
+  it("forfeits only unused, unexpired credits purchased before a verified renewal and leaves Nugget history intact", async () => {
+    mock.lots = [
+      { reference: "naturally-expired", bundleSlug: "mini", totalCredits: 2, remainingCredits: 2, purchasedAt: "2026-07-01T00:00:00Z", originalExpiresAt: "2026-10-01T00:00:00Z", invalidatedAt: null },
+      { reference: "before-renewal", bundleSlug: "mini", totalCredits: 3, remainingCredits: 3, purchasedAt: "2026-10-01T00:00:00Z", originalExpiresAt: "2027-01-01T00:00:00Z", invalidatedAt: null },
+      { reference: "after-renewal", bundleSlug: "mini", totalCredits: 4, remainingCredits: 4, purchasedAt: "2026-11-20T00:00:00Z", originalExpiresAt: "2027-02-20T00:00:00Z", invalidatedAt: null },
+    ];
+    const cleared = await topups.invalidateUnusedCreditsOnSubscriptionChange(7, "2026-11-15T00:00:00Z");
+    expect(cleared).toBe(1);
+    expect(mock.lots[0].invalidatedAt).toBeNull();
+    expect(mock.lots[1].invalidatedAt).toBe("2026-11-15T00:00:00.000Z");
+    expect(mock.lots[2].invalidatedAt).toBeNull();
+    const wallet = await topups.getWallet(7);
+    expect(wallet.balance).toBe(4);
+    expect(wallet.expired).toBe(2);
+    expect(wallet.invalidated).toBe(3);
+    // Renewal invalidates unused credits only; existing Nugget redemption records are untouched.
+    expect(mock.redeemed).toEqual(new Set());
+  });
+
+  it("cannot redeem a credit lot forfeited by a subscription renewal or upgrade", async () => {
+    mock.lots = [{
+      reference: "forfeited", bundleSlug: "mini", totalCredits: 3, remainingCredits: 3,
+      purchasedAt: "2026-10-01T00:00:00Z", originalExpiresAt: "2027-01-01T00:00:00Z",
+      invalidatedAt: "2026-11-15T00:00:00Z",
+    }];
+    await expect(topups.redeem(7, "nugget-after-renewal", "2099-12-31T00:00:00Z")).rejects.toThrow();
+    expect(mock.lots[0].remainingCredits).toBe(3);
+    expect(mock.redeemed.has("nugget-after-renewal")).toBe(false);
+    expect((await topups.getWallet(7)).balance).toBe(0);
   });
 
   it("refuses to spend credits in paid grace or on suspended accounts", async () => {

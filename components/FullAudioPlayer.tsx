@@ -16,7 +16,9 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useAudioPlayback, audioTime as formatTime } from "@/lib/use-audio-playback";
+import { useGlobalAudioPlayer } from "@/components/GlobalAudioPlayerProvider";
+import { displayTopicName } from "@/lib/topic-display";
+import { audioTime as formatTime } from "@/lib/use-audio-playback";
 import { loginFor } from "@/lib/auth-return";
 
 import { API_URL } from "@/lib/api";
@@ -42,7 +44,38 @@ export default function FullAudioPlayer({
 }: Props) {
   const [shuffledQueue, setShuffledQueue] = useState<Nugget[] | null>(null);
   const playbackQueue = shuffledQueue ?? queue;
-  const { audioRef, audioProps, playing, currentTime, duration, speed, audioError, togglePlay, seek, seekTo, changeSpeed } = useAudioPlayback(audioSrc);
+  const player = useGlobalAudioPlayer();
+  const isCurrentTrack = Boolean(audioSrc && player.track?.src === audioSrc);
+  const playing = isCurrentTrack && player.playing;
+  const currentTime = isCurrentTrack ? player.currentTime : 0;
+  const duration = isCurrentTrack ? player.duration : 0;
+  const speed = isCurrentTrack ? player.speed : 1;
+  const audioError = isCurrentTrack ? player.error : "";
+  function togglePlay() {
+    if (!audioSrc) return;
+    if (isCurrentTrack) {
+      void player.togglePlay();
+      return;
+    }
+    void player.playTrack({
+      src: audioSrc,
+      title: nugget.title,
+      subtitle: `${nugget.scriptureRef} · ${displayTopicName(nugget.topic)}`,
+      slug: nugget.slug,
+      coverImage,
+      kind: "nugget",
+      href: `/nugget/${nugget.slug}/audio`,
+    });
+  }
+  function seek(amount: number) {
+    if (isCurrentTrack) player.seek(amount);
+  }
+  function seekTo(value: number) {
+    if (isCurrentTrack) player.seekTo(value);
+  }
+  function changeSpeed() {
+    player.changeSpeed();
+  }
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [playlistOpen, setPlaylistOpen] = useState(false);
@@ -50,6 +83,12 @@ export default function FullAudioPlayer({
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState("");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (!audioSrc) return;
+    player.registerLocalControl(audioSrc, true);
+    return () => player.registerLocalControl(audioSrc, false);
+  }, [audioSrc, player.registerLocalControl]);
 
   useEffect(() => {
     let cancelled = false;
@@ -249,8 +288,6 @@ export default function FullAudioPlayer({
 
   return (
     <>
-      <audio ref={audioRef} {...audioProps} />
-
       <main className="mx-auto w-full max-w-[1280px] px-5 py-10 sm:px-8 sm:py-12 lg:px-10">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-12">
           <section className="min-w-0">
@@ -267,7 +304,7 @@ export default function FullAudioPlayer({
 
             <div className="mx-auto mt-6 max-w-[520px] text-center sm:mt-7">
               <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#E28906]">
-                {nugget.scriptureRef} · {nugget.topic}
+                {nugget.scriptureRef} · {displayTopicName(nugget.topic)}
               </p>
 
               <h1 className="bn-hero-title mt-3 font-serif text-[34px] leading-[1.12] sm:text-[40px]">

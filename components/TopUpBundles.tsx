@@ -6,7 +6,7 @@ import { loginFor } from "@/lib/auth-return";
 
 type Bundle = { slug: string; name: string; credits: number; priceCents: number; currency: string; active: boolean };
 type Wallet = {
-  balance: number; lifetimePurchased: number; lifetimeUsed: number; expired: number; nextExpiryAt: string | null;
+  balance: number; lifetimePurchased: number; lifetimeUsed: number; expired: number; invalidated: number; nextExpiryAt: string | null;
   canSpend: boolean; inGrace: boolean; graceEndsAt: string | null;
   lots: { reference: string; remainingCredits: number; originalExpiresAt: string }[];
 };
@@ -88,7 +88,7 @@ export default function TopUpBundles() {
           <p className="text-xs font-semibold uppercase tracking-widest text-[#E28906]">Additional Nuggets</p>
           <h2 className="mt-2 font-serif text-3xl text-white">Nugget Top-up Bundles</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
-            Buy extra Nugget selections when your monthly allowance runs out. Each Top-up credit is valid for 3 months from purchase, even if your subscription expires sooner. Credits can be redeemed again after renewal, provided they have not expired.
+            Buy extra Nugget selections when your monthly allowance runs out. Each Top-up credit expires 3 months after purchase, even if your subscription expires sooner. Any unused credits are forfeited when you renew or upgrade. Top-up credits never roll over.
           </p>
         </div>
         {wallet && (
@@ -98,6 +98,7 @@ export default function TopUpBundles() {
             <p className="text-xs text-white/40">Valid for 3 months from purchase</p>
             {wallet.nextExpiryAt && <p className="mt-1 text-xs text-white/45">Next expiry: {new Date(wallet.nextExpiryAt).toLocaleDateString()}</p>}
             {wallet.expired > 0 && <p className="mt-1 text-xs text-white/40">{wallet.expired} unused credits expired</p>}
+            {wallet.invalidated > 0 && <p className="mt-1 text-xs text-white/40">{wallet.invalidated} unused credits forfeited on renewal/upgrade</p>}
           </div>
         )}
       </div>
@@ -121,7 +122,7 @@ export default function TopUpBundles() {
       {wallet?.inGrace && (
         <p role="status" className="mt-4 rounded-md border border-[#E28906]/30 p-3 text-sm text-[#E28906]">
           Your subscription is in its three-day grace period. Previously opened Nuggets remain readable;
-          renew to use Top-up credits or open new Nuggets.
+          renewing or upgrading forfeits any unused Top-up credits. Previously opened Nuggets are preserved.
         </p>
       )}
       {error && <p role="alert" className="mt-4 rounded-md border border-red-500/25 p-3 text-sm text-red-300">{error}</p>}

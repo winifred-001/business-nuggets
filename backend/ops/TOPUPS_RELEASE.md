@@ -8,9 +8,9 @@ not delete or rewrite existing member subscriptions, Nugget grants or payments.
 - After consuming it, a member with an *active* paid subscription may spend Top-up credits.
 - A Top-up gives extra selections; it does not change the subscription expiry.
 - Each Top-up purchase creates a credit lot that expires exactly three calendar months after purchase.
-- The three-month credit period is independent of the subscription period. If the subscription expires first, unused Top-up credits remain valid until their own expiry date.
+- The three-month credit period is independent of the subscription expiry. If the subscription expires first, unused credits remain recorded until their own three-month expiry, but cannot be redeemed while membership is inactive.
 - Expired unused credits are removed from the available balance and cannot be redeemed. The oldest-expiring valid lot is consumed first.
-- Credits remain on the account when the subscription expires, but can only be spent while the member has an active paid subscription. After renewal, any credits still within their three-month validity period can be redeemed.
+- A verified subscription renewal or upgrade forfeits every still-valid unused Top-up credit lot purchased before that payment. Credits are never rolled over into the renewed/upgraded plan. Previously opened Nuggets remain preserved through the existing access-history records.
 - During the 72 hours after paid expiry, members may reread Nuggets already granted;
   no new Nuggets or Top-up redemptions are allowed. After 72 hours paid reads lock.
 - A member suspended, revoked or cancelled has no grace access.
@@ -32,14 +32,15 @@ not delete or rewrite existing member subscriptions, Nugget grants or payments.
 7. Test paid expiry at T−1s, T, T+71h59m, and T+72h; verify that cancelled
    and suspended users cannot bypass the grace check.
 8. Test a Top-up purchased before subscription expiry, then let the subscription
-   expire first. Confirm its unused credits remain valid until purchase date +
-   three calendar months, cannot be redeemed while membership is inactive, and
-   become usable again after renewal only if they have not expired.
-9. Test the exact credit-expiry boundary and confirm expired credits are excluded
-   from wallet balance and cannot be redeemed. Test oldest-expiring-first debit.
-10. Test new paid renewal and annual upgrades and verify that credits do not
-    change the paid expiry or reset the monthly allowance.
-11. Confirm CI, log/error monitoring, and explicit deployment approval.
+   expire first. Confirm its unused credits remain recorded until purchase date +
+   three calendar months and cannot be redeemed while membership is inactive.
+9. Renew or upgrade before the Top-up expiry. Confirm all unused credits bought
+   before that verified payment are forfeited and cannot be redeemed afterwards.
+10. Confirm previously opened Nuggets remain readable after renewal/upgrade,
+    while unused Top-up credits do not return.
+11. Test the exact three-month credit-expiry boundary and oldest-expiring-first
+    debit. Verify monthly allowance reset and paid expiry independently.
+12. Confirm CI, log/error monitoring, and explicit deployment approval.
 
 ## Rollback / recovery
 - Disable active bundles through Admin first to stop new purchases.

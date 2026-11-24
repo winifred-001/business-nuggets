@@ -5,7 +5,7 @@ import { summarizeTopUpLots } from "./topups-policy";
 
 export const TOP_UP_PLAN_PREFIX = "topup:";
 
-/** Each purchased credit lot expires three calendar months after purchase, independently of subscription expiry. */
+/** Each Top-up lot expires three calendar months after purchase or sooner when a subscription renewal/upgrade invalidates unused credits. */
 @Injectable()
 export class TopUpsService {
   private setup?: Promise<void>;
@@ -20,8 +20,8 @@ export class TopUpsService {
         SELECT "reference" FROM "NuggetTopUpOrder" LIMIT 1
       `.returnsRow({ reference: "pg/text@1" }).build());
       await db.runtime().query(db.raw.sql`
-        SELECT "id"::text AS "id" FROM "NuggetTopUpCreditLot" LIMIT 1
-      `.returnsRow({ id: "pg/text@1" }).build());
+        SELECT "invalidatedAt" FROM "NuggetTopUpCreditLot" LIMIT 1
+      `.returnsRow({ invalidatedAt: "pg/timestamptz-string@1" }).build());
       await db.runtime().query(db.raw.sql`
         SELECT "nuggetId" FROM "NuggetTopUpRedemption" LIMIT 1
       `.returnsRow({ nuggetId: "pg/text@1" }).build());
@@ -140,12 +140,13 @@ export class TopUpsService {
     const user = await db.orm.public.User.where({ id: userId }).first();
     if (!user) throw new NotFoundException("Member not found.");
     const lots = await db.runtime().query(db.raw.sql`
-      SELECT "reference", "bundleSlug", "totalCredits", "remainingCredits", "purchasedAt", "originalExpiresAt"
+      SELECT "reference", "bundleSlug", "totalCredits", "remainingCredits", "purchasedAt", "originalExpiresAt", "invalidatedAt"
       FROM "NuggetTopUpCreditLot" WHERE "userId" = ${userId} ORDER BY "originalExpiresAt", "purchasedAt" DESC
     `.returnsRow({
       reference:"pg/text@1", bundleSlug:"pg/text@1",
       totalCredits:"pg/int4@1", remainingCredits:"pg/int4@1",
       purchasedAt:"pg/timestamptz-string@1", originalExpiresAt:"pg/timestamptz-string@1",
+      invalidatedAt:"pg/timestamptz-string@1",
     }).build());
     return {
       ...summarizeTopUpLots(lots),
@@ -154,6 +155,23 @@ export class TopUpsService {
       graceEndsAt: isPaidSubscriptionInGrace(user) ? paidReadingExpiry(user) : null,
       lots,
     };
+  }
+
+  /** A verified subscription renewal or upgrade forfeits still-valid unused Top-up lots bought before that payment. */
+  async invalidateUnusedCreditsOnSubscriptionChange(userId: number, paidAt: string) {
+    const paymentTime = new Date(paidAt);
+    if (!Number.isFinite(paymentTime.getTime())) throw new BadRequestException("A valid verified subscription payment date is required.");
+    await this.ensureTables();
+    const result = await db.runtime().execute(db.raw.sql`
+      UPDATE "NuggetTopUpCreditLot"
+      SET "invalidatedAt" = ${paymentTime.toISOString()}::timestamptz
+      WHERE "userId" = ${userId}
+        AND "remainingCredits" > 0
+        AND "invalidatedAt" IS NULL
+        AND "purchasedAt" < ${paymentTime.toISOString()}::timestamptz
+        AND "originalExpiresAt" > ${paymentTime.toISOString()}::timestamptz
+    `.affectedCount().build());
+    return result.affectedRows;
   }
 
   /** Unique redemption + conditional debit in one transaction prevents double spending. */
@@ -174,9 +192,9 @@ export class TopUpsService {
         SET "remainingCredits" = "remainingCredits" - 1
         WHERE "id" = (
           SELECT "id" FROM "NuggetTopUpCreditLot"
-          WHERE "userId" = ${userId} AND "remainingCredits" > 0 AND "originalExpiresAt" > NOW()
+          WHERE "userId" = ${userId} AND "remainingCredits" > 0 AND "invalidatedAt" IS NULL AND "originalExpiresAt" > NOW()
           ORDER BY "originalExpiresAt", "purchasedAt", "id" LIMIT 1 FOR UPDATE SKIP LOCKED
-        ) AND "remainingCredits" > 0 AND "originalExpiresAt" > NOW()
+        ) AND "remainingCredits" > 0 AND "invalidatedAt" IS NULL AND "originalExpiresAt" > NOW()
       `.affectedCount().build());
       if (debit.affectedRows !== 1) throw new ForbiddenException({
         code: "TOPUP_CREDITS_EXHAUSTED",

@@ -295,6 +295,8 @@ export class PaymentsService {
       await this.rebuildMembershipFromPaidTransactions(
         transaction.userId,
       );
+    // Preserve opened Nugget history, but never carry unused Top-up credits into a renewed/upgraded plan.
+    await this.topups.invalidateUnusedCreditsOnSubscriptionChange(transaction.userId, paidAt);
 
     return {
       success: true,
