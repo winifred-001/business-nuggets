@@ -61,7 +61,7 @@ export default async function NuggetDetailPage({
 
   return (
     <NuggetAccessExpiryGate expiresAt={nugget.accessExpiresAt} durationHours={nugget.accessDurationHours} restored={nugget.accessRestored} grace={nugget.accessInGrace}>
-    <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
+    <div className="min-h-screen bg-[#F5F0E8] text-[#211E19]">
      <NuggetAnalyticsTracker nuggetId={nugget.id}/>
       <Navbar />
 
@@ -101,10 +101,10 @@ export default async function NuggetDetailPage({
               )}
 
               {/* TABS */}
-              <div className="mt-8 flex gap-7 overflow-x-auto border-b border-white/[0.08]">
+              <div className="mt-8 flex gap-7 overflow-x-auto border-b border-black/15">
                 <Link
                   href={`/nugget/${nugget.slug}`}
-                  className="relative shrink-0 pb-4 text-[13px] font-medium text-[#E28906]"
+                  className="relative shrink-0 pb-4 text-[13px] font-medium text-[#79500A]"
                 >
                   Read Wisdom
 
@@ -113,14 +113,14 @@ export default async function NuggetDetailPage({
 
                 <Link
                   href={`/nugget/${nugget.slug}/musical`}
-                  className="shrink-0 pb-4 text-[13px] text-white/45 transition hover:text-[#E28906]"
+                  className="shrink-0 pb-4 text-[13px] text-[#4F4941] transition hover:text-[#79500A]"
                 >
                   Listen Musical
                 </Link>
 
                 <Link
                   href={`/nugget/${nugget.slug}/audio`}
-                  className="shrink-0 pb-4 text-[13px] text-white/45 transition hover:text-[#E28906]"
+                  className="shrink-0 pb-4 text-[13px] text-[#4F4941] transition hover:text-[#79500A]"
                 >
                   Listen Commentary
                 </Link>
@@ -128,35 +128,35 @@ export default async function NuggetDetailPage({
 
               {/* KEY PRINCIPLE */}
               <section className="pt-8">
-                <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#FAF9F6]">
+                <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#211E19]">
                   Key Principles
                 </h2>
 
-                <FormattedNuggetText preview className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-white/50" text={nugget.keyPrinciple ||
+                <FormattedNuggetText preview className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]" text={nugget.keyPrinciple ||
                     "Commentary for this Nugget will be added soon."} />
               </section>
 
               {/* MARKETPLACE APPLICATION */}
               {nugget.marketplaceApplication && (
                 <section className="pt-9">
-                  <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#FAF9F6]">
+                  <h2 className="bn-nugget-section-title font-serif text-[20px] leading-tight text-[#211E19]">
                     Marketplace Application
                   </h2>
 
-                  <FormattedNuggetText preview className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-white/50" text={nugget.marketplaceApplication} />
+                  <FormattedNuggetText preview className="mt-4 whitespace-pre-line break-words text-[14px] leading-7 text-[#4F4941]" text={nugget.marketplaceApplication} />
                 </section>
               )}
 
               <Link
                 href={`/nugget/${nugget.slug}/reader`}
-                className="bn-button mt-8 inline-flex rounded-lg border border-[#E28906]/40 px-5 py-3 text-[13px] font-semibold text-[#E28906] transition hover:bg-[#E28906]/10 hover:text-[#E28906] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E28906]"
+                className="bn-button mt-8 inline-flex rounded-lg border border-[#E28906]/40 px-5 py-3 text-[13px] font-semibold text-[#79500A] transition hover:bg-[#E28906]/10 hover:text-[#79500A] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E28906]"
               >
                 Read full teaching →
               </Link>
             </div>
 
             {/* RIGHT ACTIONS */}
-            <aside className="self-start rounded-xl border border-white/10 bg-[#111111] p-5 lg:sticky lg:top-24">
+            <aside className="self-start rounded-xl border border-white/10 bg-[#111111] p-5 text-[#f9f5ed] lg:sticky lg:top-24">
               <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#FAF9F6]">
                 Nugget Actions
               </h2>
