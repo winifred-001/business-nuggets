@@ -6,12 +6,17 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
-import { Maximize2, Pause, Play, X } from "lucide-react";
+import { Maximize2, Pause, Play, SkipBack, SkipForward, X } from "lucide-react";
+
+import { getPlayableAudioNuggets } from "@/lib/nuggets-api";
+import { displayTopicName } from "@/lib/topic-display";
+import type { Nugget } from "@/types/nugget";
 
 export type GlobalAudioTrack = {
   src: string;
@@ -58,6 +63,9 @@ function formatTime(value: number) {
 
 export default function GlobalAudioPlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const playbackVersion = useRef(0);
+  const [miniQueue, setMiniQueue] = useState<Nugget[]>([]);
+  const [switchingTrack, setSwitchingTrack] = useState(false);
   const [localControlCounts, setLocalControlCounts] = useState<Record<string, number>>({});
   const [track, setTrack] = useState<GlobalAudioTrack | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -71,6 +79,7 @@ export default function GlobalAudioPlayerProvider({ children }: { children: Reac
   const playTrack = useCallback(async (next: GlobalAudioTrack) => {
     const audio = audioRef.current;
     if (!audio || !next.src) return;
+    playbackVersion.current += 1;
     const resolvedSrc = new URL(next.src, window.location.href).href;
     const sameTrack = (audio.currentSrc || audio.src) === resolvedSrc;
     if (!sameTrack) {
@@ -164,6 +173,7 @@ export default function GlobalAudioPlayerProvider({ children }: { children: Reac
   }, []);
 
   const stop = useCallback(() => {
+    playbackVersion.current += 1;
     const audio = audioRef.current;
     if (audio) {
       audio.pause();
@@ -183,6 +193,50 @@ export default function GlobalAudioPlayerProvider({ children }: { children: Reac
   }), [track, playing, currentTime, duration, speed, muted, repeat, error, playTrack, togglePlay, seekTo, seek, changeSpeed, toggleMute, toggleRepeat, stop, registerLocalControl]);
 
   const showMiniPlayer = Boolean(track && !localControlCounts[track.src]);
+  const miniKind = track?.kind;
+  const miniSlug = track?.slug;
+  useEffect(() => {
+    let active = true;
+    setMiniQueue([]);
+    if (showMiniPlayer && miniKind) {
+      void getPlayableAudioNuggets(miniKind).then(items => {
+        if (active) setMiniQueue(items);
+      }).catch(() => {});
+    }
+    return () => { active = false; };
+  }, [showMiniPlayer, miniKind, miniSlug]);
+
+  async function moveMiniTrack(direction: number) {
+    if (!track || switchingTrack) return;
+    const version = playbackVersion.current;
+    setSwitchingTrack(true);
+    try {
+      const available = await getPlayableAudioNuggets(track.kind);
+      if (version !== playbackVersion.current) return;
+      setMiniQueue(available);
+      if (!available.some(item => item.slug !== track.slug)) return;
+      const index = available.findIndex(item => item.slug === track.slug);
+      const next = index < 0 ? available[direction > 0 ? 0 : available.length - 1]
+        : available[(index + direction + available.length) % available.length];
+      if (!next || next.slug === track.slug) return;
+      const src = track.kind === "nugget" ? next.nuggetAudioUrl : next.audioUrl;
+      if (!src) return;
+      await playTrack({
+        src,
+        title: next.title,
+        subtitle: `${next.scriptureRef} · ${displayTopicName(next.topic)}`,
+        slug: next.slug,
+        coverImage: next.image,
+        kind: track.kind,
+        href: `/nugget/${next.slug}/${track.kind === "music" ? "musical" : "audio"}`,
+      });
+    } catch {
+      if (version === playbackVersion.current) setError("Could not load the next available audio. Please try again.");
+    } finally {
+      setSwitchingTrack(false);
+    }
+  }
+
 
   return (
     <GlobalAudioPlayerContext.Provider value={value}>
@@ -225,14 +279,23 @@ export default function GlobalAudioPlayerProvider({ children }: { children: Reac
               <span className="mt-0.5 block truncate text-[12px] font-semibold">{track.title}</span>
               <span className="mt-0.5 block truncate text-[10px] text-white/45">{track.subtitle}</span>
             </Link>
-            <button type="button" aria-label={playing ? "Pause audio" : "Play audio"} onClick={() => void togglePlay()} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E28906] text-[#080808] transition hover:bg-[#f0a52e]">
-              {playing ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
-            </button>
+
             <Link href={track.href} aria-label="Open full audio player" className="flex h-8 w-7 shrink-0 items-center justify-center text-white/45 transition hover:text-white">
               <Maximize2 size={14} />
             </Link>
             <button type="button" aria-label="Close audio player and stop playback" onClick={stop} className="flex h-8 w-7 shrink-0 items-center justify-center text-white/45 transition hover:text-white">
               <X size={15} />
+            </button>
+          </div>
+          <div className="flex items-center justify-center gap-3 px-3 pb-2">
+            <button type="button" aria-label="Previous audio track" onClick={() => void moveMiniTrack(-1)} disabled={switchingTrack || !miniQueue.some(item => item.slug !== track.slug)} className="flex h-9 w-9 items-center justify-center text-white/70 hover:text-white disabled:opacity-30">
+              <SkipBack size={16} />
+            </button>
+            <button type="button" aria-label={playing ? "Pause audio" : "Play audio"} onClick={() => void togglePlay()} disabled={switchingTrack} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E28906] text-[#080808] transition hover:bg-[#f0a52e]">
+              {playing ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
+            </button>
+            <button type="button" aria-label="Next audio track" onClick={() => void moveMiniTrack(1)} disabled={switchingTrack || !miniQueue.some(item => item.slug !== track.slug)} className="flex h-9 w-9 items-center justify-center text-white/70 hover:text-white disabled:opacity-30">
+              <SkipForward size={16} />
             </button>
           </div>
           <div className="flex items-center gap-2 px-3 pb-2.5">
