@@ -9,6 +9,7 @@ import NuggetAccessLimitGate from "@/components/NuggetAccessLimitGate";
 
 import {
   getNuggetBySlugFromApi,
+  requiresPremiumNuggetPreview,
   getPublishedNuggets,
   PremiumRequiredError,
   NuggetAccessError,
@@ -36,6 +37,10 @@ export default async function MusicalPage({
   const { id } = await params;
   const token =
     await getServerMemberToken();
+
+  if (await requiresPremiumNuggetPreview(id, token)) {
+    return <PremiumNuggetGate previewLimit guest={!token} />;
+  }
 
   let nugget: MusicalNugget | null =
     null;

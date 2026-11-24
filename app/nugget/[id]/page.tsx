@@ -14,6 +14,7 @@ import NuggetAccessLimitGate from "@/components/NuggetAccessLimitGate";
 import NuggetAnalyticsTracker from "@/components/analytics/NuggetAnalyticsTracker";
 import {
   getNuggetBySlugFromApi,
+  requiresPremiumNuggetPreview,
   PremiumRequiredError,
   NuggetAccessError,
 } from "@/lib/nuggets-api";
@@ -29,6 +30,10 @@ export default async function NuggetDetailPage({
   const { id } = await params;
   const token =
     await getServerMemberToken();
+
+  if (await requiresPremiumNuggetPreview(id, token)) {
+    return <PremiumNuggetGate previewLimit guest={!token} />;
+  }
 
   let nugget = null;
 

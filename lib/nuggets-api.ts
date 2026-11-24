@@ -169,6 +169,23 @@ export async function getPublishedNuggetsWithAccess(
 }
 
 
+// Keep the preview selection independent of the visitor's filters and sort.
+export function getFreePreviewSlugs(nuggets: Nugget[]): Set<string> {
+  return new Set([...nuggets]
+    .sort((first, second) => second.publishedAt.localeCompare(first.publishedAt))
+    .slice(0, 3)
+    .map(nugget => nugget.slug));
+}
+
+// Guard direct website routes as well as the Library cards. The existing
+// backend access policies still apply when the actual Nugget is opened.
+export async function requiresPremiumNuggetPreview(slug: string, token: string | null): Promise<boolean> {
+  if (await hasPremiumNuggetAccess(token)) return false;
+  const { nuggets } = await getPublishedNuggetsWithAccess(null);
+  const nugget = nuggets.find(item => item.slug === slug);
+  return Boolean(nugget && (nugget.isGold || !getFreePreviewSlugs(nuggets).has(slug)));
+}
+
 /* =========================================================
    GET ONE NUGGET BY SLUG / ID
 ========================================================= */
