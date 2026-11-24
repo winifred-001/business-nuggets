@@ -658,7 +658,7 @@ function LibraryContent() {
                 />
 
                 <div className="mt-8">
-                  <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-white">
+                  <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#211E19]">
                     Bible Section
                   </h2>
 
@@ -673,7 +673,7 @@ function LibraryContent() {
                         return (
                           <label
                             key={section}
-                            className="flex cursor-pointer items-start gap-2 text-[13px] leading-5 text-white/60"
+                            className="flex cursor-pointer items-start gap-2 text-[13px] leading-5 text-[#211E19]"
                           >
                             <input
                               type="checkbox"
@@ -724,9 +724,9 @@ function LibraryContent() {
               {/* RESULTS */}
               <div className="min-w-0">
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-                  <p className="text-[13px] text-white/50">
+                  <p className="text-[13px] text-[#211E19]">
                     Showing{" "}
-                    <span className="text-white">
+                    <span className="text-[#211E19]">
                       {
                         filteredNuggets.length
                       }{" "}
@@ -738,7 +738,7 @@ function LibraryContent() {
                     {resultContext}
                   </p>
 
-                  <label className="flex items-center gap-3 text-[13px] text-white/50">
+                  <label className="flex items-center gap-3 text-[13px] text-[#211E19]">
                     Sort by:
 
                     <select
@@ -750,7 +750,7 @@ function LibraryContent() {
                             .value,
                         )
                       }
-                      className="rounded-md border border-white/10 bg-[#111111] px-3 py-2.5 text-[13px] text-white outline-none"
+                      className="rounded-md border border-black/20 bg-white px-3 py-2.5 text-[13px] text-[#211E19] outline-none"
                     >
                       <option value="newest">
                         Most Recent
@@ -783,12 +783,12 @@ function LibraryContent() {
                     )}
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-white/10 bg-[#111111] px-6 py-12 text-center">
+                  <div className="rounded-xl border border-black/15 bg-white px-6 py-12 text-center text-[#211E19]">
                     <h2 className="font-serif text-[28px]">
                       No Nuggets found
                     </h2>
 
-                    <p className="mt-3 text-[14px] text-white/50">
+                    <p className="mt-3 text-[14px] text-[#211E19]">
                       Try another filter or
                       clear your current
                       selections.
@@ -833,7 +833,7 @@ function LibraryContent() {
                         <span
                           key={`pagination-ellipsis-${index}`}
                           aria-hidden="true"
-                          className="flex h-9 min-w-7 items-center justify-center text-[13px] text-white/50"
+                          className="flex h-9 min-w-7 items-center justify-center text-[13px] text-[#211E19]"
                         >
                           …
                         </span>
@@ -847,7 +847,7 @@ function LibraryContent() {
                           className={`flex h-9 w-9 items-center justify-center rounded-md border text-[13px] ${
                             safePage === item
                               ? "border-[#E28906] bg-[#E28906] font-semibold text-[#080808]"
-                              : "border-white/10 text-white/50"
+                              : "border-black/20 text-[#211E19]"
                           }`}
                         >
                           {item}
@@ -893,11 +893,11 @@ function LibraryContent() {
           <ArchivePanel>
             <BackLabel />
 
-            <h2 className="mt-5 font-serif text-[35px]! leading-tight">
+            <h2 className="mt-5 font-serif text-[35px]! leading-tight text-[#211E19]">
               Browse by Core Topic
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-white/50">
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#211E19]">
               Choose a topic to explore its
               published teachings and
               scripture foundations.
@@ -985,11 +985,11 @@ function LibraryContent() {
           <ArchivePanel>
             <BackLabel />
 
-            <h2 className="mt-5 font-serif text-[35px]! leading-tight">
+            <h2 className="mt-5 font-serif text-[35px]! leading-tight text-[#211E19]">
               I Need Wisdom About...
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-white/50">
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#211E19]">
               Start with the challenge in
               front of you. Find a curated
               path from reflection to
@@ -1071,11 +1071,11 @@ function LibraryContent() {
           <ArchivePanel>
             <BackLabel />
 
-            <h2 className="mt-5 font-serif text-[35px]! leading-tight">
+            <h2 className="mt-5 font-serif text-[35px]! leading-tight text-[#211E19]">
               Scripture Index
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-white/50">
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#211E19]">
               Read the business teaching
               alongside its biblical
               foundation. Browse by Bible
@@ -1150,7 +1150,7 @@ function LibraryContent() {
               </div>
 
               <aside className="self-start lg:sticky lg:top-24">
-                <h3 className="text-[13px] font-semibold">
+                <h3 className="text-[13px] font-semibold text-[#211E19]">
                   Find a book
                 </h3>
 
@@ -1182,7 +1182,7 @@ function LibraryContent() {
                     Begin with Proverbs
                   </p>
 
-                  <p className="mt-3 text-[13px] leading-5 text-white/55">
+                  <p className="mt-3 text-[13px] leading-5 text-[#211E19]">
                     {proverbsCount}{" "}
                     published{" "}
                     {proverbsCount ===
@@ -1200,7 +1200,7 @@ function LibraryContent() {
                     Read in context
                   </p>
 
-                  <p className="mt-3 text-[13px] leading-5 text-white/55">
+                  <p className="mt-3 text-[13px] leading-5 text-[#211E19]">
                     Business commentary
                     is an application,
                     not a replacement for
@@ -1222,18 +1222,18 @@ function LibraryContent() {
           <ArchivePanel>
             <BackLabel />
 
-            <h2 className="mt-5 font-serif text-[35px]! leading-tight">
+            <h2 className="mt-5 font-serif text-[35px]! leading-tight text-[#211E19]">
               Curated Learning Pathways
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-white/50">
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#211E19]">
               Ordered teachings for
               sustained study. Continue a
               pathway or discover a new
               collection.
             </p>
 
-            {collectionCards.length === 0 && <p className="mt-8 rounded-xl border border-white/10 p-6 text-sm text-white/50">{collectionsError || "No collections are available yet. New reading series will appear here when published."}</p>}
+            {collectionCards.length === 0 && <p className="mt-8 rounded-xl border border-black/15 p-6 text-sm text-[#211E19]">{collectionsError || "No collections are available yet. New reading series will appear here when published."}</p>}
 
             {collectionCards.length >
               0 && (
@@ -1304,7 +1304,7 @@ function LibraryContent() {
                 {collectionCards.length >
                   1 && (
                   <>
-                    <h3 className="mt-9 font-serif text-[20px]">
+                    <h3 className="mt-9 font-serif text-[20px] text-[#211E19]">
                       Explore More
                       Collections
                     </h3>
@@ -1552,12 +1552,12 @@ function FilterGroup({
 }) {
   return (
     <div>
-      <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-white">
+      <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#211E19]">
         {title}
       </h2>
 
       <div role="region" aria-label={`${title} filters`} className="mt-4 space-y-3">
-        {items.length === 0 && <p className="text-[13px] text-white/45">No categories available yet.</p>}
+        {items.length === 0 && <p className="text-[13px] text-[#211E19]">No categories available yet.</p>}
         {items.map((item) => {
           const checked =
             selected.includes(
@@ -1567,7 +1567,7 @@ function FilterGroup({
           return (
             <label
               key={item.label}
-              className="flex cursor-pointer items-center gap-2 text-[13px] leading-5 text-white/60"
+              className="flex cursor-pointer items-center gap-2 text-[13px] leading-5 text-[#211E19]"
             >
               <input
                 type="checkbox"
@@ -1635,7 +1635,7 @@ function PageButton({
       disabled={disabled}
       aria-label={label}
       onClick={onClick}
-      className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-white/45 transition hover:border-[#E28906]/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+      className="flex h-9 w-9 items-center justify-center rounded-md border border-black/20 text-[#211E19] transition hover:border-[#E28906]/40 hover:text-[#211E19] disabled:cursor-not-allowed disabled:opacity-30"
     >
       {children}
     </button>
