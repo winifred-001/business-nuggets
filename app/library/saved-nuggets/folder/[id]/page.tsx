@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -548,9 +549,7 @@ export default function SavedFolderDetailPage() {
 
                             <div className="p-4">
                               <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
-                                {
-                                  nugget.tag
-                                }
+                                {displayTopicName(nugget.tag)}
                               </p>
 
                               <Link

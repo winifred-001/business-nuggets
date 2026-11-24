@@ -9,6 +9,6 @@ export function displayTopicName(name: string): string {
   const cleaned = name.replace(
     /^\s*B\d{2,3}T\d{2,3}(?:\s*[-–—:.)]\s*|\s+)(?=\S)/i,
     "",
-  ).trim();
+  ).replace(/^\s*\d{1,4}(?:[.)](?:\s+|(?=[A-Za-z]))|\s*[-–—:]\s*|(?<=\b0\d)\s+)(?=\S)/, "").trim();
   return cleaned || name;
 }

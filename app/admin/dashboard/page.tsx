@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import Link from "next/link";
 
 import {
@@ -363,7 +364,7 @@ export default function AdminDashboardPage() {
                     >
                       <div className="flex items-center justify-between gap-3">
                         <p className="truncate text-[9px] text-white/60">
-                          {topic}
+                          {displayTopicName(topic)}
                         </p>
 
                         <span className="text-[8px] text-white/25">
@@ -450,9 +451,7 @@ export default function AdminDashboardPage() {
                         </td>
 
                         <td className="px-4 py-4 text-[8px] text-white/35">
-                          {
-                            nugget.topic
-                          }
+                          {displayTopicName(nugget.topic)}
                         </td>
 
                         <td className="px-4 py-4">

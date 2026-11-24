@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import { API_URL } from "@/lib/api";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -277,7 +278,7 @@ export default function PlaylistDetailPage() {
 
                         <div className="p-4">
                           <p className="text-[10px] uppercase tracking-[0.12em] text-amber-300">
-                            {nugget.tag}
+                            {displayTopicName(nugget.tag)}
                           </p>
 
                           <Link

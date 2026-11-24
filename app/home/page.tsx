@@ -1,3 +1,4 @@
+import { displayTopicName } from "@/lib/topic-display";
 import Link from "next/link";
 
 import AuthRouteGuard from "@/components/AuthRouteGuard";
@@ -215,7 +216,7 @@ export default async function HomePage() {
 
                       <div className="min-w-0 flex-1">
                         <p className="text-[#E28906]">
-                          {nugget.tag || nugget.topic || "Business Nugget"}
+                          {displayTopicName(nugget.tag || nugget.topic || "Business Nugget")}
                         </p>
 
                         <h3 className="mt-1 font-serif text-[20px] text-white/90">

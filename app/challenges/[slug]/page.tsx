@@ -1,3 +1,4 @@
+import { displayTopicName } from "@/lib/topic-display";
 import cardStyles from "@/app/topic-cards.module.css";
 import Image from "next/image";
 import Link from "next/link";
@@ -211,7 +212,7 @@ export default async function ChallengeDetailPage({
                   <div className="flex min-h-0 flex-1 flex-col p-5">
                     <div className="flex items-center justify-between gap-3">
                       <span className="min-w-0 line-clamp-1 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#E28906]">
-                        {nugget.tag || nugget.topic}
+                        {displayTopicName(nugget.tag || nugget.topic)}
                       </span>
 
                       <span className="flex shrink-0 items-center gap-1.5 text-[13px] text-white/35">

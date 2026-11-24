@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
@@ -246,7 +247,7 @@ export default function SavedNuggetsPage() {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([label, count]) => ({
         value: label,
-        label,
+        label: displayTopicName(label),
         count,
       }));
 
@@ -387,7 +388,7 @@ export default function SavedNuggetsPage() {
                     <div className="p-4">
                       <div className="flex items-center justify-between gap-3">
                         <span className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
-                          {nugget.topic || nugget.tag}
+                          {displayTopicName(nugget.topic || nugget.tag)}
                         </span>
 
                         <div className="flex items-center gap-1 text-[9px] text-white/25">

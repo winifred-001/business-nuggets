@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import Link from "next/link";
 import { Check, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -77,7 +78,7 @@ function getMatchReason(
   );
 
   if (exactInterest) {
-    return `Directly matches your ${exactInterest} interest.`;
+    return `Directly matches your ${displayTopicName(exactInterest)} interest.`;
   }
 
   if (preferences.wisdomNeeds.includes(nugget.title)) {
@@ -106,7 +107,7 @@ function getMatchReason(
   });
 
   if (relatedInterest) {
-    return `Connects with your ${relatedInterest} interest.`;
+    return `Connects with your ${displayTopicName(relatedInterest)} interest.`;
   }
 
   const followed = followedTopics.find((topic) =>
@@ -114,7 +115,7 @@ function getMatchReason(
   );
 
   if (followed) {
-    return `Related to the ${followed} topic you follow.`;
+    return `Related to the ${displayTopicName(followed)} topic you follow.`;
   }
 
   return "Recommended from your current Business Nuggets profile.";
@@ -288,7 +289,7 @@ export default function RecommendationsPage() {
                           </h3>
 
                           <p className="mt-2 text-[#E28906]">
-                            {nugget.scriptureRef || nugget.topic}
+                            {nugget.scriptureRef || displayTopicName(nugget.topic)}
                           </p>
 
                           <div className="mt-4 border-t border-white/10 pt-3">
@@ -335,7 +336,7 @@ export default function RecommendationsPage() {
                       </span>
 
                       <div className="min-w-0">
-                        <p className="font-medium text-white/90">{interest}</p>
+                        <p className="font-medium text-white/90">{displayTopicName(interest)}</p>
                         <p className="mt-1 text-white/35">
                           Recommendations prioritize teachings related to this area.
                         </p>

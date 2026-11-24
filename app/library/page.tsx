@@ -1441,8 +1441,7 @@ function NuggetCard({
       <div className="flex min-h-[210px] flex-col p-5">
         <div className="flex items-center justify-between gap-3">
           <span className="min-w-0 flex-1 truncate text-[13px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
-            {nugget.tag ||
-              displayTopicName(nugget.topic)}
+            {displayTopicName(nugget.tag || nugget.topic)}
           </span>
 
           <NuggetAudioDuration

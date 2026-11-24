@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -581,8 +582,7 @@ export default function PlaylistDetailPage() {
                         {/* DETAILS */}
                         <div className="min-w-0">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#E28906]">
-                            {nugget.tag ||
-                              nugget.topic}
+                            {displayTopicName(nugget.tag || nugget.topic)}
                           </p>
 
                           <Link
