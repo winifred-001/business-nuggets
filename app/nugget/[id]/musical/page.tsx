@@ -18,6 +18,7 @@ import {
   getServerMemberToken,
 } from "@/lib/server-member-token";
 
+import { selectRelatedMusicals } from "@/lib/related-musicals";
 import type { Nugget } from "@/types/nugget";
 
 type MusicalNugget = Nugget & {
@@ -82,17 +83,7 @@ export default async function MusicalPage({
     notFound();
   }
 
-  const related = nuggets
-    .filter(
-      (item) =>
-        item.slug !==
-          nugget!.slug &&
-        (item.topic ===
-          nugget!.topic ||
-          item.book ===
-            nugget!.book),
-    )
-    .slice(0, 3);
+  const related = selectRelatedMusicals(nugget, nuggets);
 
   const audioSrc =
     nugget.musicalAudioUrl ||
@@ -110,7 +101,7 @@ export default async function MusicalPage({
         related={related}
         audioSrc={audioSrc}
         coverImage={
-          nugget.musicalImage ??
+          nugget.musicalImage || nugget.image ||
           "/media-placeholder.svg"
         }
       />
