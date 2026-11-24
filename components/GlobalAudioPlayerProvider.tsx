@@ -11,8 +11,10 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type PointerEvent as ReactPointerEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
-import { Maximize2, Pause, Play, SkipBack, SkipForward, X } from "lucide-react";
+import { GripHorizontal, Maximize2, Pause, Play, SkipBack, SkipForward, X } from "lucide-react";
 
 import { getPlayableAudioNuggets } from "@/lib/nuggets-api";
 import { displayTopicName } from "@/lib/topic-display";
@@ -61,8 +63,22 @@ function formatTime(value: number) {
   return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(Math.floor(value % 60)).padStart(2, "0")}`;
 }
 
+type StickerPosition = { x: number; y: number };
+
+function clampStickerPosition(position: StickerPosition, element: HTMLElement): StickerPosition {
+  const margin = 8;
+  return {
+    x: Math.max(margin, Math.min(position.x, window.innerWidth - element.offsetWidth - margin)),
+    y: Math.max(margin, Math.min(position.y, window.innerHeight - element.offsetHeight - margin)),
+  };
+}
+
 export default function GlobalAudioPlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const stickerRef = useRef<HTMLElement>(null);
+  const dragRef = useRef<{ pointerId: number; offsetX: number; offsetY: number } | null>(null);
+  const [stickerPosition, setStickerPosition] = useState<StickerPosition | null>(null);
+  const [dragging, setDragging] = useState(false);
   const playbackVersion = useRef(0);
   const [miniQueue, setMiniQueue] = useState<Nugget[]>([]);
   const [switchingTrack, setSwitchingTrack] = useState(false);
@@ -193,6 +209,75 @@ export default function GlobalAudioPlayerProvider({ children }: { children: Reac
   }), [track, playing, currentTime, duration, speed, muted, repeat, error, playTrack, togglePlay, seekTo, seek, changeSpeed, toggleMute, toggleRepeat, stop, registerLocalControl]);
 
   const showMiniPlayer = Boolean(track && !localControlCounts[track.src]);
+  useEffect(() => {
+    if (!showMiniPlayer) {
+      dragRef.current = null;
+      setDragging(false);
+      return;
+    }
+    const element = stickerRef.current;
+    if (!element) return;
+    const keepVisible = () => setStickerPosition(current =>
+      current ? clampStickerPosition(current, element) : current
+    );
+    keepVisible();
+    window.addEventListener("resize", keepVisible);
+    const observer = new ResizeObserver(keepVisible);
+    observer.observe(element);
+    return () => {
+      window.removeEventListener("resize", keepVisible);
+      observer.disconnect();
+    };
+  }, [showMiniPlayer]);
+
+  function startStickerDrag(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (!event.isPrimary || event.button !== 0 || !stickerRef.current) return;
+    const rect = stickerRef.current.getBoundingClientRect();
+    dragRef.current = { pointerId: event.pointerId, offsetX: event.clientX - rect.left, offsetY: event.clientY - rect.top };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragging(true);
+    setStickerPosition(clampStickerPosition({ x: rect.left, y: rect.top }, stickerRef.current));
+    event.preventDefault();
+  }
+
+  function moveSticker(event: ReactPointerEvent<HTMLButtonElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId || !stickerRef.current) return;
+    setStickerPosition(clampStickerPosition({
+      x: event.clientX - drag.offsetX,
+      y: event.clientY - drag.offsetY,
+    }, stickerRef.current));
+  }
+
+  function endStickerDrag(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (dragRef.current?.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+    setDragging(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  function moveStickerWithKeyboard(event: ReactKeyboardEvent<HTMLButtonElement>) {
+    const element = stickerRef.current;
+    if (!element) return;
+    if (event.key === "Home") {
+      event.preventDefault();
+      setStickerPosition(null);
+      return;
+    }
+    const step = event.shiftKey ? 40 : 12;
+    const directions: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+    const direction = directions[event.key];
+    if (!direction) return;
+    event.preventDefault();
+    const rect = element.getBoundingClientRect();
+    setStickerPosition(current => clampStickerPosition({
+      x: (current?.x ?? rect.left) + direction[0],
+      y: (current?.y ?? rect.top) + direction[1],
+    }, element));
+  }
+
   const miniKind = track?.kind;
   const miniSlug = track?.slug;
   useEffect(() => {
@@ -265,10 +350,15 @@ export default function GlobalAudioPlayerProvider({ children }: { children: Reac
       />
       {showMiniPlayer && track && (
         <section
+          ref={stickerRef}
           aria-label="Floating audio player"
+          style={stickerPosition ? { left: stickerPosition.x, top: stickerPosition.y, right: "auto", bottom: "auto" } : undefined}
           className="fixed bottom-4 right-4 z-[90] w-[min(310px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-[#171717]/95 text-[#FAF9F6] shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:bottom-6 sm:right-6"
         >
-          <div className="flex items-center gap-3 p-3">
+          <button type="button" aria-label="Move floating audio player" title="Drag to move, or use arrow keys. Home resets position." onPointerDown={startStickerDrag} onPointerMove={moveSticker} onPointerUp={endStickerDrag} onPointerCancel={endStickerDrag} onLostPointerCapture={endStickerDrag} onKeyDown={moveStickerWithKeyboard} className={`flex h-6 w-full touch-none select-none items-center justify-center text-white/60 hover:text-[#E28906] focus-visible:outline focus-visible:outline-[#E28906] ${dragging ? "cursor-grabbing" : "cursor-grab"}`}>
+            <GripHorizontal size={18} aria-hidden="true" />
+          </button>
+          <div className="flex items-center gap-3 px-3 pb-3">
             <Link href={track.href} aria-label={`Open ${track.title} player`} className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-white/5">
               <Image src={track.coverImage || "/media-placeholder.svg"} alt="" fill sizes="44px" className="object-cover" />
             </Link>

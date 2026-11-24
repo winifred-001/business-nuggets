@@ -61,3 +61,15 @@ test('compact and floating audio players expose previous and next track controls
   assert.match(provider, /getPlayableAudioNuggets\(track.kind\)/);
   assert.doesNotMatch(provider, /router\.push/);
 });
+
+test('the floating audio sticker has an independent draggable handle', () => {
+  const provider = read('components/GlobalAudioPlayerProvider.tsx');
+  assert.match(provider, /aria-label="Move floating audio player"/);
+  assert.match(provider, /onPointerDown=\{startStickerDrag\}/);
+  assert.match(provider, /onPointerMove=\{moveSticker\}/);
+  assert.match(provider, /onPointerCancel=\{endStickerDrag\}/);
+  assert.match(provider, /setPointerCapture/);
+  assert.match(provider, /clampStickerPosition/);
+  assert.match(provider, /onKeyDown=\{moveStickerWithKeyboard\}/);
+  assert.match(provider, /touch-none/);
+});
