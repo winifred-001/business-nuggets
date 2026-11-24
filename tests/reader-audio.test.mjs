@@ -14,7 +14,12 @@ test('the root layout mounts one site-wide audio provider outside page navigatio
   assert.match(provider, /<audio[\s\S]*?ref=\{audioRef\}/);
   assert.match(provider, /registerLocalControl/);
   assert.match(provider, /localControlCounts/);
-  assert.match(provider, /Persistent audio player/);
+  assert.equal((provider.match(/<audio\b/g) || []).length, 1);
+  assert.match(provider, /const showMiniPlayer = Boolean\(track && !localControlCounts\[track.src\]\)/);
+  assert.match(provider, /\{showMiniPlayer && track && \(/);
+  assert.match(provider, /aria-label="Floating audio player"/);
+  assert.match(provider, /aria-label="Open full audio player"/);
+  assert.match(provider, /aria-label="Audio progress"/);
 });
 
 test('Nugget, music, commentary and reader controls share the persistent audio element', () => {

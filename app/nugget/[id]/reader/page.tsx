@@ -13,6 +13,7 @@ import ReaderProgressTracker from "@/components/ReaderProgressTracker";
 
 import {
   getNuggetBySlugFromApi,
+  hasPremiumNuggetAccess,
   PremiumRequiredError,
   NuggetAccessError,
 } from "@/lib/nuggets-api";
@@ -28,6 +29,10 @@ export default async function ReaderViewPage({
   const { id } = await params;
   const token =
     await getServerMemberToken();
+
+  if (!(await hasPremiumNuggetAccess(token))) {
+    return <PremiumNuggetGate reader guest={!token} backHref={`/nugget/${encodeURIComponent(id)}`} />;
+  }
 
   let nugget = null;
 

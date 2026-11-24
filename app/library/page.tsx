@@ -33,7 +33,7 @@ import {
 } from "@/lib/nuggets";
 import { BIBLE_GROUPS } from "@/lib/bible-books";
 import { getCollections, type PublicCollection } from "@/lib/collections-api";
-import { getPublishedNuggetsWithAccess } from "@/lib/nuggets-api";
+import { getPublishedNuggetsWithAccess, getFreePreviewSlugs } from "@/lib/nuggets-api";
 import { libraryPageNumbers } from "@/lib/library-pagination";
 import { displayTopicName } from "@/lib/topic-display";
 
@@ -430,6 +430,8 @@ function LibraryContent() {
     sort,
   ]);
 
+  const freePreviewSlugs = useMemo(() => getFreePreviewSlugs(apiNuggets), [apiNuggets]);
+
   const ITEMS_PER_PAGE = 12;
 
   const totalPages = Math.max(
@@ -772,15 +774,15 @@ function LibraryContent() {
                 ) : paginatedNuggets.length >
                 0 ? (
                   <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                    {paginatedNuggets.map(
-                      (nugget) => (
-                        <NuggetCard
-                          key={nugget.slug}
-                          nugget={nugget}
-                          now={clockNow}
-                        />
-                      ),
-                    )}
+                    {paginatedNuggets.map((nugget) => (
+                      <NuggetCard
+                        key={nugget.slug}
+                        nugget={nugget}
+                        now={clockNow}
+                        premiumLocked={!premiumAccess && (!freePreviewSlugs.has(nugget.slug) || nugget.isGold)}
+                        onPremiumRequired={() => upgradeDialog.current?.showModal()}
+                      />
+                    ))}
                   </div>
                 ) : (
                   <div className="rounded-xl border border-black/15 bg-white px-6 py-12 text-center text-[#211E19]">
@@ -1394,9 +1396,13 @@ export default function LibraryPage() {
 function NuggetCard({
   nugget,
   now,
+  premiumLocked = false,
+  onPremiumRequired,
 }: {
   nugget: Nugget;
   now: number;
+  premiumLocked?: boolean;
+  onPremiumRequired?: () => void;
 }) {
   const batchExpired = Boolean(nugget.accessExpiresAt && new Date(nugget.accessExpiresAt).getTime() <= now);
   const unavailable = Boolean(nugget.accessLocked && !nugget.accessAvailable && nugget.accessReason !== "PREMIUM_REQUIRED" && !batchExpired);
@@ -1411,10 +1417,16 @@ function NuggetCard({
     : null;
   return (
     <Link
-      href={`/nugget/${nugget.slug}`}
-      aria-disabled={unavailable}
-      onClick={event => { if (unavailable) event.preventDefault(); }}
-      className={`group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition ${unavailable ? "cursor-not-allowed opacity-65" : "hover:border-[#E28906]/45"}`}
+      href={premiumLocked ? "/membership" : `/nugget/${nugget.slug}`}
+      aria-disabled={!premiumLocked && unavailable}
+      aria-haspopup={premiumLocked ? "dialog" : undefined}
+      onClick={event => {
+        if (premiumLocked) {
+          event.preventDefault();
+          onPremiumRequired?.();
+        } else if (unavailable) event.preventDefault();
+      }}
+      className={`group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition ${unavailable && !premiumLocked ? "cursor-not-allowed opacity-65" : "hover:border-[#E28906]/45"}`}
     >
       <div className="relative h-[165px] overflow-hidden">
         <Image
@@ -1448,7 +1460,7 @@ function NuggetCard({
 
         <div className="mt-auto flex items-end justify-between gap-3 pt-5">
           <span className="text-[12px] font-medium text-[#E28906]">
-            {nugget.accessReason === "PREMIUM_REQUIRED"
+            {premiumLocked || nugget.accessReason === "PREMIUM_REQUIRED"
               ? "Premium required"
               : nugget.accessReason === "SUBSCRIPTION_GRACE"
                 ? "Renew your subscription to open new Nuggets"
@@ -1465,7 +1477,9 @@ function NuggetCard({
                       : "Listen & Read"}
           </span>
 
-          {nugget.accessLocked || batchExpired ? (
+          {premiumLocked ? (
+            <span className="rounded border border-[#E28906]/40 bg-[#E28906]/10 px-2 py-1 text-[10px] font-semibold text-[#E28906]">PREMIUM</span>
+          ) : nugget.accessLocked || batchExpired ? (
             <span className="rounded border border-white/15 bg-white/[0.04] px-2 py-1 text-[10px] font-semibold text-white/45">
               {batchExpired ? "EXPIRED" : nugget.accessAvailable ? "UNOPENED" : "LOCKED"}
             </span>
@@ -1656,14 +1670,14 @@ function LibraryUpgradePrompt({ onReturn, dialog = false }: {
   return (
     <section className={dialog ? "text-center" : "rounded-xl border border-[#E28906]/35 bg-[#111111] px-6 py-10 text-center"}>
       <h2 id={dialog ? "library-upgrade-title" : undefined} className="font-serif text-[28px] text-[#FAF9F6]">
-        Explore more with Premium
+        Unlock more Nuggets
       </h2>
       <p className="mt-4 text-[15px] leading-7 text-white/60">
-        You can browse the first 2 pages of the Library. Upgrade to Premium to browse every page and unlock Gold Nuggets.
+        Enjoy the first three Nugget previews. Sign up for Premium to open more Nuggets and read full teachings.
       </p>
       <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
         <Link href="/membership" className="bn-button rounded-lg bg-[#E28906] px-5 py-3 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E28906]">
-          Upgrade to Premium
+          Sign up for Premium
         </Link>
         <button type="button" autoFocus={dialog} onClick={onReturn} className="bn-button rounded-lg border border-white/15 px-5 py-3 text-[13px] text-white/70 transition hover:border-[#E28906] hover:text-[#E28906]">
           {dialog ? "Keep browsing" : "Back to page 2"}
