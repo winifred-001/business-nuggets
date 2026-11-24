@@ -27,21 +27,21 @@ export function SiteSectionExtras({ section }: { section: SiteSection }) {
   );
 }
 
-export function SitePageBlock({ section }: { section: SiteSection }) {
+export function SitePageBlock({ section, light = false }: { section: SiteSection; light?: boolean }) {
   const kind = section.kind || "text";
   const align = section.alignment === "center" ? "text-center" : "text-left";
   const appearance = section.appearance === "accent"
     ? "border-[#E28906]/50 bg-[#E28906]/10"
     : section.appearance === "card" || kind === "callout" || kind === "author"
-      ? "border-white/10 bg-[#191b18]"
+      ? (light ? "border-black/15 bg-white" : "border-white/10 bg-[#191b18]")
       : "border-transparent bg-transparent";
   if (kind === "divider") return <hr className="my-8 border-[#E28906]/25" />;
 
   if (kind === "faq") {
     return (
-      <details id={section.id} className="scroll-mt-28 rounded-xl border border-[#E28906]/25 bg-[#191b18] p-5">
-        <summary className="cursor-pointer font-semibold text-[#E28906]">{section.title}</summary>
-        <p className="mt-4 whitespace-pre-wrap leading-7 text-[#b4b2ab]">{section.body}</p>
+      <details id={section.id} className={`scroll-mt-28 rounded-xl border border-[#E28906]/25 p-5 ${light ? "bg-white" : "bg-[#191b18]"}`}>
+        <summary className={`cursor-pointer font-semibold ${light ? "text-[#79500A]" : "text-[#E28906]"}`}>{section.title}</summary>
+        <p className={`mt-4 whitespace-pre-wrap leading-7 ${light ? "text-[#4F4941]" : "text-[#b4b2ab]"}`}>{section.body}</p>
         <SiteSectionExtras section={section} />
       </details>
     );
@@ -49,9 +49,9 @@ export function SitePageBlock({ section }: { section: SiteSection }) {
 
   if (kind === "quote") {
     return (
-      <blockquote id={section.id} className="scroll-mt-28 rounded-xl border-l-4 border-[#E28906] bg-[#191b18] p-7">
+      <blockquote id={section.id} className={`scroll-mt-28 rounded-xl border-l-4 border-[#E28906] p-7 ${light ? "bg-white" : "bg-[#191b18]"}`}>
         <p className="whitespace-pre-wrap font-serif text-xl italic leading-8">{section.body}</p>
-        {section.title && <cite className="mt-4 block text-sm not-italic text-[#E28906]">{section.title}</cite>}
+        {section.title && <cite className={`mt-4 block text-sm not-italic ${light ? "text-[#79500A]" : "text-[#E28906]"}`}>{section.title}</cite>}
         <SiteSectionExtras section={section} />
       </blockquote>
     );
@@ -59,8 +59,8 @@ export function SitePageBlock({ section }: { section: SiteSection }) {
 
   return (
     <section id={section.id} className={"scroll-mt-28 rounded-xl border p-6 sm:p-8 " + appearance + " " + align}>
-      {section.title && <h2 className="font-serif text-[28px] leading-tight text-[#FAF9F6]">{section.title}</h2>}
-      {section.body && <p className="mt-4 whitespace-pre-wrap text-[15px] leading-8 text-[#b4b2ab]">{section.body}</p>}
+      {section.title && <h2 className={`font-serif text-[28px] leading-tight ${light ? "text-[#211E19]" : "text-[#FAF9F6]"}`}>{section.title}</h2>}
+      {section.body && <p className={`mt-4 whitespace-pre-wrap text-[15px] leading-8 ${light ? "text-[#4F4941]" : "text-[#b4b2ab]"}`}>{section.body}</p>}
       <SiteSectionExtras section={section} />
     </section>
   );
