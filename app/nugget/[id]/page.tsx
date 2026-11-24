@@ -199,7 +199,7 @@ export default async function NuggetDetailPage({
                     title={nugget.title}
                     subtitle={`${nugget.scriptureRef} · ${displayTopicName(nugget.topic)}`}
                     audioSrc={nugget.musicalAudioUrl || nugget.audioUrl || null}
-                    coverImage={nugget.musicalImage || nugget.image}
+                    coverImage={nugget.image}
                     slug={nugget.slug}
                   />
                 </div>

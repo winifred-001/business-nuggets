@@ -72,8 +72,8 @@ test('Nugget detail players sit inside the actions sidebar rather than over the 
   assert.ok(page.indexOf('Read full teaching') < page.indexOf('<aside '));
 });
 
-test('compact Nugget and musical players receive their respective cover images', () => {
+test('both compact players receive the Nugget cover image', () => {
   const page = read('app/nugget/[id]/page.tsx');
   assert.match(page, /trackKind="nugget"[\s\S]*?coverImage=\{nugget\.image\}/);
-  assert.match(page, /trackKind="music"[\s\S]*?coverImage=\{nugget\.musicalImage \|\| nugget\.image\}/);
+  assert.match(page, /trackKind="music"[\s\S]*?coverImage=\{nugget\.image\}/);
 });
