@@ -38,6 +38,8 @@ export type Nugget = {
   challenges: string[];
   audioUrl?: string | null;
   nuggetAudioUrl?: string | null;
+  musicalImage?: string | null;
+  musicalAudioUrl?: string | null;
   publishedAt: string;
 };
 

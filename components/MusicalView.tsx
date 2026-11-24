@@ -1,6 +1,5 @@
 "use client";
 
-import { nuggetExcerpt } from "@/lib/nugget-text";
 import { useEffect } from "react";
 
 import Image from "next/image";
@@ -19,6 +18,7 @@ import type { Nugget } from "@/types/nugget";
 
 type MusicalNugget = Nugget & {
   musicalTitle?: string | null;
+  musicalImage?: string | null;
 };
 
 export default function MusicalView({
@@ -28,7 +28,7 @@ export default function MusicalView({
   coverImage,
 }: {
   nugget: MusicalNugget;
-  related: Nugget[];
+  related: MusicalNugget[];
   audioSrc: string | null;
   coverImage: string;
 }) {
@@ -62,12 +62,6 @@ export default function MusicalView({
     player.registerLocalControl(audioSrc, true);
     return () => player.registerLocalControl(audioSrc, false);
   }, [audioSrc, player.registerLocalControl]);
-
-  const principleLines =
-    nuggetExcerpt(nugget.keyPrinciple || "")
-      .split(/(?<=[.!?])\s+/)
-      .filter(Boolean)
-      .slice(0, 3) ?? [];
 
   return (
     <>
@@ -158,7 +152,7 @@ export default function MusicalView({
             </div>
           </section>
 
-          {/* TEXT EXPERIENCE */}
+          {/* PARENT STUDY AND RELATED MUSICALS */}
           <section>
             <div className="flex flex-col gap-5 rounded-xl border border-[#E28906]/45 bg-[#111111] p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -180,100 +174,54 @@ export default function MusicalView({
               </Link>
             </div>
 
-            <div className="mt-8">
+            {/* RELATED MUSICALS */}
+            <section className="mt-8" aria-label="Related Cinematic Musicals">
               <h2 className="font-serif text-[28px]">
-                Cinematic Lyrics
+                Related Cinematic Musicals
               </h2>
+              <p className="mt-2 text-[13px] text-white/50">
+                More from {displayTopicName(nugget.topic)} or {nugget.book}
+              </p>
 
-              {nugget.scriptureText && (
-                <p className="mt-5 max-w-[700px] font-serif text-[18px] italic leading-8 text-[#E28906]">
-                  “
-                  {
-                    nugget.scriptureText
-                  }
-                  ”
+              {related.length > 0 ? (
+                <div className="mt-5 grid gap-3">
+                  {related.map(item => (
+                    <Link
+                      key={item.slug}
+                      href={`/nugget/${item.slug}/musical`}
+                      className="group flex min-w-0 items-center gap-3 rounded-lg border border-white/10 bg-[#111111] p-3 transition hover:border-[#E28906]/40 sm:gap-4"
+                    >
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md">
+                        <Image
+                          src={item.musicalImage || item.image || "/media-placeholder.svg"}
+                          alt=""
+                          fill
+                          sizes="56px"
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-serif text-[15px] text-[#FAF9F6]">
+                          {item.musicalTitle || item.title}
+                        </p>
+                        <p className="mt-1 truncate text-[12px] text-white/50">
+                          {item.scriptureRef}
+                        </p>
+                      </div>
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#E28906]/40 text-[#E28906] transition group-hover:bg-[#E28906] group-hover:text-[#080808]">
+                        <Play size={14} fill="currentColor" />
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-5 text-[14px] text-white/45">
+                  No other Musicals with available audio in this topic or Bible book yet.
                 </p>
               )}
-
-              <div className="mt-6 space-y-4">
-                {principleLines.map(
-                  (line, index) => (
-                    <p
-                      key={`${line}-${index}`}
-                      className={`max-w-[720px] font-serif text-[17px] leading-7 ${
-                        index === 1
-                          ? "text-[#E28906]"
-                          : "text-white/60"
-                      }`}
-                    >
-                      {line}
-                    </p>
-                  ),
-                )}
-              </div>
-            </div>
+            </section>
           </section>
         </div>
-
-        {/* RELATED MUSICALS */}
-        <section className="mt-14">
-          <h2 className="font-serif text-[28px]">
-            Related Cinematic Musicals
-          </h2>
-
-          {related.length > 0 ? (
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
-              {related.map(
-                (item, index) => (
-                  <Link
-                    key={
-                      item.slug
-                    }
-                    href={`/nugget/${item.slug}/musical`}
-                    className="group flex items-center gap-4 rounded-lg border border-white/10 bg-[#111111] p-3 transition hover:border-[#E28906]/40"
-                  >
-                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md">
-                      <Image
-                        src={
-                          index === 0
-                            ? "/media-placeholder.svg"
-                            : index === 1
-                              ? "/media-placeholder.svg"
-                              : "/media-placeholder.svg"
-                        }
-                        alt={
-                          item.title
-                        }
-                        fill
-                        sizes="56px"
-                        className="object-cover"
-                      />
-                    </div>
-
-                    <div className="min-w-0">
-                      <p className="truncate font-serif text-[15px]">
-                        {
-                          item.title
-                        }
-                      </p>
-
-                      <p className="mt-1 text-[12px] text-white/35">
-                        {
-                          item.scriptureRef
-                        }
-                      </p>
-                    </div>
-                  </Link>
-                ),
-              )}
-            </div>
-          ) : (
-            <p className="mt-5 text-[14px] text-white/45">
-              No related Musicals are
-              available yet.
-            </p>
-          )}
-        </section>
       </main>
     </>
   );

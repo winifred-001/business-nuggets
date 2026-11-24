@@ -62,14 +62,18 @@ test('compact and floating audio players expose previous and next track controls
   assert.doesNotMatch(provider, /router\.push/);
 });
 
-test('the floating audio sticker has an independent draggable handle', () => {
-  const provider = read('components/GlobalAudioPlayerProvider.tsx');
-  assert.match(provider, /aria-label="Move floating audio player"/);
-  assert.match(provider, /onPointerDown=\{startStickerDrag\}/);
-  assert.match(provider, /onPointerMove=\{moveSticker\}/);
-  assert.match(provider, /onPointerCancel=\{endStickerDrag\}/);
-  assert.match(provider, /setPointerCapture/);
-  assert.match(provider, /clampStickerPosition/);
-  assert.match(provider, /onKeyDown=\{moveStickerWithKeyboard\}/);
-  assert.match(provider, /touch-none/);
+test('Nugget detail players sit inside the actions sidebar rather than over the reading button', () => {
+  const page = read('app/nugget/[id]/page.tsx');
+  const sidebar = page.slice(page.indexOf('<aside '), page.indexOf('</aside>'));
+  assert.match(sidebar, /Nugget Actions/);
+  assert.match(sidebar, /data-nugget-audio-stack className="[^"]*grid-cols-2/);
+  assert.equal((sidebar.match(/<AudioBar\b/g) || []).length, 2);
+  assert.doesNotMatch(sidebar, /sticky bottom-0/);
+  assert.ok(page.indexOf('Read full teaching') < page.indexOf('<aside '));
+});
+
+test('both compact players receive the Nugget cover image', () => {
+  const page = read('app/nugget/[id]/page.tsx');
+  assert.match(page, /trackKind="nugget"[\s\S]*?coverImage=\{nugget\.image\}/);
+  assert.match(page, /trackKind="music"[\s\S]*?coverImage=\{nugget\.image\}/);
 });
