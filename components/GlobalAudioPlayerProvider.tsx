@@ -11,7 +11,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Pause, Play, Volume2, VolumeX, X } from "lucide-react";
+import { Maximize2, Pause, Play, X } from "lucide-react";
 
 export type GlobalAudioTrack = {
   src: string;
@@ -210,37 +210,38 @@ export default function GlobalAudioPlayerProvider({ children }: { children: Reac
         }}
       />
       {showMiniPlayer && track && (
-        <>
-          <div className="h-[78px]" aria-hidden="true" />
-          <section aria-label="Persistent audio player" className="fixed inset-x-0 bottom-0 z-[90] border-t border-white/10 bg-[#111111] text-[#FAF9F6] shadow-[0_-8px_30px_rgba(0,0,0,0.3)]">
-            <div className="mx-auto flex min-h-[76px] max-w-[1440px] items-center gap-3 px-4 py-2 sm:gap-5 sm:px-6 lg:px-10">
-              <Link href={track.href} className="flex min-w-0 flex-1 items-center gap-3">
-                <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md bg-white/5">
-                  <Image src={track.coverImage || "/media-placeholder.svg"} alt="" fill sizes="44px" className="object-cover" />
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-[13px] font-semibold">{track.title}</span>
-                  <span className="mt-1 block truncate text-[11px] text-white/45">{track.subtitle}</span>
-                </span>
-              </Link>
-              <button type="button" aria-label={playing ? "Pause audio" : "Play audio"} onClick={() => void togglePlay()} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E28906] text-[#080808]">
-                {playing ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
-              </button>
-              <div className="hidden min-w-0 flex-1 items-center gap-3 sm:flex">
-                <span className="text-[10px] tabular-nums text-white/40">{formatTime(currentTime)}</span>
-                <input aria-label="Persistent audio progress" type="range" min={0} max={duration || 1} value={Math.min(currentTime, duration || 1)} disabled={!duration} onChange={event => seekTo(Number(event.target.value))} className="h-1 min-w-0 flex-1 cursor-pointer accent-[#E28906]" />
-                <span className="text-[10px] tabular-nums text-white/40">{formatTime(duration)}</span>
-              </div>
-              <button type="button" aria-label={muted ? "Unmute audio" : "Mute audio"} onClick={toggleMute} className="hidden h-9 w-9 shrink-0 items-center justify-center text-white/55 hover:text-white sm:flex">
-                {muted ? <VolumeX size={17} /> : <Volume2 size={17} />}
-              </button>
-              <button type="button" aria-label="Close audio player" onClick={stop} className="flex h-9 w-9 shrink-0 items-center justify-center text-white/45 hover:text-white">
-                <X size={17} />
-              </button>
-            </div>
-            {error && <p role="status" className="mx-auto max-w-[1440px] px-4 pb-2 text-xs text-[#E28906] sm:px-6 lg:px-10">{error}</p>}
-          </section>
-        </>
+        <section
+          aria-label="Floating audio player"
+          className="fixed bottom-4 right-4 z-[90] w-[min(310px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-[#171717]/95 text-[#FAF9F6] shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:bottom-6 sm:right-6"
+        >
+          <div className="flex items-center gap-3 p-3">
+            <Link href={track.href} aria-label={`Open ${track.title} player`} className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-white/5">
+              <Image src={track.coverImage || "/media-placeholder.svg"} alt="" fill sizes="44px" className="object-cover" />
+            </Link>
+            <Link href={track.href} className="min-w-0 flex-1">
+              <span className="block text-[9px] font-semibold uppercase tracking-[0.14em] text-[#E28906]">
+                {track.kind === "nugget" ? "Nugget audio" : "Music"}
+              </span>
+              <span className="mt-0.5 block truncate text-[12px] font-semibold">{track.title}</span>
+              <span className="mt-0.5 block truncate text-[10px] text-white/45">{track.subtitle}</span>
+            </Link>
+            <button type="button" aria-label={playing ? "Pause audio" : "Play audio"} onClick={() => void togglePlay()} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E28906] text-[#080808] transition hover:bg-[#f0a52e]">
+              {playing ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
+            </button>
+            <Link href={track.href} aria-label="Open full audio player" className="flex h-8 w-7 shrink-0 items-center justify-center text-white/45 transition hover:text-white">
+              <Maximize2 size={14} />
+            </Link>
+            <button type="button" aria-label="Close audio player and stop playback" onClick={stop} className="flex h-8 w-7 shrink-0 items-center justify-center text-white/45 transition hover:text-white">
+              <X size={15} />
+            </button>
+          </div>
+          <div className="flex items-center gap-2 px-3 pb-2.5">
+            <span className="text-[9px] tabular-nums text-white/40">{formatTime(currentTime)}</span>
+            <input aria-label="Audio progress" type="range" min={0} max={duration || 1} value={Math.min(currentTime, duration || 1)} disabled={!duration} onChange={event => seekTo(Number(event.target.value))} className="h-1 min-w-0 flex-1 cursor-pointer accent-[#E28906]" />
+            <span className="text-[9px] tabular-nums text-white/40">{formatTime(duration)}</span>
+          </div>
+          {error && <p role="status" className="px-3 pb-2 text-[10px] text-[#E28906]">{error}</p>}
+        </section>
       )}
     </GlobalAudioPlayerContext.Provider>
   );
