@@ -116,19 +116,7 @@ export default async function NuggetDetailPage({
                   <span className="absolute bottom-0 left-0 h-[2px] w-full bg-[#E28906]" />
                 </Link>
 
-                <Link
-                  href={`/nugget/${nugget.slug}/musical`}
-                  className="shrink-0 pb-4 text-[13px] text-[#4F4941] transition hover:text-[#79500A]"
-                >
-                  Listen Musical
-                </Link>
 
-                <Link
-                  href={`/nugget/${nugget.slug}/audio`}
-                  className="shrink-0 pb-4 text-[13px] text-[#4F4941] transition hover:text-[#79500A]"
-                >
-                  Listen Commentary
-                </Link>
               </div>
 
               {/* KEY PRINCIPLE */}
@@ -183,7 +171,7 @@ export default async function NuggetDetailPage({
 </Link>
               </div>
               </div>
-                <div key={nugget.slug} data-nugget-audio-stack className="grid w-full min-w-0 grid-cols-2 items-start gap-2">
+                <div key={nugget.slug} data-nugget-audio-stack className="grid w-full min-w-0 grid-cols-1 gap-3">
                   <AudioBar
                     compact
                     trackKind="nugget"
