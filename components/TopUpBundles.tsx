@@ -82,7 +82,7 @@ export default function TopUpBundles() {
   }
 
   return (
-    <section id="topups" className="mt-8 rounded-xl border border-white/15 bg-[#111] p-5 sm:p-7">
+    <section id="topups" className="bn-dark-surface mt-8 rounded-xl border border-white/15 bg-[#111111] p-5 sm:p-7 text-[#FAF9F6]">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-[#E28906]">Additional Nuggets</p>
@@ -105,7 +105,7 @@ export default function TopUpBundles() {
 
       {allowance && typeof allowance.maxNuggets === "number" && (
         <div className="mt-5 rounded-lg border border-white/10 p-4">
-          <div className="flex justify-between gap-3 text-sm text-white/75">
+          <div className="flex flex-wrap justify-between gap-3 text-sm text-white/75">
             <span>Monthly Nuggets</span><span>{allowance.used} / {allowance.maxNuggets} used</span>
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
@@ -137,7 +137,7 @@ export default function TopUpBundles() {
             <h3 className="font-serif text-xl text-white">{bundle.name}</h3>
             <p className="mt-4 font-serif text-4xl text-[#E28906]">+{bundle.credits}</p>
             <p className="mt-1 text-sm text-white/50">Extra Nugget selections</p>
-            <p className="mt-3 text-2xl text-white">{formatMoney(bundle.priceCents, bundle.currency)}</p>
+            <p className="mt-3 whitespace-nowrap text-[clamp(18px,2.5vw,24px)] tabular-nums text-white">{formatMoney(bundle.priceCents, bundle.currency)}</p>
             <p className="mt-2 text-xs leading-5 text-white/45">
               Credits expire 3 months after purchase.
             </p>

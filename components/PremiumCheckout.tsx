@@ -251,8 +251,8 @@ export default function PremiumCheckout({
                     : "border-[#E28906]/30"
                 }`}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
+                <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+                  <div className="min-w-0 flex-1 basis-[180px]">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-serif text-[26px] leading-tight">
                         {plan.name}
@@ -270,7 +270,7 @@ export default function PremiumCheckout({
                     </p>
                   </div>
 
-                  <p className="font-serif text-[30px] leading-none text-[#E28906]">
+                  <p className="shrink-0 whitespace-nowrap font-serif text-[clamp(20px,3vw,30px)] leading-tight tabular-nums text-[#E28906]">
                     {formatMoney(
                       plan.priceCents,
                       plan.currency,

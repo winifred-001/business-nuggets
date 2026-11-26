@@ -23,6 +23,7 @@ import BusinessCategoryPreferences from "@/components/BusinessCategoryPreference
 import Footer from "@/components/Footer";
 import Navbar from "@/components/navbar";
 import { ProfileImageEditor } from "@/components/ProfileImage";
+import styles from "./settings.module.css";
 
 const navItems = [
   "Personal Details",
@@ -588,10 +589,10 @@ export default function AccountSettingsPage() {
       <div className="min-h-screen bn-cream-page bg-[#F5F0E8] text-[#211E19]">
         <Navbar />
 
-        <main className="mx-auto w-full max-w-[1280px] px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
+        <main className={`${styles.settings} mx-auto w-full max-w-[1280px] px-5 py-10 sm:px-8 lg:px-10 lg:py-12`}>
           <Link
             href="/home"
-            className="text-[11px] font-medium text-[#E28906] transition hover:text-[#E28906]"
+            className="text-[11px] font-medium text-[#79500A] transition hover:text-[#79500A]"
           >
             ← My Wisdom Workspace
           </Link>
@@ -655,15 +656,15 @@ export default function AccountSettingsPage() {
                       onClick={() => handleNavigation(item)}
                       className={`relative block w-full px-3 py-3 text-left text-[12px] transition ${
                         selected
-                          ? "text-[#E28906]"
+                          ? "text-[#79500A] font-semibold"
                           : item === "Delete Account"
-                            ? "text-red-400/90 hover:text-red-300"
-                            : "text-white/45 hover:text-white/75"
+                            ? "text-[#9B2929] hover:text-[#781C1C]"
+                            : "text-[#4F4941] hover:text-[#211E19]"
                       }`}
                     >
                       {item}
                       {selected && (
-                        <span className="absolute bottom-0 left-3 h-px w-[70px] bg-[#E28906]" />
+                        <span className="absolute bottom-0 left-3 h-px w-[70px] bg-[#79500A]" />
                       )}
                     </button>
                   );
@@ -730,7 +731,7 @@ export default function AccountSettingsPage() {
                     <PreferenceRow
                       title="Autoplay Next Segment"
                       description="Continue automatically after the current teaching."
-                      control={<Switch checked={autoplay} onChange={setAutoplay} />}
+                      control={<Switch label="Autoplay Next Segment" checked={autoplay} onChange={setAutoplay} />}
                     />
                   </SettingsCard>
 
@@ -839,7 +840,7 @@ export default function AccountSettingsPage() {
                     <PreferenceRow
                       title="Autoplay Next Segment"
                       description="Automatically continue to the next teaching."
-                      control={<Switch checked={autoplay} onChange={setAutoplay} />}
+                      control={<Switch label="Autoplay Next Segment" checked={autoplay} onChange={setAutoplay} />}
                     />
                   </SettingsCard>
                   {playbackMessage && <StatusMessage text={playbackMessage} />}
@@ -859,7 +860,7 @@ export default function AccountSettingsPage() {
                       title="Download Audio"
                       description="Allow commentary and Musical audio to be stored for offline listening."
                       control={
-                        <Switch checked={downloadAudio} onChange={setDownloadAudio} />
+                        <Switch label="Download Audio" checked={downloadAudio} onChange={setDownloadAudio} />
                       }
                     />
                     <PreferenceRow
@@ -867,6 +868,7 @@ export default function AccountSettingsPage() {
                       description="Avoid large audio downloads when using mobile data."
                       control={
                         <Switch
+                          label="Wi-Fi Only"
                           checked={downloadWifiOnly}
                           onChange={setDownloadWifiOnly}
                         />
@@ -1361,7 +1363,7 @@ function SettingsCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-6">
+    <section className="min-w-0 rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-6">
       <h2 className="font-serif text-[20px] leading-tight text-[#FAF9F6]">
         {title}
       </h2>
@@ -1396,20 +1398,22 @@ function PreferenceRow({
   control: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 border-b border-white/[0.06] py-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
-      <div>
+    <div className="flex min-w-0 flex-wrap items-center justify-between gap-4 border-b border-white/[0.06] py-4 last:border-b-0">
+      <div className="min-w-0 flex-1 basis-[150px]">
         <p className="text-[13px] text-white/75">{title}</p>
         <p className="mt-1 text-[11px] leading-5 text-white/35">{description}</p>
       </div>
-      <div className="shrink-0">{control}</div>
+      <div className="ml-auto max-w-full shrink-0">{control}</div>
     </div>
   );
 }
 
 function Switch({
+  label,
   checked,
   onChange,
 }: {
+  label: string;
   checked: boolean;
   onChange: (value: boolean) => void;
 }) {
@@ -1417,17 +1421,14 @@ function Switch({
     <button
       type="button"
       role="switch"
+      aria-label={label}
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 rounded-full transition ${
-        checked ? "bg-[#E28906]" : "bg-white/15"
-      }`}
+      className={`${styles.switchControl} rounded-full`}
     >
-      <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-[#080808] transition-transform ${
-          checked ? "translate-x-5" : "translate-x-0.5"
-        }`}
-      />
+      <span aria-hidden="true" className={styles.switchTrack}>
+        <span className={styles.switchKnob} />
+      </span>
     </button>
   );
 }
@@ -1509,14 +1510,15 @@ function ChannelToggle({
     <button
       type="button"
       onClick={onClick}
-      className={`flex h-10 items-center gap-2 rounded-md border px-3 text-[10px] transition ${
+      aria-pressed={enabled}
+      className={`flex h-10 min-w-0 items-center gap-2 rounded-md border px-3 text-[10px] transition ${
         enabled
           ? "border-[#E28906]/45 bg-[#E28906]/15 text-[#E28906]"
           : "border-white/10 bg-[#19191D] text-white/35"
       }`}
     >
       <span
-        className={`flex h-4 w-4 items-center justify-center rounded-sm border ${
+        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${
           enabled
             ? "border-[#E28906] bg-[#E28906] text-black"
             : "border-white/20"
