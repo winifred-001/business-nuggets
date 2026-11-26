@@ -5,22 +5,9 @@ import { db } from "../prisma/db";
 
 @Injectable()
 export class PlaylistsService {
-  private metadataReady?: Promise<void>;
-
-  private ensureMetadata() {
-    this.metadataReady ??= db.runtime().execute(db.raw.sql`
-      ALTER TABLE "Playlist"
-        ADD COLUMN IF NOT EXISTS "description" text NOT NULL DEFAULT '',
-        ADD COLUMN IF NOT EXISTS "shareToken" text UNIQUE
-    `.affectedCount().build()).then(() => undefined).catch(error => {
-      this.metadataReady = undefined;
-      throw error;
-    });
-    return this.metadataReady;
-  }
-
+  // Playlist metadata columns are installed by backend/ops/sql/20261126_playlist_metadata.sql.
+  // Customer requests must never perform schema changes.
   async createPlaylist(userId: number, data: PlaylistNameDto) {
-    await this.ensureMetadata();
     const token = data.privacy === "shared" ? randomBytes(32).toString("hex") : "";
     const [playlist] = await db.runtime().query(db.raw.sql`
       INSERT INTO "Playlist" ("userId", "name", "description", "shareToken")
@@ -31,7 +18,6 @@ export class PlaylistsService {
   }
 
   async getPlaylists(userId: number) {
-    await this.ensureMetadata();
     const playlists = await db.runtime().query(db.raw.sql`
       SELECT "id", "name", "userId", "createdAt", "description", COALESCE("shareToken", '') AS "shareToken"
       FROM "Playlist" WHERE "userId" = ${userId}
@@ -48,7 +34,6 @@ export class PlaylistsService {
 
   async getSharedPlaylist(token: string) {
     if (!/^[a-f0-9]{64}$/.test(token)) throw new NotFoundException("Playlist not found");
-    await this.ensureMetadata();
     const rows = await db.runtime().query(db.raw.sql`
       SELECT p."name", p."description", COALESCE(i."nuggetId", '') AS "nuggetId"
       FROM "Playlist" p LEFT JOIN "PlaylistItem" i ON i."playlistId" = p."id"
@@ -131,7 +116,6 @@ export class PlaylistsService {
   }
    
   async updatePlaylist(userId: number, playlistId: number, data: PlaylistNameDto) {
-    await this.ensureMetadata();
     const [playlist] = await db.runtime().query(db.raw.sql`
       UPDATE "Playlist"
       SET "name" = ${data.name.trim()},

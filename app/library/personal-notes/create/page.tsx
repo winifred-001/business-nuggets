@@ -221,7 +221,7 @@ export default function CreateStudyNotePage() {
               <div className="mt-6">
                 <label
                   htmlFor="note-title"
-                  className="mb-2 block text-[10px] font-semibold text-white/55"
+                  className="mb-2 block text-[10px] font-semibold text-white"
                 >
                   Note Title
                 </label>
@@ -237,7 +237,7 @@ export default function CreateStudyNotePage() {
                   }
                   placeholder="e.g. Negotiation Integrity Principle"
                   maxLength={120}
-                  className="h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/60"
+                  className="h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-[#B4B2AB] focus:border-[#E28906]/60"
                 />
               </div>
 
@@ -246,7 +246,7 @@ export default function CreateStudyNotePage() {
               <div className="mt-5">
                 <label
                   htmlFor="note-reflection"
-                  className="mb-2 block text-[10px] font-semibold text-white/55"
+                  className="mb-2 block text-[10px] font-semibold text-white"
                 >
                   My Reflection
                 </label>
@@ -262,7 +262,7 @@ export default function CreateStudyNotePage() {
                   placeholder="What does this principle mean for your business? Capture the decision, conversation or practical step you want to revisit..."
                   rows={8}
                   maxLength={10000}
-                  className="w-full resize-none rounded-md border border-white/10 bg-[#19191D] px-4 py-3 text-[12px] leading-6 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/60"
+                  className="w-full resize-none rounded-md border border-white/10 bg-[#19191D] px-4 py-3 text-[12px] leading-6 text-white outline-none placeholder:text-[#B4B2AB] focus:border-[#E28906]/60"
                 />
               </div>
 
@@ -311,7 +311,7 @@ export default function CreateStudyNotePage() {
 
             <aside>
               <section className="rounded-[10px] border border-[#E28906]/60 bg-[#111111] p-5 sm:p-6">
-                <h2 className="font-serif text-[20px]">
+                <h2 className="font-serif text-[20px] text-white">
                   Scripture Foundation
                 </h2>
 
