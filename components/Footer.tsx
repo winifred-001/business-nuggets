@@ -64,7 +64,7 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="inline-flex min-h-11 items-center transition hover:text-[#E0C48A]"
+                      className="inline-flex min-h-6 items-center transition hover:text-[#E0C48A]"
                     >
                       {link.label}
                     </Link>
