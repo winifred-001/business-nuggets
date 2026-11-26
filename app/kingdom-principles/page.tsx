@@ -70,7 +70,7 @@ export default async function KingdomPrinciplesPage() {
     .filter((principle) => principle.count > 0);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+    <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <main className="flex-1">

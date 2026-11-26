@@ -1,0 +1,125 @@
+/* Cream customer-facing pages. Explicit opt-in keeps login, registration
+   and the admin dashboard on their existing theme. Preserve dark media,
+   cards, forms and site chrome rather than globally recoloring utilities. */
+.bn-cream-page {
+  --bn-page-fg: #211E19;
+  --bn-page-muted: #4F4941;
+  --bn-page-accent: #79500A;
+  --bn-page-border: rgba(33, 30, 25, .18);
+  --bn-page-tint: rgba(33, 30, 25, .07);
+  background-color: #F5F0E8 !important;
+  color: var(--bn-page-fg);
+}
+html:has(.bn-cream-page), body:has(.bn-cream-page) {
+  background-color: #F5F0E8 !important;
+}
+
+/* Local palette boundaries: text must follow its own surface, not the page. */
+.bn-cream-page :where(
+  .bn-dark-surface,
+  [class~="bg-black"],
+  [class~="bg-neutral-950"],
+  [class~="bg-neutral-900"],
+  [class~="bg-gray-950"],
+  [class~="bg-gray-900"],
+  [class~="bg-[#080808]"],
+  [class~="bg-[#0B0B0B]"],
+  [class~="bg-[#0D0D0D]"],
+  [class~="bg-[#10110f]"],
+  [class~="bg-[#111111]"],
+  [class~="bg-[#12130f]"],
+  [class~="bg-[#141414]"],
+  [class~="bg-[#151515]"],
+  [class~="bg-[#151611]"],
+  [class~="bg-[#161616]"],
+  [class~="bg-[#171717]"],
+  [class~="bg-[#181818]"],
+  [class~="bg-[#19191D]"],
+  [class~="bg-[#191b18]"],
+  [class~="bg-[#1a1a1a]"],
+  [class~="bg-[#1B1B1B]"],
+  [class~="bg-[#202020]"],
+  [class~="bg-[#222222]"],
+  [class~="bg-[#242424]"],
+  [class~="bg-[#2A2418]"],
+  [class~="bg-[#2B2417]"],
+  [class~="bg-[#251F14]"],
+  [class^="bg-[#080808]/"], [class*=" bg-[#080808]/"],
+  [class^="bg-[#111111]/"], [class*=" bg-[#111111]/"],
+  [class^="bg-[#171717]/"], [class*=" bg-[#171717]/"]
+) {
+  --bn-page-fg: #FAF9F6;
+  --bn-page-muted: #B4B2AB;
+  --bn-page-accent: #E28906;
+  --bn-page-border: rgba(255, 255, 255, .15);
+  --bn-page-tint: rgba(255, 255, 255, .07);
+  color: var(--bn-page-fg);
+}
+
+.bn-cream-page :where([class~="bg-white"], [class~="bg-gray-50"], [class~="bg-neutral-50"], [class~="bg-[#F5F0E8]"]) {
+  --bn-page-fg: #211E19;
+  --bn-page-muted: #4F4941;
+  --bn-page-accent: #79500A;
+  --bn-page-border: rgba(33, 30, 25, .18);
+  --bn-page-tint: rgba(33, 30, 25, .07);
+  color: var(--bn-page-fg);
+}
+
+.bn-cream-page :is(
+  [class~="text-white"],
+  [class~="text-[#FAF9F6]"],
+  [class~="text-[#F7F3E8]"],
+  [class~="text-[#F5F0E8]"],
+  [class~="text-[#f9f5ed]"],
+  [class~="text-[#f6f2e9]"],
+  [class~="text-[#fff]"]
+) { color: var(--bn-page-fg) !important; }
+
+.bn-cream-page :is(
+  [class~="text-[#8A8781]"],
+  [class~="text-[#b4b2ab]"],
+  [class~="text-[#B4B2AB]"],
+  [class~="text-gray-300"],
+  [class~="text-gray-400"],
+  [class~="text-gray-500"],
+  [class~="text-neutral-300"],
+  [class~="text-neutral-400"],
+  [class~="text-neutral-500"],
+  [class~="text-[#b8b5aa]"],
+  [class^="text-white/"],
+  [class*=" text-white/"],
+  [class^="text-[#FAF9F6]/"],
+  [class*=" text-[#FAF9F6]/"],
+  [class^="text-[#F5F0E8]/"],
+  [class*=" text-[#F5F0E8]/"],
+  [class^="text-[#f9f5ed]/"],
+  [class*=" text-[#f9f5ed]/"]
+) { color: var(--bn-page-muted) !important; }
+
+.bn-cream-page [class~="text-[#E28906]"]:not([class~="bg-[#E28906]"]) {
+  color: var(--bn-page-accent) !important;
+}
+.bn-cream-page [class~="hover:text-white"]:hover {
+  color: var(--bn-page-fg) !important;
+}
+.bn-cream-page [class~="hover:text-[#E28906]"]:hover:not([class~="bg-[#E28906]"]):not([class~="hover:bg-[#E28906]"]) {
+  color: var(--bn-page-accent) !important;
+}
+
+.bn-cream-page :is(
+  [class~="border-gray-700"],
+  [class~="border-gray-800"],
+  [class~="border-neutral-700"],
+  [class~="border-neutral-800"],
+  [class^="border-white/"],
+  [class*=" border-white/"]
+) { border-color: var(--bn-page-border) !important; }
+
+.bn-cream-page :is(
+  [class^="bg-white/"],
+  [class*=" bg-white/"]
+) { background-color: var(--bn-page-tint); }
+
+.bn-cream-page :is(input, textarea)[class*="placeholder:text-white"]::placeholder {
+  color: var(--bn-page-muted);
+}

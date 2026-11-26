@@ -67,7 +67,7 @@ export default function AuthRouteGuard({
 
   if (checking) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#080808] text-[14px] text-white/45">
+      <div className={`flex min-h-screen items-center justify-center text-[14px] ${type === "protected" ? "bn-cream-page bg-[#F5F0E8] text-[#4F4941]" : "bg-[#080808] text-white/45"}`}>
         Loading...
       </div>
     );

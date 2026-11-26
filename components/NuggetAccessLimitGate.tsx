@@ -10,7 +10,7 @@ export default function NuggetAccessLimitGate({
   const inGrace = code === "SUBSCRIPTION_GRACE";
   const outOfCredits = code === "TOPUP_CREDITS_EXHAUSTED";
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#080808] px-5 py-20 text-center text-[#FAF9F6]">
+    <main className="flex min-h-screen items-center justify-center bn-cream-page bg-[#F5F0E8] px-5 py-20 text-center text-[#211E19]">
       <section className="max-w-[560px] rounded-2xl border border-[#E28906]/35 bg-[#111111] p-8 sm:p-10">
         <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#E28906]">{inGrace ? "Subscription grace" : "Nugget access limit"}</p>
         <h1 className="mt-4 font-serif text-[32px]">{inGrace ? "Your paid reading grace period" : outOfCredits ? "Top-up credits are used" : "Your current selection is full"}</h1>

@@ -44,7 +44,7 @@ export default function NuggetAccessExpiryGate({
 
   if (remaining <= 0) {
     return (
-      <main className="flex min-h-[70vh] items-center justify-center px-5 py-20 text-center">
+      <main className="bn-cream-page flex min-h-screen items-center justify-center bg-[#F5F0E8] px-5 py-20 text-center text-[#211E19]">
         <section className="max-w-[560px] rounded-2xl border border-[#E28906]/35 bg-[#111111] p-8 sm:p-10">
           <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#E28906]">
             Access period ended

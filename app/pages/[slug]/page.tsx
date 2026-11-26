@@ -21,12 +21,12 @@ export default async function CustomPage({ params }: { params: Promise<{ slug: s
   if (!page) notFound();
 
   return (
-    <InformationLayout title={page.title} introduction={page.introduction}>
-      <PageNotice text={page.notice} />
+    <InformationLayout light title={page.title} introduction={page.introduction}>
+      <PageNotice light text={page.notice} />
       <div className="grid gap-6 md:grid-cols-2">
         {page.sections.map(section => (
           <div key={section.id} className={section.width === "half" ? "" : "md:col-span-2"}>
-            <SitePageBlock section={section} />
+            <SitePageBlock light section={section} />
           </div>
         ))}
       </div>

@@ -160,7 +160,7 @@ export default function PersonalNotesPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
+    <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <main className="bn-member-library mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:py-16">

@@ -1373,7 +1373,7 @@ function LibraryContent() {
 
 export default function LibraryPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+    <div className="bn-cream-page flex min-h-screen flex-col bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <div className="flex-1 bg-[#F5F0E8]">

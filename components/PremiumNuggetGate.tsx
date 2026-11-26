@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 
 export default function PremiumNuggetGate({ reader = false, previewLimit = false, guest = false, backHref = "/library" }: { reader?: boolean; previewLimit?: boolean; guest?: boolean; backHref?: string } = {}) {
   return (
-    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+    <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <main className="flex flex-1 items-center justify-center px-5 py-12 sm:px-8 lg:px-10">

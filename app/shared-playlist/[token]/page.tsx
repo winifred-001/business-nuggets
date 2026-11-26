@@ -26,7 +26,7 @@ export default async function SharedPlaylistPage({ params }: { params: Promise<{
   const items = playlist.nuggetIds.flatMap(id => byId.get(id) ?? []);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#080808] text-white">
+    <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
         <p className="mb-3 text-sm uppercase text-[#E28906]">Shared Playlist</p>

@@ -585,7 +585,7 @@ export default function AccountSettingsPage() {
 
   return (
     <AuthRouteGuard type="protected">
-      <div className="min-h-screen bg-[#080808] text-[#F5F0E8]">
+      <div className="min-h-screen bn-cream-page bg-[#F5F0E8] text-[#211E19]">
         <Navbar />
 
         <main className="mx-auto w-full max-w-[1280px] px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
