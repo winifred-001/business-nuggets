@@ -174,7 +174,7 @@ export default async function HomePage() {
   return (
     <AuthRouteGuard type="protected">
       <div
-        className={`${styles.home} flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]`}
+        className={`${styles.home} flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]`}
       >
         <Navbar />
 

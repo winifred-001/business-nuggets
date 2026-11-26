@@ -89,11 +89,11 @@ export default async function TopicDetailPage({
     "/media-placeholder.svg";
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
+    <div className="min-h-screen bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <main>
-        <section className="relative min-h-[330px] overflow-hidden border-b border-white/[0.06]">
+        <section className="bn-dark-surface relative min-h-[330px] overflow-hidden border-b border-white/[0.06]">
           <Image
             src={heroImage}
             alt={visibleTopic}

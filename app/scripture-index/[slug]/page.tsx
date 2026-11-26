@@ -164,7 +164,7 @@ export default async function ScriptureIndexDetailPage({
     `Explore published biblical business wisdom, marketplace principles and practical applications from the book of ${book}.`;
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
+    <div className="min-h-screen bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <main>
