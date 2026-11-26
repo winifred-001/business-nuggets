@@ -172,9 +172,9 @@ export default function PersonalNotesPage() {
 
         <div className="grid gap-6 lg:grid-cols-[330px_minmax(0,1fr)]">
           {/* LEFT NOTES PANEL */}
-          <aside className="h-fit rounded-xl border border-white/10 bg-[#101010] p-4">
+          <aside className="h-fit rounded-xl border border-white/10 bn-dark-surface bg-[#101010] p-4">
             <div className="flex items-center justify-between">
-              <h1 className="bn-hero-title font-serif text-xl font-semibold">
+              <h1 className="bn-hero-title font-serif text-xl font-semibold text-white">
                 My Journal & Notes
               </h1>
 
@@ -198,7 +198,7 @@ export default function PersonalNotesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search notes..."
-                className="h-10 w-full rounded-md border border-white/10 bg-[#181818] pl-9 pr-3 text-xs text-white outline-none placeholder:text-gray-600 focus:border-amber-300/40"
+                className="h-10 w-full rounded-md border border-white/10 bg-[#181818] pl-9 pr-3 text-xs text-white outline-none placeholder:text-[#B4B2AB] focus:border-amber-300/40"
               />
             </div>
 
@@ -234,7 +234,7 @@ export default function PersonalNotesPage() {
                         {note.nuggetId || "Personal"}
                       </span>
 
-                      <span className="shrink-0 text-[9px] text-gray-600">
+                      <span className="shrink-0 text-[9px] text-[#B4B2AB]">
                         {timeAgo(note.updatedAt)}
                       </span>
                     </div>
@@ -243,7 +243,7 @@ export default function PersonalNotesPage() {
                       {note.title || "Untitled Note"}
                     </p>
 
-                    <p className="mt-2 line-clamp-2 text-[10px] leading-relaxed text-gray-500">
+                    <p className="mt-2 line-clamp-2 text-[10px] leading-relaxed text-white">
                       {note.content}
                     </p>
                   </button>
@@ -253,7 +253,7 @@ export default function PersonalNotesPage() {
           </aside>
 
           {/* RIGHT EDITOR PANEL */}
-          <section className="min-h-[520px] rounded-xl border border-white/10 bg-[#101010] p-5 sm:p-7">
+          <section className="min-h-[520px] rounded-xl border border-white/10 bn-dark-surface bg-[#101010] p-5 sm:p-7">
             {selectedId === null ? (
               <div className="flex min-h-[350px] flex-col items-start justify-center gap-4">
                 <h2 className="font-serif text-[24px] text-white">Create a Study Note</h2>
@@ -277,7 +277,7 @@ export default function PersonalNotesPage() {
                   onChange={(e) => setTitle(e.target.value)}
                   aria-label="Note title"
                   placeholder="Note title"
-                  className="w-full bg-transparent font-serif text-2xl text-white outline-none placeholder:text-gray-700"
+                  className="w-full bg-transparent font-serif text-2xl text-white outline-none placeholder:text-[#B4B2AB]"
                 />
               </div>
 
@@ -311,7 +311,7 @@ export default function PersonalNotesPage() {
               onChange={(e) => setContent(e.target.value)}
               aria-label="Note content"
               placeholder="Write your thoughts, reflections, or business lessons here..."
-              className="mt-6 min-h-[320px] w-full resize-none bg-transparent text-sm leading-7 text-gray-400 outline-none placeholder:text-gray-700"
+              className="mt-6 min-h-[320px] w-full resize-none bg-transparent text-sm leading-7 text-white outline-none placeholder:text-[#B4B2AB]"
             />
 
             {linkedNugget && (
