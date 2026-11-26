@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -9,15 +11,14 @@ import {
   SkipForward,
 } from "lucide-react";
 
-import {
-  useRef,
-  useState,
-} from "react";
+import { useGlobalAudioPlayer } from "@/components/GlobalAudioPlayerProvider";
+import { displayTopicName } from "@/lib/topic-display";
 
 import type { Nugget } from "@/types/nugget";
 
 type MusicalNugget = Nugget & {
   musicalTitle?: string | null;
+  musicalImage?: string | null;
 };
 
 export default function MusicalView({
@@ -27,76 +28,43 @@ export default function MusicalView({
   coverImage,
 }: {
   nugget: MusicalNugget;
-  related: Nugget[];
+  related: MusicalNugget[];
   audioSrc: string | null;
   coverImage: string;
 }) {
-  const audioRef =
-    useRef<HTMLAudioElement>(null);
-
-  const [playing, setPlaying] =
-    useState(false);
-
-  const [message, setMessage] =
-    useState("");
-
-  async function togglePlay() {
-    if (!audioSrc) {
-      setMessage(
-        "No Musical audio has been attached to this Nugget yet.",
-      );
-
+  const player = useGlobalAudioPlayer();
+  const isCurrentTrack = Boolean(audioSrc && player.track?.src === audioSrc);
+  const playing = isCurrentTrack && player.playing;
+  const duration = isCurrentTrack ? player.duration : 0;
+  const message = isCurrentTrack ? player.error : "";
+  function togglePlay() {
+    if (!audioSrc) return;
+    if (isCurrentTrack) {
+      void player.togglePlay();
       return;
     }
-
-    const audio = audioRef.current;
-
-    if (!audio) return;
-
-    if (audio.paused) {
-      await audio.play();
-
-      setPlaying(true);
-    } else {
-      audio.pause();
-
-      setPlaying(false);
-    }
+    void player.playTrack({
+      src: audioSrc,
+      title: nugget.musicalTitle ?? nugget.title,
+      subtitle: `${nugget.scriptureRef} · ${displayTopicName(nugget.topic)}`,
+      slug: nugget.slug,
+      coverImage,
+      kind: "music",
+      href: `/nugget/${nugget.slug}/musical`,
+    });
   }
-
   function seek(amount: number) {
-    const audio =
-      audioRef.current;
-
-    if (!audio) return;
-
-    audio.currentTime =
-      Math.max(
-        0,
-        Math.min(
-          audio.duration || 0,
-          audio.currentTime +
-            amount,
-        ),
-      );
+    if (isCurrentTrack) player.seek(amount);
   }
 
-  const principleLines =
-    nugget.keyPrinciple
-      ?.split(/(?<=[.!?])\s+/)
-      .filter(Boolean)
-      .slice(0, 3) ?? [];
+  useEffect(() => {
+    if (!audioSrc) return;
+    player.registerLocalControl(audioSrc, true);
+    return () => player.registerLocalControl(audioSrc, false);
+  }, [audioSrc, player.registerLocalControl]);
 
   return (
     <>
-      <audio
-        ref={audioRef}
-        src={audioSrc ?? undefined}
-        onEnded={() =>
-          setPlaying(false)
-        }
-      />
-
       <main className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10">
         <div className="grid gap-10 lg:grid-cols-[340px_minmax(0,1fr)]">
           {/* MUSICAL COVER */}
@@ -113,22 +81,24 @@ export default function MusicalView({
             </div>
 
             <div className="mt-6 text-center">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#C8A35A]">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#E28906]">
                 Wisdom Cinematic Musical
               </p>
 
-              <h1 className="mt-2 font-serif text-[28px] leading-tight">
+              <h1 className="bn-hero-title mt-2 font-serif text-[28px] leading-tight">
                 {nugget.musicalTitle ??
                   nugget.title}
               </h1>
 
               <p className="mt-2 text-[13px] text-white/40">
-                {nugget.scriptureRef}
+                {nugget.scriptureRef} · {displayTopicName(nugget.topic)}
               </p>
 
               <div className="mt-5 flex items-center justify-center gap-5">
                 <button
                   type="button"
+                  aria-label="Back 10 seconds"
+                  disabled={!duration}
                   onClick={() =>
                     seek(-10)
                   }
@@ -141,8 +111,10 @@ export default function MusicalView({
 
                 <button
                   type="button"
+                  aria-label={playing ? "Pause" : "Play"}
+                  disabled={!audioSrc}
                   onClick={togglePlay}
-                  className="flex h-11 w-11 items-center justify-center rounded-full bg-[#C8A35A] text-[#080808]"
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E28906] text-[#080808]"
                 >
                   {playing ? (
                     <Pause
@@ -159,6 +131,8 @@ export default function MusicalView({
 
                 <button
                   type="button"
+                  aria-label="Forward 10 seconds"
+                  disabled={!duration}
                   onClick={() =>
                     seek(10)
                   }
@@ -170,19 +144,19 @@ export default function MusicalView({
                 </button>
               </div>
 
-              {message && (
-                <p className="mt-4 text-[13px] text-[#C8A35A]">
-                  {message}
+              {(message || !audioSrc) && (
+                <p className="mt-4 text-[13px] text-[#E28906]">
+                  {message || "No Musical audio has been attached to this Nugget yet."}
                 </p>
               )}
             </div>
           </section>
 
-          {/* TEXT EXPERIENCE */}
+          {/* PARENT STUDY AND RELATED MUSICALS */}
           <section>
-            <div className="flex flex-col gap-5 rounded-xl border border-[#C8A35A]/45 bg-[#111111] p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-5 rounded-xl border border-[#E28906]/45 bg-[#111111] p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                   Parent Scripture Study
                 </p>
 
@@ -194,106 +168,60 @@ export default function MusicalView({
 
               <Link
                 href={`/nugget/${nugget.slug}`}
-                className="w-fit rounded-md bg-[#C8A35A]/20 px-4 py-2 text-[12px] font-medium text-[#C8A35A]"
+                className="bn-button w-fit rounded-md bg-[#E28906]/20 px-4 py-2 text-[12px] font-medium text-[#E28906]"
               >
                 Read Exposition
               </Link>
             </div>
 
-            <div className="mt-8">
+            {/* RELATED MUSICALS */}
+            <section className="mt-8" aria-label="Related Cinematic Musicals">
               <h2 className="font-serif text-[28px]">
-                Cinematic Lyrics
+                Related Cinematic Musicals
               </h2>
+              <p className="mt-2 text-[13px] text-white/50">
+                More from {displayTopicName(nugget.topic)} or {nugget.book}
+              </p>
 
-              {nugget.scriptureText && (
-                <p className="mt-5 max-w-[700px] font-serif text-[18px] italic leading-8 text-[#C8A35A]">
-                  “
-                  {
-                    nugget.scriptureText
-                  }
-                  ”
+              {related.length > 0 ? (
+                <div className="mt-5 grid gap-3">
+                  {related.map(item => (
+                    <Link
+                      key={item.slug}
+                      href={`/nugget/${item.slug}/musical`}
+                      className="group flex min-w-0 items-center gap-3 rounded-lg border border-white/10 bg-[#111111] p-3 transition hover:border-[#E28906]/40 sm:gap-4"
+                    >
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md">
+                        <Image
+                          src={item.musicalImage || item.image || "/media-placeholder.svg"}
+                          alt=""
+                          fill
+                          sizes="56px"
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-serif text-[15px] text-[#FAF9F6]">
+                          {item.musicalTitle || item.title}
+                        </p>
+                        <p className="mt-1 truncate text-[12px] text-white/50">
+                          {item.scriptureRef}
+                        </p>
+                      </div>
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#E28906]/40 text-[#E28906] transition group-hover:bg-[#E28906] group-hover:text-[#080808]">
+                        <Play size={14} fill="currentColor" />
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-5 text-[14px] text-white/45">
+                  No other Musicals with available audio in this topic or Bible book yet.
                 </p>
               )}
-
-              <div className="mt-6 space-y-4">
-                {principleLines.map(
-                  (line, index) => (
-                    <p
-                      key={`${line}-${index}`}
-                      className={`max-w-[720px] font-serif text-[17px] leading-7 ${
-                        index === 1
-                          ? "text-[#E0C48A]"
-                          : "text-white/60"
-                      }`}
-                    >
-                      {line}
-                    </p>
-                  ),
-                )}
-              </div>
-            </div>
+            </section>
           </section>
         </div>
-
-        {/* RELATED MUSICALS */}
-        <section className="mt-14">
-          <h2 className="font-serif text-[28px]">
-            Related Cinematic Musicals
-          </h2>
-
-          {related.length > 0 ? (
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
-              {related.map(
-                (item, index) => (
-                  <Link
-                    key={
-                      item.slug
-                    }
-                    href={`/nugget/${item.slug}/musical`}
-                    className="group flex items-center gap-4 rounded-lg border border-white/10 bg-[#111111] p-3 transition hover:border-[#C8A35A]/40"
-                  >
-                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md">
-                      <Image
-                        src={
-                          index === 0
-                            ? "/images/cinematic-musical1.png"
-                            : index === 1
-                              ? "/images/cinematic-musical2.png"
-                              : "/images/cinematic-musical3.png"
-                        }
-                        alt={
-                          item.title
-                        }
-                        fill
-                        sizes="56px"
-                        className="object-cover"
-                      />
-                    </div>
-
-                    <div className="min-w-0">
-                      <p className="truncate font-serif text-[15px]">
-                        {
-                          item.title
-                        }
-                      </p>
-
-                      <p className="mt-1 text-[12px] text-white/35">
-                        {
-                          item.scriptureRef
-                        }
-                      </p>
-                    </div>
-                  </Link>
-                ),
-              )}
-            </div>
-          ) : (
-            <p className="mt-5 text-[14px] text-white/45">
-              No related Musicals are
-              available yet.
-            </p>
-          )}
-        </section>
       </main>
     </>
   );

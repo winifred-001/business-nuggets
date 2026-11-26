@@ -24,6 +24,8 @@
     "contract:emit": "prisma contract emit"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1162.0",
+    "@aws-sdk/s3-request-presigner": "^3.1162.0",
     "@nestjs/common": "^12.0.1",
     "@nestjs/core": "^12.0.1",
     "@nestjs/jwt": "^12.0.2",
@@ -38,6 +40,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "dotenv": "^18.0.6",
+    "exceljs": "^4.4.0",
     "firebase-admin": "^14.5.0",
     "helmet": "^8.3.0",
     "multer": "^2.4.0",

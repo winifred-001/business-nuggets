@@ -1,5 +1,6 @@
 "use client";
 
+import PasswordInput from "@/components/PasswordInput";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -80,12 +81,12 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+    <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <main className="flex flex-1 items-center justify-center px-5 py-10 sm:px-6 sm:py-14 md:px-8 lg:px-10 lg:py-16">
         <section className="w-full max-w-[520px] rounded-2xl border border-white/10 bg-[#111111] p-5 sm:p-8 md:p-10">
-          <h1 className="font-serif text-[40px] leading-tight">
+          <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
             Reset Password
           </h1>
 
@@ -104,7 +105,7 @@ export default function ResetPasswordPage() {
 
               <Link
                 href="/forgot-password"
-                className="mt-5 flex min-h-12 w-full items-center justify-center rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                className="bn-button mt-5 flex min-h-12 w-full items-center justify-center rounded-lg bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
               >
                 Request a New Link
               </Link>
@@ -119,9 +120,10 @@ export default function ResetPasswordPage() {
                   New password
                 </label>
 
-                <input
+                <PasswordInput
+                  visibilityLabel="new password" aria-label="New password"
                   id="new-password"
-                  type="password"
+
                   autoComplete="new-password"
                   value={newPassword}
                   onChange={(event) => {
@@ -130,7 +132,7 @@ export default function ResetPasswordPage() {
                   }}
                   minLength={8}
                   required
-                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none focus:border-[#C8A35A]"
+                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none focus:border-[#E28906]"
                 />
               </div>
 
@@ -142,9 +144,10 @@ export default function ResetPasswordPage() {
                   Confirm new password
                 </label>
 
-                <input
+                <PasswordInput
+                  visibilityLabel="confirm password" aria-label="Confirm password"
                   id="confirm-password"
-                  type="password"
+
                   autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(event) => {
@@ -153,7 +156,7 @@ export default function ResetPasswordPage() {
                   }}
                   minLength={8}
                   required
-                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none focus:border-[#C8A35A]"
+                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none focus:border-[#E28906]"
                 />
               </div>
 
@@ -169,7 +172,7 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={loading || !tokenReady}
-                className="min-h-12 w-full rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-12 w-full rounded-lg bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? "Resetting..." : "Reset Password"}
               </button>
@@ -178,7 +181,7 @@ export default function ResetPasswordPage() {
 
           <Link
             href="/login"
-            className="mt-4 flex min-h-12 w-full items-center justify-center rounded-lg border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/65 transition hover:border-[#C8A35A]/35 hover:text-[#E0C48A]"
+            className="bn-button mt-4 flex min-h-12 w-full items-center justify-center rounded-lg border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/65 transition hover:border-[#E28906]/35 hover:text-[#E28906]"
           >
             Back to Sign In
           </Link>

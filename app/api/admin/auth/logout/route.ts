@@ -12,26 +12,25 @@ export const dynamic = "force-dynamic";
 export async function POST(
   request: NextRequest,
 ) {
-  const origin =
-    request.headers.get(
-      "origin",
-    );
+  
+const origin = request.headers.get("origin");
 
-  if (
-    origin &&
-    origin !==
-      request.nextUrl.origin
-  ) {
-    return NextResponse.json(
-      {
-        message:
-          "Cross-origin request rejected",
-      },
-      {
-        status: 403,
-      },
-    );
-  }
+const allowedOrigins = new Set([
+  request.nextUrl.origin,
+  "https://businessnuggets.com.ng",
+]);
+
+if (origin && !allowedOrigins.has(origin)) {
+  return NextResponse.json(
+    {
+      message: "Cross-origin request rejected",
+    },
+    {
+      status: 403,
+    },
+  );
+}
+
 
   const response =
     NextResponse.json({

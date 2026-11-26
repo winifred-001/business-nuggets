@@ -48,12 +48,12 @@ export default function ResetLinkSentPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+    <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <main className="flex flex-1 items-center justify-center px-5 py-10 sm:px-6 sm:py-14 md:px-8 lg:px-10 lg:py-16">
         <section className="w-full max-w-[520px] rounded-2xl border border-white/10 bg-[#111111] p-5 sm:p-8 md:p-10">
-          <h1 className="font-serif text-[40px] leading-tight">
+          <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
             Check Your Inbox
           </h1>
 
@@ -62,17 +62,17 @@ export default function ResetLinkSentPage() {
           </p>
 
           <div className="mt-6">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#C8A35A]/25 bg-[#C8A35A]/[0.06] text-[#C8A35A]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#E28906]/25 bg-[#E28906]/[0.06] text-[#E28906]">
               <Mail size={20} />
             </div>
 
-            <p className="mt-4 break-all text-[14px] font-medium leading-6 text-[#C8A35A]">
+            <p className="mt-4 break-all text-[14px] font-medium leading-6 text-[#E28906]">
               {email || "Your email address"}
             </p>
           </div>
 
-          <div className="mt-6 rounded-xl border border-[#C8A35A]/25 bg-[#C8A35A]/[0.08] p-4 sm:p-5">
-            <p className="text-[14px] font-semibold text-[#E0C48A]">
+          <div className="mt-6 rounded-xl border border-[#E28906]/25 bg-[#E28906]/[0.08] p-4 sm:p-5">
+            <p className="text-[14px] font-semibold text-[#E28906]">
               Didn&apos;t find the email?
             </p>
 
@@ -82,7 +82,7 @@ export default function ResetLinkSentPage() {
           </div>
 
           {message && (
-            <p className="mt-4 text-[14px] leading-6 text-[#E0C48A]">
+            <p className="mt-4 text-[14px] leading-6 text-[#E28906]">
               {message}
             </p>
           )}
@@ -91,14 +91,14 @@ export default function ResetLinkSentPage() {
             type="button"
             onClick={resendLink}
             disabled={resending || !email}
-            className="mt-6 min-h-12 w-full rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:opacity-40"
+            className="mt-6 min-h-12 w-full rounded-lg bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:opacity-40"
           >
             {resending ? "Resending..." : "Resend Reset Link"}
           </button>
 
           <Link
             href="/login"
-            className="mt-3 flex min-h-12 w-full items-center justify-center rounded-lg border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/65 transition hover:border-[#C8A35A]/35 hover:text-[#E0C48A]"
+            className="bn-button mt-3 flex min-h-12 w-full items-center justify-center rounded-lg border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/65 transition hover:border-[#E28906]/35 hover:text-[#E28906]"
           >
             Back to Sign In
           </Link>
@@ -107,7 +107,7 @@ export default function ResetLinkSentPage() {
             Use a different email?{" "}
             <Link
               href="/forgot-password"
-              className="font-medium text-white/70 transition hover:text-[#C8A35A]"
+              className="font-medium text-white/70 transition hover:text-[#E28906]"
             >
               Forgot Password
             </Link>

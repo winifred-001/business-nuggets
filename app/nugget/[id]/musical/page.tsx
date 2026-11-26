@@ -4,16 +4,21 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import MusicalView from "@/components/MusicalView";
 import PremiumNuggetGate from "@/components/PremiumNuggetGate";
+import NuggetAccessExpiryGate from "@/components/NuggetAccessExpiryGate";
+import NuggetAccessLimitGate from "@/components/NuggetAccessLimitGate";
 
 import {
   getNuggetBySlugFromApi,
+  requiresPremiumNuggetPreview,
   getPublishedNuggets,
   PremiumRequiredError,
+  NuggetAccessError,
 } from "@/lib/nuggets-api";
 import {
   getServerMemberToken,
 } from "@/lib/server-member-token";
 
+import { selectRelatedMusicals } from "@/lib/related-musicals";
 import type { Nugget } from "@/types/nugget";
 
 type MusicalNugget = Nugget & {
@@ -34,6 +39,10 @@ export default async function MusicalPage({
   const token =
     await getServerMemberToken();
 
+  if (await requiresPremiumNuggetPreview(id, token)) {
+    return <PremiumNuggetGate previewLimit guest={!token} />;
+  }
+
   let nugget: MusicalNugget | null =
     null;
 
@@ -48,7 +57,7 @@ export default async function MusicalPage({
         ),
         getPublishedNuggets(
           token,
-        ),
+        ).catch(() => []),
       ]);
 
     nugget =
@@ -57,13 +66,11 @@ export default async function MusicalPage({
     nuggets =
       all as MusicalNugget[];
   } catch (error) {
-    if (
-      error instanceof
-      PremiumRequiredError
-    ) {
-      return (
-        <PremiumNuggetGate />
-      );
+    if (error instanceof PremiumRequiredError) {
+      return <PremiumNuggetGate />;
+    }
+    if (error instanceof NuggetAccessError) {
+      return <NuggetAccessLimitGate message={error.message} />;
     }
 
     console.error(
@@ -76,38 +83,31 @@ export default async function MusicalPage({
     notFound();
   }
 
-  const related = nuggets
-    .filter(
-      (item) =>
-        item.slug !==
-          nugget!.slug &&
-        (item.topic ===
-          nugget!.topic ||
-          item.book ===
-            nugget!.book),
-    )
-    .slice(0, 3);
+  const related = selectRelatedMusicals(nugget, nuggets);
 
   const audioSrc =
-    nugget.musicalAudioUrl ??
-    nugget.audioUrl ??
+    nugget.musicalAudioUrl ||
+    nugget.audioUrl ||
     null;
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
+    <NuggetAccessExpiryGate expiresAt={nugget.accessExpiresAt} durationHours={nugget.accessDurationHours} restored={nugget.accessRestored}>
+    <div className="min-h-screen bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <MusicalView
+        key={nugget.slug}
         nugget={nugget}
         related={related}
         audioSrc={audioSrc}
         coverImage={
-          nugget.musicalImage ??
-          "/images/musical.png"
+          nugget.musicalImage || nugget.image ||
+          "/media-placeholder.svg"
         }
       />
 
       <Footer />
     </div>
+    </NuggetAccessExpiryGate>
   );
 }

@@ -21,7 +21,7 @@ If you did not request this password reset, you can ignore this email.
         <h2>Reset your Business Nuggets password</h2>
         <p>We received a request to reset your password.</p>
         <p>
-          <a href="${resetUrl}" style="display:inline-block;padding:12px 18px;background:#C8A35A;color:#080808;text-decoration:none;font-weight:700;border-radius:6px;">
+          <a href="${resetUrl}" style="display:inline-block;padding:12px 18px;background:#E28906;color:#080808;text-decoration:none;font-weight:700;border-radius:6px;">
             Reset Password
           </a>
         </p>
@@ -202,7 +202,7 @@ If admin email verification is required, a 6-digit verification code will be sen
         <p>Hi ${name},</p>
         <p>You have been invited to join the Business Nuggets administration team.</p>
         <p>
-          <a href="${adminLoginUrl}" style="display:inline-block;padding:12px 18px;background:#C8A35A;color:#080808;text-decoration:none;font-weight:700;border-radius:6px;">
+          <a href="${adminLoginUrl}" style="display:inline-block;padding:12px 18px;background:#E28906;color:#080808;text-decoration:none;font-weight:700;border-radius:6px;">
             Open Admin Sign In
           </a>
         </p>

@@ -13,6 +13,8 @@ import {
   getAuthorBySlug,
 } from "@/lib/authors";
 
+import { getSitePage } from "@/lib/site-pages";
+
 type AuthorDetailsPageProps = {
   params: Promise<{
     slug: string;
@@ -25,15 +27,21 @@ export default async function AuthorDetailsPage({
   const { slug } =
     await params;
 
-  const author =
-    getAuthorBySlug(slug);
+  const page = await getSitePage("authors");
+  const section = page.sections.find(item => item.id === slug);
+  if (!section) notFound();
 
-  if (!author) {
-    notFound();
-  }
+  const original = getAuthorBySlug(slug);
+  const author = {
+    name: section.title,
+    roleLabel: original?.roleLabel ?? "Contributor",
+    description: section.body,
+    bio: section.body,
+    works: original?.works ?? [],
+  };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+    <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
@@ -41,7 +49,7 @@ export default async function AuthorDetailsPage({
 
         <Link
           href="/authors"
-          className="inline-flex items-center gap-2 text-[10px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+          className="inline-flex items-center gap-2 text-[10px] font-medium text-[#E28906] transition hover:text-[#E28906]"
         >
           <ArrowLeft
             size={12}
@@ -54,13 +62,13 @@ export default async function AuthorDetailsPage({
         {/* AUTHOR HEADER */}
 
         <section className="mt-7 rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-7">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
             {
               author.roleLabel
             }
           </p>
 
-          <h1 className="mt-3 font-serif text-[40px] leading-tight">
+          <h1 className="bn-hero-title mt-3 font-serif text-[40px] leading-tight">
             {author.name}
           </h1>
 
@@ -75,7 +83,7 @@ export default async function AuthorDetailsPage({
 
         <section className="mt-6 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
           <article className="rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-6">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
               About the Creator
             </p>
 
@@ -88,8 +96,8 @@ export default async function AuthorDetailsPage({
             </p>
           </article>
 
-          <aside className="rounded-[10px] border border-[#C8A35A]/30 bg-[#C8A35A]/[0.08] p-5 sm:p-6">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+          <aside className="rounded-[10px] border border-[#E28906]/30 bg-[#E28906]/[0.08] p-5 sm:p-6">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
               Credit Note
             </p>
 
@@ -130,16 +138,16 @@ export default async function AuthorDetailsPage({
                   href={
                     work.href
                   }
-                  className="group flex items-center gap-4 rounded-[10px] border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/35"
+                  className="group flex items-center gap-4 rounded-[10px] border border-white/10 bg-[#111111] p-4 transition hover:border-[#E28906]/35"
                 >
-                  <div className="flex h-[58px] w-[72px] shrink-0 items-center justify-center rounded-md border border-white/[0.06] bg-[#181818] text-[#C8A35A]">
+                  <div className="flex h-[58px] w-[72px] shrink-0 items-center justify-center rounded-md border border-white/[0.06] bg-[#181818] text-[#E28906]">
                     <Music2
                       size={20}
                     />
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-serif text-[16px] leading-5 text-white/90 transition group-hover:text-[#C8A35A]">
+                    <h3 className="font-serif text-[16px] leading-5 text-white/90 transition group-hover:text-[#E28906]">
                       {
                         work.title
                       }
@@ -152,7 +160,7 @@ export default async function AuthorDetailsPage({
                     </p>
                   </div>
 
-                  <span className="hidden shrink-0 text-[9px] font-medium text-[#C8A35A] sm:block">
+                  <span className="hidden shrink-0 text-[9px] font-medium text-[#E28906] sm:block">
                     {
                       work.type
                     }{" "}
@@ -170,21 +178,21 @@ export default async function AuthorDetailsPage({
           <div className="flex flex-wrap gap-5">
             <Link
               href="/authors"
-              className="text-[9px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="text-[9px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Browse All Authors →
             </Link>
 
             <Link
               href="/musicals"
-              className="text-[9px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="text-[9px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Explore Musicals →
             </Link>
 
             <Link
               href="/philosophy"
-              className="text-[9px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="text-[9px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Our Philosophy →
             </Link>

@@ -313,15 +313,15 @@ export default function CreateSavedFolderPage() {
 
   return (
     <AuthRouteGuard type="protected">
-      <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+      <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
         <Navbar />
 
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
+        <main className="bn-member-library mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
           {/* BACK */}
 
           <Link
             href="/library/saved-nuggets"
-            className="text-[11px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="text-[11px] font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             ← Saved Nuggets
           </Link>
@@ -329,7 +329,7 @@ export default function CreateSavedFolderPage() {
           {/* HEADER */}
 
           <section className="mt-4">
-            <h1 className="font-serif text-[40px] leading-tight">
+            <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
               Create a Saved Folder
             </h1>
 
@@ -382,7 +382,7 @@ export default function CreateSavedFolderPage() {
                   maxLength={
                     100
                   }
-                  className="h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/60"
+                  className="h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/60"
                 />
               </div>
 
@@ -413,7 +413,7 @@ export default function CreateSavedFolderPage() {
                     300
                   }
                   placeholder="What would you like to study together?"
-                  className="w-full resize-none rounded-md border border-white/10 bg-[#19191D] px-4 py-3 text-[12px] leading-6 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/60"
+                  className="w-full resize-none rounded-md border border-white/10 bg-[#19191D] px-4 py-3 text-[12px] leading-6 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/60"
                 />
               </div>
 
@@ -431,12 +431,12 @@ export default function CreateSavedFolderPage() {
 
             <section>
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                   Select Saved
                   Content
                 </p>
 
-                <p className="text-[10px] uppercase tracking-[0.06em] text-[#C8A35A]">
+                <p className="text-[10px] uppercase tracking-[0.06em] text-[#E28906]">
                   {
                     selectedIds.length
                   }{" "}
@@ -459,7 +459,7 @@ export default function CreateSavedFolderPage() {
                       size={
                         24
                       }
-                      className="mx-auto text-[#C8A35A]"
+                      className="mx-auto text-[#E28906]"
                     />
 
                     <h3 className="mt-4 font-serif text-[18px]">
@@ -476,7 +476,7 @@ export default function CreateSavedFolderPage() {
 
                     <Link
                       href="/library"
-                      className="mt-4 inline-block text-[11px] text-[#C8A35A]"
+                      className="mt-4 inline-block text-[11px] text-[#E28906]"
                     >
                       Browse Library →
                     </Link>
@@ -509,7 +509,7 @@ export default function CreateSavedFolderPage() {
                             }
                             className={`flex w-full items-center gap-4 rounded-lg border p-4 text-left transition ${
                               selected
-                                ? "border-[#C8A35A]/60 bg-[#C8A35A]/[0.13]"
+                                ? "border-[#E28906]/60 bg-[#E28906]/[0.13]"
                                 : "border-white/10 bg-[#19191D] hover:border-white/20"
                             }`}
                           >
@@ -518,7 +518,7 @@ export default function CreateSavedFolderPage() {
                             <span
                               className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[2px] border ${
                                 selected
-                                  ? "border-[#C8A35A] bg-[#C8A35A]"
+                                  ? "border-[#E28906] bg-[#E28906]"
                                   : "border-white/25"
                               }`}
                             >
@@ -573,7 +573,7 @@ export default function CreateSavedFolderPage() {
               <div className="mt-6 flex flex-col-reverse gap-3 border-t border-white/[0.07] pt-5 sm:flex-row sm:justify-end">
                 <Link
                   href="/library/saved-nuggets"
-                  className="inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 px-4 text-[11px] text-white/55 transition hover:border-white/20 hover:text-white"
+                  className="bn-button inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 px-4 text-[11px] text-white/55 transition hover:border-white/20 hover:text-white"
                 >
                   Cancel - Saved
                   Nuggets
@@ -590,7 +590,7 @@ export default function CreateSavedFolderPage() {
                     selectedIds.length ===
                       0
                   }
-                  className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#E28906] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {creating
                     ? "Creating..."

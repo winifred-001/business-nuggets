@@ -6,7 +6,6 @@ import { useParams, useRouter } from "next/navigation";
 
 import {
   GripVertical,
-  Lock,
   Trash2,
 } from "lucide-react";
 
@@ -26,6 +25,8 @@ type PlaylistItem = {
 type Playlist = {
   id: number;
   name: string;
+  description?: string;
+  shareToken?: string | null;
   userId?: number;
   createdAt?: string;
   items: PlaylistItem[];
@@ -52,6 +53,9 @@ export default function EditPlaylistPage() {
 
   const [nuggets, setNuggets] =
     useState<Nugget[]>([]);
+
+  const [description, setDescription] = useState("");
+  const [shared, setShared] = useState(false);
 
   const [name, setName] =
     useState("");
@@ -146,6 +150,8 @@ export default function EditPlaylistPage() {
 
       setPlaylist(found);
 
+      setDescription(found.description ?? "");
+      setShared(Boolean(found.shareToken));
       setName(
         found.name || "",
       );
@@ -335,6 +341,8 @@ export default function EditPlaylistPage() {
               JSON.stringify({
                 name:
                   trimmedName,
+                description: description.trim(),
+                privacy: shared ? "shared" : "private",
               }),
           },
         );
@@ -475,15 +483,15 @@ export default function EditPlaylistPage() {
 
   return (
     <AuthRouteGuard type="protected">
-      <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+      <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
         <Navbar />
 
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
+        <main className="bn-member-library mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
           {/* BACK */}
 
           <Link
             href={`/library/playlist/${playlistId}`}
-            className="text-[11px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="text-[11px] font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             ← Back to Playlist
           </Link>
@@ -491,7 +499,7 @@ export default function EditPlaylistPage() {
           {/* HEADER */}
 
           <section className="mt-4">
-            <h1 className="font-serif text-[40px] leading-tight">
+            <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
               Edit Playlist
             </h1>
 
@@ -557,71 +565,17 @@ export default function EditPlaylistPage() {
                         )
                       }
                       placeholder="Playlist name"
-                      className="h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/60"
+                      className="h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/60"
                     />
-                  </div>
-
-                  {/* DESCRIPTION */}
-
-                  <div className="mt-5">
-                    <label className="mb-2 block text-[10px] font-semibold text-white/55">
-                      Description
+                    <label className="mt-4 block">Description
+                      <textarea className="mt-2 block w-full border border-white/10 bg-[#19191D] p-3" maxLength={300} value={description} onChange={event => setDescription(event.target.value)} />
                     </label>
-
-                    <div className="rounded-md border border-white/[0.07] bg-[#151515] px-4 py-3">
-                      <p className="text-[11px] leading-5 text-white/30">
-                        Playlist
-                        descriptions
-                        are not stored
-                        by the backend
-                        yet.
-                      </p>
-                    </div>
+                    <label className="mt-4 flex gap-2">
+                      <input type="checkbox" checked={shared} onChange={event => setShared(event.target.checked)} />
+                      Share by link
+                    </label>
                   </div>
 
-                  {/* PRIVACY */}
-
-                  <div className="mt-5">
-                    <p className="mb-2 text-[10px] font-semibold text-white/55">
-                      Privacy
-                    </p>
-
-                    <div className="rounded-md border border-[#C8A35A]/40 bg-[#C8A35A]/[0.10] p-4">
-                      <div className="flex gap-3">
-                        <span className="mt-0.5 text-[#C8A35A]">
-                          <Lock
-                            size={
-                              15
-                            }
-                          />
-                        </span>
-
-                        <div>
-                          <p className="text-[12px] font-medium text-[#F5F0E8]">
-                            Private
-                          </p>
-
-                          <p className="mt-1 text-[10px] leading-5 text-white/35">
-                            Only you
-                            can access
-                            this
-                            playlist
-                            in your
-                            workspace.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="mt-5 text-[10px] leading-5 text-white/25">
-                    Playlist sharing
-                    is not enabled
-                    yet, so existing
-                    playlists remain
-                    private to the
-                    signed-in user.
-                  </p>
                 </section>
 
                 {/* =========================================
@@ -630,7 +584,7 @@ export default function EditPlaylistPage() {
 
                 <section>
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                       {
                         playlistNuggets.length
                       }{" "}
@@ -659,7 +613,7 @@ export default function EditPlaylistPage() {
 
                         <Link
                           href="/library"
-                          className="mt-3 inline-block text-[11px] text-[#C8A35A]"
+                          className="mt-3 inline-block text-[11px] text-[#E28906]"
                         >
                           Browse Library
                           →
@@ -717,7 +671,7 @@ export default function EditPlaylistPage() {
                             <div className="min-w-0 flex-1">
                               <Link
                                 href={`/nugget/${nugget.slug}`}
-                                className="font-serif text-[15px] leading-5 text-white/85 transition hover:text-[#C8A35A]"
+                                className="font-serif text-[15px] leading-5 text-white/85 transition hover:text-[#E28906]"
                               >
                                 {
                                   nugget.title
@@ -747,7 +701,7 @@ export default function EditPlaylistPage() {
                                   nugget.id,
                                 )
                               }
-                              className="inline-flex shrink-0 items-center gap-2 px-2 py-2 text-[10px] text-[#C8A35A] transition hover:text-red-400 disabled:opacity-40"
+                              className="inline-flex shrink-0 items-center gap-2 px-2 py-2 text-[10px] text-[#E28906] transition hover:text-red-400 disabled:opacity-40"
                             >
                               <Trash2
                                 size={
@@ -797,8 +751,8 @@ export default function EditPlaylistPage() {
                   )}
 
                   {success && (
-                    <div className="mt-5 rounded-md border border-[#C8A35A]/25 bg-[#C8A35A]/[0.06] px-4 py-3">
-                      <p className="text-[11px] text-[#E0C48A]">
+                    <div className="mt-5 rounded-md border border-[#E28906]/25 bg-[#E28906]/[0.06] px-4 py-3">
+                      <p className="text-[11px] text-[#E28906]">
                         {success}
                       </p>
                     </div>
@@ -809,7 +763,7 @@ export default function EditPlaylistPage() {
                   <div className="mt-6 flex flex-col-reverse gap-3 border-t border-white/[0.07] pt-5 sm:flex-row sm:justify-end">
                     <Link
                       href={`/library/playlist/${playlist.id}`}
-                      className="inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 px-4 text-[11px] text-white/55 transition hover:border-white/20 hover:text-white"
+                      className="bn-button inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 px-4 text-[11px] text-white/55 transition hover:border-white/20 hover:text-white"
                     >
                       Cancel - Playlist
                       Detail
@@ -824,7 +778,7 @@ export default function EditPlaylistPage() {
                         saving ||
                         !name.trim()
                       }
-                      className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-40"
+                      className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#E28906] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {saving
                         ? "Saving..."

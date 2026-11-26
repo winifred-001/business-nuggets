@@ -1,3 +1,4 @@
+import cardStyles from "@/app/topic-cards.module.css";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -13,7 +14,8 @@ import FollowTopicButton from "@/components/FollowTopicButton";
 
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 import { getServerMemberToken } from "@/lib/server-member-token";
-import { slugify } from "@/lib/nuggets";
+import { getTopicCatalog } from "@/lib/topics-api";
+import { displayTopicName } from "@/lib/topic-display";
 
 import type { Nugget } from "@/types/nugget";
 
@@ -31,9 +33,12 @@ export default async function TopicDetailPage({
   const token = await getServerMemberToken();
 
   let nuggets: Nugget[] = [];
+  let topicRecord;
 
   try {
-    nuggets = await getPublishedNuggets(token);
+    const [data, catalog] = await Promise.all([getPublishedNuggets(token), getTopicCatalog()]);
+    nuggets = data;
+    topicRecord = catalog.topics.find(topic => topic.slug === slug);
   } catch (error) {
     console.error(
       "Failed to load topic Nuggets:",
@@ -41,24 +46,16 @@ export default async function TopicDetailPage({
     );
   }
 
-  const availableTopics = [
-    ...new Set(
-      nuggets
-        .map((nugget) => nugget.topic)
-        .filter(Boolean),
-    ),
-  ];
-
-  const topic = availableTopics.find(
-    (item) => slugify(item) === slug,
-  );
+  const topic = topicRecord?.name;
 
   if (!topic) {
     notFound();
   }
 
+  const visibleTopic = displayTopicName(topic);
+
   const topicNuggets = nuggets.filter(
-    (nugget) => nugget.topic === topic,
+    (nugget) => nugget.topic.trim().toLowerCase() === topic.trim().toLowerCase(),
   );
 
   const featured =
@@ -89,17 +86,17 @@ export default async function TopicDetailPage({
   const heroImage =
     featured?.image ??
     topicNuggets[0]?.image ??
-    "/images/visiting-homepage2.png";
+    "/media-placeholder.svg";
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
+    <div className="min-h-screen bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <main>
-        <section className="relative min-h-[330px] overflow-hidden border-b border-white/[0.06]">
+        <section className="bn-dark-surface relative min-h-[330px] overflow-hidden border-b border-white/[0.06]">
           <Image
             src={heroImage}
-            alt={topic}
+            alt={visibleTopic}
             fill
             priority
             sizes="100vw"
@@ -114,23 +111,23 @@ export default async function TopicDetailPage({
             <div className="w-full">
               <Link
                 href="/library?tab=Topics+Index"
-                className="text-[13px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                className="text-[13px] font-medium text-[#E28906] transition hover:text-[#E28906]"
               >
                 ← Core Wisdom Pathway
               </Link>
 
               <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-[760px]">
-                  <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[#C8A35A]">
+                  <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[#E28906]">
                     Core Wisdom Pathway
                   </p>
 
-                  <h1 className="mt-3 font-serif text-[40px] leading-tight text-white">
-                    {topic}
+                  <h1 className="bn-hero-title mt-3 font-serif text-[40px] leading-tight text-white">
+                    {visibleTopic}
                   </h1>
 
                   <p className="mt-4 max-w-[700px] text-[14px] leading-6 text-white/55">
-                    Explore biblical business wisdom, practical principles and marketplace applications connected to {topic}.
+                    Explore biblical business wisdom, practical principles and marketplace applications connected to {visibleTopic}.
                   </p>
 
                   <p className="mt-3 text-[13px] text-white/40">
@@ -147,15 +144,15 @@ export default async function TopicDetailPage({
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10">
+        <section className="bn-topic-content mx-auto max-w-[1280px] px-5 py-12 sm:px-8 lg:px-10">
           {featured && (
             <section>
               <h2 className="font-serif text-[28px]">
-                Featured {topic} Wisdom
+                Featured {visibleTopic} Wisdom
               </h2>
 
               <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-                <div className="overflow-hidden rounded-xl border border-[#C8A35A]/55 bg-[#111111]">
+                <div className="overflow-hidden rounded-xl border border-[#E28906]/55 bg-[#111111]">
                   <div className="grid md:grid-cols-[270px_minmax(0,1fr)]">
                     <div className="relative min-h-[250px]">
                       <Image
@@ -167,18 +164,18 @@ export default async function TopicDetailPage({
                       />
 
                       {featured.isGold && (
-                        <span className="absolute right-3 top-3 rounded border border-[#C8A35A]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E0C48A]">
+                        <span className="absolute right-3 top-3 rounded border border-[#E28906]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E28906]">
                           GOLD
                         </span>
                       )}
                     </div>
 
                     <div className="flex flex-col justify-center p-6 lg:p-7">
-                      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                         Featured Wisdom · {featured.scriptureRef}
                       </p>
 
-                      <h3 className="mt-3 max-w-[520px] font-serif text-[24px] leading-tight">
+                      <h3 className="bn-topic-card-title mt-3 max-w-[520px] line-clamp-2 break-words font-serif">
                         {featured.title}
                       </h3>
 
@@ -191,7 +188,7 @@ export default async function TopicDetailPage({
                       <div className="mt-5 flex flex-wrap items-center gap-3">
                         <Link
                           href={`/nugget/${featured.slug}/audio`}
-                          className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                          className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#E28906] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
                         >
                           <Headphones size={15} />
                           Listen Audio
@@ -199,7 +196,7 @@ export default async function TopicDetailPage({
 
                         <Link
                           href={`/nugget/${featured.slug}`}
-                          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 px-5 text-[13px] font-medium text-white transition hover:border-[#C8A35A]/50"
+                          className="bn-button inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 px-5 text-[13px] font-medium text-white transition hover:border-[#E28906]/50"
                         >
                           Read Commentary
                           <ArrowRight size={14} />
@@ -217,26 +214,26 @@ export default async function TopicDetailPage({
                   <div className="mt-4 space-y-2">
                     <Link
                       href={`/topics/${slug}`}
-                      className={`block rounded-md border px-3 py-2.5 text-[13px] transition ${
+                      className={`bn-button ${`block rounded-md border px-3 py-2.5 text-[13px] transition ${
                         !selectedSegment
-                          ? "border-[#C8A35A]/45 bg-[#C8A35A]/10 text-[#C8A35A]"
-                          : "border-white/10 bg-[#161616] text-white/50 hover:border-[#C8A35A]/30"
-                      }`}
+                          ? "border-[#E28906]/45 bg-[#E28906]/10 text-[#E28906]"
+                          : "border-white/10 bg-[#161616] text-white/50 hover:border-[#E28906]/30"
+                      }`}`}
                     >
-                      All {topic}
+                      All {visibleTopic}
                     </Link>
 
                     {segments.map((segment) => (
                       <Link
                         key={segment}
                         href={`/topics/${slug}?segment=${encodeURIComponent(segment)}`}
-                        className={`block rounded-md border px-3 py-2.5 text-[13px] transition ${
+                        className={`bn-button ${`block rounded-md border px-3 py-2.5 text-[13px] transition ${
                           selectedSegment === segment
-                            ? "border-[#C8A35A]/45 bg-[#C8A35A]/10 text-[#C8A35A]"
-                            : "border-white/10 bg-[#161616] text-white/50 hover:border-[#C8A35A]/30 hover:text-white"
-                        }`}
+                            ? "border-[#E28906]/45 bg-[#E28906]/10 text-[#E28906]"
+                            : "border-white/10 bg-[#161616] text-white/50 hover:border-[#E28906]/30 hover:text-white"
+                        }`}`}
                       >
-                        {segment}
+                        {displayTopicName(segment)}
                       </Link>
                     ))}
                   </div>
@@ -250,8 +247,8 @@ export default async function TopicDetailPage({
               <div>
                 <h2 className="font-serif text-[28px]">
                   {selectedSegment
-                    ? `${selectedSegment} Nuggets`
-                    : `All ${topic} Nuggets`}
+                    ? `${displayTopicName(selectedSegment)} Nuggets`
+                    : `All ${visibleTopic} Nuggets`}
                 </h2>
 
                 <p className="mt-2 text-[14px] text-white/45">
@@ -266,7 +263,7 @@ export default async function TopicDetailPage({
               {selectedSegment && (
                 <Link
                   href={`/topics/${slug}`}
-                  className="text-[13px] font-medium text-[#C8A35A]"
+                  className="text-[13px] font-medium text-[#E28906]"
                 >
                   Clear segment
                 </Link>
@@ -274,14 +271,14 @@ export default async function TopicDetailPage({
             </div>
 
             {displayedNuggets.length > 0 ? (
-              <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div role="region" aria-label="Topic Nuggets" tabIndex={0} className={`mt-7 ${cardStyles.grid} ${cardStyles.nuggets}`}>
                 {displayedNuggets.map((nugget) => (
                   <Link
                     key={nugget.slug}
                     href={`/nugget/${nugget.slug}`}
-                    className="group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#C8A35A]/45"
+                    className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#E28906]/45"
                   >
-                    <div className="relative h-[185px] overflow-hidden">
+                    <div className="relative h-[185px] shrink-0 overflow-hidden">
                       <Image
                         src={nugget.image}
                         alt={nugget.title}
@@ -291,25 +288,25 @@ export default async function TopicDetailPage({
                       />
 
                       {nugget.isGold && (
-                        <span className="absolute right-3 top-3 rounded border border-[#C8A35A]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E0C48A]">
+                        <span className="absolute right-3 top-3 rounded border border-[#E28906]/50 bg-[#080808]/90 px-2.5 py-1.5 text-[12px] font-semibold text-[#E28906]">
                           GOLD
                         </span>
                       )}
                     </div>
 
-                    <div className="flex min-h-[190px] flex-col p-5">
+                    <div className="flex min-h-0 flex-1 flex-col p-5">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-[12px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
-                          {nugget.tag}
+                        <span className="min-w-0 line-clamp-1 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#E28906]">
+                          {displayTopicName(nugget.tag)}
                         </span>
 
-                        <span className="flex items-center gap-1.5 text-[13px] text-white/35">
+                        <span className="flex shrink-0 items-center gap-1.5 text-[13px] text-white/35">
                           <Clock3 size={13} />
                           {nugget.duration}
                         </span>
                       </div>
 
-                      <h3 className="mt-3 font-serif text-[19px] leading-[1.2]">
+                      <h3 className="bn-topic-card-title mt-3 line-clamp-2 break-words font-serif">
                         {nugget.title}
                       </h3>
 
@@ -317,7 +314,7 @@ export default async function TopicDetailPage({
                         {nugget.scriptureRef}
                       </p>
 
-                      <span className="mt-auto inline-flex items-center gap-2 pt-5 text-[13px] font-medium text-[#C8A35A]">
+                      <span className="mt-auto inline-flex items-center gap-2 pt-5 text-[13px] font-medium text-[#E28906]">
                         Listen & Read
                         <ArrowRight size={13} />
                       </span>

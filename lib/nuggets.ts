@@ -1,3 +1,4 @@
+import { BIBLE_GROUPS, withBibleGroup } from "./bible-books";
 import type {
   BibleSection,
   Collection,
@@ -19,7 +20,7 @@ export const nuggets: Nugget[] = [
     scriptureRef: "Proverbs 11:1",
     scriptureText:
       "A false balance is an abomination to the Lord, but a just weight is his delight.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "In classical Near Eastern commerce, merchants used physical balances to determine price. A dishonest merchant used double standards—heavier weights for buying, lighter weights for selling. Today, this manifests as asymmetric information disclosure, hidden corporate traps, and misleading contract phrasing. The Principle of Just Balances asserts that absolute pricing and negotiation transparency is not a moral concession; it is a foundational framework for sustainable marketplace dominion.",
     marketplaceApplication:
@@ -47,7 +48,7 @@ export const nuggets: Nugget[] = [
     scriptureRef: "Proverbs 6:1-5",
     scriptureText:
       "My son, if you have put up security for your neighbor... deliver yourself.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Quick commitments made under social pressure often bypass proper due diligence.",
     marketplaceApplication:
@@ -74,7 +75,7 @@ export const nuggets: Nugget[] = [
     scriptureRef: "Leviticus 19:35-36",
     scriptureText:
       "You shall do no wrong in judgment, in measures of length, weight, or quantity.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Consistent product standards, even when unobserved, compound into brand equity.",
     marketplaceApplication:
@@ -101,7 +102,7 @@ export const nuggets: Nugget[] = [
     scriptureRef: "1 Kings 3:16-28",
     scriptureText:
       "Give the living child to her, and by no means kill it; she is its mother.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Discernment separates true commitment from convenient claims.",
     marketplaceApplication:
@@ -129,7 +130,7 @@ export const nuggets: Nugget[] = [
     scriptureRef: "Genesis 41:34-36",
     scriptureText:
       "And let them gather all the food of those good years that are coming, and store up grain under the authority of Pharaoh, and let food be as a reserve for the land against the seven years of famine.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Faced with a macroeconomic projection of absolute volatility—seven years of extreme harvest followed by seven years of total collapse—Joseph does not panic. He proposes a rigorous national capital preservation program. He mandates a 20% flat tax on the harvest surplus during the bounty years to build a strategic physical reserve.",
     marketplaceApplication:
@@ -157,7 +158,7 @@ export const nuggets: Nugget[] = [
     scriptureRef: "Exodus 18:13-26",
     scriptureText:
       "Choose able men from all the people... and place such men over the people as officials.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Sustainable leadership distributes judgment, not just tasks.",
     marketplaceApplication:
@@ -184,7 +185,7 @@ export const nuggets: Nugget[] = [
     scriptureRef: "Nehemiah 4:1-6",
     scriptureText:
       "So we built the wall... for the people had a mind to work.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Vision under opposition still requires visible structural progress.",
     marketplaceApplication:
@@ -211,7 +212,7 @@ export const nuggets: Nugget[] = [
     scriptureRef: "Genesis 23",
     scriptureText:
       "Abraham weighed out for Ephron the silver... at the price current among the merchants.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Abraham's insistence on paying full price for real estate to establish long-term marketplace credibility.",
     marketplaceApplication:
@@ -239,7 +240,7 @@ export const nuggets: Nugget[] = [
     tag: "Stewardship",
     scriptureRef: "Matthew 25:9",
     scriptureText: "",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple: "",
     marketplaceApplication: "",
     practicalActionPlan: [],
@@ -267,13 +268,7 @@ export const books = [...new Set(nuggets.map((n) => n.book))].sort(
   (a, b) => a.localeCompare(b, "en", { numeric: true }),
 );
 
-export const bibleSections: BibleSection[] = [
-  "The Pentateuch",
-  "History & Leadership",
-  "Wisdom Literature",
-  "The Prophets",
-  "New Testament",
-];
+export const bibleSections: BibleSection[] = BIBLE_GROUPS.map(group => group.name);
 
 // Turn a name into a name suitable for a page address.
 // Example: "Money & Stewardship" becomes "money-stewardship".
@@ -403,6 +398,8 @@ export function filterNuggets(
   const results = source.filter((nugget) => {
     const searchableText = normalize(
       [
+        nugget.book,
+        withBibleGroup(nugget).bibleSection,
         nugget.title,
         nugget.topic,
         nugget.tag,
@@ -425,7 +422,7 @@ export function filterNuggets(
 
     const matchesSection =
       !filters.sections?.length ||
-      filters.sections.includes(nugget.bibleSection);
+      filters.sections.includes(withBibleGroup(nugget).bibleSection);
 
     const matchesChallenge =
       !filters.challenge ||

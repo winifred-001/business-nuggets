@@ -1,758 +1,742 @@
 "use client";
-
-import {
-  useEffect,
-  useState,
-} from "react";
-
+import ImageMediaPicker from "@/components/ImageMediaPicker";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import {
   Check,
   ChevronDown,
   ChevronUp,
   Pencil,
   Plus,
+  Trash2,
+  Upload,
   X,
 } from "lucide-react";
-
+import BulkActions from "@/components/admin/BulkActions";
+import { useBulkSelection } from "@/components/admin/useBulkSelection";
+import AdminImportDialog from "@/components/admin/AdminImportDialog";
 import AdminShell from "@/components/admin/AdminShell";
-import { API_URL } from "@/lib/api";
+import { displayTopicName } from "@/lib/topic-display";
+import { adminApiFetch } from "@/lib/admin-api";
 
-type Topic = {
+type Kind = "topic" | "category";
+type BaseItem = {
   id: number;
-
   name: string;
   slug: string;
-
-  description:
-    | string
-    | null;
-
+  description: string | null;
+  image?: string | null;
   visible: boolean;
-
   displayOrder: number;
-
-  nuggetCount: number;
-
-  createdAt?: string;
-  updatedAt?: string;
 };
-
+type Topic = BaseItem & {
+  categoryId: number | null;
+  categoryName: string | null;
+  nuggetCount: number;
+};
+type Category = BaseItem & { topicCount: number };
+type Editor = { kind: Kind; item: BaseItem | null };
+const primary =
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#E28906] px-4 py-2 font-semibold text-[#080808] transition hover:bg-[#E28906] active:translate-y-px focus-visible:outline-2 focus-visible:outline-[#E28906] disabled:opacity-40 disabled:cursor-not-allowed";
+const secondary =
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-[#E28906]/35 px-4 py-2 text-[#E28906] transition hover:bg-white/[0.08] active:translate-y-px focus-visible:outline-2 focus-visible:outline-[#E28906] disabled:opacity-40 disabled:cursor-not-allowed";
+const inputClass =
+  "mt-2 w-full rounded-md border border-white/15 bg-[#080808] px-3 py-3 text-sm text-white outline-none focus:border-[#E28906]";
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await adminApiFetch(path, init);
+  const text = await response.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    throw new Error(
+      `The server returned an unreadable response (HTTP ${response.status}). Please retry.`,
+    );
+  }
+  if (!response.ok)
+    throw new Error(
+      response.status === 401
+        ? "Your admin session expired. Please log in again."
+        : response.status === 404 && path === "/categories"
+          ? "Categories are unavailable on the current API deployment. Retry after the backend finishes updating."
+          : Array.isArray(data?.message)
+            ? data.message.join("; ")
+            : data?.message || "The request could not be completed.",
+    );
+  if (data === null)
+    throw new Error("The server returned an empty response. Please retry.");
+  return data;
+}
+async function fetchTaxonomy(signal?: AbortSignal) {
+  const [topics, categories] = await Promise.allSettled([
+    request<Topic[]>("/topics", { signal, cache: "no-store" }),
+    request<Category[]>("/categories", { signal, cache: "no-store" }),
+  ]);
+  return {
+    topics: topics.status === "fulfilled" ? topics.value : null,
+    categories: categories.status === "fulfilled" ? categories.value : null,
+    error: [topics, categories]
+      .filter((result) => result.status === "rejected")
+      .map((result) => message((result as PromiseRejectedResult).reason))
+      .join(" "),
+  };
+}
+function jsonBody(value: unknown): RequestInit {
+  return {
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(value),
+  };
+}
 export default function AdminTopicsPage() {
-  const [topics, setTopics] =
-    useState<Topic[]>([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
-
-  const [success, setSuccess] =
-    useState("");
-
-  const [
-    modalOpen,
-    setModalOpen,
-  ] = useState(false);
-
-  const [
-    editingTopic,
-    setEditingTopic,
-  ] =
-    useState<Topic | null>(
-      null,
-    );
-
-  const [name, setName] =
-    useState("");
-
-  const [
-    description,
-    setDescription,
-  ] = useState("");
-
-  const [visible, setVisible] =
-    useState(true);
-
-  const [saving, setSaving] =
-    useState(false);
-
-  /* =========================================
-     TOKEN
-  ========================================= */
-
-  function getAdminToken() {
-    return (
-      localStorage.getItem(
-        "adminToken",
-      ) ||
-      sessionStorage.getItem(
-        "adminToken",
-      )
-    );
+  const [topics, setTopics] = useState<Topic[]>([]),
+    [categories, setCategories] = useState<Category[]>([]);
+  const [kind, setKind] = useState<Kind>("topic"),
+    [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true),
+    [busy, setBusy] = useState(false);
+  const [error, setError] = useState(""),
+    [success, setSuccess] = useState("");
+  const [editor, setEditor] = useState<Editor | null>(null),
+    [deleting, setDeleting] = useState<Editor | null>(null);
+  const [name, setName] = useState(""),
+    [description, setDescription] = useState(""),
+    [image, setImage] = useState(""),
+    [visible, setVisible] = useState(true),
+    [categoryId, setCategoryId] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+  async function load(signal?: AbortSignal) {
+    const result = await fetchTaxonomy(signal);
+    if (!signal?.aborted) {
+      if (result.topics) setTopics(result.topics);
+      if (result.categories) setCategories(result.categories);
+      setError(result.error);
+    }
   }
-
-  /* =========================================
-     LOAD
-  ========================================= */
-
   useEffect(() => {
-    loadTopics();
+    const controller = new AbortController();
+    void fetchTaxonomy(controller.signal)
+      .then((result) => {
+        if (!controller.signal.aborted) {
+          if (result.topics) setTopics(result.topics);
+          if (result.categories) setCategories(result.categories);
+          setError(result.error);
+        }
+      })
+      .catch((cause) => {
+        if (!controller.signal.aborted) setError(message(cause));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, []);
-
-  async function loadTopics() {
-    const token =
-      getAdminToken();
-
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
+  function openEditor(nextKind: Kind, item: BaseItem | null = null) {
+    setEditor({ kind: nextKind, item });
+    setName(nextKind === "topic" ? displayTopicName(item?.name || "") : item?.name || "");
+    setDescription(item?.description || "");
+    setImage(item?.image || "");
+    setVisible(item?.visible ?? true);
+    setCategoryId(
+      nextKind === "topic" && item && "categoryId" in item
+        ? String(item.categoryId ?? "")
+        : "",
+    );
+    setError("");
+    setSuccess("");
+  }
+  async function save(event: FormEvent) {
+    event.preventDefault();
+    if (!editor || busy) return;
+    setBusy(true);
+    setError("");
+    setSuccess("");
     try {
-      const response =
-        await fetch(
-          `${API_URL}/admin/topics`,
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          },
-        );
-
-      const data =
-        await response
-          .json()
-          .catch(() => []);
-
-      if (!response.ok) {
-        setError(
-          data.message ||
-            "Could not load topics.",
-        );
-
-        return;
-      }
-
-      setTopics(
-        Array.isArray(data)
-          ? data
-          : [],
-      );
-    } catch {
-      setError(
-        "Could not connect to the server.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  /* =========================================
-     OPEN CREATE
-  ========================================= */
-
-  function openCreate() {
-    setEditingTopic(null);
-
-    setName("");
-    setDescription("");
-    setVisible(true);
-
-    setError("");
-    setSuccess("");
-
-    setModalOpen(true);
-  }
-
-  /* =========================================
-     OPEN EDIT
-  ========================================= */
-
-  function openEdit(
-    topic: Topic,
-  ) {
-    setEditingTopic(
-      topic,
-    );
-
-    setName(topic.name);
-
-    setDescription(
-      topic.description || "",
-    );
-
-    setVisible(
-      topic.visible,
-    );
-
-    setError("");
-    setSuccess("");
-
-    setModalOpen(true);
-  }
-
-  /* =========================================
-     SAVE TOPIC
-  ========================================= */
-
-  async function saveTopic() {
-    if (!name.trim()) {
-      setError(
-        "Enter a topic name.",
-      );
-
-      return;
-    }
-
-    const token =
-      getAdminToken();
-
-    if (!token) return;
-
-    setSaving(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const url =
-        editingTopic
-          ? `${API_URL}/admin/topics/${editingTopic.id}`
-          : `${API_URL}/admin/topics`;
-
-      const response =
-        await fetch(url, {
-          method:
-            editingTopic
-              ? "PATCH"
-              : "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            Authorization:
-              `Bearer ${token}`,
-          },
-
-          body:
-            JSON.stringify({
-              name:
-                name.trim(),
-
-              description:
-                description.trim(),
-
-              visible,
+      await request(
+        `/${editor.kind === "topic" ? "topics" : "categories"}${editor.item ? `/${editor.item.id}` : ""}`,
+        {
+          method: editor.item ? "PATCH" : "POST",
+          ...jsonBody({
+            name: editor.kind === "topic" && editor.item && name.trim() === displayTopicName(editor.item.name) ? editor.item.name : name.trim(),
+            description: description.trim(),
+            visible,
+            ...(editor.kind === "topic" && {
+              image,
+              categoryId: categoryId ? Number(categoryId) : null,
             }),
-        });
-
-      const data =
-        await response
-          .json()
-          .catch(() => ({}));
-
-      if (!response.ok) {
-        setError(
-          Array.isArray(
-            data.message,
-          )
-            ? data.message.join(
-                ", ",
-              )
-            : data.message ||
-                "Could not save topic.",
-        );
-
-        return;
-      }
-
-      setModalOpen(false);
-
+          }),
+        },
+      );
       setSuccess(
-        editingTopic
-          ? "Topic updated."
-          : "Topic created.",
+        `${editor.kind === "topic" ? "Topic" : "Category"} ${editor.item ? "updated" : "created"}.`,
       );
-
-      await loadTopics();
-    } catch {
-      setError(
-        "Could not connect to the server.",
-      );
+      setEditor(null);
+      await load();
+    } catch (cause) {
+      setError(message(cause));
     } finally {
-      setSaving(false);
+      setBusy(false);
     }
   }
-
-  /* =========================================
-     REORDER
-  ========================================= */
-
-  async function moveTopic(
-    index: number,
-    direction:
-      | "up"
-      | "down",
-  ) {
-    const newIndex =
-      direction ===
-      "up"
-        ? index - 1
-        : index + 1;
-
-    if (
-      newIndex < 0 ||
-      newIndex >=
-        topics.length
-    ) {
-      return;
-    }
-
-    const reordered =
-      [...topics];
-
-    const [
-      movedTopic,
-    ] =
-      reordered.splice(
-        index,
-        1,
-      );
-
-    reordered.splice(
-      newIndex,
-      0,
-      movedTopic,
-    );
-
-    setTopics(reordered);
-
-    const token =
-      getAdminToken();
-
-    if (!token) return;
-
+  async function remove() {
+    if (!deleting?.item || busy) return;
+    setBusy(true);
+    setError("");
+    setSuccess("");
     try {
-      const response =
-        await fetch(
-          `${API_URL}/admin/topics/reorder`,
-          {
-            method: "PATCH",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              Authorization:
-                `Bearer ${token}`,
-            },
-
-            body:
-              JSON.stringify({
-                ids:
-                  reordered.map(
-                    (topic) =>
-                      topic.id,
-                  ),
-              }),
-          },
-        );
-
-      if (!response.ok) {
-        await loadTopics();
-
-        setError(
-          "Could not save topic order.",
-        );
-      }
-    } catch {
-      await loadTopics();
-
-      setError(
-        "Could not save topic order.",
+      await request(
+        `/${deleting.kind === "topic" ? "topics" : "categories"}/${deleting.item.id}`,
+        { method: "DELETE" },
       );
+      setSuccess(
+        `${deleting.kind === "topic" ? "Topic" : "Category"} deleted.`,
+      );
+      setDeleting(null);
+      if (deleting.kind === "category") setFilter("all");
+      await load();
+    } catch (cause) {
+      setError(message(cause));
+    } finally {
+      setBusy(false);
     }
   }
-
+  async function move(index: number, direction: number) {
+    if (busy || index + direction < 0 || index + direction >= topics.length)
+      return;
+    const reordered = [...topics];
+    [reordered[index], reordered[index + direction]] = [
+      reordered[index + direction],
+      reordered[index],
+    ];
+    setBusy(true);
+    setError("");
+    try {
+      const saved = await request<Topic[]>("/topics/reorder", {
+        method: "PATCH",
+        ...jsonBody({ ids: reordered.map((topic) => topic.id) }),
+      });
+      setTopics(saved);
+    } catch (cause) {
+      setError(message(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+  const shownTopics = topics.filter(
+    (topic) =>
+      filter === "all" ||
+      (filter === "none"
+        ? topic.categoryId === null
+        : topic.categoryId === Number(filter)),
+  );
+  const [search, setSearch] = useState("");
+  const items = (kind === "topic" ? shownTopics : categories).filter((item) =>
+    `${item.name} ${item.description || ""}`
+      .toLowerCase()
+      .includes(search.trim().toLowerCase()),
+  );
+  const selection = useBulkSelection(
+    JSON.stringify([kind, filter, search]),
+    items.map((item) => String(item.id)),
+  );
+  async function applyBulk(action: string, ids: string[]) {
+    setError("");
+    setSuccess("");
+    const result = await request<{ affected: number; nuggetsAffected?: number }>(
+      `/${kind === "topic" ? "topics" : "categories"}/bulk`,
+      { method: "POST", ...jsonBody({ action, ids }) },
+    );
+    setSuccess(
+      result.nuggetsAffected !== undefined
+        ? `${result.nuggetsAffected} Nuggets in ${result.affected} selected topics marked ${action === "gold" ? "Gold/Premium" : "Free"}.`
+        : `${result.affected} ${kind === "topic" ? "topics" : "categories"} updated (${action}).`,
+    );
+    await load();
+  }
+  const assigned = deleting?.item
+    ? deleting.kind === "topic"
+      ? (deleting.item as Topic).nuggetCount
+      : (deleting.item as Category).topicCount
+    : 0;
   return (
     <AdminShell>
       <main className="px-4 py-6 sm:px-6 lg:px-7">
-        {/* HEADER */}
-
-        <section className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+        <section className="flex flex-col justify-between gap-5 xl:flex-row xl:items-start">
           <div>
-            <h1 className="font-serif text-[32px] leading-tight">
-              Topics &amp;
-              Categories
-            </h1>
-
-            <p className="mt-2 text-[10px] text-white/35">
-              Organise Nuggets into
-              core topics.
+            <h1 className="font-serif">Topics &amp; Categories</h1>
+            <p className="mt-2 text-[13px] text-white/45">
+              Organise Nuggets into topics, with optional categories to group
+              them.
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={
-              openCreate
-            }
-            className="inline-flex min-h-9 w-fit items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
-          >
-            <Plus size={12} />
-
-            New Topic
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => openEditor("topic")}
+              className={primary}
+            >
+              <Plus size={14} />
+              New Topic
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => openEditor("category")}
+              className={secondary}
+            >
+              <Plus size={14} />
+              New Category
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                setError("");
+                setSuccess("");
+                setImportOpen(true);
+              }}
+              className={secondary}
+            >
+              <Upload size={14} />
+              Import
+            </button>
+          </div>
         </section>
-
-        {/* MESSAGES */}
-
-        {error && (
-          <div className="mt-5 rounded-md border border-red-500/20 bg-red-500/[0.05] px-4 py-3 text-[10px] text-red-400">
+        {error && !editor && !deleting && !importOpen && (
+          <p
+            role="alert"
+            className="mt-5 rounded border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-300"
+          >
             {error}
-          </div>
+            <button
+              type="button"
+              disabled={busy || loading}
+              className={`${secondary} ml-3`}
+              onClick={() =>
+                void load().catch((cause) => setError(message(cause)))
+              }
+            >
+              Retry Loading
+            </button>
+          </p>
         )}
-
         {success && (
-          <div className="mt-5 flex items-center gap-2 rounded-md border border-emerald-500/20 bg-emerald-500/[0.05] px-4 py-3">
-            <Check
-              size={12}
-              className="text-emerald-400"
-            />
-
-            <span className="text-[10px] text-emerald-400">
-              {success}
-            </span>
-          </div>
+          <p
+            role="status"
+            className="mt-5 flex items-center gap-2 rounded border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm text-emerald-300"
+          >
+            <Check size={16} />
+            {success}
+          </p>
         )}
-
-        {/* TOPIC CARDS */}
-
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <div
+            className="flex gap-3"
+            role="group"
+            aria-label="Choose topics or categories"
+          >
+            {(["topic", "category"] as const).map((value) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={kind === value}
+                disabled={busy}
+                onClick={() => setKind(value)}
+                className={kind === value ? primary : secondary}
+              >
+                {value === "topic"
+                  ? `Topics (${topics.length})`
+                  : `Categories (${categories.length})`}
+              </button>
+            ))}
+          </div>
+          {kind === "topic" && (
+            <label className="text-sm text-white/55">
+              Category
+              <select
+                aria-label="Filter by category"
+                value={filter}
+                onChange={(event) => setFilter(event.target.value)}
+                className="ml-3 rounded border border-white/15 bg-[#080808] px-3 py-2 text-sm"
+              >
+                <option value="all">All categories</option>
+                <option value="none">Uncategorized</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
+        <label className="mt-4 block text-sm text-white/55">
+          Search {kind === "topic" ? "topics" : "categories"}
+          <input
+            aria-label="Search topics and categories"
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            className={inputClass}
+            placeholder="Search by name or description"
+          />
+        </label>
+        <BulkActions
+          noun={kind === "topic" ? "topics" : "categories"}
+          ids={selection.ids}
+          total={items.length}
+          all={selection.all}
+          toggleAll={selection.toggleAll}
+          clear={selection.clear}
+          names={items
+            .filter((item) => selection.selected.has(String(item.id)))
+            .map((item) => kind === "topic" ? displayTopicName(item.name) : item.name)}
+          actions={[
+            { value: "delete", label: "Delete selected" },
+            { value: "show", label: "Make visible" },
+            { value: "hide", label: "Hide selected" },
+            ...(kind === "topic" ? [
+              { value: "gold", label: "Mark topic Nuggets as Gold/Premium" },
+              { value: "free", label: "Make topic Nuggets Free" },
+            ] : []),
+          ]}
+          apply={applyBulk}
+        />
+        {kind === "topic" && (
+          <p className="mt-2 text-[13px] text-white/50">Gold and Free actions update all current Nuggets in the selected topics, including drafts. New Nuggets keep the access setting chosen when they are created.</p>
+        )}
         {loading ? (
-          <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {Array.from({
-              length: 6,
-            }).map(
-              (_, index) => (
-                <div
-                  key={index}
-                  className="h-[190px] animate-pulse rounded-[10px] border border-white/10 bg-[#111111]"
-                />
-              ),
-            )}
-          </section>
+          <p className="mt-6 text-sm text-white/40" role="status">
+            Loading topics and categories…
+          </p>
+        ) : items.length === 0 ? (
+          <div className="mt-6 rounded-[10px] border border-white/10 bg-[#111111] p-10 text-center text-sm text-white/40">
+            No {kind === "topic" ? "topics" : "categories"} to show.
+          </div>
         ) : (
           <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {topics.map(
-              (
-                topic,
-                index,
-              ) => (
-                <article
-                  key={
-                    topic.id
-                  }
-                  className="flex min-h-[190px] flex-col justify-end rounded-[10px] border border-white/10 bg-[#111111] p-5"
-                >
-                  <h2 className="font-serif text-[18px] leading-tight">
-                    {
-                      topic.name
-                    }
-                  </h2>
-
-                  <p className="mt-2 text-[9px] text-white/30">
-                    {
-                      topic.nuggetCount
-                    }{" "}
-                    {topic.nuggetCount ===
-                    1
-                      ? "nugget"
-                      : "nuggets"}
+            {items.map((item) => (
+              <article
+                key={item.id}
+                className="flex min-h-[190px] flex-col rounded-[10px] border border-white/10 bg-[#111111] p-5"
+              >
+                <label className="mb-3 inline-flex items-center gap-2 text-[13px] text-white/60">
+                  <input
+                    type="checkbox"
+                    aria-label={`Select ${kind === "topic" ? displayTopicName(item.name) : item.name}`}
+                    checked={selection.selected.has(String(item.id))}
+                    onChange={() => selection.toggle(String(item.id))}
+                    className="h-4 w-4 accent-[#E28906]"
+                  />
+                  Select
+                </label>
+                <h2 className="font-serif">{kind === "topic" ? displayTopicName(item.name) : item.name}</h2>
+                {item.description && (
+                  <p className="mt-2 whitespace-pre-line text-sm text-white/40">
+                    {item.description}
                   </p>
-
-                  <div className="mt-4 flex items-center justify-between">
-                    <span
-                      className={`rounded-full border px-2.5 py-1 text-[7px] ${
-                        topic.visible
-                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                          : "border-white/10 bg-white/[0.04] text-white/35"
-                      }`}
-                    >
-                      {topic.visible
-                        ? "Visible"
-                        : "Hidden"}
-                    </span>
-
+                )}
+                <p className="mt-3 text-[13px] text-white/35">
+                  {kind === "topic"
+                    ? `${quantity((item as Topic).nuggetCount, "Nugget")} · ${(item as Topic).categoryName || "Uncategorized"}`
+                    : quantity((item as Category).topicCount, "topic")}
+                </p>
+                <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-4">
+                  <span
+                    className={`rounded-full border px-2.5 py-1 text-[11px] ${item.visible ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400" : "border-white/10 text-white/35"}`}
+                  >
+                    {item.visible ? "Visible" : "Hidden"}
+                  </span>
+                  <div className="flex gap-4">
                     <button
                       type="button"
-                      onClick={() =>
-                        openEdit(
-                          topic,
-                        )
-                      }
-                      className="inline-flex items-center gap-1.5 text-[8px] text-[#C8A35A] transition hover:text-[#E0C48A]"
+                      disabled={busy}
+                      onClick={() => openEditor(kind, item)}
+                      className="inline-flex items-center gap-1.5 text-[#E28906]"
                     >
-                      <Pencil
-                        size={
-                          10
-                        }
-                      />
-
+                      <Pencil size={13} />
                       Edit
                     </button>
-                  </div>
-
-                  {/* ORDER CONTROLS */}
-
-                  <div className="mt-4 flex gap-2 border-t border-white/[0.06] pt-3">
                     <button
                       type="button"
-                      disabled={
-                        index ===
-                        0
-                      }
-                      onClick={() =>
-                        moveTopic(
-                          index,
-                          "up",
-                        )
-                      }
-                      className="flex h-7 w-7 items-center justify-center rounded border border-white/10 text-white/30 transition hover:text-white disabled:opacity-20"
-                      title="Move up"
+                      disabled={busy}
+                      onClick={() => {
+                        setDeleting({ kind, item });
+                        setError("");
+                        setSuccess("");
+                      }}
+                      className="inline-flex items-center gap-1.5 text-red-300"
                     >
-                      <ChevronUp
-                        size={
-                          12
-                        }
-                      />
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={
-                        index ===
-                        topics.length -
-                          1
-                      }
-                      onClick={() =>
-                        moveTopic(
-                          index,
-                          "down",
-                        )
-                      }
-                      className="flex h-7 w-7 items-center justify-center rounded border border-white/10 text-white/30 transition hover:text-white disabled:opacity-20"
-                      title="Move down"
-                    >
-                      <ChevronDown
-                        size={
-                          12
-                        }
-                      />
+                      <Trash2 size={13} />
+                      Delete
                     </button>
                   </div>
-                </article>
-              ),
-            )}
+                </div>
+                {kind === "topic" && filter === "all" && (
+                  <div className="mt-4 flex gap-2 border-t border-white/10 pt-3">
+                    <button
+                      type="button"
+                      disabled={busy || topics[0]?.id === item.id}
+                      aria-label={`Move ${displayTopicName(item.name)} up`}
+                      onClick={() =>
+                        void move(
+                          topics.findIndex((topic) => topic.id === item.id),
+                          -1,
+                        )
+                      }
+                      className="rounded border border-white/10 p-2 text-white/45 disabled:opacity-20"
+                    >
+                      <ChevronUp size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy || topics.at(-1)?.id === item.id}
+                      aria-label={`Move ${displayTopicName(item.name)} down`}
+                      onClick={() =>
+                        void move(
+                          topics.findIndex((topic) => topic.id === item.id),
+                          1,
+                        )
+                      }
+                      className="rounded border border-white/10 p-2 text-white/45 disabled:opacity-20"
+                    >
+                      <ChevronDown size={14} />
+                    </button>
+                  </div>
+                )}
+              </article>
+            ))}
           </section>
         )}
-
-        {!loading &&
-          topics.length ===
-            0 && (
-            <div className="mt-6 rounded-[10px] border border-white/10 bg-[#111111] px-6 py-12 text-center">
-              <p className="text-[10px] text-white/35">
-                No topics have
-                been created yet.
-              </p>
-            </div>
-          )}
-
-        {/* DISPLAY ORDER */}
-
-        {topics.length >
-          0 && (
+        {kind === "topic" && topics.length > 0 && (
           <section className="mt-6 rounded-[10px] border border-white/10 bg-[#111111] p-5">
-            <h2 className="font-serif text-[18px]">
-              Display Order
-            </h2>
-
-            <p className="mt-2 text-[9px] text-white/30">
-              Topics appear in
-              this order across
-              the website. Use the
-              arrows on each card
-              to reorder them.
+            <h2 className="font-serif">Display Order</h2>
+            <p className="mt-2 text-sm text-white/35">
+              Choose All categories to reorder topics with the arrows. Nuggets
+              keep their current topics when categories are added.
             </p>
-
             <div className="mt-4 flex flex-wrap gap-2">
-              {topics.map(
-                (
-                  topic,
-                  index,
-                ) => (
-                  <span
-                    key={
-                      topic.id
-                    }
-                    className="rounded-md border border-white/10 bg-[#080808] px-3 py-2 text-[8px] text-white/50"
-                  >
-                    {index +
-                      1}
-                    .{" "}
-                    {
-                      topic.name
-                    }
-                  </span>
-                ),
-              )}
+              {topics.map((topic) => (
+                <span
+                  key={topic.id}
+                  className="rounded border border-white/10 bg-[#080808] px-3 py-2 text-[13px] text-white/50"
+                >
+                  {displayTopicName(topic.name)}
+                </span>
+              ))}
             </div>
           </section>
         )}
-
-        {/* CREATE / EDIT MODAL */}
-
-        {modalOpen && (
-          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 px-5">
-            <div className="w-full max-w-[460px] rounded-[10px] border border-white/10 bg-[#111111] p-6 shadow-2xl">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="font-serif text-[24px]">
-                    {editingTopic
-                      ? "Edit Topic"
-                      : "New Topic"}
-                  </h2>
-
-                  <p className="mt-2 text-[9px] leading-5 text-white/30">
-                    {editingTopic
-                      ? "Update this topic and its visibility."
-                      : "Add a new category for organising Nuggets."}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setModalOpen(
-                      false,
-                    )
-                  }
-                  className="text-white/30 hover:text-white"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              <div className="mt-6">
-                <label className="text-[8px] text-white/35">
-                  Topic Name
+        {editor && (
+          <Dialog
+            title={`${editor.item ? "Edit" : "New"} ${editor.kind === "topic" ? "Topic" : "Category"}`}
+            busy={busy}
+            close={() => setEditor(null)}
+          >
+            <form onSubmit={save}>
+              <fieldset disabled={busy} className="space-y-4">
+                <label className="block text-sm text-white/55">
+                  {editor.kind === "topic" ? "Topic" : "Category"} Name
+                  <input
+                    required
+                    maxLength={120}
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    className={inputClass}
+                  />
                 </label>
-
-                <input
-                  value={name}
-                  onChange={(
-                    event,
-                  ) =>
-                    setName(
-                      event
-                        .target
-                        .value,
-                    )
-                  }
-                  placeholder="Leadership & Governance"
-                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
-                />
-              </div>
-
-              <div className="mt-4">
-                <label className="text-[8px] text-white/35">
+                <label className="block text-sm text-white/55">
                   Description
+                  <textarea
+                    rows={4}
+                    maxLength={1000}
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    className={inputClass}
+                  />
                 </label>
-
-                <textarea
-                  rows={4}
-                  value={
-                    description
-                  }
-                  onChange={(
-                    event,
-                  ) =>
-                    setDescription(
-                      event
-                        .target
-                        .value,
-                    )
-                  }
-                  placeholder="Short description of this topic..."
-                  className="mt-2 w-full resize-none rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
-                />
-              </div>
-
-              <label className="mt-4 flex cursor-pointer items-center justify-between rounded-md border border-white/[0.07] bg-[#080808] px-4 py-3">
-                <div>
-                  <p className="text-[9px] text-white/60">
-                    Visible
-                  </p>
-
-                  <p className="mt-1 text-[8px] text-white/25">
-                    Show this
-                    topic publicly.
-                  </p>
-                </div>
-
-                <input
-                  type="checkbox"
-                  checked={
-                    visible
-                  }
-                  onChange={(
-                    event,
-                  ) =>
-                    setVisible(
-                      event
-                        .target
-                        .checked,
-                    )
-                  }
-                  className="h-4 w-4 accent-[#C8A35A]"
-                />
-              </label>
-
+                {editor.kind === "topic" && (
+                  <label className="block text-sm text-white/55">
+                    Category
+                    <select
+                      aria-label="Category"
+                      value={categoryId}
+                      onChange={(event) => setCategoryId(event.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="">Uncategorized</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                {editor.kind === "topic" && (
+                  <div className="text-sm text-white/55">
+                    <p>Cover Image</p>
+                    {image && (
+                      <div className="mt-2 flex items-center gap-3">
+                        <img src={image} alt="Topic cover preview" className="h-20 w-32 rounded object-cover" />
+                        <button type="button" disabled={busy} onClick={() => setImage("")} className="underline">
+                          Remove cover
+                        </button>
+                      </div>
+                    )}
+                    <ImageMediaPicker value={image} disabled={busy} onSelect={setImage} />
+                  </div>
+                )}
+                <label className="flex items-center justify-between rounded border border-white/10 bg-[#080808] p-4 text-sm text-white/55">
+                  Visible
+                  <input
+                    type="checkbox"
+                    checked={visible}
+                    onChange={(event) => setVisible(event.target.checked)}
+                    className="h-4 w-4 accent-[#E28906]"
+                  />
+                </label>
+              </fieldset>
+              {error && (
+                <p role="alert" className="mt-4 text-sm text-red-300">
+                  {error}
+                </p>
+              )}
               <div className="mt-6 flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() =>
-                    setModalOpen(
-                      false,
-                    )
-                  }
-                  className="h-9 rounded-md border border-white/10 px-4 text-[9px] text-white/45"
+                  disabled={busy}
+                  onClick={() => setEditor(null)}
+                  className={secondary}
                 >
                   Cancel
                 </button>
-
-                <button
-                  type="button"
-                  disabled={
-                    saving
-                  }
-                  onClick={
-                    saveTopic
-                  }
-                  className="h-9 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:opacity-50"
-                >
-                  {saving
-                    ? "Saving..."
-                    : editingTopic
+                <button type="submit" disabled={busy} className={primary}>
+                  {busy
+                    ? "Saving…"
+                    : editor.item
                       ? "Save Changes"
-                      : "Create Topic"}
+                      : editor.kind === "topic"
+                        ? "Create Topic"
+                        : "Create Category"}
                 </button>
               </div>
+            </form>
+          </Dialog>
+        )}
+        {deleting?.item && (
+          <Dialog
+            title={`Delete ${deleting.kind === "topic" ? "Topic" : "Category"}?`}
+            busy={busy}
+            close={() => setDeleting(null)}
+          >
+            <p className="text-sm leading-6 text-white/60">
+              Delete <strong>{deleting.kind === "topic" ? displayTopicName(deleting.item.name) : deleting.item.name}</strong>?
+            </p>
+            {assigned > 0 ? (
+              <p className="mt-4 text-sm leading-6 text-[#E28906]">
+                {deleting.kind === "topic"
+                  ? "This topic is assigned to Nuggets. Reassign those Nuggets before deleting it."
+                  : "This category contains topics. Edit those topics and move them to another category or Uncategorized first."}
+              </p>
+            ) : (
+              <p className="mt-4 text-sm leading-6 text-white/45">
+                This removes the {deleting.kind}. Nuggets are never deleted.
+                {deleting.kind === "topic"
+                  ? " Any follows for this topic will also be removed."
+                  : ""}
+              </p>
+            )}
+            {error && (
+              <p role="alert" className="mt-4 text-sm text-red-300">
+                {error}
+              </p>
+            )}
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setDeleting(null)}
+                className={secondary}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={busy || assigned > 0}
+                onClick={() => void remove()}
+                className="rounded-md bg-red-500 px-4 py-2 font-semibold text-white disabled:opacity-40"
+              >
+                {busy ? "Deleting…" : "Delete Permanently"}
+              </button>
             </div>
-          </div>
+          </Dialog>
+        )}
+        {importOpen && (
+          <AdminImportDialog
+            initialKind="topics"
+            close={() => setImportOpen(false)}
+            completed={async (result) => {
+              setSuccess(result);
+              try {
+                await load();
+              } catch {
+                setError(
+                  "Import completed. Refresh the page to reload the list.",
+                );
+              }
+            }}
+          />
         )}
       </main>
     </AdminShell>
+  );
+}
+function quantity(count: number, noun: string) {
+  return `${count} ${count === 1 ? noun : noun === "category" ? "categories" : `${noun}s`}`;
+}
+function message(cause: unknown) {
+  return cause instanceof Error
+    ? cause.message
+    : "The request failed. Please retry.";
+}
+function Dialog({
+  title,
+  busy,
+  close,
+  wide,
+  children,
+}: {
+  title: string;
+  busy: boolean;
+  close: () => void;
+  wide?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <dialog
+      aria-label={title}
+      ref={(element) => {
+        if (element && !element.open) element.showModal();
+      }}
+      onCancel={(event) => {
+        if (busy) event.preventDefault();
+      }}
+      onClose={close}
+      className={`m-auto max-h-[90vh] w-[calc(100%-32px)] overflow-y-auto rounded-[10px] border border-white/10 bg-[#111111] p-6 text-[#FAF9F6] shadow-2xl backdrop:bg-black/75 ${wide ? "max-w-[760px]" : "max-w-[460px]"}`}
+    >
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <h2 className="font-serif">{title}</h2>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={close}
+          aria-label="Close dialog"
+          className="p-1 text-white/40 hover:text-white"
+        >
+          <X size={18} />
+        </button>
+      </div>
+      {children}
+    </dialog>
   );
 }

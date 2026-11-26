@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   ParseIntPipe,
   Patch,
@@ -32,7 +33,7 @@ export class PlaylistsController {
   ) {
     return this.playlistsService.createPlaylist(
       req.user.sub,
-      body.name,
+      body,
     );
   }
 
@@ -65,7 +66,7 @@ export class PlaylistsController {
     return this.playlistsService.updatePlaylist(
       req.user.sub,
       id,
-      body.name,
+      body,
     );
   }
 
@@ -91,5 +92,16 @@ export class PlaylistsController {
       req.user.sub,
       id,
     );
+  }
+}
+
+@Controller("shared-playlists")
+export class SharedPlaylistsController {
+  constructor(private readonly playlistsService: PlaylistsService) {}
+
+  @Get(":token")
+  @Header("Cache-Control", "private, no-store")
+  getSharedPlaylist(@Param("token") token: string) {
+    return this.playlistsService.getSharedPlaylist(token);
   }
 }

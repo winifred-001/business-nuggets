@@ -1,0 +1,44 @@
+
+name: Deploy Business Nuggets
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: business-nuggets-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: business-nuggets-prod-2026
+          workload_identity_provider: projects/285028104106/locations/global/workloadIdentityPools/bn-github/providers/bn-main
+          service_account: bn-deployer@business-nuggets-prod-2026.iam.gserviceaccount.com
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Deploy using Cloud Build
+        run: |
+          gcloud builds submit . \
+            --config=cloudbuild.yaml \
+            --region=europe-west1 \
+            --project=business-nuggets-prod-2026 \
+            --timeout=1800s

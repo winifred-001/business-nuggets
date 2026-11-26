@@ -1,5 +1,11 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
+import AudioMediaInput from "@/components/AudioMediaInput";
+import R2ImagePicker from "@/components/R2ImagePicker";
+import R2MediaMatchStatus from "@/components/R2MediaMatchStatus";
+import { useR2MediaAutoMatch } from "@/lib/use-r2-media-auto-match";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -17,7 +23,6 @@ import {
   CheckCircle2,
   FileText,
   ImageIcon,
-  Lightbulb,
   ListChecks,
   Plus,
   Save,
@@ -30,29 +35,15 @@ import {
 
 import AdminShell from "@/components/admin/AdminShell";
 import { API_URL } from "@/lib/api";
+import { BIBLE_BOOKS, BIBLE_GROUPS, referenceWithBook, bibleGroupForBook, bibleBookFromReference } from "@/lib/bible-books";
+import { useR2SongAutoMatch } from "@/lib/use-r2-song-auto-match";
 
-const bibleSections = [
-  "The Pentateuch",
-  "History & Leadership",
-  "Wisdom Literature",
-  "The Prophets",
-  "New Testament",
-] as const;
+const bibleSections = BIBLE_GROUPS.map(group => group.name);
 
 type Topic = {
   id: number;
   name: string;
   visible: boolean;
-};
-
-type ScriptureBook = {
-  id: number;
-  name: string;
-  visible: boolean;
-};
-
-type ScriptureResponse = {
-  books: ScriptureBook[];
 };
 
 type FormState = {
@@ -64,6 +55,7 @@ type FormState = {
   scriptureText: string;
   image: string;
   keyPrinciple: string;
+  details: string;
   marketplaceApplication: string;
   duration: string;
   isGold: boolean;
@@ -71,6 +63,7 @@ type FormState = {
   bibleSection: string;
   featured: boolean;
   audioUrl: string;
+  nuggetAudioUrl: string;
 };
 
 const initialForm: FormState = {
@@ -82,13 +75,15 @@ const initialForm: FormState = {
   scriptureText: "",
   image: "",
   keyPrinciple: "",
+  details: "",
   marketplaceApplication: "",
-  duration: "5 min",
+  duration: "",
   isGold: false,
   book: "",
   bibleSection: "",
   featured: false,
   audioUrl: "",
+  nuggetAudioUrl: "",
 };
 
 function slugify(value: string) {
@@ -107,7 +102,6 @@ export default function NewNuggetPage() {
   const [actionSteps, setActionSteps] = useState(["", "", ""]);
   const [challenges, setChallenges] = useState([""]);
   const [topics, setTopics] = useState<Topic[]>([]);
-  const [books, setBooks] = useState<ScriptureBook[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState<"draft" | "published" | null>(null);
@@ -115,6 +109,35 @@ export default function NewNuggetPage() {
   const [success, setSuccess] = useState("");
 
   const slug = slugify(form.title);
+
+
+  const songMatchStatus = useR2SongAutoMatch(
+    form.number,
+    form.audioUrl,
+    (reference) => {
+      setForm((current) =>
+        current.audioUrl.trim()
+          ? current
+          : {
+              ...current,
+              audioUrl: reference,
+            },
+      );
+    },
+  );
+
+
+  const nuggetAudioMatchStatus = useR2MediaAutoMatch(
+    "nuggets", form.number, form.nuggetAudioUrl,
+    (reference) => setForm((current) => current.nuggetAudioUrl.trim()
+      ? current : { ...current, nuggetAudioUrl: reference }),
+  );
+
+  const imageMatchStatus = useR2MediaAutoMatch(
+    "images", form.number, form.image,
+    (reference) => setForm((current) => current.image.trim()
+      ? current : { ...current, image: reference }),
+  );
 
   function getToken() {
     return (
@@ -130,6 +153,11 @@ export default function NewNuggetPage() {
     setForm((current) => ({
       ...current,
       [field]: value,
+      ...(field === "book" ? { bibleSection: bibleGroupForBook(String(value)) || "", scriptureRef: referenceWithBook(String(value), current.scriptureRef) } : {}),
+      ...(field === "scriptureRef" && bibleBookFromReference(String(value)) ? {
+        book: bibleBookFromReference(String(value))!,
+        bibleSection: bibleGroupForBook(bibleBookFromReference(String(value))!) || "",
+      } : {}),
     }));
   }
 
@@ -143,33 +171,17 @@ export default function NewNuggetPage() {
       }
 
       try {
-        const [topicsResponse, scriptureResponse] = await Promise.all([
-          fetch(`${API_URL}/admin/topics`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          fetch(`${API_URL}/admin/scripture`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-        ]);
+        const topicsResponse = await fetch(`${API_URL}/admin/topics`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         const topicsData = await topicsResponse.json().catch(() => []);
-        const scriptureData: ScriptureResponse = await scriptureResponse
-          .json()
-          .catch(() => ({ books: [] }));
-
         if (topicsResponse.ok) {
           setTopics(Array.isArray(topicsData) ? topicsData : []);
         }
 
-        if (scriptureResponse.ok) {
-          setBooks(scriptureData.books || []);
-        }
       } catch {
-        setError("Could not load Topics and Scripture options.");
+        setError("Could not load Topics.");
       } finally {
         setLoadingOptions(false);
       }
@@ -333,6 +345,7 @@ export default function NewNuggetPage() {
       scriptureText: form.scriptureText.trim(),
       image: form.image.trim(),
       keyPrinciple: form.keyPrinciple.trim(),
+      details: form.details.trim(),
       marketplaceApplication: form.marketplaceApplication.trim(),
       practicalActionPlan: actionSteps
         .map((item) => item.trim())
@@ -347,6 +360,7 @@ export default function NewNuggetPage() {
       status,
       featured: form.featured,
       audioUrl: form.audioUrl.trim() || undefined,
+      nuggetAudioUrl: form.nuggetAudioUrl.trim() || undefined,
     };
 
     try {
@@ -404,7 +418,7 @@ export default function NewNuggetPage() {
 
             <Link
               href="/admin/nuggets"
-              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 px-4 text-[14px] text-white/60 transition hover:border-[#C8A35A]/35 hover:text-[#E0C48A]"
+              className="bn-button inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 px-4 text-[14px] text-white/60 transition hover:border-[#E28906]/35 hover:text-[#E28906]"
             >
               <ArrowLeft size={16} />
               Back to Nuggets
@@ -429,25 +443,11 @@ export default function NewNuggetPage() {
           <div className="mt-6 space-y-5">
             <FormSection
               icon={<FileText size={20} />}
-              title="Basic Information"
-              description="Set the foundational details for this Nugget."
+              title="Nugget Content"
+              description="HTML formatting is supported: <p>, <br>, <strong> (or <bold>), <em>, <u>, <ul>, <ol>, <li>, headings and links. You can also use **bold text**, ## Heading, and Enter for new lines. Scripts and embedded content are not supported."
             >
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-12">
-                <Field label="Nugget Number (BN)" required className="xl:col-span-3">
-                  <input
-                    type="number"
-                    min="1"
-                    value={form.number}
-                    onChange={(event) => updateField("number", event.target.value)}
-                    placeholder="e.g. 073"
-                    className={inputClass}
-                  />
-                  <p className="mt-2 text-[12px] text-white/25">
-                    It will appear as BN: {form.number || "---"}
-                  </p>
-                </Field>
-
-                <Field label="Title" required className="xl:col-span-5">
+              <div className="grid gap-5 md:grid-cols-2">
+                <Field label="Title" required className="md:col-span-2">
                   <input
                     value={form.title}
                     onChange={(event) => updateField("title", event.target.value)}
@@ -456,7 +456,7 @@ export default function NewNuggetPage() {
                   />
                 </Field>
 
-                <Field label="Slug" className="xl:col-span-4">
+                <Field label="Slug" className="md:col-span-2">
                   <input
                     value={slug}
                     readOnly
@@ -465,7 +465,18 @@ export default function NewNuggetPage() {
                   />
                 </Field>
 
-                <Field label="Topic" required className="xl:col-span-6">
+                <Field label="Scripture Reference" required>
+                  <input
+                    value={form.scriptureRef}
+                    onChange={(event) =>
+                      updateField("scriptureRef", event.target.value)
+                    }
+                    placeholder="e.g. Proverbs 23:7"
+                    className={inputClass}
+                  />
+                </Field>
+
+                <Field label="Topic" required>
                   <select
                     value={form.topic}
                     onChange={(event) => updateField("topic", event.target.value)}
@@ -485,72 +496,7 @@ export default function NewNuggetPage() {
                   </select>
                 </Field>
 
-                <Field label="Tag" required className="xl:col-span-6">
-                  <input
-                    value={form.tag}
-                    onChange={(event) => updateField("tag", event.target.value)}
-                    placeholder="e.g. leadership"
-                    className={inputClass}
-                  />
-                </Field>
-              </div>
-            </FormSection>
-
-            <FormSection
-              icon={<BookOpen size={20} />}
-              title="Scripture Details"
-              description="Add the biblical foundation for this Nugget."
-            >
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-12">
-                <Field label="Scripture Reference" required className="xl:col-span-4">
-                  <input
-                    value={form.scriptureRef}
-                    onChange={(event) =>
-                      updateField("scriptureRef", event.target.value)
-                    }
-                    placeholder="e.g. Proverbs 23:7"
-                    className={inputClass}
-                  />
-                </Field>
-
-                <Field label="Book" required className="xl:col-span-4">
-                  <select
-                    value={form.book}
-                    onChange={(event) => updateField("book", event.target.value)}
-                    disabled={loadingOptions}
-                    className={inputClass}
-                  >
-                    <option value="">
-                      {loadingOptions ? "Loading books..." : "Select a book"}
-                    </option>
-                    {books
-                      .filter((book) => book.visible)
-                      .map((book) => (
-                        <option key={book.id} value={book.name}>
-                          {book.name}
-                        </option>
-                      ))}
-                  </select>
-                </Field>
-
-                <Field label="Bible Section" required className="xl:col-span-4">
-                  <select
-                    value={form.bibleSection}
-                    onChange={(event) =>
-                      updateField("bibleSection", event.target.value)
-                    }
-                    className={inputClass}
-                  >
-                    <option value="">Select a Bible section</option>
-                    {bibleSections.map((section) => (
-                      <option key={section} value={section}>
-                        {section}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-
-                <Field label="Scripture Text" required className="md:col-span-2 xl:col-span-12">
+                <Field label="Scripture Text" required className="md:col-span-2">
                   <textarea
                     rows={5}
                     value={form.scriptureText}
@@ -561,16 +507,8 @@ export default function NewNuggetPage() {
                     className={textareaClass}
                   />
                 </Field>
-              </div>
-            </FormSection>
 
-            <FormSection
-              icon={<Lightbulb size={20} />}
-              title="Core Insight"
-              description="Capture the teaching and how it applies in the marketplace."
-            >
-              <div className="grid gap-5 lg:grid-cols-2">
-                <Field label="Key Principle" required>
+                <Field label="Key Principles and Boundaries" required className="md:col-span-2">
                   <textarea
                     rows={5}
                     value={form.keyPrinciple}
@@ -582,7 +520,17 @@ export default function NewNuggetPage() {
                   />
                 </Field>
 
-                <Field label="Marketplace Application" required>
+                <Field label="Explanation: Full Biblical Context and Teaching" className="md:col-span-2">
+                  <textarea
+                    rows={7}
+                    value={form.details}
+                    onChange={(event) => updateField("details", event.target.value)}
+                    placeholder="Add the full explanation and supporting details. Press Enter for a new line."
+                    className={textareaClass}
+                  />
+                </Field>
+
+                <Field label="Marketplace Application" required className="md:col-span-2">
                   <textarea
                     rows={5}
                     value={form.marketplaceApplication}
@@ -593,6 +541,7 @@ export default function NewNuggetPage() {
                     className={textareaClass}
                   />
                 </Field>
+
               </div>
             </FormSection>
 
@@ -604,7 +553,7 @@ export default function NewNuggetPage() {
               <div className="space-y-3">
                 {actionSteps.map((step, index) => (
                   <div key={index} className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#C8A35A]/10 text-[13px] font-semibold text-[#E0C48A]">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E28906]/10 text-[13px] font-semibold text-[#E28906]">
                       {index + 1}
                     </div>
 
@@ -633,7 +582,7 @@ export default function NewNuggetPage() {
               <button
                 type="button"
                 onClick={() => setActionSteps((current) => [...current, ""])}
-                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#C8A35A]/25 px-4 text-[13px] font-medium text-[#E0C48A] transition hover:bg-[#C8A35A]/10"
+                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#E28906]/25 px-4 text-[13px] font-medium text-[#E28906] transition hover:bg-[#E28906]/10"
               >
                 <Plus size={15} />
                 Add Action Step
@@ -678,11 +627,86 @@ export default function NewNuggetPage() {
               <button
                 type="button"
                 onClick={() => setChallenges((current) => [...current, ""])}
-                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/10 px-4 text-[13px] font-medium text-white/55 transition hover:border-[#C8A35A]/25 hover:text-[#E0C48A]"
+                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/10 px-4 text-[13px] font-medium text-white/55 transition hover:border-[#E28906]/25 hover:text-[#E28906]"
               >
                 <Plus size={15} />
                 Add Challenge
               </button>
+            </FormSection>
+
+            <FormSection
+              icon={<BookOpen size={20} />}
+              title="Nugget Information"
+              description="Set the Nugget number, tag and Bible book."
+            >
+              <div className="grid gap-5 md:grid-cols-2">
+                <Field label="Nugget Number (BN)" required>
+                  <input
+                    type="number"
+                    min="1"
+                    value={form.number}
+                    onChange={(event) => updateField("number", event.target.value)}
+                    placeholder="e.g. 073"
+                    className={inputClass}
+                  />
+                  <p className="mt-2 text-[12px] text-white/25">
+                    It will appear as BN: {form.number || "---"}
+                  </p>
+                  {songMatchStatus === "searching" && (
+                    <p className="mt-2 text-xs text-white/50">Searching R2 for its song...</p>
+                  )}
+                  {songMatchStatus === "multiple" && (
+                    <p className="mt-2 text-xs text-[#E28906]">Multiple matches found. Select the correct song using Browse R2 Files.</p>
+                  )}
+                  {songMatchStatus === "not_found" && (
+                    <p className="mt-2 text-xs text-white/40">No matching song found. You can choose one manually.</p>
+                  )}
+                  {songMatchStatus === "error" && (
+                    <p className="mt-2 text-xs text-red-400">Could not search R2. Choose a song manually.</p>
+                  )}
+                </Field>
+
+                <Field label="Tag" required>
+                  <input
+                    value={form.tag}
+                    onChange={(event) => updateField("tag", event.target.value)}
+                    placeholder="e.g. leadership"
+                    className={inputClass}
+                  />
+                </Field>
+
+                <Field label="Bible Book" required>
+                  <select
+                    value={form.book}
+                    onChange={(event) => updateField("book", event.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="">Select a book</option>
+                    {BIBLE_BOOKS.map((book) => (
+                      <option key={book} value={book}>{book}</option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Bible Section" required>
+                  <select
+                    value={form.bibleSection}
+                    disabled={Boolean(bibleGroupForBook(form.book))}
+                    onChange={(event) =>
+                      updateField("bibleSection", event.target.value)
+                    }
+                    className={inputClass}
+                  >
+                    <option value="">Select a Bible section</option>
+                    {bibleSections.map((section) => (
+                      <option key={section} value={section}>
+                        {section}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+              </div>
             </FormSection>
 
             <FormSection
@@ -705,9 +729,9 @@ export default function NewNuggetPage() {
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploading}
-                      className="flex min-h-[150px] w-full flex-col items-center justify-center rounded-lg border border-dashed border-white/15 bg-[#080808] px-5 text-center transition hover:border-[#C8A35A]/40 hover:bg-[#C8A35A]/[0.03] disabled:cursor-wait"
+                      className="flex min-h-[150px] w-full flex-col items-center justify-center rounded-lg border border-dashed border-white/15 bg-[#080808] px-5 text-center transition hover:border-[#E28906]/40 hover:bg-[#E28906]/[0.03] disabled:cursor-wait"
                     >
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#C8A35A]/10 text-[#E0C48A]">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E28906]/10 text-[#E28906]">
                         <Upload size={19} />
                       </div>
                       <p className="mt-3 text-[14px] font-medium text-white/70">
@@ -731,6 +755,8 @@ export default function NewNuggetPage() {
                       />
                     </Field>
                   </div>
+                  <R2ImagePicker value={form.image} onSelect={(url) => updateField("image", url)} disabled={uploading || saving !== null} />
+                  <R2MediaMatchStatus kind="images" status={imageMatchStatus} />
                 </div>
 
                 <div>
@@ -755,16 +781,34 @@ export default function NewNuggetPage() {
                   </Field>
                 </div>
 
-                <Field label="Audio URL (optional)" className="lg:col-span-2">
-                  <input
+                <Field label="Song URL (optional)" className="lg:col-span-2">
+                  <AudioMediaInput
+                    label="Song URL"
+                    bucket="song"
                     value={form.audioUrl}
-                    onChange={(event) => updateField("audioUrl", event.target.value)}
-                    placeholder="https://example.com/audio.mp3"
-                    className={inputClass}
+                    onChange={(value) => updateField("audioUrl", value)}
+                    detectDurationForValue={!form.duration.trim() && !form.nuggetAudioUrl.trim()}
+                    onDurationDetected={(duration) => {
+                      setForm((current) =>
+                        current.nuggetAudioUrl
+                        ? current
+                        : { ...current, duration },
+                      );
+                    }}
                   />
-                  <p className="mt-2 text-[12px] text-white/25">
-                    Add a direct audio link when an audio version is available.
-                  </p>
+                </Field>
+                <Field label="Nugget URL (optional)" className="lg:col-span-2">
+                  <AudioMediaInput
+                    label="Nugget URL"
+                    bucket="nuggets"
+                    value={form.nuggetAudioUrl}
+                    onChange={(value) => updateField("nuggetAudioUrl", value)}
+                    detectDurationForValue={!form.duration.trim()}
+                    onDurationDetected={(duration) =>
+                      updateField("duration", duration)
+                    }
+                  />
+                  <R2MediaMatchStatus kind="nuggets" status={nuggetAudioMatchStatus} />
                 </Field>
               </div>
             </FormSection>
@@ -801,8 +845,7 @@ export default function NewNuggetPage() {
                 <div className="rounded-lg border border-white/10 bg-[#080808] p-4">
                   <p className="text-[13px] font-medium text-white/70">Status</p>
                   <p className="mt-2 text-[12px] leading-5 text-white/30">
-                    Choose Save as Draft or Publish Nugget below. Published free
-                    Nuggets still follow the 10-free-Nugget limit.
+                    Choose Save as Draft or Publish Nugget below. You can publish as many free or Gold Nuggets as you choose.
                   </p>
                 </div>
               </div>
@@ -823,7 +866,7 @@ export default function NewNuggetPage() {
                   type="button"
                   onClick={() => submitNugget("draft")}
                   disabled={saving !== null || uploading}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/10 px-5 text-[14px] font-medium text-white/65 transition hover:border-[#C8A35A]/30 hover:text-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/10 px-5 text-[14px] font-medium text-white/65 transition hover:border-[#E28906]/30 hover:text-[#E28906] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Save size={16} />
                   {saving === "draft" ? "Saving..." : "Save as Draft"}
@@ -833,7 +876,7 @@ export default function NewNuggetPage() {
                   type="button"
                   onClick={() => submitNugget("published")}
                   disabled={saving !== null || uploading}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#C8A35A] px-5 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#E28906] px-5 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Send size={16} />
                   {saving === "published" ? "Publishing..." : "Publish Nugget"}
@@ -848,10 +891,10 @@ export default function NewNuggetPage() {
 }
 
 const inputClass =
-  "h-11 w-full rounded-lg border border-white/10 bg-[#080808] px-3.5 text-[14px] text-white/75 outline-none transition placeholder:text-white/20 focus:border-[#C8A35A]/45 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-11 w-full rounded-lg border border-white/10 bg-[#080808] px-3.5 text-[14px] text-white/75 outline-none transition placeholder:text-white/20 focus:border-[#E28906]/45 disabled:cursor-not-allowed disabled:opacity-50";
 
 const textareaClass =
-  "w-full resize-y rounded-lg border border-white/10 bg-[#080808] px-3.5 py-3 text-[14px] leading-6 text-white/75 outline-none transition placeholder:text-white/20 focus:border-[#C8A35A]/45";
+  "w-full resize-y rounded-lg border border-white/10 bg-[#080808] px-3.5 py-3 text-[14px] leading-6 text-white/75 outline-none transition placeholder:text-white/20 focus:border-[#E28906]/45";
 
 function FormSection({
   icon,
@@ -868,8 +911,8 @@ function FormSection({
     <section className="rounded-[10px] border border-white/10 bg-[#111111] p-4 sm:p-5 lg:p-6">
       <div className="grid gap-5 lg:grid-cols-[210px_minmax(0,1fr)] lg:gap-8">
         <div>
-          <div className="flex items-center gap-3 text-[#E0C48A]">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#C8A35A]/10">
+          <div className="flex items-center gap-3 text-[#E28906]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#E28906]/10">
               {icon}
             </div>
             <h2 className="font-serif text-[20px] text-[#FAF9F6]">{title}</h2>
@@ -900,7 +943,7 @@ function Field({
     <label className={`block min-w-0 ${className}`}>
       <span className="mb-2 block text-[13px] font-medium text-white/65">
         {label}
-        {required && <span className="ml-1 text-[#C8A35A]">*</span>}
+        {required && <span className="ml-1 text-[#E28906]">*</span>}
       </span>
       {children}
     </label>
@@ -924,7 +967,7 @@ function ToggleCard({
       onClick={() => onChange(!checked)}
       role="switch"
       aria-checked={checked}
-      className="flex min-h-[92px] w-full items-center justify-between gap-4 rounded-lg border border-white/10 bg-[#080808] p-4 text-left transition hover:border-[#C8A35A]/25"
+      className="flex min-h-[92px] w-full items-center justify-between gap-4 rounded-lg border border-white/10 bg-[#080808] p-4 text-left transition hover:border-[#E28906]/25"
     >
       <div>
         <p className="text-[13px] font-medium text-white/70">{label}</p>
@@ -933,7 +976,7 @@ function ToggleCard({
 
       <span
         className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-          checked ? "bg-[#C8A35A]" : "bg-white/10"
+          checked ? "bg-[#E28906]" : "bg-white/10"
         }`}
       >
         <span

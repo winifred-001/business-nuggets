@@ -1,0 +1,60 @@
+name: Validate monthly subscriptions
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/admin/subscriptions/page.tsx"
+      - "lib/subscription-plan-slug.ts"
+      - "tests/subscription-plan-slug.test.mjs"
+      - "backend/src/admin/dto/admin-write.dto.ts"
+      - "backend/src/admin/dto/subscription-plan-monthly.spec.ts"
+      - "backend/src/nuggets/nuggets.service.ts"
+      - "backend/src/nuggets/monthly-nugget-allowance.ts"
+      - "backend/src/nuggets/monthly-nugget-allowance.spec.ts"
+      - "components/NuggetAccessExpiryGate.tsx"
+      - ".github/workflows/validate-monthly-subscriptions.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: Check generated slugs
+        run: node --test tests/subscription-plan-slug.test.mjs
+      - name: Generate Next.js types
+        run: npx next typegen
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Build Next.js
+        run: npm run build
+
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Check monthly expiry, DTO and restoration
+        run: npm test -- --runInBand src/admin/dto/subscription-plan-monthly.spec.ts src/nuggets/monthly-nugget-allowance.spec.ts src/nuggets/paid-history-access.spec.ts
+      - name: Build NestJS
+        run: npm run build

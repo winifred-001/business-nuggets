@@ -1,11 +1,13 @@
 "use client";
 
+import cardStyles from "@/app/topic-cards.module.css";
 import Image from "next/image";
 import Link from "next/link";
 import {
   Suspense,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -18,18 +20,24 @@ import {
   ChevronLeft,
   ChevronRight,
   Circle,
-  Clock3,
+  Headphones,
 } from "lucide-react";
 
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
+import PageEyebrow from "@/components/PageEyebrow";
 
 import {
-  collections,
   filterNuggets,
   slugify,
 } from "@/lib/nuggets";
-import { getPublishedNuggets } from "@/lib/nuggets-api";
+import { BIBLE_GROUPS } from "@/lib/bible-books";
+import { getCollections, type PublicCollection } from "@/lib/collections-api";
+import { getPublishedNuggetsWithAccess, getFreePreviewSlugs } from "@/lib/nuggets-api";
+import { libraryPageNumbers } from "@/lib/library-pagination";
+import { displayTopicName } from "@/lib/topic-display";
+
+import { getTopicCatalog, type TopicCatalog } from "@/lib/topics-api";
 
 import type { Nugget } from "@/types/nugget";
 
@@ -43,34 +51,34 @@ const tabs = [
 
 const topicImages: Record<string, string> = {
   "Leadership & Governance":
-    "/images/visiting-homepage2.png",
+    "/media-placeholder.svg",
 
   "Leadership & Teams":
-    "/images/visiting-homepage2.png",
+    "/media-placeholder.svg",
 
   "Money & Stewardship":
-    "/images/visiting-homepage3.png",
+    "/media-placeholder.svg",
 
   "Strategy & Planning":
-    "/images/visiting-homepage4.png",
+    "/media-placeholder.svg",
 
   "Entrepreneurship & Innovation":
-    "/images/visiting-homepage5.png",
+    "/media-placeholder.svg",
 
   "Integrity & Character":
-    "/images/visiting-homepage6.png",
+    "/media-placeholder.svg",
 
   "People & Teams":
-    "/images/visiting-homepage7.png",
+    "/media-placeholder.svg",
 };
 
 const fallbackTopicImages = [
-  "/images/visiting-homepage2.png",
-  "/images/visiting-homepage3.png",
-  "/images/visiting-homepage4.png",
-  "/images/visiting-homepage5.png",
-  "/images/visiting-homepage6.png",
-  "/images/visiting-homepage7.png",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
+  "/media-placeholder.svg",
 ];
 
 const topicDescriptions: Record<string, string> = {
@@ -142,13 +150,13 @@ const challengeDescriptions: Record<
 
 const collectionImages: Record<string, string> = {
   "starting-your-business-gods-way":
-    "/images/collection-main.png",
+    "/media-placeholder.svg",
 
   "capital-stewardship-debt":
-    "/images/saved-nugget1.png",
+    "/media-placeholder.svg",
 
   "integrity-as-a-premium-brand":
-    "/images/saved-nugget2.png",
+    "/media-placeholder.svg",
 };
 
 function LibraryContent() {
@@ -159,7 +167,17 @@ function LibraryContent() {
     Nugget[]
   >([]);
 
+  const [collections, setCollections] = useState<PublicCollection[]>([]);
+  const [collectionsError, setCollectionsError] = useState("");
+
+  const [catalog, setCatalog] = useState<TopicCatalog>({ topics: [], categories: [] });
+
+  const [premiumAccess, setPremiumAccess] = useState(false);
+  const upgradeDialog = useRef<HTMLDialogElement>(null);
+
   const [loading, setLoading] = useState(true);
+  const [clockNow, setClockNow] = useState(0);
+  const expiredSessionRefresh = useRef<string | null>(null);
   const [error, setError] = useState("");
 
   const [bookQuery, setBookQuery] =
@@ -172,12 +190,35 @@ function LibraryContent() {
       try {
         setLoading(true);
 
-        const data =
-          await getPublishedNuggets();
+        // Nuggets are the primary Library content. Load them independently so
+        // a temporary taxonomy/collections failure cannot hide the nuggets.
+        const [data, taxonomyResult, collectionsResult] = await Promise.all([
+          getPublishedNuggetsWithAccess(),
+          getTopicCatalog().then(value => ({ ok: true as const, value })).catch(error => ({ ok: false as const, error })),
+          getCollections().then(value => ({ ok: true as const, value })).catch(error => ({ ok: false as const, error })),
+        ]);
 
         if (!mounted) return;
 
-        setApiNuggets(data);
+        setApiNuggets(data.nuggets);
+        setPremiumAccess(data.premium);
+
+        if (taxonomyResult.ok) {
+          setCatalog(taxonomyResult.value);
+        } else {
+          console.error("Could not load topic catalogue:", taxonomyResult.error);
+          setCatalog({ topics: [], categories: [] });
+        }
+
+        if (collectionsResult.ok) {
+          setCollections(collectionsResult.value);
+          setCollectionsError("");
+        } else {
+          console.error("Could not load collections:", collectionsResult.error);
+          setCollections([]);
+          setCollectionsError("Collections could not be loaded. Please try again later.");
+        }
+
         setError("");
       } catch (err) {
         console.error(
@@ -204,6 +245,38 @@ function LibraryContent() {
     };
   }, []);
 
+  useEffect(() => {
+    setClockNow(Date.now());
+    const interval = window.setInterval(() => setClockNow(Date.now()), 1000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  // Restored history can expire at subscription end while current selections
+  // have a different reading deadline. Refresh at the earliest deadline.
+  const currentBatchExpiry = apiNuggets.reduce<string | null>((earliest, nugget) => {
+    const expiry = nugget.accessExpiresAt;
+    if (!expiry) return earliest;
+    return !earliest || Date.parse(expiry) < Date.parse(earliest) ? expiry : earliest;
+  }, null);
+
+  useEffect(() => {
+    if (!currentBatchExpiry) return;
+    const expiryTime = new Date(currentBatchExpiry).getTime();
+    if (clockNow < expiryTime || expiredSessionRefresh.current === currentBatchExpiry) return;
+
+    expiredSessionRefresh.current = currentBatchExpiry;
+    let active = true;
+    getPublishedNuggetsWithAccess()
+      .then(data => {
+        if (!active) return;
+        setApiNuggets(data.nuggets);
+        setPremiumAccess(data.premium);
+      })
+      .catch(error => console.error("Could not refresh expired nugget access:", error));
+
+    return () => { active = false; };
+  }, [currentBatchExpiry, clockNow]);
+
   const requestedTab =
     params.get("tab") ?? "";
 
@@ -212,6 +285,8 @@ function LibraryContent() {
   )
     ? requestedTab
     : "All Nuggets";
+
+  const selectedCategories = params.getAll("category");
 
   const selectedTopics =
     params.getAll("topic");
@@ -241,7 +316,7 @@ function LibraryContent() {
   );
 
   const currentPage =
-    Number.isFinite(requestedPage) &&
+    Number.isInteger(requestedPage) &&
     requestedPage > 0
       ? requestedPage
       : 1;
@@ -262,6 +337,11 @@ function LibraryContent() {
     value: string,
     multiple = false,
   ) {
+    if (key === "page" && Number(value) > 2 && !premiumAccess) {
+      upgradeDialog.current?.showModal();
+      return;
+    }
+
     const next = new URLSearchParams(
       params.toString(),
     );
@@ -310,28 +390,7 @@ function LibraryContent() {
     pushParams(next);
   }
 
-  const topics = useMemo(() => {
-    return [
-      ...new Set(
-        apiNuggets
-          .map((nugget) => nugget.topic)
-          .filter(Boolean),
-      ),
-    ];
-  }, [apiNuggets]);
-
-  const bibleSections = useMemo(() => {
-    return [
-      ...new Set(
-        apiNuggets
-          .map(
-            (nugget) =>
-              nugget.bibleSection,
-          )
-          .filter(Boolean),
-      ),
-    ];
-  }, [apiNuggets]);
+  const bibleSections = BIBLE_GROUPS.map(group => group.name);
 
   const challenges = useMemo(() => {
     return [
@@ -353,10 +412,17 @@ function LibraryContent() {
         book: selectedBook,
         sort,
       },
-      apiNuggets,
+      selectedCategories.length
+        ? apiNuggets.filter(nugget => catalog.topics.some(topic =>
+            topic.name.trim().toLowerCase() === nugget.topic.trim().toLowerCase() &&
+            catalog.categories.some(category => category.id === topic.categoryId && selectedCategories.includes(category.slug)),
+          ))
+        : apiNuggets,
     );
   }, [
     apiNuggets,
+    catalog,
+    selectedCategories,
     selectedTopics,
     selectedSections,
     selectedChallenge,
@@ -364,7 +430,9 @@ function LibraryContent() {
     sort,
   ]);
 
-  const ITEMS_PER_PAGE = 6;
+  const freePreviewSlugs = useMemo(() => getFreePreviewSlugs(apiNuggets), [apiNuggets]);
+
+  const ITEMS_PER_PAGE = 12;
 
   const totalPages = Math.max(
     1,
@@ -379,7 +447,9 @@ function LibraryContent() {
     totalPages,
   );
 
-  const paginatedNuggets =
+  const pageRequiresPremium = safePage > 2 && !premiumAccess;
+
+  const paginatedNuggets = pageRequiresPremium ? [] :
     filteredNuggets.slice(
       (safePage - 1) *
         ITEMS_PER_PAGE,
@@ -387,28 +457,14 @@ function LibraryContent() {
     );
 
   const topicCards = useMemo(() => {
-    return topics.map(
-      (topic, index) => ({
-        title: topic,
-
-        description:
-          topicDescriptions[topic] ??
-          `Explore published biblical business wisdom on ${topic}.`,
-
-        count: apiNuggets.filter(
-          (nugget) =>
-            nugget.topic === topic,
-        ).length,
-
-        image:
-          topicImages[topic] ??
-          fallbackTopicImages[
-            index %
-              fallbackTopicImages.length
-          ],
-      }),
-    );
-  }, [topics, apiNuggets]);
+    return catalog.topics.map((topic, index) => ({
+      title: displayTopicName(topic.name),
+      slug: topic.slug,
+      description: topic.description || topicDescriptions[topic.name] || topicDescriptions[displayTopicName(topic.name)] || `Explore published biblical business wisdom on ${displayTopicName(topic.name)}.`,
+      count: topic.nuggetCount,
+      image: topic.image || topicImages[topic.name] || fallbackTopicImages[index % fallbackTopicImages.length],
+    }));
+  }, [catalog]);
 
   const challengeCards =
     useMemo(() => {
@@ -447,54 +503,13 @@ function LibraryContent() {
       );
     }, [challenges, apiNuggets]);
 
-  const scriptureGroups =
-    useMemo(() => {
-      return bibleSections.map(
-        (section) => {
-          const sectionNuggets =
-            apiNuggets.filter(
-              (nugget) =>
-                nugget.bibleSection ===
-                section,
-            );
-
-          const books = [
-            ...new Set(
-              sectionNuggets
-                .map(
-                  (nugget) =>
-                    nugget.book,
-                )
-                .filter(Boolean),
-            ),
-          ].map((book) => {
-            const count =
-              sectionNuggets.filter(
-                (nugget) =>
-                  nugget.book === book,
-              ).length;
-
-            return {
-              title: book,
-              count,
-              description: `${count} published ${
-                count === 1
-                  ? "Nugget"
-                  : "Nuggets"
-              } from ${book}.`,
-            };
-          });
-
-          return {
-            title: section,
-            books,
-          };
-        },
-      );
-    }, [
-      apiNuggets,
-      bibleSections,
-    ]);
+  const scriptureGroups = useMemo(() => BIBLE_GROUPS.map(group => ({
+    title: group.name,
+    books: group.books.map(book => {
+      const count = apiNuggets.filter(nugget => nugget.book === book).length;
+      return { title: book, count, description: `${count} published ${count === 1 ? "Nugget" : "Nuggets"} from ${book}.` };
+    }),
+  })), [apiNuggets]);
 
   const normalizedBookQuery =
     bookQuery.trim().toLowerCase();
@@ -506,7 +521,7 @@ function LibraryContent() {
 
         books: group.books.filter(
           (book) =>
-            `${book.title} ${book.description}`
+            `${group.title} ${book.title} ${book.description}`
               .toLowerCase()
               .includes(
                 normalizedBookQuery,
@@ -549,20 +564,22 @@ function LibraryContent() {
 
             members,
 
-            image:
+            image: collection.image ||
               collectionImages[
                 collection.slug
-              ] ??
-              members[0]?.image ??
-              "/images/collection-main.png",
+              ] ||
+              members[0]?.image ||
+              "/media-placeholder.svg",
           };
         },
       );
-    }, [apiNuggets]);
+    }, [apiNuggets, collections]);
 
   const resultContext =
-    selectedTopics.length === 1
-      ? `inside ${selectedTopics[0]}`
+    selectedCategories.length === 1
+      ? `inside ${catalog.categories.find(category => category.slug === selectedCategories[0])?.name || "the selected category"}`
+      : selectedTopics.length === 1
+      ? `inside ${displayTopicName(selectedTopics[0])}`
       : selectedChallenge
         ? `for ${selectedChallenge}`
         : selectedBook
@@ -571,14 +588,19 @@ function LibraryContent() {
 
   return (
     <main>
+      <dialog ref={upgradeDialog} aria-labelledby="library-upgrade-title"
+        className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-32px)] max-w-[520px] overflow-y-auto rounded-xl border border-[#E28906]/40 bg-[#111111] p-6 text-[#FAF9F6] shadow-2xl backdrop:bg-black/75 sm:p-8">
+        <LibraryUpgradePrompt onReturn={() => upgradeDialog.current?.close()} dialog />
+      </dialog>
       {/* PAGE HEADER */}
-      <section className="border-b border-white/[0.06]">
-        <div className="mx-auto max-w-[1280px] px-5 pt-14 sm:px-8 lg:px-10 lg:pt-16">
-          <h1 className="font-serif text-[40px] leading-tight text-[#FAF9F6]">
+      <section className="border-b border-black/10">
+        <div className="mx-auto w-[calc(100%-38px)] max-w-[1190px] pt-16 sm:pt-24 lg:w-[calc(100%-64px)]">
+          <PageEyebrow>Library</PageEyebrow>
+          <h1 className="bn-hero-title mt-[27px] font-serif text-[45px]! leading-tight text-[#211E19]">
             The Wisdom Archive
           </h1>
 
-          <p className="mt-4 max-w-[650px] text-[14px] leading-6 text-white/50">
+          <p className="mt-4 max-w-[650px] text-[14px] leading-6 text-[#6D655B]">
             Discover premium biblical
             business strategies. Filter by
             topic, challenge, or scripture
@@ -595,14 +617,14 @@ function LibraryContent() {
                 }
                 className={`relative shrink-0 pb-4 text-[13px] transition ${
                   activeTab === tab
-                    ? "font-medium text-[#C8A35A]"
-                    : "text-white/50 hover:text-white"
+                    ? "font-medium text-[#E28906]"
+                    : "text-[#746B60] hover:text-[#211E19]"
                 }`}
               >
                 {tab}
 
                 {activeTab === tab && (
-                  <span className="absolute bottom-0 left-0 h-[2px] w-full bg-[#C8A35A]" />
+                  <span className="absolute bottom-0 left-0 h-[2px] w-full bg-[#E28906]" />
                 )}
               </button>
             ))}
@@ -631,33 +653,14 @@ function LibraryContent() {
               {/* FILTERS */}
               <aside>
                 <FilterGroup
-                  title="Business Topics"
-                  items={topics.map(
-                    (topic) => ({
-                      label: topic,
-
-                      count:
-                        apiNuggets.filter(
-                          (nugget) =>
-                            nugget.topic ===
-                            topic,
-                        ).length,
-                    }),
-                  )}
-                  selected={
-                    selectedTopics
-                  }
-                  onToggle={(topic) =>
-                    updateParam(
-                      "topic",
-                      topic,
-                      true,
-                    )
-                  }
+                  title="Business Categories"
+                  items={catalog.categories.map(category => ({ label: category.name, value: category.slug, count: category.nuggetCount, topicCount: catalog.topics.filter(topic => topic.categoryId === category.id).length }))}
+                  selected={selectedCategories}
+                  onToggle={(category) => updateParam("category", category, true)}
                 />
 
                 <div className="mt-8">
-                  <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-white">
+                  <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#211E19]">
                     Bible Section
                   </h2>
 
@@ -672,7 +675,7 @@ function LibraryContent() {
                         return (
                           <label
                             key={section}
-                            className="flex cursor-pointer items-start gap-2 text-[13px] leading-5 text-white/60"
+                            className="flex cursor-pointer items-start gap-2 text-[13px] leading-5 text-[#211E19]"
                           >
                             <input
                               type="checkbox"
@@ -705,7 +708,7 @@ function LibraryContent() {
                   </div>
                 </div>
 
-                {(selectedTopics.length >
+                {(selectedCategories.length > 0 || selectedTopics.length >
                   0 ||
                   selectedSections.length >
                     0 ||
@@ -713,7 +716,7 @@ function LibraryContent() {
                   selectedBook) && (
                   <Link
                     href="/library"
-                    className="mt-7 inline-block text-[13px] font-medium text-[#C8A35A] hover:text-[#E0C48A]"
+                    className="mt-7 inline-block text-[13px] font-medium text-[#E28906] hover:text-[#E28906]"
                   >
                     Clear filters
                   </Link>
@@ -723,9 +726,9 @@ function LibraryContent() {
               {/* RESULTS */}
               <div className="min-w-0">
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-                  <p className="text-[13px] text-white/50">
+                  <p className="text-[13px] text-[#211E19]">
                     Showing{" "}
-                    <span className="text-white">
+                    <span className="text-[#211E19]">
                       {
                         filteredNuggets.length
                       }{" "}
@@ -737,7 +740,7 @@ function LibraryContent() {
                     {resultContext}
                   </p>
 
-                  <label className="flex items-center gap-3 text-[13px] text-white/50">
+                  <label className="flex items-center gap-3 text-[13px] text-[#211E19]">
                     Sort by:
 
                     <select
@@ -749,7 +752,7 @@ function LibraryContent() {
                             .value,
                         )
                       }
-                      className="rounded-md border border-white/10 bg-[#111111] px-3 py-2.5 text-[13px] text-white outline-none"
+                      className="rounded-md border border-black/20 bg-white px-3 py-2.5 text-[13px] text-[#211E19] outline-none"
                     >
                       <option value="newest">
                         Most Recent
@@ -766,29 +769,28 @@ function LibraryContent() {
                   </label>
                 </div>
 
-                {paginatedNuggets.length >
+                {pageRequiresPremium ? (
+                  <LibraryUpgradePrompt onReturn={() => updateParam("page", "2")} />
+                ) : paginatedNuggets.length >
                 0 ? (
                   <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                    {paginatedNuggets.map(
-                      (nugget) => (
-                        <NuggetCard
-                          key={
-                            nugget.slug
-                          }
-                          nugget={
-                            nugget
-                          }
-                        />
-                      ),
-                    )}
+                    {paginatedNuggets.map((nugget) => (
+                      <NuggetCard
+                        key={nugget.slug}
+                        nugget={nugget}
+                        now={clockNow}
+                        premiumLocked={!premiumAccess && (!freePreviewSlugs.has(nugget.slug) || nugget.isGold)}
+                        onPremiumRequired={() => upgradeDialog.current?.showModal()}
+                      />
+                    ))}
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-white/10 bg-[#111111] px-6 py-12 text-center">
+                  <div className="rounded-xl border border-black/15 bg-white px-6 py-12 text-center text-[#211E19]">
                     <h2 className="font-serif text-[28px]">
                       No Nuggets found
                     </h2>
 
-                    <p className="mt-3 text-[14px] text-white/50">
+                    <p className="mt-3 text-[14px] text-[#211E19]">
                       Try another filter or
                       clear your current
                       selections.
@@ -796,7 +798,7 @@ function LibraryContent() {
 
                     <Link
                       href="/library"
-                      className="mt-6 inline-flex rounded-lg bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
+                      className="bn-button mt-6 inline-flex rounded-lg bg-[#E28906] px-5 py-3 text-[13px] font-semibold text-[#080808]"
                     >
                       Clear filters
                     </Link>
@@ -804,8 +806,9 @@ function LibraryContent() {
                 )}
 
                 {totalPages > 1 && (
-                  <div className="mt-8 flex justify-end gap-2">
+                  <div className="mt-8 flex flex-wrap justify-end gap-2">
                     <PageButton
+                      label="Previous page"
                       disabled={
                         safePage === 1
                       }
@@ -827,41 +830,35 @@ function LibraryContent() {
                       />
                     </PageButton>
 
-                    {Array.from(
-                      {
-                        length:
-                          totalPages,
-                      },
-                      (_, index) =>
-                        index + 1,
-                    ).map(
-                      (number) => (
+                    {libraryPageNumbers(totalPages, safePage).map((item, index) =>
+                      item === "ellipsis" ? (
+                        <span
+                          key={`pagination-ellipsis-${index}`}
+                          aria-hidden="true"
+                          className="flex h-9 min-w-7 items-center justify-center text-[13px] text-[#211E19]"
+                        >
+                          …
+                        </span>
+                      ) : (
                         <button
-                          key={
-                            number
-                          }
+                          key={item}
                           type="button"
-                          onClick={() =>
-                            updateParam(
-                              "page",
-                              String(
-                                number,
-                              ),
-                            )
-                          }
+                          aria-label={`Page ${item}${item > 2 && !premiumAccess ? ": Premium required" : ""}`}
+                          aria-current={safePage === item ? "page" : undefined}
+                          onClick={() => updateParam("page", String(item))}
                           className={`flex h-9 w-9 items-center justify-center rounded-md border text-[13px] ${
-                            safePage ===
-                            number
-                              ? "border-[#C8A35A] bg-[#C8A35A] font-semibold text-[#080808]"
-                              : "border-white/10 text-white/50"
+                            safePage === item
+                              ? "border-[#E28906] bg-[#E28906] font-semibold text-[#080808]"
+                              : "border-black/20 text-[#211E19]"
                           }`}
                         >
-                          {number}
+                          {item}
                         </button>
                       ),
                     )}
 
                     <PageButton
+                      label="Next page"
                       disabled={
                         safePage ===
                         totalPages
@@ -898,27 +895,25 @@ function LibraryContent() {
           <ArchivePanel>
             <BackLabel />
 
-            <h2 className="mt-5 font-serif text-[28px] leading-tight">
+            <h2 className="mt-5 font-serif text-[35px]! leading-tight text-[#211E19]">
               Browse by Core Topic
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-white/50">
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#211E19]">
               Choose a topic to explore its
               published teachings and
               scripture foundations.
             </p>
 
-            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div role="region" aria-label="Topics Index cards" tabIndex={0} className={`mt-8 ${cardStyles.grid}`}>
               {topicCards.map(
                 (topic) => (
                   <Link
                     key={
-                      topic.title
+                      topic.slug
                     }
-                  href={`/topics/${slugify(
-                  topic.title,
-                  )}`}
-                    className="group relative min-h-[245px] overflow-hidden rounded-xl border border-white/10"
+                  href={`/topics/${topic.slug}`}
+                    className="group relative min-w-0 overflow-hidden rounded-xl border border-white/10"
                   >
                     <Image
                       src={
@@ -937,7 +932,7 @@ function LibraryContent() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/15" />
 
                     <div className="absolute inset-0 flex flex-col p-5">
-                      <div className="flex items-center justify-between text-[#C8A35A]">
+                      <div className="flex items-center justify-between text-[#E28906]">
                         <span className="text-xl">
                           ◎
                         </span>
@@ -954,19 +949,19 @@ function LibraryContent() {
                       </div>
 
                       <div className="mt-auto">
-                        <h3 className="font-serif text-[20px] leading-tight">
+                        <h3 className="bn-topic-card-title line-clamp-2 break-words font-serif">
                           {
                             topic.title
                           }
                         </h3>
 
-                        <p className="mt-2 text-[13px] leading-5 text-white/55">
+                        <p className="mt-2 line-clamp-2 break-words text-[13px] leading-5 text-white/55">
                           {
                             topic.description
                           }
                         </p>
 
-                        <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#C8A35A]">
+                        <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#E28906]">
                           Explore topic
 
                           <ArrowRight
@@ -992,18 +987,18 @@ function LibraryContent() {
           <ArchivePanel>
             <BackLabel />
 
-            <h2 className="mt-5 font-serif text-[28px] leading-tight">
+            <h2 className="mt-5 font-serif text-[35px]! leading-tight text-[#211E19]">
               I Need Wisdom About...
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-white/50">
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#211E19]">
               Start with the challenge in
               front of you. Find a curated
               path from reflection to
               practical application.
             </p>
 
-            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div role="region" aria-label="Challenges Index cards" tabIndex={0} className={`mt-8 ${cardStyles.grid} ${cardStyles.challenges}`}>
               {challengeCards.map(
                 (item, index) => (
                   <Link
@@ -1013,13 +1008,13 @@ function LibraryContent() {
                     href={`/challenges/${slugify(
                    item.title,
                    )}`}
-                    className={`min-h-[220px] rounded-xl border bg-[#111111] p-6 transition hover:border-[#C8A35A]/50 ${
+                    className={`flex min-w-0 flex-col overflow-hidden rounded-xl border bg-[#111111] p-6 transition hover:border-[#E28906]/50 ${
                       index === 1
-                        ? "border-[#C8A35A]/70"
+                        ? "border-[#E28906]/70"
                         : "border-white/10"
                     }`}
                   >
-                    <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                    <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                       {
                         item.count
                       }{" "}
@@ -1033,20 +1028,20 @@ function LibraryContent() {
                       }
                     </p>
 
-                    <h3 className="mt-4 font-serif text-[20px] leading-tight">
+                    <h3 className="bn-topic-card-title mt-4 line-clamp-2 break-words font-serif">
                       {
                         item.title
                       }
                     </h3>
 
-                    <p className="mt-3 text-[13px] leading-5 text-white/55">
+                    <p className="mt-3 line-clamp-2 break-words text-[13px] leading-5 text-white/55">
                       {
                         item.subtitle
                       }
                     </p>
 
                     {item.firstNugget && (
-                      <p className="mt-4 text-[13px] leading-5 text-white/40">
+                      <p className="mt-4 line-clamp-1 text-[13px] leading-5 text-white/40">
                         Begin with:{" "}
                         {
                           item
@@ -1056,7 +1051,7 @@ function LibraryContent() {
                       </p>
                     )}
 
-                    <span className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#C8A35A]">
+                    <span className="mt-auto inline-flex items-center gap-1.5 text-[13px] font-medium text-[#E28906]">
                       Explore pathway
 
                       <ArrowRight
@@ -1078,11 +1073,11 @@ function LibraryContent() {
           <ArchivePanel>
             <BackLabel />
 
-            <h2 className="mt-5 font-serif text-[28px] leading-tight">
+            <h2 className="mt-5 font-serif text-[35px]! leading-tight text-[#211E19]">
               Scripture Index
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-white/50">
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#211E19]">
               Read the business teaching
               alongside its biblical
               foundation. Browse by Bible
@@ -1119,7 +1114,7 @@ function LibraryContent() {
                                 href={`/scripture-index/${slugify(
                                   book.title,
                                 )}`}
-                                className="group flex items-center justify-between gap-5 rounded-lg border border-white/[0.08] bg-[#0B0B0B] px-5 py-4 transition hover:border-[#C8A35A]/45"
+                                className="group flex items-center justify-between gap-5 rounded-lg border border-white/[0.08] bg-[#0B0B0B] px-5 py-4 transition hover:border-[#E28906]/45"
                               >
                                 <div className="min-w-0">
                                   <h4 className="font-serif text-[16px]">
@@ -1135,7 +1130,7 @@ function LibraryContent() {
                                   </p>
                                 </div>
 
-                                <span className="shrink-0 text-[13px] font-medium text-[#C8A35A]">
+                                <span className="shrink-0 text-[13px] font-medium text-[#E28906]">
                                   Browse
                                   book →
                                 </span>
@@ -1157,7 +1152,7 @@ function LibraryContent() {
               </div>
 
               <aside className="self-start lg:sticky lg:top-24">
-                <h3 className="text-[13px] font-semibold">
+                <h3 className="text-[13px] font-semibold text-[#211E19]">
                   Find a book
                 </h3>
 
@@ -1178,18 +1173,18 @@ function LibraryContent() {
                     )
                   }
                   placeholder="Search scripture books..."
-                  className="mt-3 h-11 w-full rounded-lg border border-white/10 bg-[#181818] px-4 text-[13px] text-[#FAF9F6] outline-none placeholder:text-white/30 focus:border-[#C8A35A]/60"
+                  className="mt-3 h-11 w-full rounded-lg border border-white/10 bg-[#181818] px-4 text-[13px] text-[#FAF9F6] outline-none placeholder:text-white/30 focus:border-[#E28906]/60"
                 />
 
                 <Link
                   href="/scripture-index/proverbs"
-                  className="mt-5 block rounded-lg border border-[#C8A35A]/25 bg-[#C8A35A]/15 p-5 transition hover:border-[#C8A35A]/50"
+                  className="mt-5 block rounded-lg border border-[#E28906]/25 bg-[#E28906]/15 p-5 transition hover:border-[#E28906]/50"
                 >
-                  <p className="text-[13px] font-semibold text-[#C8A35A]">
+                  <p className="text-[13px] font-semibold text-[#E28906]">
                     Begin with Proverbs
                   </p>
 
-                  <p className="mt-3 text-[13px] leading-5 text-white/55">
+                  <p className="mt-3 text-[13px] leading-5 text-[#211E19]">
                     {proverbsCount}{" "}
                     published{" "}
                     {proverbsCount ===
@@ -1202,12 +1197,12 @@ function LibraryContent() {
                   </p>
                 </Link>
 
-                <div className="mt-4 rounded-lg border border-[#C8A35A]/20 bg-[#C8A35A]/10 p-5">
-                  <p className="text-[13px] font-semibold text-[#C8A35A]">
+                <div className="mt-4 rounded-lg border border-[#E28906]/20 bg-[#E28906]/10 p-5">
+                  <p className="text-[13px] font-semibold text-[#E28906]">
                     Read in context
                   </p>
 
-                  <p className="mt-3 text-[13px] leading-5 text-white/55">
+                  <p className="mt-3 text-[13px] leading-5 text-[#211E19]">
                     Business commentary
                     is an application,
                     not a replacement for
@@ -1229,21 +1224,23 @@ function LibraryContent() {
           <ArchivePanel>
             <BackLabel />
 
-            <h2 className="mt-5 font-serif text-[28px] leading-tight">
+            <h2 className="mt-5 font-serif text-[35px]! leading-tight text-[#211E19]">
               Curated Learning Pathways
             </h2>
 
-            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-white/50">
+            <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#211E19]">
               Ordered teachings for
               sustained study. Continue a
               pathway or discover a new
               collection.
             </p>
 
+            {collectionCards.length === 0 && <p className="mt-8 rounded-xl border border-black/15 p-6 text-sm text-[#211E19]">{collectionsError || "No collections are available yet. New reading series will appear here when published."}</p>}
+
             {collectionCards.length >
               0 && (
               <>
-                <div className="mt-8 overflow-hidden rounded-xl border border-[#C8A35A]/65 bg-[#111111] p-5">
+                <div className="mt-8 overflow-hidden rounded-xl border border-[#E28906]/65 bg-[#111111] p-5">
                   <div className="grid gap-6 md:grid-cols-[240px_1fr]">
                     <div className="relative min-h-[200px] overflow-hidden rounded-lg">
                       <Image
@@ -1262,18 +1259,18 @@ function LibraryContent() {
                     </div>
 
                     <div className="flex flex-col justify-center">
-                      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                         Featured Pathway
                       </p>
 
-                      <h3 className="mt-3 font-serif text-[24px] leading-tight">
+                      <h3 className="bn-collection-card-title mt-3 line-clamp-2 break-words font-serif">
                         {
                           collectionCards[0]
                             .title
                         }
                       </h3>
 
-                      <p className="mt-3 max-w-xl text-[14px] leading-6 text-white/50">
+                      <p className="mt-3 max-w-xl line-clamp-2 break-words text-[14px] leading-6 text-white/50">
                         {
                           collectionCards[0]
                             .description
@@ -1297,7 +1294,7 @@ function LibraryContent() {
 
                       <Link
                         href={`/collection/${collectionCards[0].slug}`}
-                        className="mt-5 w-fit rounded-md bg-[#C8A35A] px-5 py-3 text-[13px] font-semibold text-[#080808]"
+                        className="bn-button mt-5 w-fit rounded-md bg-[#E28906] px-5 py-3 text-[13px] font-semibold text-[#080808]"
                       >
                         Explore Collection
                         →
@@ -1309,7 +1306,7 @@ function LibraryContent() {
                 {collectionCards.length >
                   1 && (
                   <>
-                    <h3 className="mt-9 font-serif text-[20px]">
+                    <h3 className="mt-9 font-serif text-[20px] text-[#211E19]">
                       Explore More
                       Collections
                     </h3>
@@ -1326,7 +1323,7 @@ function LibraryContent() {
                                 collection.slug
                               }
                               href={`/collection/${collection.slug}`}
-                              className="flex items-center gap-4 rounded-lg border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/40"
+                              className="flex items-center gap-4 rounded-lg border border-white/10 bg-[#111111] p-4 transition hover:border-[#E28906]/40"
                             >
                               <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-md">
                                 <Image
@@ -1343,20 +1340,20 @@ function LibraryContent() {
                               </div>
 
                               <div className="min-w-0 flex-1">
-                                <h4 className="font-serif text-[16px]">
+                                <h4 className="bn-collection-card-title line-clamp-2 break-words font-serif">
                                   {
                                     collection.title
                                   }
                                 </h4>
 
-                                <p className="mt-1 text-[13px] leading-5 text-white/45">
+                                <p className="mt-1 line-clamp-2 break-words text-[13px] leading-5 text-white/45">
                                   {
                                     collection.description
                                   }
                                 </p>
                               </div>
 
-                              <span className="hidden shrink-0 text-[13px] font-medium text-[#C8A35A] sm:block">
+                              <span className="hidden shrink-0 text-[13px] font-medium text-[#E28906] sm:block">
                                 Explore
                                 Collection →
                               </span>
@@ -1376,10 +1373,10 @@ function LibraryContent() {
 
 export default function LibraryPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+    <div className="bn-cream-page flex min-h-screen flex-col bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
-      <div className="flex-1">
+      <div className="flex-1 bg-[#F5F0E8]">
         <Suspense
           fallback={
             <StatusPanel>
@@ -1398,13 +1395,38 @@ export default function LibraryPage() {
 
 function NuggetCard({
   nugget,
+  now,
+  premiumLocked = false,
+  onPremiumRequired,
 }: {
   nugget: Nugget;
+  now: number;
+  premiumLocked?: boolean;
+  onPremiumRequired?: () => void;
 }) {
+  const batchExpired = Boolean(nugget.accessExpiresAt && new Date(nugget.accessExpiresAt).getTime() <= now);
+  const unavailable = Boolean(nugget.accessLocked && !nugget.accessAvailable && nugget.accessReason !== "PREMIUM_REQUIRED" && !batchExpired);
+  const countdown = nugget.accessExpiresAt && !batchExpired
+    ? (() => {
+        const seconds = Math.max(0, Math.floor((new Date(nugget.accessExpiresAt!).getTime() - now) / 1000));
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainder = seconds % 60;
+        return [hours, minutes, remainder].map(value => String(value).padStart(2, "0")).join(":");
+      })()
+    : null;
   return (
     <Link
-      href={`/nugget/${nugget.slug}`}
-      className="group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition hover:border-[#C8A35A]/45"
+      href={premiumLocked ? "/membership" : `/nugget/${nugget.slug}`}
+      aria-disabled={!premiumLocked && unavailable}
+      aria-haspopup={premiumLocked ? "dialog" : undefined}
+      onClick={event => {
+        if (premiumLocked) {
+          event.preventDefault();
+          onPremiumRequired?.();
+        } else if (unavailable) event.preventDefault();
+      }}
+      className={`group overflow-hidden rounded-xl border border-white/10 bg-[#111111] transition ${unavailable && !premiumLocked ? "cursor-not-allowed opacity-65" : "hover:border-[#E28906]/45"}`}
     >
       <div className="relative h-[165px] overflow-hidden">
         <Image
@@ -1418,19 +1440,16 @@ function NuggetCard({
 
       <div className="flex min-h-[210px] flex-col p-5">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[13px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
-            {nugget.tag ||
-              nugget.topic}
+          <span className="min-w-0 flex-1 truncate text-[13px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
+            {displayTopicName(nugget.tag || nugget.topic)}
           </span>
 
-          <span className="flex items-center gap-1.5 text-[13px] text-white/40">
-            <Clock3 size={13} />
-
-            {nugget.duration}
-          </span>
+          <NuggetAudioDuration
+            src={nugget.nuggetAudioUrl || null}
+          />
         </div>
 
-        <h3 className="mt-3 font-serif text-[19px] leading-[1.25]">
+        <h3 className="mt-3 font-serif text-[20px]! leading-[1.25]">
           {nugget.title}
         </h3>
 
@@ -1438,13 +1457,33 @@ function NuggetCard({
           {nugget.scriptureRef}
         </p>
 
-        <div className="mt-auto flex items-end justify-between pt-5">
-          <span className="text-[13px] font-medium text-[#C8A35A]">
-            Listen & Read
+        <div className="mt-auto flex items-end justify-between gap-3 pt-5">
+          <span className="text-[12px] font-medium text-[#E28906]">
+            {premiumLocked || nugget.accessReason === "PREMIUM_REQUIRED"
+              ? "Premium required"
+              : nugget.accessReason === "SUBSCRIPTION_GRACE"
+                ? "Renew your subscription to open new Nuggets"
+              : nugget.accessReason === "ACCESS_PERIOD_EXPIRED"
+                ? "Previous access period ended · open to start a new batch"
+                : nugget.accessLocked
+                  ? nugget.accessAvailable
+                    ? "Open to start"
+                    : "Plan limit reached"
+                  : batchExpired
+                    ? "Access period ended · open to restart"
+                    : countdown
+                      ? `${nugget.accessInGrace ? "Reading grace ends in" : "Access ends in"} ${countdown}`
+                      : "Listen & Read"}
           </span>
 
-          {nugget.isGold ? (
-            <span className="rounded border border-[#C8A35A]/40 bg-[#C8A35A]/10 px-2 py-1 text-[12px] font-semibold text-[#C8A35A]">
+          {premiumLocked ? (
+            <span className="rounded border border-[#E28906]/40 bg-[#E28906]/10 px-2 py-1 text-[10px] font-semibold text-[#E28906]">PREMIUM</span>
+          ) : nugget.accessLocked || batchExpired ? (
+            <span className="rounded border border-white/15 bg-white/[0.04] px-2 py-1 text-[10px] font-semibold text-white/45">
+              {batchExpired ? "EXPIRED" : nugget.accessAvailable ? "UNOPENED" : "LOCKED"}
+            </span>
+          ) : nugget.isGold ? (
+            <span className="rounded border border-[#E28906]/40 bg-[#E28906]/10 px-2 py-1 text-[12px] font-semibold text-[#E28906]">
               GOLD
             </span>
           ) : (
@@ -1457,6 +1496,63 @@ function NuggetCard({
         </div>
       </div>
     </Link>
+  );
+}
+
+function NuggetAudioDuration({
+  src,
+}: {
+  src: string | null;
+}) {
+  const [minutes, setMinutes] = useState<number | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setMinutes(null);
+    setFailed(false);
+    if (!src) {
+      setFailed(true);
+      return;
+    }
+
+    let active = true;
+    const audio = new Audio();
+    audio.preload = "metadata";
+
+    const handleMetadata = () => {
+      if (!active) return;
+      const seconds = audio.duration;
+      if (Number.isFinite(seconds) && seconds > 0) {
+        setMinutes(Math.ceil(seconds / 60));
+        setFailed(false);
+      } else {
+        setFailed(true);
+      }
+    };
+    const handleError = () => {
+      if (active) setFailed(true);
+    };
+
+    audio.addEventListener("loadedmetadata", handleMetadata);
+    audio.addEventListener("error", handleError);
+    audio.src = src;
+    audio.load();
+
+    return () => {
+      active = false;
+      audio.removeEventListener("loadedmetadata", handleMetadata);
+      audio.removeEventListener("error", handleError);
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+    };
+  }, [src]);
+
+  return (
+    <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-white/15 bg-white/5 px-2 py-1 text-[11px] text-white/60">
+      <Headphones size={13} className="shrink-0" />
+      {minutes !== null ? `Audio · ${minutes} min` : !src ? "No audio" : failed ? "Audio · —" : "Audio · …"}
+    </span>
   );
 }
 
@@ -1476,7 +1572,7 @@ function BackLabel() {
   return (
     <Link
       href="/library"
-      className="text-[13px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+      className="text-[13px] font-medium text-[#E28906] transition hover:text-[#E28906]"
     >
       ← All Nuggets
     </Link>
@@ -1492,8 +1588,8 @@ function CheckBox({
     <span
       className={`mt-[2px] flex h-[14px] w-[14px] shrink-0 items-center justify-center border ${
         selected
-          ? "border-[#C8A35A] bg-[#C8A35A]"
-          : "border-[#C8A35A]/70"
+          ? "border-[#E28906] bg-[#E28906]"
+          : "border-[#E28906]/70"
       }`}
     >
       {selected && (
@@ -1513,7 +1609,9 @@ function FilterGroup({
 
   items: {
     label: string;
+    value?: string;
     count: number;
+    topicCount: number;
   }[];
 
   selected: string[];
@@ -1522,27 +1620,28 @@ function FilterGroup({
 }) {
   return (
     <div>
-      <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-white">
+      <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#211E19]">
         {title}
       </h2>
 
-      <div className="mt-4 space-y-3">
+      <div role="region" aria-label={`${title} filters`} className="mt-4 space-y-3">
+        {items.length === 0 && <p className="text-[13px] text-[#211E19]">No categories available yet.</p>}
         {items.map((item) => {
           const checked =
             selected.includes(
-              item.label,
+              item.value ?? item.label,
             );
 
           return (
             <label
               key={item.label}
-              className="flex cursor-pointer items-center gap-2 text-[13px] leading-5 text-white/60"
+              className="flex cursor-pointer items-center gap-2 text-[13px] leading-5 text-[#211E19]"
             >
               <input
                 type="checkbox"
                 checked={checked}
                 onChange={() =>
-                  onToggle(item.label)
+                  onToggle(item.value ?? item.label)
                 }
                 className="sr-only"
               />
@@ -1553,7 +1652,7 @@ function FilterGroup({
 
               <span>
                 {item.label} (
-                {item.count})
+                {item.topicCount} {item.topicCount === 1 ? "topic" : "topics"} · {item.count} {item.count === 1 ? "Nugget" : "Nuggets"})
               </span>
             </label>
           );
@@ -1563,11 +1662,37 @@ function FilterGroup({
   );
 }
 
+function LibraryUpgradePrompt({ onReturn, dialog = false }: {
+  onReturn: () => void;
+  dialog?: boolean;
+}) {
+  return (
+    <section className={dialog ? "text-center" : "rounded-xl border border-[#E28906]/35 bg-[#111111] px-6 py-10 text-center"}>
+      <h2 id={dialog ? "library-upgrade-title" : undefined} className="font-serif text-[28px] text-[#FAF9F6]">
+        Unlock more Nuggets
+      </h2>
+      <p className="mt-4 text-[15px] leading-7 text-white/60">
+        Enjoy the first three Nugget previews. Sign up for Premium to open more Nuggets and read full teachings.
+      </p>
+      <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+        <Link href="/membership" className="bn-button rounded-lg bg-[#E28906] px-5 py-3 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E28906]">
+          Sign up for Premium
+        </Link>
+        <button type="button" autoFocus={dialog} onClick={onReturn} className="bn-button rounded-lg border border-white/15 px-5 py-3 text-[13px] text-white/70 transition hover:border-[#E28906] hover:text-[#E28906]">
+          {dialog ? "Keep browsing" : "Back to page 2"}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function PageButton({
+  label,
   children,
   onClick,
   disabled = false,
 }: {
+  label: string;
   children: React.ReactNode;
   onClick: () => void;
   disabled?: boolean;
@@ -1576,8 +1701,9 @@ function PageButton({
     <button
       type="button"
       disabled={disabled}
+      aria-label={label}
       onClick={onClick}
-      className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-white/45 transition hover:border-[#C8A35A]/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+      className="flex h-9 w-9 items-center justify-center rounded-md border border-black/20 text-[#211E19] transition hover:border-[#E28906]/40 hover:text-[#211E19] disabled:cursor-not-allowed disabled:opacity-30"
     >
       {children}
     </button>

@@ -1,766 +1,396 @@
 "use client";
 
-import Image from "next/image";
+import { displayTopicName } from "@/lib/topic-display";
 import Link from "next/link";
+import { Check, SlidersHorizontal } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
-import {
-  Check,
-  SlidersHorizontal,
-} from "lucide-react";
-
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
-import Navbar from "@/components/navbar";
-import Footer from "@/components/Footer";
 import AuthRouteGuard from "@/components/AuthRouteGuard";
-
-import { API_URL } from "@/lib/api";
-import { getPublishedNuggets } from "@/lib/nuggets-api";
-
+import ContentImage from "@/components/ContentImage";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/navbar";
+import {
+  rankPersonalizedNuggets,
+  type UserPreferences,
+} from "@/lib/personalization";
 import type { Nugget } from "@/types/nugget";
 
 type FollowedTopic = {
-  id: number;
-  userId: number;
-  topic: string;
-  createdAt: string;
+  topic?: string;
 };
 
-type UserPreferences = {
-  interests: string[];
-  wisdomNeeds: string[];
+type NuggetsEnvelope = {
+  data?: Nugget[];
+  pagination?: {
+    hasNextPage?: boolean;
+    totalPages?: number;
+  };
 };
+
+async function loadPublishedNuggets() {
+  const nuggets: Nugget[] = [];
+  let page = 1;
+
+  while (true) {
+    const response = await fetch(
+      `/api/member/proxy/nuggets?limit=100&page=${page}`,
+      { cache: "no-store" },
+    );
+
+    if (!response.ok) {
+      throw new Error("Could not load published Nuggets.");
+    }
+
+    const result: unknown = await response.json();
+
+    if (Array.isArray(result)) {
+      return result as Nugget[];
+    }
+
+    if (!result || typeof result !== "object") break;
+
+    const envelope = result as NuggetsEnvelope;
+    if (!Array.isArray(envelope.data)) break;
+
+    nuggets.push(...envelope.data);
+
+    if (
+      !envelope.pagination?.hasNextPage ||
+      page >= (envelope.pagination.totalPages ?? page)
+    ) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return nuggets;
+}
+
+function getMatchReason(
+  nugget: Nugget,
+  preferences: UserPreferences,
+  followedTopics: string[],
+) {
+  const exactInterest = preferences.interests.find(
+    (interest) =>
+      interest.trim().toLowerCase() === nugget.topic.trim().toLowerCase(),
+  );
+
+  if (exactInterest) {
+    return `Directly matches your ${displayTopicName(exactInterest)} interest.`;
+  }
+
+  if (preferences.wisdomNeeds.includes(nugget.title)) {
+    return "You selected this Nugget while setting up your wisdom stream.";
+  }
+
+  const searchable = [
+    nugget.title,
+    nugget.topic,
+    nugget.tag,
+    nugget.keyPrinciple,
+    nugget.marketplaceApplication,
+    ...(nugget.challenges ?? []),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  const relatedInterest = preferences.interests.find((interest) => {
+    const words = interest
+      .toLowerCase()
+      .split(/[\s&,/]+/)
+      .filter((word) => word.length > 3);
+
+    return words.some((word) => searchable.includes(word));
+  });
+
+  if (relatedInterest) {
+    return `Connects with your ${displayTopicName(relatedInterest)} interest.`;
+  }
+
+  const followed = followedTopics.find((topic) =>
+    searchable.includes(topic.trim().toLowerCase()),
+  );
+
+  if (followed) {
+    return `Related to the ${displayTopicName(followed)} topic you follow.`;
+  }
+
+  return "Recommended from your current Business Nuggets profile.";
+}
 
 export default function RecommendationsPage() {
-  const [topics, setTopics] =
-    useState<FollowedTopic[]>([]);
-
-  const [preferences, setPreferences] =
-    useState<UserPreferences>({
-      interests: [],
-      wisdomNeeds: [],
-    });
-
-  const [nuggets, setNuggets] =
-    useState<Nugget[]>([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
-
-  /* =========================================
-     LOAD USER PREFERENCES + FOLLOWED TOPICS
-     + PUBLISHED NUGGETS
-  ========================================= */
+  const [preferences, setPreferences] = useState<UserPreferences>({
+    interests: [],
+    wisdomNeeds: [],
+  });
+  const [followedTopics, setFollowedTopics] = useState<string[]>([]);
+  const [nuggets, setNuggets] = useState<Nugget[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     async function loadRecommendations() {
-      const token =
-        localStorage.getItem("token");
-
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      const headers = {
-        Authorization:
-          `Bearer ${token}`,
-      };
-
       try {
-        const [
-          preferencesResponse,
-          topicsResponse,
-          publishedNuggets,
-        ] = await Promise.all([
-          fetch(
-            `${API_URL}/users/me/preferences`,
-            {
-              headers,
-            },
-          ),
+        const [preferencesResponse, topicsResponse, publishedNuggets] =
+          await Promise.all([
+            fetch("/api/member/proxy/users/me/preferences", {
+              cache: "no-store",
+            }),
+            fetch("/api/member/proxy/following/topics", {
+              cache: "no-store",
+            }),
+            loadPublishedNuggets(),
+          ]);
 
-          fetch(
-            `${API_URL}/following/topics`,
-            {
-              headers,
-            },
-          ),
+        const preferencesData = preferencesResponse.ok
+          ? await preferencesResponse.json().catch(() => ({}))
+          : {};
+        const topicsData = topicsResponse.ok
+          ? await topicsResponse.json().catch(() => [])
+          : [];
 
-          getPublishedNuggets(),
-        ]);
+        setPreferences({
+          interests: Array.isArray(preferencesData.interests)
+            ? preferencesData.interests
+            : [],
+          wisdomNeeds: Array.isArray(preferencesData.wisdomNeeds)
+            ? preferencesData.wisdomNeeds
+            : [],
+        });
 
-        const preferencesData =
-          await preferencesResponse
-            .json()
-            .catch(() => ({}));
-
-        const topicsData =
-          await topicsResponse
-            .json()
-            .catch(() => []);
-
-        /*
-         * Preferences are the main personalization source.
-         */
-        if (preferencesResponse.ok) {
-          setPreferences({
-            interests:
-              Array.isArray(
-                preferencesData.interests,
-              )
-                ? preferencesData.interests
-                : [],
-
-            wisdomNeeds:
-              Array.isArray(
-                preferencesData.wisdomNeeds,
-              )
-                ? preferencesData.wisdomNeeds
-                : [],
-          });
-        }
-
-        /*
-         * Followed topics continue influencing
-         * recommendations after onboarding.
-         */
-        if (topicsResponse.ok) {
-          setTopics(
-            Array.isArray(topicsData)
-              ? topicsData
-              : [],
-          );
-        }
-
-        setNuggets(
-          Array.isArray(
-            publishedNuggets,
-          )
-            ? publishedNuggets
+        setFollowedTopics(
+          Array.isArray(topicsData)
+            ? topicsData
+                .map((item: string | FollowedTopic) =>
+                  typeof item === "string" ? item : item.topic,
+                )
+                .filter((value): value is string => Boolean(value))
             : [],
         );
 
-        /*
-         * Only show an error if both
-         * personalization endpoints fail.
-         */
-        if (
-          !preferencesResponse.ok &&
-          !topicsResponse.ok
-        ) {
-          setError(
-            "Could not load your recommendation preferences.",
-          );
+        setNuggets(publishedNuggets);
+
+        if (!preferencesResponse.ok && !topicsResponse.ok) {
+          setError("Could not load your saved recommendation choices.");
         }
       } catch {
-        setError(
-          "Could not connect to the server.",
-        );
+        setError("Could not load your Recommendation Guide.");
       } finally {
         setLoading(false);
       }
     }
 
-    loadRecommendations();
+    void loadRecommendations();
   }, []);
 
-  /* =========================================
-     TOTAL PERSONALIZATION SIGNALS
-  ========================================= */
+  const recommendations = useMemo(
+    () =>
+      rankPersonalizedNuggets(
+        nuggets,
+        preferences,
+        followedTopics,
+        3,
+      ),
+    [nuggets, preferences, followedTopics],
+  );
 
   const signalCount =
     preferences.interests.length +
     preferences.wisdomNeeds.length +
-    topics.length;
+    followedTopics.length;
 
-  /* =========================================
-     MERGED DISPLAY INTERESTS
-
-     Onboarding interests appear first.
-     Followed topics are added if they are
-     not already represented.
-  ========================================= */
-
-  const displayInterests =
-    useMemo(() => {
-      const values = [
-        ...preferences.interests,
-        ...topics.map(
-          (item) =>
-            item.topic,
-        ),
-      ];
-
-      return [
-        ...new Set(
-          values.filter(
-            Boolean,
-          ),
-        ),
-      ];
-    }, [
-      preferences.interests,
-      topics,
-    ]);
-
-  /* =========================================
-     WEIGHTED RECOMMENDATION ENGINE
-
-     Current wisdom need = 4
-     Onboarding interest = 3
-     Followed topic      = 2
-  ========================================= */
-
-  const recommendations =
-    useMemo(() => {
-      const wisdomSignals =
-        preferences.wisdomNeeds.map(
-          (value) => ({
-            value,
-            weight: 4,
-          }),
-        );
-
-      const interestSignals =
-        preferences.interests.map(
-          (value) => ({
-            value,
-            weight: 3,
-          }),
-        );
-
-      const followedSignals =
-        topics.map(
-          (item) => ({
-            value:
-              item.topic,
-            weight: 2,
-          }),
-        );
-
-      const signals = [
-        ...wisdomSignals,
-        ...interestSignals,
-        ...followedSignals,
-      ];
-
-      if (
-        signals.length === 0
-      ) {
-        return [];
-      }
-
-      const scored =
-        nuggets.map(
-          (nugget) => {
-            const searchable =
-              [
-                nugget.title,
-                nugget.topic,
-                nugget.tag,
-                nugget.keyPrinciple,
-                nugget.marketplaceApplication,
-                nugget.scriptureRef,
-                nugget.scriptureText,
-                ...(nugget.challenges ??
-                  []),
-                ...(nugget.practicalActionPlan ??
-                  []),
-              ]
-                .filter(Boolean)
-                .join(" ")
-                .toLowerCase();
-
-            let score = 0;
-
-            for (
-              const signal
-              of signals
-            ) {
-              const normalized =
-                signal.value
-                  .trim()
-                  .toLowerCase();
-
-              if (!normalized) {
-                continue;
-              }
-
-              /*
-               * Strong exact phrase match.
-               */
-              if (
-                searchable.includes(
-                  normalized,
-                )
-              ) {
-                score +=
-                  signal.weight *
-                  3;
-
-                continue;
-              }
-
-              /*
-               * Partial keyword matching.
-               */
-              const words =
-                normalized
-                  .split(
-                    /[\s&,/]+/,
-                  )
-                  .map(
-                    (word) =>
-                      word.trim(),
-                  )
-                  .filter(
-                    (word) =>
-                      word.length >
-                      3,
-                  );
-
-              for (
-                const word
-                of words
-              ) {
-                if (
-                  searchable.includes(
-                    word,
-                  )
-                ) {
-                  score +=
-                    signal.weight;
-                }
-              }
-            }
-
-            return {
-              nugget,
-              score,
-            };
-          },
-        );
-
-      return scored
-        .filter(
-          (item) =>
-            item.score > 0,
-        )
-        .sort(
-          (a, b) =>
-            b.score -
-            a.score,
-        )
-        .slice(0, 3)
-        .map(
-          (item) =>
-            item.nugget,
-        );
-    }, [
-      preferences,
-      topics,
-      nuggets,
-    ]);
+  const interestSummary = preferences.interests.join(" • ");
 
   return (
     <AuthRouteGuard type="protected">
-      <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+      <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
         <Navbar />
 
         <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
-          {/* BACK */}
-
           <Link
             href="/home"
-            className="text-[10px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             ← My Homepage
           </Link>
 
-          {/* HEADER */}
-
-          <section className="mt-3">
-            <h1 className="font-serif text-[40px] leading-tight">
+          <section className="mt-4">
+            <h1 className="bn-hero-title font-serif leading-tight">
               Your Recommendation Guide
             </h1>
-
-            <p className="mt-3 max-w-[650px] text-[13px] leading-6 text-white/40">
-              A starting point for
-              discovery, shaped by
-              your onboarding
-              preferences, current
-              wisdom needs and
-              followed topics.
+            <p className="mt-3 max-w-[780px] text-white/45">
+              A starting point for discovery, shaped by the interests and Nuggets you
+              selected during onboarding.
             </p>
           </section>
 
-          {/* TOP CARDS */}
+          <section className="mt-8 grid gap-7 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="min-w-0">
+              <div className="flex flex-col gap-2 border-b border-white/10 pb-5 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="font-serif">Recommended for Your Business Profile</h2>
 
-          <section className="mt-8 grid gap-5 lg:grid-cols-2">
-            {/* CHOSEN INTERESTS */}
+                {!loading && preferences.interests.length > 0 && (
+                  <p className="text-white/35">
+                    Based on your interests: {interestSummary}
+                  </p>
+                )}
+              </div>
 
-            <div className="rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-6">
-              <h2 className="font-serif text-[18px]">
-                Your Chosen Interests
-              </h2>
-
-              <p className="mt-2 text-[10px] leading-5 text-white/30">
-                These come from your
-                onboarding choices
-                and topics you follow
-                later.
-              </p>
+              {error && (
+                <div className="mt-5 rounded-md border border-red-500/20 bg-red-500/[0.05] px-4 py-3">
+                  <p className="text-red-400">{error}</p>
+                </div>
+              )}
 
               {loading ? (
-                <p className="mt-5 text-[11px] text-white/30">
-                  Loading your
-                  interests...
-                </p>
-              ) : displayInterests.length >
-                0 ? (
-                <div className="mt-5 space-y-3">
-                  {displayInterests.map(
-                    (
-                      interest,
-                    ) => (
-                      <div
-                        key={
-                          interest
-                        }
-                        className="flex items-start gap-3 rounded-md border border-[#C8A35A]/45 bg-[#C8A35A]/[0.14] px-4 py-3"
-                      >
-                        <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-[#C8A35A] text-[#080808]">
-                          <Check
-                            size={
-                              10
-                            }
-                            strokeWidth={
-                              3
-                            }
+                <div className="mt-5 space-y-4">
+                  {[1, 2, 3].map((item) => (
+                    <div
+                      key={item}
+                      className="h-[150px] animate-pulse rounded-[10px] border border-white/10 bg-[#111111]"
+                    />
+                  ))}
+                </div>
+              ) : signalCount === 0 ? (
+                <div className="mt-5 rounded-[10px] border border-white/10 bg-[#111111] p-7">
+                  <h3 className="font-serif">Choose interests to personalize your guide</h3>
+                  <p className="mt-2 max-w-[600px] text-white/40">
+                    Complete onboarding so this guide and your homepage can recommend
+                    Nuggets from the same saved choices.
+                  </p>
+                  <Link
+                    href="/onboarding"
+                    className="mt-4 inline-flex font-medium text-[#E28906]"
+                  >
+                    Complete Onboarding →
+                  </Link>
+                </div>
+              ) : recommendations.length > 0 ? (
+                <div className="mt-5 space-y-4">
+                  {recommendations.map((nugget) => (
+                    <article
+                      key={nugget.id}
+                      className="overflow-hidden rounded-[10px] border border-white/10 bg-[#111111]"
+                    >
+                      <div className="flex flex-col sm:flex-row">
+                        <div className="relative min-h-[180px] w-full shrink-0 overflow-hidden bg-[#181818] sm:min-h-[150px] sm:w-[190px]">
+                          <ContentImage
+                            src={nugget.image}
+                            alt={nugget.title}
                           />
-                        </span>
+                        </div>
 
-                        <div>
-                          <p className="text-[11px] font-medium text-white/85">
-                            {
-                              interest
-                            }
+                        <div className="min-w-0 flex-1 p-5 sm:p-6">
+                          <h3 className="font-serif text-[20px] leading-snug text-white/95">
+                            {nugget.title}
+                          </h3>
+
+                          <p className="mt-2 text-[#E28906]">
+                            {nugget.scriptureRef || displayTopicName(nugget.topic)}
                           </p>
 
-                          <p className="mt-1 text-[9px] leading-4 text-white/30">
-                            Recommendations
-                            will prioritize
-                            teachings
-                            related to this
-                            area.
-                          </p>
+                          <div className="mt-4 border-t border-white/10 pt-3">
+                            <p className="font-semibold uppercase tracking-[0.08em] text-white/35">
+                              Why This Matches
+                            </p>
+                            <p className="mt-1 text-white/45">
+                              {getMatchReason(nugget, preferences, followedTopics)}
+                            </p>
+                          </div>
+
+                          <Link
+                            href={`/nugget/${nugget.slug}`}
+                            className="mt-4 inline-flex font-medium text-[#E28906] transition hover:text-[#E28906]"
+                          >
+                            Start Reading →
+                          </Link>
                         </div>
                       </div>
-                    ),
-                  )}
+                    </article>
+                  ))}
                 </div>
               ) : (
-                <div className="mt-5 rounded-md border border-white/10 bg-[#181818] p-4">
-                  <p className="text-[11px] text-white/45">
-                    You haven&apos;t
-                    selected any
-                    interests yet.
-                  </p>
+                <p className="mt-5 rounded-[10px] border border-white/10 bg-[#111111] p-6 text-white/45">
+                  No published Nuggets match your current choices yet.
+                </p>
+              )}
+            </div>
+
+            <aside className="h-fit rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-6">
+              <h2 className="font-serif">Your Chosen Interests</h2>
+
+              {loading ? (
+                <p className="mt-5 text-white/35">Loading your choices...</p>
+              ) : preferences.interests.length > 0 ? (
+                <div className="mt-5 space-y-3">
+                  {preferences.interests.map((interest) => (
+                    <div
+                      key={interest}
+                      className="flex items-start gap-3 rounded-md border border-[#E28906]/35 bg-[#E28906]/10 px-4 py-3"
+                    >
+                      <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-sm bg-[#E28906] text-[#080808]">
+                        <Check size={12} strokeWidth={3} />
+                      </span>
+
+                      <div className="min-w-0">
+                        <p className="font-medium text-white/90">{displayTopicName(interest)}</p>
+                        <p className="mt-1 text-white/35">
+                          Recommendations prioritize teachings related to this area.
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
+              ) : (
+                <p className="mt-5 text-white/40">
+                  You have not selected any interests yet.
+                </p>
               )}
 
               <Link
                 href="/onboarding?edit=1"
-                className="mt-5 inline-flex items-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 py-2.5 text-[10px] text-white/65 transition hover:border-[#C8A35A]/30 hover:text-[#C8A35A]"
+                className="bn-button mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 text-white/70 transition hover:border-[#E28906]/30 hover:text-[#E28906]"
               >
-                <SlidersHorizontal
-                  size={13}
-                />
-
-                Adjust Interests →
+                <SlidersHorizontal size={15} />
+                Adjust Interests
               </Link>
-            </div>
 
-            {/* WHY */}
-
-            <div className="rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-6">
-              <h2 className="font-serif text-[18px]">
-                Why These Teachings?
-              </h2>
-
-              <p className="mt-5 text-[11px] leading-6 text-white/40">
-                Your recommendation
-                guide considers the
-                business interests
-                you selected during
-                onboarding, what you
-                currently need
-                wisdom about, and
-                topics you choose to
-                follow.
-              </p>
-
-              <p className="mt-4 text-[11px] leading-6 text-white/40">
-                Current wisdom needs
-                receive the strongest
-                influence because
-                they represent what
-                is most relevant to
-                you now.
-              </p>
-
-              <p className="mt-4 text-[11px] leading-6 text-white/40">
-                Recommendations are
-                invitations to study,
-                not guarantees or
-                judgments about your
-                business.
-              </p>
-
-              <Link
-                href="/library"
-                className="mt-5 inline-block text-[10px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              <div
+                id="how-recommendations-work"
+                className="mt-6 border-t border-white/10 pt-5"
               >
-                Browse beyond your
-                interests → Library
-              </Link>
-            </div>
+                <p className="font-semibold uppercase tracking-[0.08em] text-[#E28906]">
+                  Why These Teachings?
+                </p>
+                <p className="mt-3 leading-6 text-white/40">
+                  Your current onboarding choices receive the strongest weight. Topics
+                  you follow later can also refine what appears here and on your homepage.
+                </p>
+                <a
+                  href="#how-recommendations-work"
+                  className="mt-4 inline-flex font-medium text-[#E28906] transition hover:text-[#E28906]"
+                >
+                  Learn how recommendations work →
+                </a>
+              </div>
+            </aside>
           </section>
 
-          {/* CURRENT WISDOM NEEDS */}
-
-          {!loading &&
-            preferences.wisdomNeeds.length >
-              0 && (
-              <section className="mt-6 rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-6">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
-                  Current Focus
-                </p>
-
-                <h2 className="mt-2 font-serif text-[18px]">
-                  What You Need
-                  Wisdom About
-                </h2>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {preferences.wisdomNeeds.map(
-                    (
-                      need,
-                    ) => (
-                      <span
-                        key={
-                          need
-                        }
-                        className="rounded-full border border-[#C8A35A]/30 bg-[#C8A35A]/[0.08] px-3 py-2 text-[10px] text-[#E0C48A]"
-                      >
-                        {need}
-                      </span>
-                    ),
-                  )}
-                </div>
-              </section>
-            )}
-
-          {/* RECOMMENDED */}
-
-          <section className="mt-10">
-            <h2 className="font-serif text-[28px] leading-tight">
-              Recommended for Your
-              Business Profile
-            </h2>
-
-            {error && (
-              <div className="mt-5 rounded-md border border-red-500/20 bg-red-500/[0.05] px-4 py-3">
-                <p className="text-[11px] text-red-400">
-                  {error}
-                </p>
-              </div>
-            )}
-
-            {/* LOADING */}
-
-            {loading && (
-              <div className="mt-6 space-y-4">
-                {[1, 2, 3].map(
-                  (item) => (
-                    <div
-                      key={
-                        item
-                      }
-                      className="h-[88px] animate-pulse rounded-[10px] border border-white/10 bg-[#111111]"
-                    />
-                  ),
-                )}
-              </div>
-            )}
-
-            {/* NO PERSONALIZATION */}
-
-            {!loading &&
-              !error &&
-              signalCount ===
-                0 && (
-                <div className="mt-6 rounded-[10px] border border-white/10 bg-[#111111] p-7">
-                  <h3 className="font-serif text-[18px]">
-                    Choose interests
-                    to personalize
-                    your guide
-                  </h3>
-
-                  <p className="mt-2 max-w-[560px] text-[11px] leading-6 text-white/35">
-                    Select your
-                    business interests
-                    and current wisdom
-                    needs so Business
-                    Nuggets can build
-                    a more relevant
-                    recommendation
-                    guide.
-                  </p>
-
-                  <Link
-                    href="/onboarding?edit=1"
-                    className="mt-4 inline-block text-[10px] font-medium text-[#C8A35A]"
-                  >
-                    Choose Interests →
-                  </Link>
-                </div>
-              )}
-
-            {/* SIGNALS EXIST BUT NO MATCH */}
-
-            {!loading &&
-              !error &&
-              signalCount >
-                0 &&
-              recommendations.length ===
-                0 && (
-                <div className="mt-6 rounded-[10px] border border-white/10 bg-[#111111] p-7">
-                  <p className="text-[11px] leading-6 text-white/40">
-                    There are no
-                    published Nuggets
-                    matching your
-                    current interests
-                    closely enough
-                    yet.
-                  </p>
-
-                  <Link
-                    href="/library"
-                    className="mt-4 inline-block text-[10px] text-[#C8A35A]"
-                  >
-                    Browse the Full
-                    Library →
-                  </Link>
-                </div>
-              )}
-
-            {/* RESULTS */}
-
-            {!loading &&
-              recommendations.length >
-                0 && (
-                <div className="mt-6 space-y-4">
-                  {recommendations.map(
-                    (
-                      nugget,
-                    ) => (
-                      <Link
-                        key={
-                          nugget.id
-                        }
-                        href={`/nugget/${nugget.slug}`}
-                        className="group flex items-center gap-4 rounded-[10px] border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/35"
-                      >
-                        <div className="relative h-[58px] w-[72px] shrink-0 overflow-hidden rounded-md bg-[#181818]">
-                          <Image
-                            src={
-                              nugget.image
-                            }
-                            alt={
-                              nugget.title
-                            }
-                            fill
-                            sizes="72px"
-                            className="object-cover"
-                          />
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-serif text-[15px] leading-5 text-white/90 transition group-hover:text-[#C8A35A]">
-                            {
-                              nugget.title
-                            }
-                          </h3>
-
-                          <p className="mt-1 text-[9px] text-white/30">
-                            {
-                              nugget.scriptureRef
-                            }
-
-                            {nugget.topic &&
-                              ` • ${nugget.topic}`}
-
-                            {nugget.duration &&
-                              ` • ${nugget.duration}`}
-                          </p>
-                        </div>
-
-                        <span className="hidden shrink-0 text-[9px] font-medium text-[#C8A35A] sm:block">
-                          Listen &amp;
-                          Read →
-                        </span>
-                      </Link>
-                    ),
-                  )}
-                </div>
-              )}
-          </section>
-
-          {/* DISCOVERY */}
-
-          <section className="mt-8 rounded-[8px] border border-[#C8A35A]/20 bg-[#C8A35A]/[0.14] px-5 py-4">
-            <p className="text-[10px] font-semibold text-[#E0C48A]">
-              Keep your discovery
-              open
+          <section className="mt-8 rounded-[10px] border border-[#E28906]/20 bg-[#E28906]/10 p-5 sm:p-6">
+            <h2 className="font-serif">Keep Your Discovery Open</h2>
+            <p className="mt-2 max-w-[900px] text-white/40">
+              Recommendations are a starting point, not a limit. Explore the full Library
+              whenever you want teachings outside your current interests.
             </p>
-
-            <p className="mt-2 text-[10px] leading-5 text-white/35">
-              Recommendations help
-              you begin, but your
-              entire library remains
-              available. Use
-              Challenges when a
-              specific problem needs
-              attention, or Scripture
-              Index when you want to
-              begin with a biblical
-              passage.
-            </p>
-
-            <div className="mt-3 flex flex-wrap gap-4">
-              <Link
-                href="/library"
-                className="text-[9px] text-[#C8A35A]"
-              >
-                Explore Library →
-              </Link>
-
-              <Link
-                href="/scripture"
-                className="text-[9px] text-[#C8A35A]"
-              >
-                Scripture Index →
-              </Link>
-            </div>
+            <Link
+              href="/library"
+              className="mt-4 inline-flex font-medium text-[#E28906] transition hover:text-[#E28906]"
+            >
+              Explore Library →
+            </Link>
           </section>
         </main>
 

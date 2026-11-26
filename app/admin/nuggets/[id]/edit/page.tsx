@@ -1,5 +1,15 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
+import { BIBLE_BOOKS, BIBLE_GROUPS, referenceWithBook, bibleGroupForBook, bibleBookFromReference, canonicalBibleBook } from "@/lib/bible-books";
+
+import ImageMediaPicker from "@/components/ImageMediaPicker";
+import AudioMediaInput from "@/components/AudioMediaInput";
+import R2ImagePicker from "@/components/R2ImagePicker";
+import R2MediaMatchStatus from "@/components/R2MediaMatchStatus";
+import { useR2MediaAutoMatch } from "@/lib/use-r2-media-auto-match";
+import { useR2SongAutoMatch } from "@/lib/use-r2-song-auto-match";
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -10,7 +20,6 @@ import {
 
 import {
   useParams,
-  useRouter,
 } from "next/navigation";
 
 import {
@@ -42,6 +51,8 @@ type AdminNugget = Omit<
 
   featured?: boolean;
 
+  nuggetAudioUrl?: string | null;
+
   audioUrl?:
     | string
     | null;
@@ -62,6 +73,7 @@ type FormState = {
   image: string;
 
   keyPrinciple: string;
+  details: string;
 
   marketplaceApplication: string;
 
@@ -80,25 +92,16 @@ type FormState = {
   challenges: string;
 
   audioUrl: string;
+  nuggetAudioUrl: string;
 
   status:
     | "draft"
     | "published";
 };
 
-const bibleSections: BibleSection[] =
-  [
-    "The Pentateuch",
-    "History & Leadership",
-    "Wisdom Literature",
-    "The Prophets",
-    "New Testament",
-  ];
+const bibleSections = BIBLE_GROUPS.map(group => group.name);
 
 export default function EditNuggetPage() {
-  const router =
-    useRouter();
-
   const params =
     useParams<{
       id: string;
@@ -131,6 +134,7 @@ export default function EditNuggetPage() {
       image: "",
 
       keyPrinciple: "",
+      details: "",
 
       marketplaceApplication:
         "",
@@ -151,6 +155,7 @@ export default function EditNuggetPage() {
       challenges: "",
 
       audioUrl: "",
+      nuggetAudioUrl: "",
 
       status: "draft",
     });
@@ -166,6 +171,32 @@ export default function EditNuggetPage() {
 
   const [success, setSuccess] =
     useState("");
+
+  // Match the existing Nugget number only after its record is loaded.
+  // Never replace a Song URL that already exists.
+  const songMatchStatus = useR2SongAutoMatch(
+    originalNugget?.number,
+    form.audioUrl,
+    (reference) => {
+      setForm((current) =>
+        current.audioUrl.trim()
+          ? current
+          : { ...current, audioUrl: reference },
+      );
+    },
+  );
+
+  const nuggetAudioMatchStatus = useR2MediaAutoMatch(
+    "nuggets", originalNugget?.number, form.nuggetAudioUrl,
+    (reference) => setForm((current) => current.nuggetAudioUrl.trim()
+      ? current : { ...current, nuggetAudioUrl: reference }),
+  );
+
+  const imageMatchStatus = useR2MediaAutoMatch(
+    "images", originalNugget?.number, form.image,
+    (reference) => setForm((current) => current.image.trim()
+      ? current : { ...current, image: reference }),
+  );
 
   /* =========================================
      LOAD NUGGET
@@ -249,8 +280,7 @@ export default function EditNuggetPage() {
             "",
 
           topic:
-            nugget.topic ||
-            "",
+            displayTopicName(nugget.topic || ""),
 
           tag:
             nugget.tag ||
@@ -271,6 +301,8 @@ export default function EditNuggetPage() {
           keyPrinciple:
             nugget.keyPrinciple ||
             "",
+
+          details: nugget.details || "",
 
           marketplaceApplication:
             nugget.marketplaceApplication ||
@@ -300,25 +332,24 @@ export default function EditNuggetPage() {
             ),
 
           book:
-            nugget.book ||
-            "",
+            bibleBookFromReference(nugget.scriptureRef || "") || canonicalBibleBook(nugget.book || "") || nugget.book || "",
 
           bibleSection:
-            nugget.bibleSection ||
-            "Wisdom Literature",
+            bibleGroupForBook(bibleBookFromReference(nugget.scriptureRef || "") || nugget.book || "") || nugget.bibleSection || "Wisdom Literature",
 
           challenges:
             Array.isArray(
               nugget.challenges,
             )
               ? nugget.challenges.join(
-                  ", ",
+                  "\n",
                 )
               : "",
 
           audioUrl:
             nugget.audioUrl ||
             "",
+          nuggetAudioUrl: nugget.nuggetAudioUrl || "",
 
           status:
             nugget.status ||
@@ -350,6 +381,11 @@ export default function EditNuggetPage() {
       (current) => ({
         ...current,
         [key]: value,
+        ...(key === "book" ? { bibleSection: bibleGroupForBook(String(value)) || current.bibleSection, scriptureRef: referenceWithBook(String(value), current.scriptureRef) } : {}),
+        ...(key === "scriptureRef" && bibleBookFromReference(String(value)) ? {
+          book: bibleBookFromReference(String(value))!,
+          bibleSection: bibleGroupForBook(bibleBookFromReference(String(value))!) || current.bibleSection,
+        } : {}),
       }),
     );
 
@@ -408,7 +444,7 @@ export default function EditNuggetPage() {
 
     const challenges =
       form.challenges
-        .split(",")
+        .split(/\r?\n/)
         .map(
           (item) =>
             item.trim(),
@@ -440,7 +476,9 @@ export default function EditNuggetPage() {
                 form.title.trim(),
 
               topic:
-                form.topic.trim(),
+                originalNugget && form.topic.trim() === displayTopicName(originalNugget.topic)
+                  ? originalNugget.topic
+                  : form.topic.trim(),
 
               tag:
                 form.tag.trim(),
@@ -456,6 +494,8 @@ export default function EditNuggetPage() {
 
               keyPrinciple:
                 form.keyPrinciple.trim(),
+
+              details: form.details.trim(),
 
               marketplaceApplication:
                 form.marketplaceApplication.trim(),
@@ -482,8 +522,8 @@ export default function EditNuggetPage() {
               status,
 
               audioUrl:
-                form.audioUrl.trim() ||
-                undefined,
+                form.audioUrl.trim(),
+              nuggetAudioUrl: form.nuggetAudioUrl.trim(),
             }),
           },
         );
@@ -594,7 +634,7 @@ export default function EditNuggetPage() {
 
           <Link
             href="/admin/nuggets"
-            className="inline-flex min-h-9 w-fit items-center justify-center rounded-md border border-white/10 px-4 text-[9px] text-white/55 transition hover:border-[#C8A35A]/30 hover:text-white"
+            className="bn-button inline-flex min-h-9 w-fit items-center justify-center rounded-md border border-white/10 px-4 text-[9px] text-white/55 transition hover:border-[#E28906]/30 hover:text-white"
           >
             Discard
           </Link>
@@ -654,7 +694,7 @@ export default function EditNuggetPage() {
                     .value,
                 )
               }
-              className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#C8A35A]/40"
+              className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#E28906]/40"
             />
 
             {/* SLUG */}
@@ -678,7 +718,7 @@ export default function EditNuggetPage() {
                       .value,
                   )
                 }
-                className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#C8A35A]/40"
+                className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#E28906]/40"
               />
             </div>
 
@@ -706,7 +746,7 @@ export default function EditNuggetPage() {
                     )
                   }
                   placeholder="Proverbs 11:1"
-                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
                 />
               </div>
 
@@ -730,7 +770,7 @@ export default function EditNuggetPage() {
                     )
                   }
                   placeholder="Negotiation & Justice"
-                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
                 />
               </div>
             </div>
@@ -757,15 +797,13 @@ export default function EditNuggetPage() {
                   )
                 }
                 rows={4}
-                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none focus:border-[#C8A35A]/40"
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none focus:border-[#E28906]/40"
               />
             </div>
 
-            {/* KEY PRINCIPLE */}
-
             <div className="mt-4">
               <FieldLabel>
-                Key Principle
+                Key Principles and Boundaries
               </FieldLabel>
 
               <textarea
@@ -784,8 +822,21 @@ export default function EditNuggetPage() {
                 }
                 rows={6}
                 placeholder="Main biblical-business principle..."
-                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
               />
+            </div>
+
+            <div className="mt-4">
+              <FieldLabel>Explanation: Full Biblical Context and Teaching</FieldLabel>
+              <textarea
+                aria-label="Explanation: Full Biblical Context and Teaching"
+                value={form.details}
+                onChange={(event) => updateField("details", event.target.value)}
+                rows={8}
+                placeholder="Add the full explanation and supporting details..."
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
+              />
+              <p className="mt-2 text-[12px] text-white/45">All teaching sections support HTML formatting: &lt;p&gt;, &lt;br&gt;, &lt;strong&gt; (or &lt;bold&gt;), &lt;em&gt;, &lt;u&gt;, lists, headings and links. Markdown **bold** and ## headings still work. Scripts and embedded content are not supported.</p>
             </div>
 
             {/* MARKETPLACE */}
@@ -812,7 +863,7 @@ export default function EditNuggetPage() {
                 }
                 rows={5}
                 placeholder="How this principle applies in business..."
-                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
               />
             </div>
 
@@ -842,12 +893,44 @@ export default function EditNuggetPage() {
                 placeholder={
                   "Enter one action per line\nReview your contracts\nAudit pricing practices"
                 }
-                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
               />
 
               <p className="mt-2 text-[8px] text-white/25">
                 Enter one action
                 per line.
+              </p>
+            </div>
+
+            {/* CHALLENGES */}
+
+            <div className="mt-4">
+              <FieldLabel>
+                Challenges &amp; Reflection
+              </FieldLabel>
+
+              <textarea
+                aria-label="Challenges & Reflection"
+                rows={5}
+                value={
+                  form.challenges
+                }
+                onChange={(
+                  event,
+                ) =>
+                  updateField(
+                    "challenges",
+                    event
+                      .target
+                      .value,
+                  )
+                }
+                placeholder="Enter one challenge or reflection prompt per line"
+                className="mt-2 w-full resize-y rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[10px] leading-5 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
+              />
+
+              <p className="mt-2 text-[8px] text-white/25">
+                Enter one challenge or reflection prompt per line.
               </p>
             </div>
 
@@ -874,7 +957,7 @@ export default function EditNuggetPage() {
                     )
                   }
                   placeholder="Integrity & Character"
-                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
                 />
               </div>
 
@@ -898,7 +981,7 @@ export default function EditNuggetPage() {
                     )
                   }
                   placeholder="6 min"
-                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
                 />
               </div>
             </div>
@@ -911,23 +994,20 @@ export default function EditNuggetPage() {
                   Bible Book
                 </FieldLabel>
 
-                <input
-                  value={
-                    form.book
-                  }
-                  onChange={(
-                    event,
-                  ) =>
-                    updateField(
-                      "book",
-                      event
-                        .target
-                        .value,
-                    )
-                  }
-                  placeholder="Proverbs"
-                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
-                />
+                <select
+                  aria-label="Bible Book"
+                  value={form.book}
+                  onChange={(event) => updateField("book", event.target.value)}
+                  className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none focus:border-[#E28906]/40"
+                >
+                  <option value="">Select a book</option>
+                  {form.book && !BIBLE_BOOKS.includes(form.book) && (
+                    <option value={form.book}>{form.book} (current value)</option>
+                  )}
+                  {BIBLE_BOOKS.map((book) => (
+                    <option key={book} value={book}>{book}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -936,9 +1016,8 @@ export default function EditNuggetPage() {
                 </FieldLabel>
 
                 <select
-                  value={
-                    form.bibleSection
-                  }
+                  value={form.bibleSection}
+                  disabled={Boolean(bibleGroupForBook(form.book))}
                   onChange={(
                     event,
                   ) =>
@@ -973,62 +1052,55 @@ export default function EditNuggetPage() {
               </div>
             </div>
 
-            {/* CHALLENGES */}
-
-            <div className="mt-4">
-              <FieldLabel>
-                Challenges
-              </FieldLabel>
-
-              <input
-                value={
-                  form.challenges
-                }
-                onChange={(
-                  event,
-                ) =>
-                  updateField(
-                    "challenges",
-                    event
-                      .target
-                      .value,
-                  )
-                }
-                placeholder="Negotiation, Ethics, Pricing"
-                className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
-              />
-
-              <p className="mt-2 text-[8px] text-white/25">
-                Separate
-                challenges with
-                commas.
-              </p>
-            </div>
-
             {/* AUDIO */}
 
             <div className="mt-4">
               <FieldLabel>
-                Audio URL
+                Song URL
               </FieldLabel>
 
-              <input
-                value={
-                  form.audioUrl
-                }
-                onChange={(
-                  event,
-                ) =>
-                  updateField(
-                    "audioUrl",
-                    event
-                      .target
-                      .value,
-                  )
-                }
-                placeholder="/audio/example.mp3"
-                className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+              
+              <AudioMediaInput
+                label="Song URL"
+                bucket="song"
+                value={form.audioUrl}
+                onChange={(value) => updateField("audioUrl", value)}
+                detectDurationForValue={!form.duration.trim() && !form.nuggetAudioUrl.trim()}
+                onDurationDetected={(duration) => {
+                  setForm((current) =>
+                    current.nuggetAudioUrl
+                      ? current
+                      : { ...current, duration },
+                  );
+                }}
               />
+              {songMatchStatus === "searching" && (
+                <p className="mt-2 text-xs text-white/50">Searching R2 for this Nugget's song...</p>
+              )}
+              {songMatchStatus === "multiple" && (
+                <p className="mt-2 text-xs text-[#E28906]">Multiple songs match this number. Choose the correct song manually.</p>
+              )}
+              {songMatchStatus === "not_found" && (
+                <p className="mt-2 text-xs text-white/40">No matching song found in R2.</p>
+              )}
+              {songMatchStatus === "error" && (
+                <p className="mt-2 text-xs text-red-400">Could not search R2. Choose the song manually.</p>
+              )}
+            </div>
+
+            <div className="mt-4">
+              <FieldLabel>Nugget URL</FieldLabel>
+              <AudioMediaInput
+                label="Nugget URL"
+                bucket="nuggets"
+                value={form.nuggetAudioUrl}
+                onChange={(value) => updateField("nuggetAudioUrl", value)}
+                detectDurationForValue={!form.duration.trim()}
+                onDurationDetected={(duration) =>
+                  updateField("duration", duration)
+                }
+              />
+              <R2MediaMatchStatus kind="nuggets" status={nuggetAudioMatchStatus} />
             </div>
 
             {/* BOTTOM BUTTONS */}
@@ -1042,7 +1114,7 @@ export default function EditNuggetPage() {
                     "draft",
                   )
                 }
-                className="inline-flex min-h-9 items-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 text-[9px] text-white/60 transition hover:border-[#C8A35A]/30 hover:text-white disabled:opacity-40"
+                className="inline-flex min-h-9 items-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 text-[9px] text-white/60 transition hover:border-[#E28906]/30 hover:text-white disabled:opacity-40"
               >
                 <Save
                   size={12}
@@ -1058,7 +1130,7 @@ export default function EditNuggetPage() {
                 onClick={
                   previewNugget
                 }
-                className="inline-flex min-h-9 items-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 text-[9px] text-white/60 transition hover:border-[#C8A35A]/30 hover:text-white"
+                className="inline-flex min-h-9 items-center gap-2 rounded-md border border-white/10 bg-[#080808] px-4 text-[9px] text-white/60 transition hover:border-[#E28906]/30 hover:text-white"
               >
                 <Eye
                   size={12}
@@ -1075,7 +1147,7 @@ export default function EditNuggetPage() {
                     "published",
                   )
                 }
-                className="ml-auto inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:opacity-40"
+                className="ml-auto inline-flex min-h-9 items-center gap-2 rounded-md bg-[#E28906] px-5 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:opacity-40"
               >
                 {saving
                   ? "Publishing..."
@@ -1105,6 +1177,7 @@ export default function EditNuggetPage() {
                     alt=""
                     fill
                     sizes="280px"
+                    unoptimized
                     className="object-cover"
                   />
                 ) : (
@@ -1139,18 +1212,13 @@ export default function EditNuggetPage() {
                       .value,
                   )
                 }
-                placeholder="/images/nugget.jpg"
-                className="mt-2 h-9 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[9px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+                placeholder="/media-placeholder.svg"
+                className="mt-2 h-9 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[9px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
               />
 
-              <button
-                type="button"
-                disabled
-                title="The Admin Media Library will be connected when we build that screen."
-                className="mt-2 h-9 w-full rounded-md border border-white/10 text-[8px] text-white/30 disabled:cursor-not-allowed"
-              >
-                Choose from Library
-              </button>
+              <ImageMediaPicker value={form.image} disabled={saving} onSelect={url => updateField("image", url)} />
+              <R2ImagePicker value={form.image} disabled={saving} onSelect={url => updateField("image", url)} />
+              <R2MediaMatchStatus kind="images" status={imageMatchStatus} />
             </section>
 
             {/* PUBLISHING */}
@@ -1191,7 +1259,7 @@ export default function EditNuggetPage() {
 
             {/* GOLD + FEATURED */}
 
-            <section className="rounded-[10px] border border-[#C8A35A]/30 bg-[#111111] p-4">
+            <section className="rounded-[10px] border border-[#E28906]/30 bg-[#111111] p-4">
               <h2 className="font-serif text-[17px]">
                 Visibility
               </h2>
@@ -1223,7 +1291,7 @@ export default function EditNuggetPage() {
                         .checked,
                     )
                   }
-                  className="h-4 w-4 accent-[#C8A35A]"
+                  className="h-4 w-4 accent-[#E28906]"
                 />
               </label>
 
@@ -1256,7 +1324,7 @@ export default function EditNuggetPage() {
                         .checked,
                     )
                   }
-                  className="h-4 w-4 accent-[#C8A35A]"
+                  className="h-4 w-4 accent-[#E28906]"
                 />
               </label>
             </section>
@@ -1270,17 +1338,17 @@ export default function EditNuggetPage() {
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {form.tag && (
-                  <span className="rounded-full bg-[#C8A35A]/15 px-2.5 py-1 text-[7px] text-[#C8A35A]">
+                  <span className="rounded-full bg-[#E28906]/15 px-2.5 py-1 text-[7px] text-[#E28906]">
                     {
-                      form.tag
+                      displayTopicName(form.tag)
                     }
                   </span>
                 )}
 
                 {form.topic && (
-                  <span className="rounded-full bg-[#C8A35A]/15 px-2.5 py-1 text-[7px] text-[#C8A35A]">
+                  <span className="rounded-full bg-[#E28906]/15 px-2.5 py-1 text-[7px] text-[#E28906]">
                     {
-                      form.topic
+                      displayTopicName(form.topic)
                     }
                   </span>
                 )}
@@ -1328,7 +1396,7 @@ function StatusBadge({
         status ===
         "published"
           ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-          : "border-[#C8A35A]/20 bg-[#C8A35A]/10 text-[#E0C48A]"
+          : "border-[#E28906]/20 bg-[#E28906]/10 text-[#E28906]"
       }`}
     >
       {status ===

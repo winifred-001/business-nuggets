@@ -1,6 +1,7 @@
 import {
   Module,
 } from "@nestjs/common";
+import { TopUpsModule } from "../topups/topups.module";
 
 import { AuthModule } from "../auth/auth.module";
 import { SubscriptionsModule } from "../subscriptions/subscriptions.module";
@@ -12,6 +13,7 @@ import { PaymentsService } from "./payments.service";
   imports: [
     AuthModule,
     SubscriptionsModule,
+    TopUpsModule,
   ],
 
   controllers: [

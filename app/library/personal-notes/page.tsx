@@ -1,7 +1,6 @@
 "use client";
 
-import { API_URL } from "@/lib/api";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Link2, Plus, Search } from "lucide-react";
 
@@ -30,76 +29,52 @@ export default function PersonalNotesPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const selectedNote =
-    notes.find((note) => note.id === selectedId) ?? null;
-
-  async function loadNotes() {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setError("Please log in to view your notes.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API_URL}/notes`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || "Could not load notes.");
-        return;
-      }
-
-      const loadedNotes: Note[] = Array.isArray(data) ? data : [];
-
-      setNotes(loadedNotes);
-
-      if (loadedNotes.length > 0 && selectedId === null) {
-        selectNote(loadedNotes[0]);
-      }
-    } catch {
-      setError("Could not connect to the server.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    loadNotes();
-  }, []);
-
-  function selectNote(note: Note) {
+  const selectedRef = useRef<number | null>(null);
+  const selectNote = useCallback((note: Note) => {
+    selectedRef.current = note.id;
     setSelectedId(note.id);
     setTitle(note.title || "");
     setContent(note.content);
-  }
+  }, []);
+
+  const selectedNote =
+    notes.find((note) => note.id === selectedId) ?? null;
+
+  const loadNotes = useCallback(() => {
+    return fetch("/api/member/proxy/notes", { cache: "no-store" })
+      .then(async response => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(response.status === 401 ? "Please log in to view your notes." : data.message || "Could not load notes.");
+        return Array.isArray(data) ? data as Note[] : [];
+      })
+      .then(loadedNotes => {
+        setNotes(loadedNotes);
+        if (loadedNotes.length > 0) {
+          const requestedId = Number(new URLSearchParams(window.location.search).get("note"));
+          selectNote(loadedNotes.find(note => note.id === selectedRef.current) || loadedNotes.find(note => note.id === requestedId) || loadedNotes[0]);
+        } else { selectedRef.current = null; setSelectedId(null); setTitle(""); setContent(""); }
+      })
+      .catch(error => setError(error instanceof Error ? error.message : "Could not load notes."))
+      .finally(() => setLoading(false));
+  }, [selectNote]);
+
+  useEffect(() => {
+    void loadNotes();
+  }, [loadNotes]);
 
   async function saveNote() {
-    const token = localStorage.getItem("token");
-
-    if (!token || !content.trim()) return;
+    if (selectedId === null || !content.trim()) return;
 
     setSaving(true);
     setError("");
 
     try {
-      const editing = selectedId !== null;
-
       const response = await fetch(
-        editing
-          ? `${API_URL}/notes/${selectedId}`
-          : `${API_URL}/notes`,
+        `/api/member/proxy/notes/${selectedId}`,
         {
-          method: editing ? "PATCH" : "POST",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             title: title.trim() || undefined,
@@ -117,9 +92,6 @@ export default function PersonalNotesPage() {
 
       await loadNotes();
 
-      if (!editing && data.id) {
-        setSelectedId(data.id);
-      }
     } catch {
       setError("Could not save note.");
     } finally {
@@ -128,17 +100,14 @@ export default function PersonalNotesPage() {
   }
 
   async function deleteNote() {
-    const token = localStorage.getItem("token");
-
-    if (!token || selectedId === null) return;
+    if (selectedId === null) return;
 
     try {
       const response = await fetch(
-        `${API_URL}/notes/${selectedId}`,
+        `/api/member/proxy/notes/${selectedId}`,
         {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -191,10 +160,10 @@ export default function PersonalNotesPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
+    <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:py-16">
+      <main className="bn-member-library mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:py-16">
         {error && (
           <div className="mb-6 rounded-md border border-red-900/50 bg-red-950/20 px-4 py-3 text-sm text-red-300">
             {error}
@@ -203,16 +172,16 @@ export default function PersonalNotesPage() {
 
         <div className="grid gap-6 lg:grid-cols-[330px_minmax(0,1fr)]">
           {/* LEFT NOTES PANEL */}
-          <aside className="h-fit rounded-xl border border-white/10 bg-[#101010] p-4">
+          <aside className="h-fit rounded-xl border border-white/10 bn-dark-surface bg-[#101010] p-4">
             <div className="flex items-center justify-between">
-              <h1 className="font-serif text-xl font-semibold">
+              <h1 className="bn-hero-title font-serif text-xl font-semibold text-white">
                 My Journal & Notes
               </h1>
 
               <Link
   href="/library/personal-notes/create"
   aria-label="Create new note"
-  className="text-[#C8A35A] transition hover:text-[#E0C48A]"
+  className="text-[#E28906] transition hover:text-[#E28906]"
 >
   <Plus size={19} />
 </Link>
@@ -229,7 +198,7 @@ export default function PersonalNotesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search notes..."
-                className="h-10 w-full rounded-md border border-white/10 bg-[#181818] pl-9 pr-3 text-xs text-white outline-none placeholder:text-gray-600 focus:border-amber-300/40"
+                className="h-10 w-full rounded-md border border-white/10 bg-[#181818] pl-9 pr-3 text-xs text-white outline-none placeholder:text-[#B4B2AB] focus:border-amber-300/40"
               />
             </div>
 
@@ -265,7 +234,7 @@ export default function PersonalNotesPage() {
                         {note.nuggetId || "Personal"}
                       </span>
 
-                      <span className="shrink-0 text-[9px] text-gray-600">
+                      <span className="shrink-0 text-[9px] text-[#B4B2AB]">
                         {timeAgo(note.updatedAt)}
                       </span>
                     </div>
@@ -274,7 +243,7 @@ export default function PersonalNotesPage() {
                       {note.title || "Untitled Note"}
                     </p>
 
-                    <p className="mt-2 line-clamp-2 text-[10px] leading-relaxed text-gray-500">
+                    <p className="mt-2 line-clamp-2 text-[10px] leading-relaxed text-white">
                       {note.content}
                     </p>
                   </button>
@@ -284,7 +253,15 @@ export default function PersonalNotesPage() {
           </aside>
 
           {/* RIGHT EDITOR PANEL */}
-          <section className="min-h-[520px] rounded-xl border border-white/10 bg-[#101010] p-5 sm:p-7">
+          <section className="min-h-[520px] rounded-xl border border-white/10 bn-dark-surface bg-[#101010] p-5 sm:p-7">
+            {selectedId === null ? (
+              <div className="flex min-h-[350px] flex-col items-start justify-center gap-4">
+                <h2 className="font-serif text-[24px] text-white">Create a Study Note</h2>
+                <p className="text-sm leading-6 text-gray-400">Open the note-creation screen to write a new entry, or select an existing note to edit.</p>
+                <Link href="/library/personal-notes/create" className="bn-button inline-flex rounded-md bg-amber-300 px-4 py-2 text-[13px] font-semibold text-black transition hover:bg-amber-400">Create Note</Link>
+              </div>
+            ) : <>
+
             <div className="flex flex-col gap-5 border-b border-white/10 pb-5 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1">
                 {linkedNugget && (
@@ -296,9 +273,11 @@ export default function PersonalNotesPage() {
                 <input
                   type="text"
                   value={title}
+                  maxLength={120}
                   onChange={(e) => setTitle(e.target.value)}
+                  aria-label="Note title"
                   placeholder="Note title"
-                  className="w-full bg-transparent font-serif text-2xl text-white outline-none placeholder:text-gray-700"
+                  className="w-full bg-transparent font-serif text-2xl text-white outline-none placeholder:text-[#B4B2AB]"
                 />
               </div>
 
@@ -321,24 +300,24 @@ export default function PersonalNotesPage() {
                 >
                   {saving
                     ? "Saving..."
-                    : selectedId !== null
-                      ? "Save Changes"
-                      : "Create Note"}
+                    : "Save Changes"}
                 </button>
               </div>
             </div>
 
             <textarea
               value={content}
+              maxLength={10000}
               onChange={(e) => setContent(e.target.value)}
+              aria-label="Note content"
               placeholder="Write your thoughts, reflections, or business lessons here..."
-              className="mt-6 min-h-[320px] w-full resize-none bg-transparent text-sm leading-7 text-gray-400 outline-none placeholder:text-gray-700"
+              className="mt-6 min-h-[320px] w-full resize-none bg-transparent text-sm leading-7 text-white outline-none placeholder:text-[#B4B2AB]"
             />
 
             {linkedNugget && (
               <div className="mt-6 border-t border-white/10 pt-5">
                 <Link
-                  href={`/nuggets/${linkedNugget.slug}`}
+                  href={`/nugget/${linkedNugget.slug}`}
                   className="inline-flex items-center gap-2 text-xs text-amber-300 hover:text-amber-200"
                 >
                   <Link2 size={13} />
@@ -346,6 +325,7 @@ export default function PersonalNotesPage() {
                 </Link>
               </div>
             )}
+            </>}
           </section>
         </div>
       </main>

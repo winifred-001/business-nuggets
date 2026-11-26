@@ -130,3 +130,44 @@ if (
 
 export const API_URL =
   backendApiUrl;
+
+
+/**
+ * Retry transient API failures (network errors, rate limits and 5xx responses).
+ * Do not retry normal client errors such as 400, 401, 403 or 404.
+ */
+export async function fetchWithRetry(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+  maxAttempts = 3,
+): Promise<Response> {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const response = await fetch(input, init);
+      const shouldRetry =
+        response.status === 408 ||
+        response.status === 425 ||
+        response.status === 429 ||
+        response.status >= 500;
+
+      if (!shouldRetry || attempt === maxAttempts) {
+        return response;
+      }
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxAttempts) {
+        throw error;
+      }
+    }
+
+    await new Promise((resolve) =>
+      setTimeout(resolve, 500 * 2 ** (attempt - 1)),
+    );
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("The API request failed after multiple attempts.");
+}

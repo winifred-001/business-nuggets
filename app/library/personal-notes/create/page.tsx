@@ -8,7 +8,8 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import AuthRouteGuard from "@/components/AuthRouteGuard";
 
-import { API_URL } from "@/lib/api";
+import { getNuggetBySlugFromApi } from "@/lib/nuggets-api";
+import FormattedNuggetText from "@/components/FormattedNuggetText";
 
 type LinkedNugget = {
   id: string;
@@ -59,36 +60,13 @@ export default function CreateStudyNotePage() {
 
     if (!linkedId) return;
 
-    setNuggetId(linkedId);
-
-    async function loadLinkedNugget() {
+    async function loadLinkedNugget(id: string) {
       try {
         setLoadingNugget(true);
 
-        const response =
-          await fetch(
-            `${API_URL}/nuggets`,
-          );
-
-        const data =
-          await response.json();
-
-        if (!response.ok) {
-          return;
-        }
-
-        if (!Array.isArray(data)) {
-          return;
-        }
-
-        const found =
-          data.find(
-            (item: LinkedNugget) =>
-              String(item.id) ===
-              String(linkedId),
-          ) ?? null;
-
+        const found = await getNuggetBySlugFromApi(id);
         setLinkedNugget(found);
+        setNuggetId(found?.id || null);
       } catch {
         setLinkedNugget(null);
       } finally {
@@ -96,7 +74,7 @@ export default function CreateStudyNotePage() {
       }
     }
 
-    loadLinkedNugget();
+    void loadLinkedNugget(linkedId);
   }, []);
 
   /* =========================================================
@@ -104,17 +82,6 @@ export default function CreateStudyNotePage() {
   ========================================================= */
 
   async function handleSaveNote() {
-    const token =
-      localStorage.getItem("token");
-
-    if (!token) {
-      setError(
-        "Your session has expired. Please sign in again.",
-      );
-
-      return;
-    }
-
     if (!content.trim()) {
       setError(
         "Write your reflection before saving the note.",
@@ -129,7 +96,7 @@ export default function CreateStudyNotePage() {
     try {
       const response =
         await fetch(
-          `${API_URL}/notes`,
+          "/api/member/proxy/notes",
           {
             method: "POST",
 
@@ -137,8 +104,6 @@ export default function CreateStudyNotePage() {
               "Content-Type":
                 "application/json",
 
-              Authorization:
-                `Bearer ${token}`,
             },
 
             body: JSON.stringify({
@@ -176,9 +141,8 @@ export default function CreateStudyNotePage() {
         return;
       }
 
-      router.push(
-        "/library/personal-notes",
-      );
+      if (!data.id) { setError("The server did not confirm the saved note. Please check My Notes before retrying."); return; }
+      router.push(`/library/personal-notes?note=${data.id}`);
 
       router.refresh();
     } catch {
@@ -192,15 +156,15 @@ export default function CreateStudyNotePage() {
 
   return (
     <AuthRouteGuard type="protected">
-      <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+      <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
         <Navbar />
 
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
+        <main className="bn-member-library mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
           {/* BREADCRUMB */}
 
           <Link
             href="/library/personal-notes"
-            className="text-[11px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="text-[11px] font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             ← My Journal &amp; Notes
           </Link>
@@ -208,7 +172,7 @@ export default function CreateStudyNotePage() {
           {/* HEADER */}
 
           <section className="mt-4">
-            <h1 className="font-serif text-[40px] leading-tight">
+            <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
               Create a Study Note
             </h1>
 
@@ -233,11 +197,11 @@ export default function CreateStudyNotePage() {
               {/* LINKED NUGGET */}
 
               {loadingNugget ? (
-                <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                   Loading linked Nugget...
                 </p>
               ) : linkedNugget ? (
-                <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                   Linked Nugget
                   {linkedNugget.number
                     ? ` #${linkedNugget.number}`
@@ -257,7 +221,7 @@ export default function CreateStudyNotePage() {
               <div className="mt-6">
                 <label
                   htmlFor="note-title"
-                  className="mb-2 block text-[10px] font-semibold text-white/55"
+                  className="mb-2 block text-[10px] font-semibold text-white"
                 >
                   Note Title
                 </label>
@@ -273,7 +237,7 @@ export default function CreateStudyNotePage() {
                   }
                   placeholder="e.g. Negotiation Integrity Principle"
                   maxLength={120}
-                  className="h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/60"
+                  className="h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-[#B4B2AB] focus:border-[#E28906]/60"
                 />
               </div>
 
@@ -282,7 +246,7 @@ export default function CreateStudyNotePage() {
               <div className="mt-5">
                 <label
                   htmlFor="note-reflection"
-                  className="mb-2 block text-[10px] font-semibold text-white/55"
+                  className="mb-2 block text-[10px] font-semibold text-white"
                 >
                   My Reflection
                 </label>
@@ -297,7 +261,8 @@ export default function CreateStudyNotePage() {
                   }
                   placeholder="What does this principle mean for your business? Capture the decision, conversation or practical step you want to revisit..."
                   rows={8}
-                  className="w-full resize-none rounded-md border border-white/10 bg-[#19191D] px-4 py-3 text-[12px] leading-6 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/60"
+                  maxLength={10000}
+                  className="w-full resize-none rounded-md border border-white/10 bg-[#19191D] px-4 py-3 text-[12px] leading-6 text-white outline-none placeholder:text-[#B4B2AB] focus:border-[#E28906]/60"
                 />
               </div>
 
@@ -321,7 +286,7 @@ export default function CreateStudyNotePage() {
               <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <Link
                   href="/library/personal-notes"
-                  className="inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 px-4 text-[11px] text-white/55 transition hover:border-white/20 hover:text-white"
+                  className="bn-button inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 px-4 text-[11px] text-white/55 transition hover:border-white/20 hover:text-white"
                 >
                   Cancel - My Notes
                 </Link>
@@ -330,10 +295,10 @@ export default function CreateStudyNotePage() {
                   type="button"
                   onClick={handleSaveNote}
                   disabled={
-                    saving ||
+                    saving || loadingNugget ||
                     !content.trim()
                   }
-                  className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#E28906] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {saving
                     ? "Saving..."
@@ -345,8 +310,8 @@ export default function CreateStudyNotePage() {
             {/* SCRIPTURE FOUNDATION */}
 
             <aside>
-              <section className="rounded-[10px] border border-[#C8A35A]/60 bg-[#111111] p-5 sm:p-6">
-                <h2 className="font-serif text-[20px]">
+              <section className="rounded-[10px] border border-[#E28906]/60 bg-[#111111] p-5 sm:p-6">
+                <h2 className="font-serif text-[20px] text-white">
                   Scripture Foundation
                 </h2>
 
@@ -354,11 +319,7 @@ export default function CreateStudyNotePage() {
                   <>
                     {linkedNugget.scriptureText ? (
                       <blockquote className="mt-5 font-serif text-[17px] italic leading-7 text-[#F5F0E8]">
-                        “
-                        {
-                          linkedNugget.scriptureText
-                        }
-                        ”
+                        <FormattedNuggetText text={linkedNugget.scriptureText} />
                       </blockquote>
                     ) : (
                       <p className="mt-5 text-[12px] leading-6 text-white/45">
@@ -371,7 +332,7 @@ export default function CreateStudyNotePage() {
                     )}
 
                     {linkedNugget.scriptureRef && (
-                      <p className="mt-4 text-[11px] font-medium text-[#C8A35A]">
+                      <p className="mt-4 text-[11px] font-medium text-[#E28906]">
                         {
                           linkedNugget.scriptureRef
                         }
@@ -386,7 +347,7 @@ export default function CreateStudyNotePage() {
 
                     <Link
                       href={`/nugget/${linkedNugget.slug}`}
-                      className="mt-5 inline-block text-[11px] text-[#C8A35A] transition hover:text-[#E0C48A]"
+                      className="mt-5 inline-block text-[11px] text-[#E28906] transition hover:text-[#E28906]"
                     >
                       Return to Commentary →
                     </Link>
@@ -403,7 +364,7 @@ export default function CreateStudyNotePage() {
 
                     <Link
                       href="/library"
-                      className="mt-5 inline-block text-[11px] text-[#C8A35A]"
+                      className="mt-5 inline-block text-[11px] text-[#E28906]"
                     >
                       Explore Nuggets →
                     </Link>

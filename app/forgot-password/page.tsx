@@ -66,21 +66,21 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+    <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <main className="flex flex-1 items-center justify-center px-5 py-10 sm:px-6 sm:py-14 md:px-8 lg:px-10 lg:py-16">
         <section className="w-full max-w-[520px] rounded-2xl border border-white/10 bg-[#111111] p-5 sm:p-8 md:p-10">
           <div className="mb-7 text-center">
-            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-[#C8A35A] font-serif text-[20px] font-bold text-[#080808]">
+            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-[#E28906] font-serif text-[20px] font-bold text-[#080808]">
               B
             </div>
 
-            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#C8A35A]">
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#E28906]">
               Business Nuggets
             </p>
 
-            <h1 className="font-serif text-[40px] font-semibold leading-tight text-[#FAF9F6]">
+            <h1 className="bn-hero-title font-serif text-[40px] font-semibold leading-tight text-[#FAF9F6]">
               Forgot Password?
             </h1>
 
@@ -108,13 +108,13 @@ export default function ForgotPasswordPage() {
               }}
               placeholder="e.g. admin@kingdomventures.com"
               required
-              className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
+              className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#E28906]"
             />
 
             <button
               type="submit"
               disabled={loading}
-              className="mt-5 min-h-12 w-full rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-5 min-h-12 w-full rounded-lg bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Sending..." : "Send Reset Link"}
             </button>
@@ -133,7 +133,7 @@ export default function ForgotPasswordPage() {
             Remember your password?{" "}
             <Link
               href="/login"
-              className="font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Back to Sign In
             </Link>

@@ -1,32 +1,16 @@
 "use client";
 
+import BrandMark from "@/components/BrandMark";
+import CustomSitePageLinks from "@/components/CustomSitePageLinks";
+import { ProfileAvatar } from "@/components/ProfileImage";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-
-import {
+  Bell,
   ChevronDown,
   LogOut,
-  Menu,
-  NotebookPen,
-  Search,
-  UserCircle,
-  X,
-  Bookmark,
-  ListMusic,
-  Settings,
-  Bell,
 } from "lucide-react";
-
-import {
-  usePathname,
-  useRouter,
-} from "next/navigation";
-
-import { API_URL } from "@/lib/api";
+import { usePathname, useRouter } from "next/navigation";
 
 type StoredUser = {
   id?: number | string;
@@ -38,73 +22,49 @@ type StoredUser = {
   image?: string | null;
 };
 
+const landingLinks = [
+  { href: "/", label: "Home" },
+  { href: "/library", label: "Library" },
+  { href: "/philosophy", label: "About Us" },
+  { href: "/contact", label: "Contact" },
+  { href: "/faqs", label: "FAQs" },
+];
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-
-  const [isLoggedIn, setIsLoggedIn] =
-    useState(false);
-
-  const [user, setUser] =
-    useState<StoredUser | null>(null);
-
-  const [mobileOpen, setMobileOpen] =
-    useState(false);
-
-  const [profileOpen, setProfileOpen] =
-    useState(false);
-
-  const [unreadNotifications, setUnreadNotifications] =
-    useState(0);
-
-  const profileRef =
-    useRef<HTMLDivElement>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<StoredUser | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function readAuth() {
-      const token =
-        localStorage.getItem("token");
-
-      const storedUser =
-        localStorage.getItem("user");
-
+      const token = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
       setIsLoggedIn(Boolean(token));
 
-      if (storedUser) {
-        try {
-          setUser(
-            JSON.parse(storedUser),
-          );
-        } catch {
-          setUser(null);
-        }
-      } else {
+      if (!storedUser) {
+        setUser(null);
+        return;
+      }
+
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch {
         setUser(null);
       }
     }
 
     readAuth();
-
-    window.addEventListener(
-      "auth-change",
-      readAuth,
-    );
-
-    window.addEventListener(
-      "storage",
-      readAuth,
-    );
+    window.addEventListener("auth-change", readAuth);
+    window.addEventListener("storage", readAuth);
 
     return () => {
-      window.removeEventListener(
-        "auth-change",
-        readAuth,
-      );
-
-      window.removeEventListener(
-        "storage",
-        readAuth,
-      );
+      window.removeEventListener("auth-change", readAuth);
+      window.removeEventListener("storage", readAuth);
     };
   }, [pathname]);
 
@@ -113,75 +73,37 @@ export default function Navbar() {
 
     async function loadUnreadCount() {
       const token = localStorage.getItem("token");
-
       if (!token) {
-        if (!cancelled) {
-          setUnreadNotifications(0);
-        }
+        if (!cancelled) setUnreadNotifications(0);
         return;
       }
 
       try {
         const response = await fetch(
-          `${API_URL}/notifications/unread-count`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
+          "/api/member/proxy/notifications/unread-count",
+          { cache: "no-store" },
         );
-
-        if (!response.ok) {
-          if (!cancelled) {
-            setUnreadNotifications(0);
-          }
-          return;
-        }
-
-        const data = await response.json().catch(() => ({}));
+        const data = response.ok ? await response.json().catch(() => ({})) : {};
 
         if (!cancelled) {
           setUnreadNotifications(
-            typeof data.unreadCount === "number"
-              ? Math.max(0, data.unreadCount)
-              : 0,
+            typeof data.unreadCount === "number" ? Math.max(0, data.unreadCount) : 0,
           );
         }
       } catch {
-        if (!cancelled) {
-          setUnreadNotifications(0);
-        }
+        if (!cancelled) setUnreadNotifications(0);
       }
     }
 
-    const refreshUnreadCount = () => {
-      void loadUnreadCount();
-    };
-
-    refreshUnreadCount();
-
-    window.addEventListener(
-      "notifications-change",
-      refreshUnreadCount,
-    );
-
-    window.addEventListener(
-      "auth-change",
-      refreshUnreadCount,
-    );
+    const refresh = () => void loadUnreadCount();
+    refresh();
+    window.addEventListener("notifications-change", refresh);
+    window.addEventListener("auth-change", refresh);
 
     return () => {
       cancelled = true;
-
-      window.removeEventListener(
-        "notifications-change",
-        refreshUnreadCount,
-      );
-
-      window.removeEventListener(
-        "auth-change",
-        refreshUnreadCount,
-      );
+      window.removeEventListener("notifications-change", refresh);
+      window.removeEventListener("auth-change", refresh);
     };
   }, [pathname]);
 
@@ -191,499 +113,289 @@ export default function Navbar() {
   }, [pathname]);
 
   useEffect(() => {
-    function handleOutsideClick(
-      event: MouseEvent,
-    ) {
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(
-          event.target as Node,
-        )
-      ) {
+    function handleOutsideClick(event: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setProfileOpen(false);
       }
     }
 
-    document.addEventListener(
-      "mousedown",
-      handleOutsideClick,
-    );
-
-    return () =>
-      document.removeEventListener(
-        "mousedown",
-        handleOutsideClick,
-      );
-  }, []);
-
-  const homeHref = isLoggedIn
-    ? "/home"
-    : "/";
-
-  const links = [
-    {
-      href: homeHref,
-      label: "Home",
-    },
-    {
-      href: "/library",
-      label: "Library",
-    },
-    {
-      href: "/search",
-      label: "Search",
-    },
-  ];
-
-  function isActive(
-    href: string,
-  ) {
-    if (
-      href === "/" ||
-      href === "/home"
-    ) {
-      return pathname === href;
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setProfileOpen(false);
+        setMobileOpen(false);
+      }
     }
 
-    return pathname.startsWith(
-      href,
-    );
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  const homeHref = isLoggedIn ? "/home" : "/";
+  const links = [
+    ...landingLinks.map((link) =>
+      link.label === "Home" ? { ...link, href: homeHref } : link,
+    ),
+    ...(isLoggedIn
+      ? [
+          { href: "/library/saved-nuggets", label: "Saved Nuggets" },
+          { href: "/library/playlist", label: "Playlists" },
+          { href: "/library/personal-notes", label: "Notes" },
+        ]
+      : []),
+  ];
+
+  function isActive(href: string) {
+    return pathname === href;
   }
 
   function handleLogout() {
-    localStorage.removeItem(
-      "token",
-    );
-
-    localStorage.removeItem(
-      "user",
-    );
-
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setIsLoggedIn(false);
     setUser(null);
     setUnreadNotifications(0);
     setProfileOpen(false);
     setMobileOpen(false);
-
-    window.dispatchEvent(
-      new Event("auth-change"),
-    );
-
+    window.dispatchEvent(new Event("auth-change"));
     router.push("/");
     router.refresh();
   }
 
   const displayName =
-    user?.name ||
-    [user?.firstName, user?.lastName]
-      .filter(Boolean)
-      .join(" ") ||
-    "My Account";
-
-  const displayEmail =
-    user?.email ?? "";
+    user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "My Account";
+  const displayEmail = user?.email ?? "";
 
   return (
-    <header className="relative z-50 border-b border-white/[0.06] bg-[#0B0B0B] text-[#FAF9F6]">
-      <div className="mx-auto flex h-[80px] max-w-[1280px] items-center justify-between px-5 sm:px-8 lg:px-10">
-        <Link
-          href={homeHref}
-          className="flex shrink-0 items-center gap-3"
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-sm bg-[#C8A35A] text-[14px] font-bold text-[#080808]">
-            B
-          </span>
+    <>
+      <div className="h-1 bg-[linear-gradient(90deg,#E28906,#E28906,#E28906)]" />
 
-          <div className="hidden sm:block">
-            <p className="text-[17px] font-bold uppercase leading-none tracking-[0.04em] text-white">
-              Business Nuggets
-            </p>
-
-            <p className="mt-1 font-serif text-[14px] italic leading-none text-[#C8A35A]">
-              from the Bible
-            </p>
-          </div>
-        </Link>
-
-        <nav
-          aria-label="Main navigation"
-          className="hidden items-center gap-8 md:flex"
-        >
-          {links.map((link) => {
-            const active =
-              isActive(link.href);
-
-            return (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={`relative py-2 text-[13px] transition ${
-                  active
-                    ? "text-[#C8A35A]"
-                    : "text-white/55 hover:text-white"
-                }`}
-              >
-                {link.label}
-
-                {active && (
-                  <span className="absolute -bottom-[25px] left-0 h-[2px] w-full bg-[#C8A35A]" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          {!isLoggedIn && (
-            <div className="hidden items-center gap-4 sm:flex">
-              <Link
-                href="/login"
-                className="text-[13px] font-medium text-white/70 transition hover:text-white"
-              >
-                Login
-              </Link>
-
-              <Link
-                href="/register"
-                className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[13px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
-              >
-                Sign Up
-              </Link>
-            </div>
-          )}
-
-          {isLoggedIn && (
-            <>
-              <Link
-                href="/notifications"
-                aria-label={
-                  unreadNotifications > 0
-                    ? `Notifications, ${unreadNotifications} unread`
-                    : "Notifications"
-                }
-                className={`relative flex h-10 w-10 items-center justify-center rounded-full transition ${
-                  pathname.startsWith(
-                    "/notifications",
-                  )
-                    ? "bg-[#C8A35A]/10 text-[#C8A35A]"
-                    : "text-white/60 hover:bg-white/[0.04] hover:text-[#C8A35A]"
-                }`}
-              >
-                <Bell
-                  size={20}
-                  strokeWidth={1.6}
-                />
-
-                {unreadNotifications > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex min-h-[16px] min-w-[16px] items-center justify-center rounded-full bg-[#C8A35A] px-1 text-[8px] font-bold leading-none text-[#080808]">
-                    {unreadNotifications > 9
-                      ? "9+"
-                      : unreadNotifications}
-                  </span>
-                )}
-              </Link>
-
-              <div
-                ref={profileRef}
-                className="relative"
-              >
-                <button
-                  type="button"
-                  onClick={() =>
-                    setProfileOpen(
-                      (current) =>
-                        !current,
-                    )
-                  }
-                  aria-label="Open account menu"
-                  aria-expanded={
-                    profileOpen
-                  }
-                  className="flex items-center gap-1.5 rounded-full text-white/70 transition hover:text-[#C8A35A]"
-                >
-                  {user?.avatar ||
-                  user?.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={
-                        user.avatar ||
-                        user.image ||
-                        ""
-                      }
-                      alt=""
-                      className="h-9 w-9 rounded-full border border-[#C8A35A]/40 object-cover"
-                    />
-                  ) : (
-                    <UserCircle
-                      size={34}
-                      strokeWidth={1.4}
-                      className="text-[#E0C48A]"
-                    />
-                  )}
-
-                  <ChevronDown
-                    size={13}
-                    className={`hidden transition-transform sm:block ${
-                      profileOpen
-                        ? "rotate-180"
-                        : ""
-                    }`}
-                  />
-                </button>
-
-                {profileOpen && (
-                  <div className="absolute right-0 top-[48px] w-[240px] overflow-hidden rounded-xl border border-white/10 bg-[#111111] shadow-2xl">
-                    <div className="border-b border-white/[0.07] px-4 py-4">
-                      <p className="truncate text-[14px] font-medium text-[#FAF9F6]">
-                        {displayName}
-                      </p>
-
-                      {displayEmail && (
-                        <p className="mt-1 truncate text-[12px] text-white/35">
-                          {displayEmail}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="p-2">
-                      <ProfileLink
-                        href="/workspace"
-                        icon={
-                          <UserCircle
-                            size={16}
-                          />
-                        }
-                      >
-                        My Workspace
-                      </ProfileLink>
-
-                      <ProfileLink
-                        href="/library/saved-nuggets"
-                        icon={
-                          <Bookmark
-                            size={16}
-                          />
-                        }
-                      >
-                        Saved Nuggets
-                      </ProfileLink>
-
-                      <ProfileLink
-                        href="/library/playlist"
-                        icon={
-                          <ListMusic
-                            size={16}
-                          />
-                        }
-                      >
-                        Playlists
-                      </ProfileLink>
-
-                      <ProfileLink
-                        href="/library/personal-notes"
-                        icon={
-                          <NotebookPen
-                            size={16}
-                          />
-                        }
-                      >
-                        Notes
-                      </ProfileLink>
-
-                      <ProfileLink
-                        href="/library/account"
-                        icon={
-                          <Settings
-                            size={16}
-                          />
-                        }
-                      >
-                        Account Settings
-                      </ProfileLink>
-                    </div>
-
-                    <div className="border-t border-white/[0.07] p-2">
-                      <button
-                        type="button"
-                        onClick={
-                          handleLogout
-                        }
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-[13px] text-[#D66B6B] transition hover:bg-white/[0.04]"
-                      >
-                        <LogOut
-                          size={16}
-                        />
-                        Logout
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-
-          <button
-            type="button"
-            onClick={() =>
-              setMobileOpen(
-                (current) =>
-                  !current,
-              )
-            }
-            aria-label={
-              mobileOpen
-                ? "Close menu"
-                : "Open menu"
-            }
-            aria-expanded={
-              mobileOpen
-            }
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-white/70 md:hidden"
+      <header className="sticky top-0 z-50 h-[89px] border-b border-[rgba(226,137,6,.19)] bg-[#12130f] text-[#f9f5ed] max-[600px]:h-[76px]">
+        <div className="mx-auto flex h-full w-[calc(100%-38px)] max-w-[1190px] items-center justify-between gap-3 lg:w-[calc(100%-64px)]">
+          <Link
+            href={homeHref}
+            className="flex min-w-0 items-center gap-[13px] lg:min-w-[210px]"
+            aria-label="Business Nuggets home"
           >
-            {mobileOpen ? (
-              <X size={18} />
-            ) : (
-              <Menu size={18} />
-            )}
-          </button>
-        </div>
-      </div>
+            <BrandMark />
+            </Link>
 
-      {mobileOpen && (
-        <div className="border-t border-white/[0.06] bg-[#0B0B0B] md:hidden">
-          <nav className="mx-auto max-w-[1280px] px-5 py-4 sm:px-8">
-            <div className="space-y-1">
-              {links.map((link) => {
-                const active =
-                  isActive(
-                    link.href,
-                  );
+          <nav
+            aria-label="Main navigation"
+            className={`${
+              mobileOpen
+                ? "absolute left-0 right-0 top-full flex"
+                : "hidden"
+            } z-40 max-h-[calc(100dvh-90px)] overflow-y-auto flex-col gap-0 border-b border-[rgba(226,137,6,.19)] bg-[#151611] px-[30px] py-[25px] text-[13px] text-[#c4c3be] lg:static lg:max-h-none lg:overflow-visible lg:flex lg:flex-row lg:items-center lg:gap-[12px] xl:gap-[16px] lg:border-0 lg:bg-transparent lg:p-0`}
+          >
+            {links.map((link) => {
+              const active = isActive(link.href);
 
-                return (
-                  <Link
-                    key={
-                      link.label
-                    }
-                    href={
-                      link.href
-                    }
-                    className={`block rounded-lg px-3 py-3 text-[14px] ${
-                      active
-                        ? "bg-[#C8A35A]/10 text-[#C8A35A]"
-                        : "text-white/60"
-                    }`}
-                  >
-                    {
-                      link.label
-                    }
-                  </Link>
-                );
-              })}
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  onClick={() => setMobileOpen(false)}
+                  className={`relative whitespace-nowrap py-3 font-bold transition lg:py-0 ${
+                    active ? "text-[#E28906]" : "hover:text-[#E28906]"
+                  }`}
+                >
+                  {link.label}
+                  {active && (
+                    <span className="absolute bottom-1 left-0 h-px w-full bg-[#E28906] lg:-bottom-[10px]" />
+                  )}
+                </Link>
+              );
+            })}
 
-              <Link
-                href="/musicals"
-                className="block rounded-lg px-3 py-3 text-[14px] text-white/60"
-              >
-                Musicals
-              </Link>
-            </div>
+            <CustomSitePageLinks variant="header" />
 
-            {!isLoggedIn ? (
-              <div className="mt-4 grid grid-cols-2 gap-3 border-t border-white/[0.07] pt-4">
+            {!isLoggedIn && (
+              <div className="mt-4 flex items-center gap-[22px] border-t border-[rgba(226,137,6,.19)] pt-4 lg:hidden">
                 <Link
                   href="/login"
-                  className="flex min-h-11 items-center justify-center rounded-lg border border-white/15 text-[13px] font-medium text-white"
+                  onClick={() => setMobileOpen(false)}
+                  className="font-bold text-[#bcbab4] transition hover:text-[#E28906]"
                 >
                   Login
                 </Link>
-
                 <Link
                   href="/register"
-                  className="flex min-h-11 items-center justify-center rounded-lg bg-[#C8A35A] text-[13px] font-semibold text-[#080808]"
+                  onClick={() => setMobileOpen(false)}
+                  className="bn-button inline-flex items-center justify-center border border-[#E28906] bg-[#E28906] px-[22px] py-[11px] font-bold text-[#17140e] transition hover:bg-[#E28906]"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
+
+            {isLoggedIn && (
+              <div className="mt-4 border-t border-[rgba(226,137,6,.19)] pt-4 lg:hidden">
+                <Link
+                  href="/notifications"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-between py-3 text-[#c4c3be]"
+                >
+                  <span>Notifications</span>
+                  {unreadNotifications > 0 && (
+                    <span className="bg-[#E28906] px-2 py-0.5 text-[9px] font-bold text-[#17140e]">
+                      {unreadNotifications > 9 ? "9+" : unreadNotifications}
+                    </span>
+                  )}
+                </Link>
+
+                <div className="mt-2 border-t border-[rgba(226,137,6,.19)] pt-4">
+                  <Link
+                    href="/workspace"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-start gap-3 pb-3 transition hover:text-[#E28906]"
+                  >
+                    <ProfileAvatar className="h-9 w-9" iconSize={18} />
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] font-semibold text-[#f9f5ed]">{displayName}</p>
+                      {displayEmail && (
+                        <p className="mt-1 truncate text-[11px] text-[#b4b2ab]">{displayEmail}</p>
+                      )}
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-[#E28906]">
+                        Workspace
+                      </p>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/library/account"
+                    className="block py-3 text-[#c4c3be] transition hover:text-[#E28906]"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Account Settings
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-3 py-3 text-left text-[#d78484] transition hover:text-[#f0aaaa]"
+                  >
+                    <LogOut size={16} strokeWidth={1.7} />
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
+          </nav>
+
+          <div className="flex items-center gap-[22px] text-[13px]">
+            {!isLoggedIn ? (
+              <div className="hidden items-center gap-[22px] lg:flex">
+                <Link href="/login" className="font-bold text-[#bcbab4] transition hover:text-[#E28906]">
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="bn-button inline-flex items-center justify-center border border-[#E28906] bg-[#E28906] px-[22px] py-[11px] font-bold text-[#17140e] transition hover:-translate-y-0.5 hover:bg-[#E28906]"
                 >
                   Sign Up
                 </Link>
               </div>
             ) : (
-              <div className="mt-4 space-y-1 border-t border-white/[0.07] pt-4">
+              <div className="hidden items-center gap-3 lg:flex">
                 <Link
                   href="/notifications"
-                  className="flex items-center justify-between rounded-lg px-3 py-3 text-[14px] text-white/60"
+                  aria-label={
+                    unreadNotifications > 0
+                      ? `Notifications, ${unreadNotifications} unread`
+                      : "Notifications"
+                  }
+                  className="relative grid h-[46px] w-[46px] place-items-center border border-[#61563c] text-[#E28906] transition hover:bg-[#28251e]"
                 >
-                  <span>Notifications</span>
+                  <Bell size={18} strokeWidth={1.6} />
                   {unreadNotifications > 0 && (
-                    <span className="rounded-full bg-[#C8A35A] px-2 py-0.5 text-[9px] font-semibold text-[#080808]">
-                      {unreadNotifications > 9
-                        ? "9+"
-                        : unreadNotifications}
+                    <span className="absolute -right-1.5 -top-1.5 flex min-h-[17px] min-w-[17px] items-center justify-center bg-[#E28906] px-1 text-[8px] font-bold text-[#17140e]">
+                      {unreadNotifications > 9 ? "9+" : unreadNotifications}
                     </span>
                   )}
                 </Link>
 
-                <Link
-                  href="/library/saved-nuggets"
-                  className="block rounded-lg px-3 py-3 text-[14px] text-white/60"
-                >
-                  Saved Nuggets
-                </Link>
+                <div ref={profileRef} className="relative flex items-center">
+                  <Link
+                    href="/workspace"
+                    aria-label="Open workspace"
+                    title="Workspace"
+                    className="grid h-[46px] w-[46px] place-items-center border border-r-0 border-[#61563c] bg-transparent text-[#f2e5cd] transition hover:bg-[#28251e]"
+                  >
+                    <ProfileAvatar className="h-8 w-8" iconSize={19} />
+                  </Link>
 
-                <Link
-                  href="/library/playlist"
-                  className="block rounded-lg px-3 py-3 text-[14px] text-white/60"
-                >
-                  Playlists
-                </Link>
+                  <button
+                    type="button"
+                    onClick={() => setProfileOpen((current) => !current)}
+                    aria-label="Open profile menu"
+                    aria-controls="profile-dropdown"
+                    aria-haspopup="true"
+                    aria-expanded={profileOpen}
+                    className="grid h-[46px] w-[32px] place-items-center border border-[#61563c] bg-transparent text-[#f2e5cd] transition hover:bg-[#28251e]"
+                  >
+                    <ChevronDown
+                      size={16}
+                      strokeWidth={1.7}
+                      className={`transition-transform ${profileOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
 
-                <Link
-                  href="/library/personal-notes"
-                  className="block rounded-lg px-3 py-3 text-[14px] text-white/60"
-                >
-                  Notes
-                </Link>
+                  {profileOpen && (
+                    <div
+                      id="profile-dropdown"
+                      className="absolute right-0 top-[54px] z-50 w-[240px] border border-[rgba(226,137,6,.19)] bg-[#191b18] shadow-2xl"
+                    >
+                      <div className="border-b border-[rgba(226,137,6,.19)] px-4 py-4">
+                        <p className="truncate text-[13px] font-semibold text-[#f9f5ed]">{displayName}</p>
+                        {displayEmail && (
+                          <p className="mt-1 truncate text-[11px] text-[#b4b2ab]">{displayEmail}</p>
+                        )}
+                      </div>
 
-                <Link
-                  href="/library/account"
-                  className="block rounded-lg px-3 py-3 text-[14px] text-white/60"
-                >
-                  Account Settings
-                </Link>
+                      <div className="p-2">
+                        <Link
+                          href="/library/account"
+                          onClick={() => setProfileOpen(false)}
+                          className="block px-3 py-2.5 text-[12px] text-[#b8b5aa] transition hover:bg-[#28251e] hover:text-[#E28906]"
+                        >
+                          Account Settings
+                        </Link>
 
-                <button
-                  type="button"
-                  onClick={
-                    handleLogout
-                  }
-                  className="w-full rounded-lg px-3 py-3 text-left text-[14px] text-[#D66B6B]"
-                >
-                  Logout
-                </button>
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-[12px] text-[#d78484] transition hover:bg-[#28251e] hover:text-[#f0aaaa]"
+                        >
+                          <LogOut size={15} strokeWidth={1.7} />
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
-          </nav>
-        </div>
-      )}
-    </header>
-  );
-}
 
-function ProfileLink({
-  href,
-  icon,
-  children,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 rounded-lg px-3 py-3 text-[13px] text-white/55 transition hover:bg-white/[0.04] hover:text-white"
-    >
-      <span className="text-[#C8A35A]">
-        {icon}
-      </span>
-      {children}
-    </Link>
+            <button
+              type="button"
+              className="border-0 bg-transparent text-[26px] leading-none text-[#E28906] lg:hidden"
+              aria-label={mobileOpen ? "Close navigation" : "Toggle navigation"}
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen((value) => !value)}
+            >
+              <span aria-hidden="true" data-button-icon>
+                {mobileOpen ? "×" : "☰"}
+              </span>
+            </button>
+          </div>
+        </div>
+      </header>
+    </>
   );
 }

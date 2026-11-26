@@ -1,0 +1,35 @@
+name: Validate Library pagination
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/library/page.tsx"
+      - "lib/library-pagination.ts"
+      - "tests/library-pagination.test.mjs"
+      - ".github/workflows/validate-library-pagination.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pagination:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: Verify pagination behavior
+        run: node --test tests/library-pagination.test.mjs
+      - name: Generate Next.js types
+        run: npx next typegen
+      - name: Check TypeScript
+        run: npx tsc --noEmit
+      - name: Build frontend
+        run: npm run build

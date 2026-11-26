@@ -41,6 +41,10 @@ export class UpdateNuggetDto {
 
   @IsOptional()
   @IsString()
+  details?: string;
+
+  @IsOptional()
+  @IsString()
   marketplaceApplication?: string;
 
   @IsOptional()
@@ -80,4 +84,8 @@ export class UpdateNuggetDto {
   @IsOptional()
   @IsString()
   audioUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  nuggetAudioUrl?: string;
 }

@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
+import { ScriptureVersesService } from "./scripture-verses.service";
+import { canonicalBook } from "./bible-books";
 import { db } from "../prisma/db";
 
 type CreateBookInput = {
@@ -20,6 +22,7 @@ type UpdateBookInput = {
 
 @Injectable()
 export class ScriptureService {
+  constructor(private readonly verses: ScriptureVersesService) {}
   private slugify(value: string) {
     return value
       .toLowerCase()
@@ -108,6 +111,7 @@ export class ScriptureService {
     const nuggets =
       await db.orm.public.Nugget.all();
 
+    const verseCounts = await this.verses.counts();
     const indexedBooks =
       books
         .map((book) => {
@@ -120,6 +124,7 @@ export class ScriptureService {
 
           return {
             ...book,
+            verseCount: verseCounts.find(row => row.book === (canonicalBook(book.name) || book.name))?.count || 0,
 
             nuggetCount:
               bookNuggets.length,
@@ -140,6 +145,7 @@ export class ScriptureService {
 
     return {
       books: indexedBooks,
+      verseCount: verseCounts.reduce((total, row) => total + row.count, 0),
 
       unlinkedCount:
         unlinkedNuggets.length,

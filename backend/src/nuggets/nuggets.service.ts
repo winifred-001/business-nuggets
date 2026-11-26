@@ -1,11 +1,13 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
 
 import { db } from "../prisma/db";
+import { hasActivePaidSubscription, hasPaidReadingAccess, isPaidSubscriptionInGrace, paidReadingExpiry, graceGrantExpiry, restoredPaidHistoryExpiry } from "./paid-history-access";
+import { TopUpsService } from "../topups/topups.service";
+import { monthlyNuggetAllowanceExpiry } from "./monthly-nugget-allowance";
 
 import {
   CreateNuggetDto,
@@ -15,28 +17,32 @@ import {
   UpdateNuggetDto,
 } from "./dto/update-nugget.dto";
 
-const FREE_NUGGET_LIMIT = 10;
-
 type LockedNuggetPreview<T> = Omit<
   T,
   | "isGold"
   | "scriptureText"
   | "keyPrinciple"
+  | "details"
   | "marketplaceApplication"
   | "practicalActionPlan"
   | "audioUrl"
+  | "nuggetAudioUrl"
 > & {
   isGold: true;
   locked: true;
   scriptureText: string;
   keyPrinciple: string;
+  details: string;
   marketplaceApplication: string;
   practicalActionPlan: readonly string[];
   audioUrl: null;
+  nuggetAudioUrl: null;
 };
 
 @Injectable()
 export class NuggetsService {
+  constructor(private readonly topups: TopUpsService) {}
+
   private async hasPremiumAccess(
     userId?: number,
   ) {
@@ -56,68 +62,230 @@ export class NuggetsService {
     }
 
     return (
-      user.membershipTier ===
-        "premium" ||
       user.role === "owner" ||
-      Boolean(user.adminRole)
+      Boolean(user.adminRole) ||
+      hasPaidReadingAccess(user)
     );
   }
 
-  private getFreePublishedIds(
-    nuggets: Array<{
-      id: string;
-      number: number;
-      isGold: boolean;
-    }>,
-  ) {
-    return new Set(
-      nuggets
-        .filter(
-          (nugget) =>
-            !nugget.isGold,
-        )
-        .sort(
-          (a, b) =>
-            a.number -
-            b.number,
-        )
-        .slice(
-          0,
-          FREE_NUGGET_LIMIT,
-        )
-        .map(
-          (nugget) =>
-            nugget.id,
-        ),
-    );
-  }
+  private accessTables?: Promise<void>;
 
-  private async assertFreePublishedSlotAvailable(
-    excludeId?: string,
-  ) {
-    const published =
-      await db.orm.public.Nugget
-        .where({
-          status: "published",
-        })
-        .all();
-
-    const freeCount =
-      published.filter(
-        (nugget) =>
-          !nugget.isGold &&
-          nugget.id !==
-            excludeId,
-      ).length;
-
-    if (
-      freeCount >=
-      FREE_NUGGET_LIMIT
-    ) {
-      throw new BadRequestException(
-        `Free members can access only ${FREE_NUGGET_LIMIT} published Nuggets. Mark another free Nugget as Gold before making this one free.`,
-      );
+  private ensureAccessTables() {
+    if (!this.accessTables) {
+      this.accessTables = (async () => {
+        await db.runtime().execute(db.raw.sql`
+          CREATE TABLE IF NOT EXISTS "SubscriptionAccessPolicy" (
+            "planSlug" text PRIMARY KEY,
+            "maxNuggets" integer NOT NULL DEFAULT 1 CHECK ("maxNuggets" >= 1),
+            "accessDurationHours" integer NOT NULL DEFAULT 24 CHECK ("accessDurationHours" BETWEEN 1 AND 8760),
+            "quotaWindowHours" integer NOT NULL DEFAULT 24 CHECK ("quotaWindowHours" BETWEEN 1 AND 8760),
+            "updatedAt" timestamptz NOT NULL DEFAULT NOW()
+          )
+        `.affectedCount().build());
+        await db.runtime().execute(db.raw.sql`
+          CREATE TABLE IF NOT EXISTS "NuggetAccessSession" (
+            "userId" integer PRIMARY KEY,
+            "startedAt" timestamptz NOT NULL,
+            "expiresAt" timestamptz NOT NULL
+          )
+        `.affectedCount().build());
+        await db.runtime().execute(db.raw.sql`
+          CREATE TABLE IF NOT EXISTS "NuggetAccessGrant" (
+            "id" bigserial PRIMARY KEY,
+            "userId" integer NOT NULL,
+            "nuggetId" text NOT NULL,
+            "openedAt" timestamptz NOT NULL DEFAULT NOW(),
+            "expiresAt" timestamptz NOT NULL,
+            UNIQUE ("userId", "nuggetId")
+          )
+        `.affectedCount().build());
+        await db.runtime().execute(db.raw.sql`
+          CREATE INDEX IF NOT EXISTS "NuggetAccessGrant_user_opened_idx"
+          ON "NuggetAccessGrant" ("userId", "openedAt")
+        `.affectedCount().build());
+      })().catch(error => {
+        this.accessTables = undefined;
+        throw error;
+      });
     }
+    return this.accessTables;
+  }
+
+  private async getAccessContext(userId: number) {
+    await this.ensureAccessTables();
+    const user = await db.orm.public.User.where({ id: userId }).first();
+    if (!user) throw new ForbiddenException("A valid account is required to open this nugget.");
+
+    const isAdmin = user.role === "owner" || Boolean(user.adminRole);
+    const paidActive = hasPaidReadingAccess(user);
+    const planSlug = paidActive && user.subscriptionPlan
+      ? user.subscriptionPlan
+      : "free";
+
+    let policies = await db.runtime().query(db.raw.sql`
+      SELECT "maxNuggets", "accessDurationHours", "quotaWindowHours"
+      FROM "SubscriptionAccessPolicy"
+      WHERE "planSlug" = ${planSlug}
+      LIMIT 1
+    `.returnsRow({
+      maxNuggets: "pg/int4@1",
+      accessDurationHours: "pg/int4@1",
+      quotaWindowHours: "pg/int4@1",
+    }).build());
+
+    if (!policies.length) {
+      const maxNuggets = planSlug === "free" ? 1 : 5;
+      await db.runtime().execute(db.raw.sql`
+        INSERT INTO "SubscriptionAccessPolicy"
+          ("planSlug", "maxNuggets", "accessDurationHours", "quotaWindowHours")
+        VALUES (${planSlug}, ${maxNuggets}, 24, 24)
+        ON CONFLICT ("planSlug") DO NOTHING
+      `.affectedCount().build());
+      policies = await db.runtime().query(db.raw.sql`
+        SELECT "maxNuggets", "accessDurationHours", "quotaWindowHours"
+        FROM "SubscriptionAccessPolicy"
+        WHERE "planSlug" = ${planSlug}
+        LIMIT 1
+      `.returnsRow({
+        maxNuggets: "pg/int4@1",
+        accessDurationHours: "pg/int4@1",
+        quotaWindowHours: "pg/int4@1",
+      }).build());
+    }
+
+    // Only verified, paid transactions can restore an older server-granted opening.
+    const payments = paidActive
+      ? await db.orm.public.BillingTransaction.where({ userId, status: "paid" }).all()
+      : [];
+    const latestPaidAt = payments.reduce<string | null>((latest, transaction) => {
+      if (transaction.planSlug === "free" || transaction.planSlug.startsWith("topup:") || !transaction.paidAt) return latest;
+      const paymentTime = Date.parse(transaction.paidAt);
+      if (!Number.isFinite(paymentTime)) return latest;
+      return !latest || paymentTime > Date.parse(latest) ? transaction.paidAt : latest;
+    }, null);
+
+    return {
+      user,
+      isAdmin,
+      latestPaidAt,
+      policy: policies[0] ?? { maxNuggets: 1, accessDurationHours: 24, quotaWindowHours: 24 },
+    };
+  }
+
+  private async getUserGrants(userId: number) {
+    await this.ensureAccessTables();
+    return db.runtime().query(db.raw.sql`
+      SELECT "nuggetId", "openedAt", "expiresAt"
+      FROM "NuggetAccessGrant"
+      WHERE "userId" = ${userId}
+    `.returnsRow({
+      nuggetId: "pg/text@1",
+      openedAt: "pg/timestamptz-string@1",
+      expiresAt: "pg/timestamptz-string@1",
+    }).build());
+  }
+
+  private async getUserAccessSession(userId: number) {
+    await this.ensureAccessTables();
+    const rows = await db.runtime().query(db.raw.sql`
+      SELECT "startedAt", "expiresAt"
+      FROM "NuggetAccessSession"
+      WHERE "userId" = ${userId}
+      LIMIT 1
+    `.returnsRow({
+      startedAt: "pg/timestamptz-string@1",
+      expiresAt: "pg/timestamptz-string@1",
+    }).build());
+    return rows[0] ?? null;
+  }
+
+  private sessionNeedsReset(
+    session: { startedAt: string; expiresAt: string } | null,
+    context: Awaited<ReturnType<NuggetsService["getAccessContext"]>>,
+    now: number,
+  ): boolean {
+    if (!session || Date.parse(session.expiresAt) <= now) return true;
+    // A verified renewal or upgrade starts a fresh selection allowance.
+    if (context.latestPaidAt && Date.parse(session.startedAt) < Date.parse(context.latestPaidAt)) return true;
+    // Do not carry a paid reading window past subscription expiry.
+    const oldPaidExpiry = Date.parse(context.user.subscriptionExpiresAt ?? "");
+    return Number.isFinite(oldPaidExpiry) &&
+      oldPaidExpiry <= now &&
+      Date.parse(session.startedAt) < oldPaidExpiry;
+  }
+
+  private effectiveAccessExpiry(
+    sessionExpiry: string,
+    user: Awaited<ReturnType<NuggetsService["getAccessContext"]>>["user"],
+  ): string {
+    // The three-day grace must not be cut off by a client-side expiry timer.
+    const paidExpiry = hasPaidReadingAccess(user)
+      ? Date.parse(paidReadingExpiry(user) ?? "")
+      : NaN;
+    return Number.isFinite(paidExpiry) && paidExpiry < Date.parse(sessionExpiry)
+      ? user.subscriptionExpiresAt!
+      : sessionExpiry;
+  }
+
+  private async openNuggetAccess(
+    userId: number,
+    nuggetId: string,
+    context: Awaited<ReturnType<NuggetsService["getAccessContext"]>>,
+  ) {
+    const { policy } = context;
+    const now = new Date();
+    let session = await this.getUserAccessSession(userId);
+
+    // Each selection batch lasts one actual calendar month from the first opening.
+    // The legacy accessDurationHours column is retained for API/schema compatibility
+    // but no longer controls the allowance.
+    if (this.sessionNeedsReset(session, context, now.getTime())) {
+      const expiresAt = new Date(monthlyNuggetAllowanceExpiry(now.toISOString()));
+      await db.runtime().execute(db.raw.sql`
+        INSERT INTO "NuggetAccessSession" ("userId", "startedAt", "expiresAt")
+        VALUES (${userId}, ${now.toISOString()}, ${expiresAt.toISOString()})
+        ON CONFLICT ("userId") DO UPDATE SET
+          "startedAt" = EXCLUDED."startedAt",
+          "expiresAt" = EXCLUDED."expiresAt"
+      `.affectedCount().build());
+      session = { startedAt: now.toISOString(), expiresAt: expiresAt.toISOString() };
+    }
+
+    const grants = await this.getUserGrants(userId);
+    const selected = grants.filter(grant =>
+      new Date(grant.openedAt).getTime() >= new Date(session!.startedAt).getTime()
+    );
+    const existing = selected.find(grant => grant.nuggetId === nuggetId);
+
+    if (existing) {
+      return { openedAt: session.startedAt, expiresAt: session.expiresAt };
+    }
+
+    if (selected.length >= policy.maxNuggets) {
+      if (hasActivePaidSubscription(context.user)) {
+        // An unused paid Top-up credit can extend the selection allowance.
+        await this.topups.redeem(userId, nuggetId, paidReadingExpiry(context.user)!);
+        return { openedAt: now.toISOString(), expiresAt: paidReadingExpiry(context.user)! };
+      }
+      throw new ForbiddenException({
+        statusCode: 403,
+        code: "NUGGET_QUOTA_REACHED",
+        message: `You have selected all ${policy.maxNuggets} Nuggets in your monthly allowance. You can select new Nuggets when the next monthly period starts.`,
+        maxNuggets: policy.maxNuggets,
+        allowancePeriod: "monthly",
+        nextAvailableAt: session.expiresAt,
+      });
+    }
+
+    await db.runtime().execute(db.raw.sql`
+      INSERT INTO "NuggetAccessGrant" ("userId", "nuggetId", "openedAt", "expiresAt")
+      VALUES (${userId}, ${nuggetId}, ${session.startedAt}, ${session.expiresAt})
+      ON CONFLICT ("userId", "nuggetId") DO UPDATE SET
+        "openedAt" = EXCLUDED."openedAt",
+        "expiresAt" = EXCLUDED."expiresAt"
+    `.affectedCount().build());
+
+    return { openedAt: session.startedAt, expiresAt: session.expiresAt };
   }
 
   private toLockedPreview<
@@ -146,10 +314,12 @@ export class NuggetsService {
       locked: true,
       scriptureText: "",
       keyPrinciple: "",
+      details: "",
       marketplaceApplication:
         "",
       practicalActionPlan: [],
       audioUrl: null,
+      nuggetAudioUrl: null,
     };
   }
 
@@ -184,19 +354,12 @@ export class NuggetsService {
         userId,
       );
 
-    const freeIds =
-      this.getFreePublishedIds(
-        published,
-      );
-
     let nuggets =
       published.map(
         (nugget) => {
           if (
             premium ||
-            freeIds.has(
-              nugget.id,
-            )
+            !nugget.isGold
           ) {
             return {
               ...nugget,
@@ -209,6 +372,109 @@ export class NuggetsService {
           );
         },
       );
+
+    let accessSummary: Record<string, unknown> = {
+      maxNuggets: null,
+      accessDurationHours: null,
+      quotaWindowHours: null,
+      used: 0,
+      remaining: null,
+    };
+
+    if (userId) {
+      const context = await this.getAccessContext(userId);
+      if (!context.isAdmin) {
+        const grants = await this.getUserGrants(userId);
+        const session = await this.getUserAccessSession(userId);
+        const now = Date.now();
+        const inGrace = isPaidSubscriptionInGrace(context.user, now);
+        const canChooseNew = !inGrace;
+        const redeemedIds = hasPaidReadingAccess(context.user, now)
+          ? await this.topups.getRedeemedIds(userId).catch(() => new Set<string>())
+          : new Set<string>();
+        const topUpWallet = hasActivePaidSubscription(context.user, now)
+          ? await this.topups.getWallet(userId).catch(() => null)
+          : null;
+        const sessionActive = !this.sessionNeedsReset(session, context, now);
+        const selectedGrants = sessionActive
+          ? grants.filter(grant => new Date(grant.openedAt).getTime() >= new Date(session!.startedAt).getTime())
+          : [];
+        const usedIds = new Set(selectedGrants.map(grant => grant.nuggetId));
+        const grantByNugget = new Map(selectedGrants.map(grant => [grant.nuggetId, grant]));
+        const previousGrants = new Map(grants.map(grant => [grant.nuggetId, grant]));
+
+        nuggets = nuggets.map((nugget: any) => {
+          if (nugget.isGold && !premium) {
+            return { ...nugget, accessLocked: true, accessAvailable: false, accessReason: "PREMIUM_REQUIRED" };
+          }
+
+          const previousGrant = previousGrants.get(nugget.id);
+          const graceExpiry = graceGrantExpiry(context.user, previousGrant, now);
+          if (graceExpiry) {
+            return { ...nugget, locked: false, accessLocked: false, accessAvailable: true,
+              accessInGrace: true, accessExpiresAt: graceExpiry };
+          }
+          if (redeemedIds.has(nugget.id)) {
+            return { ...nugget, locked: false, accessLocked: false, accessAvailable: true,
+              accessFromTopUp: true, accessExpiresAt: paidReadingExpiry(context.user) };
+          }
+          const restoredExpiry = restoredPaidHistoryExpiry(context.user, context.latestPaidAt, previousGrant);
+          if (restoredExpiry) {
+            return {
+              ...nugget, locked: false, accessLocked: false, accessAvailable: true,
+              accessRestored: true, accessExpiresAt: restoredExpiry,
+            };
+          }
+
+          const grant = grantByNugget.get(nugget.id);
+          const active = Boolean(sessionActive && grant);
+          const canOpen = canChooseNew && !active && (usedIds.size < context.policy.maxNuggets || Boolean(topUpWallet?.balance));
+
+          if (active) {
+            return {
+              ...nugget,
+              locked: false,
+              accessLocked: false,
+              accessAvailable: true,
+              accessExpiresAt: session ? this.effectiveAccessExpiry(session.expiresAt, context.user) : null,
+            };
+          }
+
+          return {
+            ...nugget,
+            locked: true,
+            accessLocked: true,
+            accessAvailable: canOpen,
+            accessReason: inGrace ? "SUBSCRIPTION_GRACE"
+              : session && !sessionActive ? "ACCESS_PERIOD_EXPIRED"
+              : canOpen ? "OPEN_TO_START" : "NUGGET_QUOTA_REACHED",
+            accessAvailableAt: sessionActive && session ? this.effectiveAccessExpiry(session.expiresAt, context.user) : null,
+            accessExpiresAt: null,
+            scriptureText: "",
+            keyPrinciple: "",
+            details: "",
+            marketplaceApplication: "",
+            practicalActionPlan: [],
+            audioUrl: null,
+            nuggetAudioUrl: null,
+          };
+        });
+
+        accessSummary = {
+          maxNuggets: context.policy.maxNuggets,
+          accessDurationHours: context.policy.accessDurationHours,
+          quotaWindowHours: context.policy.quotaWindowHours,
+          allowancePeriod: "monthly",
+          startedAt: sessionActive ? session?.startedAt : null,
+          expiresAt: sessionActive && session ? this.effectiveAccessExpiry(session.expiresAt, context.user) : null,
+          used: usedIds.size,
+          remaining: Math.max(0, context.policy.maxNuggets - usedIds.size),
+          topUpRemaining: topUpWallet?.balance ?? 0,
+          subscriptionInGrace: inGrace,
+          graceEndsAt: inGrace ? paidReadingExpiry(context.user) : null,
+        };
+      }
+    }
 
     /* =========================================================
        SEARCH
@@ -458,8 +724,8 @@ export class NuggetsService {
 
       access: {
         premium,
-        freeLimit:
-          FREE_NUGGET_LIMIT,
+        freeLimit: null,
+        ...accessSummary,
       },
 
       pagination: {
@@ -506,32 +772,39 @@ export class NuggetsService {
         userId,
       );
 
-    if (!premium) {
-      const published =
-        await db.orm.public.Nugget
-          .where({
-            status:
-              "published",
-          })
-          .all();
+    if (!premium && nugget.isGold) {
+      throw new ForbiddenException({
+        statusCode: 403,
+        code: "PREMIUM_REQUIRED",
+        message: "This Business Nugget is available to Premium members.",
+      });
+    }
 
-      const freeIds =
-        this.getFreePublishedIds(
-          published,
-        );
+    if (userId) {
+      const context = await this.getAccessContext(userId);
+      if (!context.isAdmin) {
+        const previousGrant = (await this.getUserGrants(userId)).find(grant => grant.nuggetId === nugget.id);
+        const graceExpiry = graceGrantExpiry(context.user, previousGrant);
+        if (graceExpiry) return { ...nugget, accessExpiresAt: graceExpiry, accessInGrace: true };
+        if (hasPaidReadingAccess(context.user) &&
+          (await this.topups.getRedeemedIds(userId).catch(() => new Set<string>())).has(nugget.id)) {
+          return { ...nugget, accessExpiresAt: paidReadingExpiry(context.user), accessFromTopUp: true };
+        }
+        const restoredExpiry = restoredPaidHistoryExpiry(context.user, context.latestPaidAt, previousGrant);
+        if (restoredExpiry) {
+          return { ...nugget, accessExpiresAt: restoredExpiry, accessRestored: true };
+        }
 
-      if (
-        !freeIds.has(
-          nugget.id,
-        )
-      ) {
-        throw new ForbiddenException({
-          statusCode: 403,
-          code:
-            "PREMIUM_REQUIRED",
-          message:
-            "This Business Nugget is available to Premium members.",
+        if (isPaidSubscriptionInGrace(context.user)) throw new ForbiddenException({
+          code: "SUBSCRIPTION_GRACE",
+          message: "Your paid plan is in its three-day grace period. You can reread Nuggets already opened; renew to open new Nuggets.",
         });
+        const access = await this.openNuggetAccess(userId, nugget.id, context);
+        return {
+          ...nugget,
+          accessExpiresAt: this.effectiveAccessExpiry(access.expiresAt, context.user),
+          allowancePeriod: "monthly",
+        };
       }
     }
 
@@ -560,14 +833,6 @@ export class NuggetsService {
     const isGold =
       dto.isGold ??
       false;
-
-    if (
-      status ===
-        "published" &&
-      !isGold
-    ) {
-      await this.assertFreePublishedSlotAvailable();
-    }
 
     return db.orm.public.Nugget.create({
       id:
@@ -600,6 +865,8 @@ export class NuggetsService {
       keyPrinciple:
         dto.keyPrinciple,
 
+      details: dto.details?.trim() || null,
+
       marketplaceApplication:
         dto.marketplaceApplication,
 
@@ -626,9 +893,8 @@ export class NuggetsService {
         dto.featured ??
         false,
 
-      audioUrl:
-        dto.audioUrl ??
-        null,
+      audioUrl: dto.audioUrl?.trim() || null,
+      nuggetAudioUrl: dto.nuggetAudioUrl?.trim() || null,
 
       publishedAt:
         status ===
@@ -661,36 +927,11 @@ export class NuggetsService {
       );
     }
 
-    const finalStatus =
-      dto.status ??
-      existing.status;
-
-    const finalIsGold =
-      dto.isGold ??
-      existing.isGold;
-
-    const wasFreePublished =
-      existing.status ===
-        "published" &&
-      !existing.isGold;
-
-    const willBeFreePublished =
-      finalStatus ===
-        "published" &&
-      !finalIsGold;
-
-    if (
-      willBeFreePublished &&
-      !wasFreePublished
-    ) {
-      await this.assertFreePublishedSlotAvailable(
-        id,
-      );
-    }
-
     const updates: any = {
       ...dto,
     };
+    if (dto.audioUrl !== undefined) updates.audioUrl = dto.audioUrl?.trim() || null;
+    if (dto.nuggetAudioUrl !== undefined) updates.nuggetAudioUrl = dto.nuggetAudioUrl?.trim() || null;
 
     if (
       dto.status ===

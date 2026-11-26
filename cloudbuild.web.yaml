@@ -1,0 +1,19 @@
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --build-arg
+      - NEXT_PUBLIC_API_URL=${_API_URL}
+      - -t
+      - europe-west1-docker.pkg.dev/business-nuggets-prod-2026/business-nuggets/web:setup-1
+      - .
+
+images:
+  - europe-west1-docker.pkg.dev/business-nuggets-prod-2026/business-nuggets/web:setup-1
+
+substitutions:
+  _API_URL: https://business-nuggets-api-r2625lsipq-ew.a.run.app
+
+options:
+  logging: CLOUD_LOGGING_ONLY

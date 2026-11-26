@@ -1,11 +1,12 @@
-import { API_URL } from "@/lib/api";
+import { withBibleGroup } from "@/lib/bible-books";
+import { API_URL, fetchWithRetry } from "@/lib/api";
 import type { Nugget } from "@/types/nugget";
 
 type NuggetsApiResponse = {
   data?: Nugget[];
   access?: {
     premium: boolean;
-    freeLimit: number;
+    freeLimit: number | null;
   };
   pagination?: {
     page: number;
@@ -27,6 +28,18 @@ export class PremiumRequiredError extends Error {
     super(message);
     this.name =
       "PremiumRequiredError";
+  }
+}
+
+export class NuggetAccessError extends Error {
+  code: string;
+  nextAvailableAt?: string | null;
+
+  constructor(message: string, code: string, nextAvailableAt?: string | null) {
+    super(message);
+    this.name = "NuggetAccessError";
+    this.code = code;
+    this.nextAvailableAt = nextAvailableAt;
   }
 }
 
@@ -69,9 +82,10 @@ function normalizeFeed(
 ) {
   return data
     .filter(isNugget)
+    .map(withBibleGroup)
     .map(
       (nugget) =>
-        premium
+        premium && !nugget.accessLocked
           ? {
               ...nugget,
               isGold: false,
@@ -109,53 +123,79 @@ function isNugget(value: unknown): value is Nugget {
 export async function getPublishedNuggets(
   token?: string | null,
 ): Promise<Nugget[]> {
-  const response = await fetch(
-    `${API_URL}/nuggets?limit=100`,
-    {
+  return (await getPublishedNuggetsWithAccess(token)).nuggets;
+}
+
+// Read the same authoritative access flag as the Library without downloading every page.
+export async function hasPremiumNuggetAccess(token: string | null): Promise<boolean> {
+  if (!token) return false;
+  const response = await fetchWithRetry(`${API_URL}/nuggets?limit=1&page=1`, {
+    cache: "no-store",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) throw new Error(`Could not verify Premium access: ${response.status}`);
+  const result: NuggetsApiResponse = await response.json();
+  if (typeof result?.access?.premium !== "boolean") {
+    throw new Error("Could not verify Premium access.");
+  }
+  return result.access.premium;
+}
+
+// Use the backend's access decision rather than trusting stored profile data.
+export async function getPublishedNuggetsWithAccess(
+  token?: string | null,
+): Promise<{ nuggets: Nugget[]; premium: boolean }> {
+  const headers = authHeaders(token);
+  const nuggets: Nugget[] = [];
+  let page = 1;
+  let premium = false;
+  while (true) {
+    const response = await fetchWithRetry(`${API_URL}/nuggets?limit=100&page=${page}`, {
       cache: "no-store",
-      headers:
-        authHeaders(token),
-    },
+      headers,
+    });
+    if (!response.ok) throw new Error(`Could not load nuggets: ${response.status}`);
+    const result: unknown = await response.json();
+    if (Array.isArray(result)) return { nuggets: normalizeFeed(result, false), premium: false };
+    if (!result || typeof result !== "object" || !("data" in result)) return { nuggets, premium };
+    const envelope = result as NuggetsApiResponse;
+    if (!Array.isArray(envelope.data)) return { nuggets, premium };
+    premium = envelope.access?.premium === true;
+    nuggets.push(...normalizeFeed(envelope.data, premium));
+    if (!envelope.pagination?.hasNextPage || page >= envelope.pagination.totalPages || !envelope.data.length) break;
+    page += 1;
+  }
+  return { nuggets, premium };
+}
+
+
+// Keep the preview selection independent of the visitor's filters and sort.
+export function getFreePreviewSlugs(nuggets: Nugget[]): Set<string> {
+  return new Set([...nuggets]
+    .sort((first, second) => second.publishedAt.localeCompare(first.publishedAt))
+    .slice(0, 3)
+    .map(nugget => nugget.slug));
+}
+
+// Only queue audio that the current visitor is already allowed to play.
+export async function getPlayableAudioNuggets(kind: "nugget" | "music"): Promise<Nugget[]> {
+  const { nuggets, premium } = await getPublishedNuggetsWithAccess();
+  const previews = getFreePreviewSlugs(nuggets);
+  return nuggets.filter(item =>
+    !item.locked && !item.accessLocked &&
+    (premium || (!item.isGold && previews.has(item.slug))) &&
+    (!item.accessExpiresAt || Date.parse(item.accessExpiresAt) > Date.now()) &&
+    Boolean(kind === "nugget" ? item.nuggetAudioUrl : item.audioUrl)
   );
+}
 
-  if (!response.ok) {
-    throw new Error(
-      `Could not load nuggets: ${response.status}`,
-    );
-  }
-
-  const result: unknown =
-    await response.json();
-
-  if (Array.isArray(result)) {
-    return normalizeFeed(
-      result,
-      false,
-    );
-  }
-
-  if (
-    typeof result === "object" &&
-    result !== null &&
-    "data" in result
-  ) {
-    const envelope =
-      result as NuggetsApiResponse;
-
-    const data =
-      envelope.data;
-
-    if (Array.isArray(data)) {
-      return normalizeFeed(
-        data,
-        envelope.access
-          ?.premium ===
-          true,
-      );
-    }
-  }
-
-  return [];
+// Guard direct website routes as well as the Library cards. The existing
+// backend access policies still apply when the actual Nugget is opened.
+export async function requiresPremiumNuggetPreview(slug: string, token: string | null): Promise<boolean> {
+  if (await hasPremiumNuggetAccess(token)) return false;
+  const { nuggets } = await getPublishedNuggetsWithAccess(null);
+  const nugget = nuggets.find(item => item.slug === slug);
+  return Boolean(nugget && (nugget.isGold || !getFreePreviewSlugs(nuggets).has(slug)));
 }
 
 /* =========================================================
@@ -193,6 +233,14 @@ export async function getNuggetBySlugFromApi(
         data.message,
       );
     }
+
+    if (["NUGGET_QUOTA_REACHED", "NUGGET_ACCESS_EXPIRED", "TOPUP_CREDITS_EXHAUSTED", "SUBSCRIPTION_GRACE"].includes(data?.code)) {
+      throw new NuggetAccessError(
+        data.message || "This nugget is not currently available.",
+        data.code,
+        data.nextAvailableAt,
+      );
+    }
   }
 
   if (!response.ok) {
@@ -205,7 +253,7 @@ export async function getNuggetBySlugFromApi(
     await response.json();
 
   if (isNugget(result)) {
-    return result;
+    return withBibleGroup(result);
   }
 
   if (
@@ -218,7 +266,7 @@ export async function getNuggetBySlugFromApi(
     ).data;
 
     if (isNugget(data)) {
-      return data;
+      return withBibleGroup(data);
     }
   }
 

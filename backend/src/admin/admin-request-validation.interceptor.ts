@@ -1,3 +1,4 @@
+import { CreateTopicDto, UpdateTopicDto } from "../topics/topics.dto";
 import {
   CallHandler,
   ExecutionContext,
@@ -18,7 +19,6 @@ import {
   CreateNotificationCampaignDto,
   CreateScriptureBookDto,
   CreateSubscriptionPlanDto,
-  CreateTopicDto,
   PromoteUserDto,
   PublishMobileSettingsDto,
   ReorderTopicsDto,
@@ -36,7 +36,6 @@ import {
   UpdateScriptureBookDto,
   UpdateSecuritySettingsDto,
   UpdateSubscriptionPlanDto,
-  UpdateTopicDto,
 } from "./dto/admin-write.dto";
 
 type DtoClass = Type<object>;

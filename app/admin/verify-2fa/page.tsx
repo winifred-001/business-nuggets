@@ -143,14 +143,14 @@ export default function AdminVerifyTwoFactorPage() {
       <header className="border-b border-white/[0.07] bg-[#111111]">
         <div className="flex h-[72px] items-center px-6 lg:px-10">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-[#C8A35A] font-serif text-[14px] font-bold text-[#080808]">
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-[#E28906] font-serif text-[14px] font-bold text-[#080808]">
               B
             </div>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.05em] text-white">
                 Business Nuggets
               </p>
-              <p className="mt-0.5 text-[8px] text-[#C8A35A]">Admin Console</p>
+              <p className="mt-0.5 text-[8px] text-[#E28906]">Admin Console</p>
             </div>
           </Link>
         </div>
@@ -158,7 +158,7 @@ export default function AdminVerifyTwoFactorPage() {
 
       <main className="flex min-h-[calc(100vh-72px)] items-start justify-center px-5 py-16 sm:py-20">
         <section className="w-full max-w-[440px] rounded-[10px] border border-white/10 bg-[#111111] p-6 sm:p-8">
-          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md bg-[#C8A35A]/15 text-[#C8A35A]">
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md bg-[#E28906]/15 text-[#E28906]">
             {useRecoveryCode ? <KeyRound size={20} /> : <ShieldCheck size={20} />}
           </div>
 
@@ -197,7 +197,7 @@ export default function AdminVerifyTwoFactorPage() {
                 setError("");
               }}
               placeholder={useRecoveryCode ? "BN-XXXXX-XXXXX" : "000000"}
-              className={`h-12 w-full rounded-md border border-white/10 bg-[#0D0D0D] px-4 text-center text-white outline-none placeholder:text-white/15 focus:border-[#C8A35A]/50 ${
+              className={`h-12 w-full rounded-md border border-white/10 bg-[#0D0D0D] px-4 text-center text-white outline-none placeholder:text-white/15 focus:border-[#E28906]/50 ${
                 useRecoveryCode
                   ? "text-[14px] tracking-[0.08em]"
                   : "text-[20px] tracking-[0.35em]"
@@ -213,7 +213,7 @@ export default function AdminVerifyTwoFactorPage() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-6 flex min-h-10 w-full items-center justify-center rounded-md bg-[#C8A35A] px-4 text-[10px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:opacity-50"
+              className="mt-6 flex min-h-10 w-full items-center justify-center rounded-md bg-[#E28906] px-4 text-[10px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:opacity-50"
             >
               {loading ? "Verifying..." : "Verify & Open Admin Console"}
             </button>
@@ -227,7 +227,7 @@ export default function AdminVerifyTwoFactorPage() {
                 setCode("");
                 setError("");
               }}
-              className="text-[10px] text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="text-[10px] text-[#E28906] transition hover:text-[#E28906]"
             >
               {useRecoveryCode
                 ? "Use authenticator code instead"

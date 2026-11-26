@@ -1,6 +1,11 @@
+import { CollectionsService } from "../collections/collections.service";
+import { CollectionsController } from "../collections/collections.controller";
+import { ImportUploadController } from "../imports/import-upload.controller";
+import { ImportTicketGuard } from "../imports/import-ticket";
 import {
   Module,
 } from "@nestjs/common";
+import { TopUpsModule } from "../topups/topups.module";
 import {
   APP_INTERCEPTOR,
 } from "@nestjs/core";
@@ -64,6 +69,7 @@ import { EmailModule } from "../email/email.module";
     TopicsModule,
     ModerationModule,
     SubscriptionsModule,
+    TopUpsModule,
     ScriptureModule,
     ScheduleModule,
     AuditLogsModule,
@@ -78,10 +84,14 @@ import { EmailModule } from "../email/email.module";
 
   controllers: [
     AdminController,
+    CollectionsController,
+    ImportUploadController,
   ],
 
   providers: [
     AdminIpAllowListGuard,
+    CollectionsService,
+    ImportTicketGuard,
     {
       provide: APP_INTERCEPTOR,
       useClass: AdminRequestValidationInterceptor,

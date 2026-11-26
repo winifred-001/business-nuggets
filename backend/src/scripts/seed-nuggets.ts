@@ -11,7 +11,7 @@ const nuggets = [
     scriptureRef: "Proverbs 6:1-5",
     scriptureText:
       "My son, if you have put up security for your neighbor... deliver yourself.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Quick commitments made under social pressure often bypass proper due diligence.",
     marketplaceApplication:
@@ -41,7 +41,7 @@ const nuggets = [
     scriptureRef: "Leviticus 19:35-36",
     scriptureText:
       "You shall do no wrong in judgment, in measures of length, weight, or quantity.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Consistent product standards, even when unobserved, compound into brand equity.",
     marketplaceApplication:
@@ -71,7 +71,7 @@ const nuggets = [
     scriptureRef: "1 Kings 3:16-28",
     scriptureText:
       "Give the living child to her, and by no means kill it; she is its mother.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Discernment separates true commitment from convenient claims.",
     marketplaceApplication:
@@ -102,7 +102,7 @@ const nuggets = [
     scriptureRef: "Genesis 41:34-36",
     scriptureText:
       "And let them gather all the food of those good years that are coming, and store up grain under the authority of Pharaoh, and let food be as a reserve for the land against the seven years of famine.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Faced with a macroeconomic projection of absolute volatility—seven years of extreme harvest followed by seven years of total collapse—Joseph does not panic. He proposes a rigorous national capital preservation program. He mandates a 20% flat tax on the harvest surplus during the bounty years to build a strategic physical reserve.",
     marketplaceApplication:
@@ -133,7 +133,7 @@ const nuggets = [
     scriptureRef: "Exodus 18:13-26",
     scriptureText:
       "Choose able men from all the people... and place such men over the people as officials.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Sustainable leadership distributes judgment, not just tasks.",
     marketplaceApplication:
@@ -163,7 +163,7 @@ const nuggets = [
     scriptureRef: "Nehemiah 4:1-6",
     scriptureText:
       "So we built the wall... for the people had a mind to work.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Vision under opposition still requires visible structural progress.",
     marketplaceApplication:
@@ -193,7 +193,7 @@ const nuggets = [
     scriptureRef: "Genesis 23",
     scriptureText:
       "Abraham weighed out for Ephron the silver... at the price current among the merchants.",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple:
       "Abraham's insistence on paying full price for real estate to establish long-term marketplace credibility.",
     marketplaceApplication:
@@ -222,7 +222,7 @@ const nuggets = [
     tag: "Stewardship",
     scriptureRef: "Matthew 25:9",
     scriptureText: "",
-    image: "/images/nuggetCard.png",
+    image: "/media-placeholder.svg",
     keyPrinciple: "",
     marketplaceApplication: "",
     practicalActionPlan: [],

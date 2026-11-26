@@ -81,6 +81,8 @@ export default function CreatePlaylistPage() {
               JSON.stringify({
                 name:
                   trimmedName,
+                description: description.trim(),
+                privacy,
               }),
           },
         );
@@ -105,28 +107,6 @@ export default function CreatePlaylistPage() {
         return;
       }
 
-      /*
-       * Description and privacy are currently
-       * UI-only because the Playlist backend
-       * does not store these fields yet.
-       *
-       * We keep the entered values locally
-       * so the user does not immediately lose
-       * them while we build the backend fields.
-       */
-
-      if (data.id) {
-        localStorage.setItem(
-          `playlist-meta-${data.id}`,
-          JSON.stringify({
-            description:
-              description.trim(),
-
-            privacy,
-          }),
-        );
-      }
-
       router.push(
         data.id
           ? `/library/playlist/${data.id}`
@@ -145,14 +125,14 @@ export default function CreatePlaylistPage() {
 
   return (
     <AuthRouteGuard type="protected">
-      <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+      <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
         <Navbar />
 
-        <main className="mx-auto flex w-full max-w-[1280px] flex-1 items-start justify-center px-5 py-12 sm:px-8 lg:px-10 lg:py-16">
+        <main className="bn-member-library mx-auto flex w-full max-w-[1280px] flex-1 items-start justify-center px-5 py-12 sm:px-8 lg:px-10 lg:py-16">
           <section className="w-full max-w-[650px] rounded-[10px] border border-white/10 bg-[#111111] p-5 sm:p-7">
             {/* HEADER */}
 
-            <h1 className="font-serif text-[40px] leading-tight">
+            <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
               Create New Playlist
             </h1>
 
@@ -164,7 +144,7 @@ export default function CreatePlaylistPage() {
 
             <Link
               href="/library/playlist"
-              className="mt-4 inline-block text-[11px] text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="mt-4 inline-block text-[11px] text-[#E28906] transition hover:text-[#E28906]"
             >
               ← My Playlists
             </Link>
@@ -192,7 +172,7 @@ export default function CreatePlaylistPage() {
                 }}
                 placeholder="e.g. Wisdom for Strategic Decisions"
                 maxLength={100}
-                className="h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/60"
+                className="h-11 w-full rounded-md border border-white/10 bg-[#19191D] px-4 text-[12px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/60"
               />
             </div>
 
@@ -217,15 +197,8 @@ export default function CreatePlaylistPage() {
                 placeholder="Describe the focus of your playlist..."
                 rows={5}
                 maxLength={300}
-                className="w-full resize-none rounded-md border border-white/10 bg-[#19191D] px-4 py-3 text-[12px] leading-6 text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/60"
+                className="w-full resize-none rounded-md border border-white/10 bg-[#19191D] px-4 py-3 text-[12px] leading-6 text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/60"
               />
-
-              <p className="mt-2 text-[10px] leading-5 text-white/25">
-                Description support will be
-                connected permanently when
-                the playlist backend stores
-                this field.
-              </p>
             </div>
 
             {/* PRIVACY */}
@@ -247,7 +220,7 @@ export default function CreatePlaylistPage() {
                 className={`flex w-full items-start gap-4 rounded-lg border p-4 text-left transition ${
                   privacy ===
                   "private"
-                    ? "border-[#C8A35A]/55 bg-[#C8A35A]/[0.10]"
+                    ? "border-[#E28906]/55 bg-[#E28906]/[0.10]"
                     : "border-white/10 bg-[#19191D] hover:border-white/20"
                 }`}
               >
@@ -255,7 +228,7 @@ export default function CreatePlaylistPage() {
                   className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-[2px] border ${
                     privacy ===
                     "private"
-                      ? "border-[#C8A35A] bg-[#C8A35A]"
+                      ? "border-[#E28906] bg-[#E28906]"
                       : "border-white/25"
                   }`}
                 >
@@ -271,7 +244,7 @@ export default function CreatePlaylistPage() {
 
                 <Lock
                   size={15}
-                  className="mt-0.5 shrink-0 text-[#C8A35A]"
+                  className="mt-0.5 shrink-0 text-[#E28906]"
                 />
 
                 <div>
@@ -298,7 +271,7 @@ export default function CreatePlaylistPage() {
                 className={`flex w-full items-start gap-4 rounded-lg border p-4 text-left transition ${
                   privacy ===
                   "shared"
-                    ? "border-[#C8A35A]/55 bg-[#C8A35A]/[0.10]"
+                    ? "border-[#E28906]/55 bg-[#E28906]/[0.10]"
                     : "border-white/10 bg-[#19191D] hover:border-white/20"
                 }`}
               >
@@ -306,7 +279,7 @@ export default function CreatePlaylistPage() {
                   className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-[2px] border ${
                     privacy ===
                     "shared"
-                      ? "border-[#C8A35A] bg-[#C8A35A]"
+                      ? "border-[#E28906] bg-[#E28906]"
                       : "border-white/25"
                   }`}
                 >
@@ -322,7 +295,7 @@ export default function CreatePlaylistPage() {
 
                 <Users
                   size={15}
-                  className="mt-0.5 shrink-0 text-[#C8A35A]"
+                  className="mt-0.5 shrink-0 text-[#E28906]"
                 />
 
                 <div>
@@ -331,20 +304,10 @@ export default function CreatePlaylistPage() {
                   </p>
 
                   <p className="mt-1 text-[10px] leading-5 text-white/35">
-                    Prepare this playlist
-                    for future sharing
-                    features.
+                    Anyone with the link can view this playlist.
                   </p>
                 </div>
               </button>
-
-              <p className="text-[10px] leading-5 text-white/25">
-                Playlist sharing is not
-                available on the backend yet.
-                Your playlist will still be
-                accessible only from your
-                account for now.
-              </p>
             </div>
 
             {/* ERROR */}
@@ -362,7 +325,7 @@ export default function CreatePlaylistPage() {
             <div className="mt-7 flex flex-col-reverse gap-3 border-t border-white/[0.07] pt-5 sm:flex-row sm:justify-end">
               <Link
                 href="/library/playlist"
-                className="inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 px-4 text-[11px] text-white/55 transition hover:border-white/20 hover:text-white"
+                className="bn-button inline-flex min-h-10 items-center justify-center rounded-md border border-white/10 px-4 text-[11px] text-white/55 transition hover:border-white/20 hover:text-white"
               >
                 Cancel - My Playlists
               </Link>
@@ -376,7 +339,7 @@ export default function CreatePlaylistPage() {
                   creating ||
                   !name.trim()
                 }
-                className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-40"
+                className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#E28906] px-5 text-[11px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {creating
                   ? "Creating..."

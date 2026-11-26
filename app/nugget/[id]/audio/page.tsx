@@ -4,11 +4,15 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 import FullAudioPlayer from "@/components/FullAudioPlayer";
 import PremiumNuggetGate from "@/components/PremiumNuggetGate";
+import NuggetAccessExpiryGate from "@/components/NuggetAccessExpiryGate";
+import NuggetAccessLimitGate from "@/components/NuggetAccessLimitGate";
 
 import {
   getNuggetBySlugFromApi,
+  requiresPremiumNuggetPreview,
   getPublishedNuggets,
   PremiumRequiredError,
+  NuggetAccessError,
 } from "@/lib/nuggets-api";
 import {
   getServerMemberToken,
@@ -31,6 +35,10 @@ export default async function AudioPlayerPage({
   const token =
     await getServerMemberToken();
 
+  if (await requiresPremiumNuggetPreview(id, token)) {
+    return <PremiumNuggetGate previewLimit guest={!token} />;
+  }
+
   let nugget: AudioNugget | null = null;
   let nuggets: AudioNugget[] = [];
 
@@ -42,19 +50,17 @@ export default async function AudioPlayerPage({
       ),
       getPublishedNuggets(
         token,
-      ),
+      ).catch(() => []),
     ]);
 
     nugget = current as AudioNugget;
     nuggets = all as AudioNugget[];
   } catch (error) {
-    if (
-      error instanceof
-      PremiumRequiredError
-    ) {
-      return (
-        <PremiumNuggetGate />
-      );
+    if (error instanceof PremiumRequiredError) {
+      return <PremiumNuggetGate />;
+    }
+    if (error instanceof NuggetAccessError) {
+      return <NuggetAccessLimitGate message={error.message} />;
     }
 
     console.error(
@@ -85,25 +91,29 @@ export default async function AudioPlayerPage({
   ].slice(0, 3);
 
   const audioSrc =
-    nugget.commentaryAudioUrl ??
-    nugget.audioUrl ??
+    nugget.nuggetAudioUrl ||
+    nugget.commentaryAudioUrl ||
+    nugget.audioUrl ||
     null;
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
+    <NuggetAccessExpiryGate expiresAt={nugget.accessExpiresAt} durationHours={nugget.accessDurationHours} restored={nugget.accessRestored}>
+    <div className="min-h-screen bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <FullAudioPlayer
+        key={nugget.slug}
         nugget={nugget}
         queue={queue}
         audioSrc={audioSrc}
         coverImage={
           nugget.audioImage ??
-          "/images/audio-player.png"
+          "/media-placeholder.svg"
         }
       />
 
       <Footer />
     </div>
+    </NuggetAccessExpiryGate>
   );
 }

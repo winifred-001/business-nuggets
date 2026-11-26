@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Business Nuggets — FAQ table support
 
-## Getting Started
+Adds a safe, minimal Markdown table feature to FAQs. No backend changes, dependencies, or migrations required.
 
-First, run the development server:
+## Install (Windows Command Prompt)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Commit or back up pending work in the project first. Check `git status --short`.
+2. Extract this ZIP into `C:\dev\business-nuggets`, preserving folders.
+3. From the repository root run:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+   `node scripts\install-faq-tables.cjs`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. Verify:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   `git diff --check`
 
-## Learn More
+   `npx tsc --noEmit`
 
-To learn more about Next.js, take a look at the following resources:
+   `npm run build`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Deploy the frontend using the project's normal deployment process.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Use
 
-## Deploy on Vercel
+Admin > Site Pages > FAQs. Edit a question and click **+ Insert table** under **Content**. Replace the placeholder headings and cell values. Click **Show block preview**, then **Save changes**. Open `/faqs` to confirm it renders.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Example:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Feature | Free | Premium |
+| --- | --- | --- |
+| Saved Nuggets | Limited | More access |
+| Personal Notes | Yes | Yes |
+
+- Separate cells with `|`. Leave the separator row (`| --- | --- |`) in place.
+- To include an actual `|` inside a cell, write `\|`.
+- Rows must have the same number of cells as the header.
+- FAQ body text before and after tables is retained.
+- Tables render as escaped text nodes through React, not raw HTML.
+- Current plain-text FAQ answers remain unchanged.
+
+## Files
+
+- `components/FaqAnswer.tsx`: safe table and paragraph rendering.
+- `scripts/install-faq-tables.cjs`: installer for the existing FAQ page, shared block preview, and admin editor.
+
+## Notes
+
+This intentionally does **not** enable arbitrary HTML in the FAQ editor. No actual FAQ copy is changed by the installer. Administrator input is stored in the existing page content field.

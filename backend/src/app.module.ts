@@ -73,6 +73,10 @@ import {
 } from "./analytics/analytics.module";
 
 import {
+  DiscoveryModule,
+} from "./discovery/discovery.module";
+
+import {
   MobileAppModule,
 } from "./mobile-app/mobile-app.module";
 
@@ -99,6 +103,8 @@ import {
 import {
   AdminRequestValidationInterceptor,
 } from "./admin/admin-request-validation.interceptor";
+
+import { R2AudioModule } from './r2-audio/r2-audio.module';
 
 @Module({
   imports: [
@@ -127,9 +133,11 @@ import {
     MediaModule,
     ModerationModule,
     AnalyticsModule,
+    DiscoveryModule,
     MobileAppModule,
     AppSettingsModule,
     PaymentsModule,
+    R2AudioModule,
 
     AdminModule,
   ],

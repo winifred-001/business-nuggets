@@ -1,0 +1,40 @@
+name: Validate topic label display
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/topic-display.ts"
+      - "tests/*.test.mjs"
+      - "app/library/page.tsx"
+      - "app/topics/**"
+      - "app/admin/topics/**"
+      - "app/admin/nuggets/**"
+      - "app/nugget/**"
+      - "components/VisitorHomeLibrary.tsx"
+      - ".github/workflows/validate-topic-display.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: Test topic labels and existing frontend behavior
+        run: node --test tests/*.test.mjs
+      - name: Generate Next.js type information
+        run: npx next typegen
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Build site
+        run: npm run build

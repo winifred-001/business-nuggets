@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import { API_URL } from "@/lib/api";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -21,6 +22,8 @@ type PlaylistItem = {
 type Playlist = {
   id: number;
   name: string;
+  description?: string;
+  shareToken?: string | null;
   userId: number;
   createdAt: string;
   items: PlaylistItem[];
@@ -32,6 +35,7 @@ export default function PlaylistDetailPage() {
 
   const playlistId = Number(params.id);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [shareStatus, setShareStatus] = useState("");
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -163,10 +167,10 @@ export default function PlaylistDetailPage() {
   }, [playlist]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
+    <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6">
+      <main className="bn-member-library mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6">
         <Link
           href="/library/playlist"
           className="text-sm text-amber-300 hover:text-amber-200"
@@ -192,9 +196,24 @@ export default function PlaylistDetailPage() {
             <>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h1 className="font-serif text-3xl font-semibold sm:text-4xl">
+                  <h1 className="bn-hero-title font-serif text-3xl font-semibold sm:text-4xl">
                     {playlist.name}
                   </h1>
+                  {playlist.description && <p className="mt-2 whitespace-pre-wrap">{playlist.description}</p>}
+                  {playlist.shareToken && (
+                    <div className="mt-3">
+                      <button type="button" className="bn-button text-[#E28906]" onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(new URL(`/shared-playlist/${playlist.shareToken}`, window.location.origin).href);
+                          setShareStatus("Share link copied.");
+                        } catch {
+                          setShareStatus("Could not copy the link. Open the shared view to copy its address.");
+                        }
+                      }}>Copy Share Link</button>
+                      <Link className="ml-3 underline" href={`/shared-playlist/${playlist.shareToken}`}>Open shared view</Link>
+                      <p role="status">{shareStatus}</p>
+                    </div>
+                  )}
 
                   <p className="mt-2 text-sm text-gray-500">
                     {playlist.items.length}{" "}
@@ -207,7 +226,7 @@ export default function PlaylistDetailPage() {
                 <div className="flex flex-wrap gap-3">
   <Link
     href={`/library/playlist/${playlist.id}/edit`}
-    className="rounded-md border border-[#C8A35A]/40 px-4 py-2 text-[11px] text-[#C8A35A] transition hover:bg-[#C8A35A]/10"
+    className="bn-button rounded-md border border-[#E28906]/40 px-4 py-2 text-[11px] text-[#E28906] transition hover:bg-[#E28906]/10"
   >
     Edit Playlist
   </Link>
@@ -259,7 +278,7 @@ export default function PlaylistDetailPage() {
 
                         <div className="p-4">
                           <p className="text-[10px] uppercase tracking-[0.12em] text-amber-300">
-                            {nugget.tag}
+                            {displayTopicName(nugget.tag)}
                           </p>
 
                           <Link
@@ -312,7 +331,7 @@ export default function PlaylistDetailPage() {
       </main>
 
       {showDeleteModal && playlist && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4">
+  <div className="bn-member-library fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4">
     <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#111] p-6 shadow-2xl">
       <h2 className="font-serif text-xl font-semibold text-white">
         Delete Folder?

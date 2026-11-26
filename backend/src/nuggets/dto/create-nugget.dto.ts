@@ -34,6 +34,10 @@ export class CreateNuggetDto {
   @IsString()
   keyPrinciple: string;
 
+  @IsOptional()
+  @IsString()
+  details?: string;
+
   @IsString()
   marketplaceApplication: string;
 
@@ -69,6 +73,10 @@ export class CreateNuggetDto {
   @IsOptional()
   @IsString()
   audioUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  nuggetAudioUrl?: string;
 
   @IsOptional()
   @IsString()

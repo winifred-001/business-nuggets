@@ -1,0 +1,23 @@
+.screen main h1 {
+  font-size: 45px !important;
+  line-height: 1.08 !important;
+}
+
+.screen main h2,
+.screen main h3 {
+  font-size: 20px !important;
+  line-height: 1.25 !important;
+}
+
+.screen main p,
+.screen main button {
+  font-size: 14px !important;
+}
+
+.screen main p {
+  line-height: 1.65 !important;
+}
+
+.screen main a {
+  font-size: 14px !important;
+}

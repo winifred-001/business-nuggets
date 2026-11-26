@@ -1,4 +1,6 @@
-export type BibleSection =
+import type { BibleGroup } from "@/lib/bible-books";
+
+export type BibleSection = BibleGroup
   | "The Pentateuch"
   | "History & Leadership"
   | "Wisdom Literature"
@@ -16,15 +18,28 @@ export type Nugget = {
   scriptureText: string;
   image: string;
   keyPrinciple: string;
+  details?: string | null;
   marketplaceApplication: string;
   practicalActionPlan: string[];
   duration: string;
   isGold: boolean;
   locked?: boolean;
+  accessLocked?: boolean;
+  accessAvailable?: boolean;
+  accessReason?: string;
+  accessExpiresAt?: string | null;
+  accessRestored?: boolean;
+  accessInGrace?: boolean;
+  accessFromTopUp?: boolean;
+  accessDurationHours?: number;
+  accessAvailableAt?: string | null;
   book: string;
   bibleSection: BibleSection;
   challenges: string[];
   audioUrl?: string | null;
+  nuggetAudioUrl?: string | null;
+  musicalImage?: string | null;
+  musicalAudioUrl?: string | null;
   publishedAt: string;
 };
 

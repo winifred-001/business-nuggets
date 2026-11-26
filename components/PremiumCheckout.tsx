@@ -10,6 +10,7 @@ import {
   Crown,
 } from "lucide-react";
 
+import { loginFor } from "@/lib/auth-return";
 import { API_URL } from "@/lib/api";
 
 type SubscriptionPlan = {
@@ -22,6 +23,7 @@ type SubscriptionPlan = {
   features: readonly string[];
   active: boolean;
   displayOrder: number;
+  maxNuggets?: number;
 };
 
 export default function PremiumCheckout({
@@ -31,6 +33,8 @@ export default function PremiumCheckout({
   isPremium: boolean;
   currentPlan?: string | null;
 }) {
+  const [retryCount, setRetryCount] = useState(0);
+  const [billingView, setBillingView] = useState<"monthly" | "annual">("monthly");
   const [plans, setPlans] =
     useState<SubscriptionPlan[]>([]);
 
@@ -73,6 +77,7 @@ export default function PremiumCheckout({
           return;
         }
 
+        if (Array.isArray(data) && !data.some((plan) => plan?.active && plan?.billingCycle === "monthly") && data.some((plan) => plan?.active && plan?.billingCycle === "annual")) setBillingView("annual");
         setPlans(
           Array.isArray(data)
             ? data.filter(
@@ -105,7 +110,7 @@ export default function PremiumCheckout({
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [retryCount]);
 
   async function startCheckout(
     planSlug: string,
@@ -114,7 +119,7 @@ export default function PremiumCheckout({
       localStorage.getItem("token");
 
     if (!token) {
-      window.location.href = "/login";
+      window.location.assign(loginFor(`/membership?plan=${encodeURIComponent(planSlug)}#plans`));
       return;
     }
 
@@ -140,6 +145,10 @@ export default function PremiumCheckout({
         .json()
         .catch(() => ({}));
 
+      if (response.status === 401) {
+        window.location.assign(loginFor(`/membership?plan=${encodeURIComponent(planSlug)}#plans`));
+        return;
+      }
       if (
         !response.ok ||
         !data.authorizationUrl
@@ -164,14 +173,14 @@ export default function PremiumCheckout({
   }
 
   return (
-    <section className="mt-10 rounded-[14px] border border-[#C8A35A]/35 bg-[#111111] p-5 sm:p-7 lg:p-8">
+    <section id="plans" className="mt-10 rounded-[14px] border border-[#E28906]/35 bg-[#111111] p-5 sm:p-7 lg:p-8">
       <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-[#C8A35A]/25 bg-[#C8A35A]/10 text-[#C8A35A]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-[#E28906]/25 bg-[#E28906]/10 text-[#E28906]">
           <Crown size={20} />
         </div>
 
         <div>
-          <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+          <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
             {isPremium
               ? "Manage Premium Plan"
               : "Upgrade to Premium"}
@@ -192,10 +201,12 @@ export default function PremiumCheckout({
       </p>
 
       {error && (
-        <div className="mt-6 rounded-md border border-red-500/25 bg-red-500/[0.06] px-4 py-3 text-[15px] leading-6 text-red-300">
+        <div role="alert" className="mt-6 rounded-md border border-red-500/25 bg-red-500/[0.06] px-4 py-3 text-[15px] leading-6 text-red-300">
           {error}
         </div>
       )}
+
+      {!loading && (error || plans.length === 0) && <button type="button" onClick={() => setRetryCount(value => value + 1)} className="mt-4 rounded border border-[#E28906]/40 px-4 py-3 text-[#E28906]">Retry Loading Plans</button>}
 
       {loading ? (
         <div className="mt-7 grid gap-5 md:grid-cols-2">
@@ -212,12 +223,21 @@ export default function PremiumCheckout({
             No paid plan is available yet
           </h3>
           <p className="mt-2 text-[16px] leading-7 text-white/50">
-            There is currently no active paid subscription plan returned by the backend. Check Admin → Subscriptions and make sure at least one Premium plan is active with a price above zero.
+            Membership plans are temporarily unavailable. Please try again shortly.
           </p>
         </div>
       ) : (
-        <div className="mt-7 grid gap-5 md:grid-cols-2">
-          {plans.map((plan) => {
+        <div className="mt-7">
+          <div className="mb-5 flex w-fit rounded-md border border-white/15 bg-[#080808] p-1" role="group" aria-label="Choose a billing period">
+            {(["monthly", "annual"] as const).map(cycle => (
+              <button type="button" key={cycle} onClick={() => setBillingView(cycle)} aria-pressed={billingView === cycle}
+                className={"min-h-10 rounded px-5 text-sm font-semibold " + (billingView === cycle ? "bg-[#E28906] text-black" : "text-white/55 hover:text-white")}>
+                {cycle === "monthly" ? "Monthly" : "Annual"}
+              </button>
+            ))}
+          </div>
+          <div className="grid gap-5 md:grid-cols-2">
+          {plans.filter(plan => plan.billingCycle === billingView).map((plan) => {
             const isCurrentPlan =
               isPremium &&
               currentPlan === plan.slug;
@@ -227,36 +247,38 @@ export default function PremiumCheckout({
                 key={plan.id}
                 className={`rounded-[12px] border bg-[#080808] p-5 sm:p-6 ${
                   isCurrentPlan
-                    ? "border-[#C8A35A]/65"
-                    : "border-[#C8A35A]/30"
+                    ? "border-[#E28906]/65"
+                    : "border-[#E28906]/30"
                 }`}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
+                <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+                  <div className="min-w-0 flex-1 basis-[180px]">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-serif text-[26px] leading-tight">
                         {plan.name}
                       </h3>
 
                       {isCurrentPlan && (
-                        <span className="rounded-full bg-[#C8A35A]/15 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+                        <span className="rounded-full bg-[#E28906]/15 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
                           Current Plan
                         </span>
                       )}
                     </div>
 
                     <p className="mt-2 text-[14px] font-medium uppercase tracking-[0.08em] text-white/40">
-                      {plan.billingCycle}
+                      {plan.billingCycle === "annual" ? "12-month billing · Monthly Nugget allowance" : "Monthly billing · Monthly Nugget allowance"}
                     </p>
                   </div>
 
-                  <p className="font-serif text-[30px] leading-none text-[#C8A35A]">
+                  <p className="shrink-0 whitespace-nowrap font-serif text-[clamp(20px,3vw,30px)] leading-tight tabular-nums text-[#E28906]">
                     {formatMoney(
                       plan.priceCents,
                       plan.currency,
                     )}
                   </p>
                 </div>
+
+                <p className="mt-5 text-sm text-[#E28906]">{typeof plan.maxNuggets === "number" ? plan.maxNuggets + " Nuggets per month" : "Monthly allowance"}</p>
 
                 <div className="mt-6 space-y-3">
                   {plan.features.map((feature) => (
@@ -266,7 +288,7 @@ export default function PremiumCheckout({
                     >
                       <Check
                         size={16}
-                        className="mt-1 shrink-0 text-[#C8A35A]"
+                        className="mt-1 shrink-0 text-[#E28906]"
                       />
                       {feature}
                     </p>
@@ -276,26 +298,27 @@ export default function PremiumCheckout({
                 <button
                   type="button"
                   disabled={
-                    payingSlug !== null ||
-                    isCurrentPlan
+                    payingSlug !== null
                   }
                   onClick={() =>
                     startCheckout(plan.slug)
                   }
-                  className="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {isCurrentPlan
-                    ? "Current Plan"
-                    : payingSlug === plan.slug
-                      ? "Opening Paystack..."
-                      : isPremium &&
-                          plan.billingCycle === "annual"
-                        ? `Upgrade to ${plan.name}`
-                        : `Pay for ${plan.name}`}
+                  {payingSlug === plan.slug
+                    ? "Opening Paystack..."
+                    : isCurrentPlan ? "Renew " + plan.name
+                    : isPremium && plan.billingCycle === "annual"
+                      ? `Upgrade to ${plan.name}`
+                      : `Pay for ${plan.name}`}
                 </button>
               </article>
             );
           })}
+          </div>
+          {!plans.some(plan => plan.billingCycle === billingView) && (
+            <p className="rounded-md border border-white/10 p-5 text-sm text-white/50">No {billingView} plans are currently available.</p>
+          )}
         </div>
       )}
     </section>

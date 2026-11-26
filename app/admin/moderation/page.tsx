@@ -562,7 +562,7 @@ export default function AdminModerationPage() {
                     !current,
                 )
               }
-              className="inline-flex h-9 items-center gap-2 rounded-md border border-white/10 px-4 text-[9px] text-white/50 hover:border-[#C8A35A]/30 hover:text-white"
+              className="inline-flex h-9 items-center gap-2 rounded-md border border-white/10 px-4 text-[9px] text-white/50 hover:border-[#E28906]/30 hover:text-white"
             >
               Bulk Actions
 
@@ -660,7 +660,7 @@ export default function AdminModerationPage() {
                   className={`border-b-2 pb-3 text-[8px] transition ${
                     activeTab ===
                     tab.value
-                      ? "border-[#C8A35A] text-[#C8A35A]"
+                      ? "border-[#E28906] text-[#E28906]"
                       : "border-transparent text-white/35 hover:text-white/60"
                   }`}
                 >
@@ -712,10 +712,10 @@ export default function AdminModerationPage() {
                           comment.id,
                         )
                       }
-                      className="mt-2 h-3.5 w-3.5 accent-[#C8A35A]"
+                      className="mt-2 h-3.5 w-3.5 accent-[#E28906]"
                     />
 
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#C8A35A]/25 text-[8px] font-semibold text-[#E0C48A]">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E28906]/25 text-[8px] font-semibold text-[#E28906]">
                       {comment.authorName
                         .trim()
                         .charAt(
@@ -770,8 +770,8 @@ export default function AdminModerationPage() {
                       </p>
 
                       {comment.adminReply && (
-                        <div className="mt-3 rounded-md border border-[#C8A35A]/15 bg-[#C8A35A]/[0.05] px-3 py-2">
-                          <p className="text-[7px] text-[#C8A35A]">
+                        <div className="mt-3 rounded-md border border-[#E28906]/15 bg-[#E28906]/[0.05] px-3 py-2">
+                          <p className="text-[7px] text-[#E28906]">
                             Admin Reply
                           </p>
 
@@ -816,7 +816,7 @@ export default function AdminModerationPage() {
                                 "approved",
                               )
                             }
-                            className="h-8 rounded-md bg-[#C8A35A] px-4 text-[8px] font-semibold text-[#080808] hover:bg-[#E0C48A] disabled:opacity-40"
+                            className="h-8 rounded-md bg-[#E28906] px-4 text-[8px] font-semibold text-[#080808] hover:bg-[#E28906] disabled:opacity-40"
                           >
                             Approve
                           </button>
@@ -923,7 +923,7 @@ export default function AdminModerationPage() {
                       .value,
                   )
                 }
-                className="mt-2 w-full resize-none rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[9px] leading-5 text-white outline-none focus:border-[#C8A35A]/35"
+                className="mt-2 w-full resize-none rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[9px] leading-5 text-white outline-none focus:border-[#E28906]/35"
               />
 
               <div className="mt-6 flex justify-end gap-3">
@@ -947,7 +947,7 @@ export default function AdminModerationPage() {
                   onClick={
                     saveReply
                   }
-                  className="h-9 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
+                  className="h-9 rounded-md bg-[#E28906] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
                 >
                   {saving
                     ? "Saving..."

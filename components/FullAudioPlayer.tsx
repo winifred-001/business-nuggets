@@ -15,7 +15,11 @@ import {
   Shuffle,
   X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useGlobalAudioPlayer } from "@/components/GlobalAudioPlayerProvider";
+import { displayTopicName } from "@/lib/topic-display";
+import { audioTime as formatTime } from "@/lib/use-audio-playback";
+import { loginFor } from "@/lib/auth-return";
 
 import { API_URL } from "@/lib/api";
 import type { Nugget } from "@/types/nugget";
@@ -32,34 +36,59 @@ type Props = {
   coverImage: string;
 };
 
-function formatTime(value: number) {
-  if (!Number.isFinite(value) || value < 0) {
-    return "00:00";
-  }
-
-  const minutes = Math.floor(value / 60);
-  const seconds = Math.floor(value % 60);
-
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
-
 export default function FullAudioPlayer({
   nugget,
   queue,
   audioSrc,
   coverImage,
 }: Props) {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [speed, setSpeed] = useState(1);
+  const [shuffledQueue, setShuffledQueue] = useState<Nugget[] | null>(null);
+  const playbackQueue = shuffledQueue ?? queue;
+  const player = useGlobalAudioPlayer();
+  const isCurrentTrack = Boolean(audioSrc && player.track?.src === audioSrc);
+  const playing = isCurrentTrack && player.playing;
+  const currentTime = isCurrentTrack ? player.currentTime : 0;
+  const duration = isCurrentTrack ? player.duration : 0;
+  const speed = isCurrentTrack ? player.speed : 1;
+  const audioError = isCurrentTrack ? player.error : "";
+  function togglePlay() {
+    if (!audioSrc) return;
+    if (isCurrentTrack) {
+      void player.togglePlay();
+      return;
+    }
+    void player.playTrack({
+      src: audioSrc,
+      title: nugget.title,
+      subtitle: `${nugget.scriptureRef} · ${displayTopicName(nugget.topic)}`,
+      slug: nugget.slug,
+      coverImage,
+      kind: "nugget",
+      href: `/nugget/${nugget.slug}/audio`,
+    });
+  }
+  function seek(amount: number) {
+    if (isCurrentTrack) player.seek(amount);
+  }
+  function seekTo(value: number) {
+    if (isCurrentTrack) player.seekTo(value);
+  }
+  function changeSpeed() {
+    player.changeSpeed();
+  }
+  const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState("");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (!audioSrc) return;
+    player.registerLocalControl(audioSrc, true);
+    return () => player.registerLocalControl(audioSrc, false);
+  }, [audioSrc, player.registerLocalControl]);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,7 +108,7 @@ export default function FullAudioPlayer({
         if (!cancelled) {
           setSaved(
             Array.isArray(data) &&
-              data.some((item) => item.nuggetId === nugget.id),
+              data.some((item) => String(item.nuggetId) === String(nugget.id)),
           );
         }
       } catch {
@@ -94,54 +123,52 @@ export default function FullAudioPlayer({
     };
   }, [nugget.id]);
 
-  async function togglePlay() {
-    if (!audioSrc) {
-      setMessage("No audio file has been attached to this Nugget yet.");
-      return;
+  function shuffleQueue() {
+    if (shuffledQueue) { setShuffledQueue(null); return; }
+    const shuffled = [...queue];
+    for (let index = shuffled.length - 1; index > 0; index--) {
+      const other = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[other]] = [shuffled[other], shuffled[index]];
     }
-
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (audio.paused) {
-      await audio.play();
-      setPlaying(true);
-    } else {
-      audio.pause();
-      setPlaying(false);
-    }
+    // With a short queue, guarantee visible movement if randomness kept the order.
+    if (shuffled.length > 1 && shuffled.every((item, i) => item.slug === queue[i].slug)) shuffled.push(shuffled.shift()!);
+    setShuffledQueue(shuffled);
   }
-
-  function seek(amount: number) {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.currentTime = Math.max(
-      0,
-      Math.min(audio.duration || 0, audio.currentTime + amount),
-    );
+  async function ensureOk(response: Response, fallback: string) {
+    if (response.ok) return;
+    if (response.status === 401) { window.location.assign(loginFor(`/nugget/${nugget.slug}/audio`)); throw new Error("Please log in to continue."); }
+    const data = await response.json().catch(() => null);
+    throw new Error(typeof data?.message === "string" ? data.message : fallback);
   }
-
-  function changeSpeed() {
-    const speeds = [1, 1.25, 1.5, 2];
-    const currentIndex = speeds.indexOf(speed);
-    const next = speeds[(currentIndex + 1) % speeds.length];
-
-    setSpeed(next);
-
-    if (audioRef.current) {
-      audioRef.current.playbackRate = next;
-    }
+  async function downloadAudio() {
+    if (!audioSrc || busy) return;
+    setBusy(true); setMessage("");
+    try {
+      const response = await fetch(audioSrc);
+      if (!response.ok) throw new Error("Download failed.");
+      const blob = await response.blob();
+      if (!blob.size || blob.type.includes("text/html")) throw new Error("Invalid audio file.");
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a"); link.href = url;
+      const extension = new URL(audioSrc, window.location.origin).pathname.split(".").pop();
+      link.download = `${nugget.slug}.${extension && /^(mp3|wav|m4a|ogg|flac)$/i.test(extension) ? extension : "mp3"}`;
+      document.body.appendChild(link); link.click(); link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+      setMessage("Download started. Find the audio in your device’s downloads.");
+    } catch { setMessage("This audio could not be downloaded. The file host may block downloads; you can still stream it here."); }
+    finally { setBusy(false); }
   }
 
   async function toggleSave() {
+    if (busy) return;
     const token = localStorage.getItem("token");
 
     if (!token) {
-      window.location.href = "/login";
+      window.location.assign(loginFor(`/nugget/${nugget.slug}/audio`));
       return;
     }
 
+    setBusy(true);
     try {
       const response = await fetch(
         saved
@@ -161,19 +188,21 @@ export default function FullAudioPlayer({
         },
       );
 
+      await ensureOk(response, "Could not update your saved Nuggets.");
       if (response.ok) {
         setSaved((current) => !current);
       }
-    } catch {
-      setMessage("Could not update your saved Nuggets.");
-    }
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : "Could not update your saved Nuggets.");
+    } finally { setBusy(false); }
   }
 
   async function openPlaylists() {
+    setMessage("");
     const token = localStorage.getItem("token");
 
     if (!token) {
-      window.location.href = "/login";
+      window.location.assign(loginFor(`/nugget/${nugget.slug}/audio`));
       return;
     }
 
@@ -182,7 +211,7 @@ export default function FullAudioPlayer({
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!response.ok) return;
+      await ensureOk(response, "Could not load your playlists.");
 
       const data = await response.json();
       setPlaylists(Array.isArray(data) ? data : []);
@@ -193,9 +222,11 @@ export default function FullAudioPlayer({
   }
 
   async function addToPlaylist(playlistId: number) {
+    if (busy) return;
     const token = localStorage.getItem("token");
     if (!token) return;
 
+    setBusy(true);
     try {
       const response = await fetch(
         `${API_URL}/playlists/${playlistId}/items`,
@@ -209,25 +240,27 @@ export default function FullAudioPlayer({
         },
       );
 
+      await ensureOk(response, "Could not add this Nugget to the playlist.");
       if (response.ok) {
         setMessage("Added to playlist.");
         setPlaylistOpen(false);
       }
     } catch {
       setMessage("Could not add this Nugget to the playlist.");
-    }
+    } finally { setBusy(false); }
   }
 
   async function saveNote() {
-    if (!note.trim()) return;
+    if (!note.trim() || busy) return;
 
     const token = localStorage.getItem("token");
 
     if (!token) {
-      window.location.href = "/login";
+      window.location.assign(loginFor(`/nugget/${nugget.slug}/audio`));
       return;
     }
 
+    setBusy(true);
     try {
       const response = await fetch(`${API_URL}/notes`, {
         method: "POST",
@@ -236,12 +269,13 @@ export default function FullAudioPlayer({
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          title: nugget.title,
+          title: nugget.title.slice(0, 120),
           content: note.trim(),
           nuggetId: nugget.id,
         }),
       });
 
+      await ensureOk(response, "Could not save your note.");
       if (response.ok) {
         setMessage("Note saved.");
         setNote("");
@@ -249,19 +283,11 @@ export default function FullAudioPlayer({
       }
     } catch {
       setMessage("Could not save your note.");
-    }
+    } finally { setBusy(false); }
   }
 
   return (
     <>
-      <audio
-        ref={audioRef}
-        src={audioSrc ?? undefined}
-        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
-        onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
-        onEnded={() => setPlaying(false)}
-      />
-
       <main className="mx-auto w-full max-w-[1280px] px-5 py-10 sm:px-8 sm:py-12 lg:px-10">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-12">
           <section className="min-w-0">
@@ -277,11 +303,11 @@ export default function FullAudioPlayer({
             </div>
 
             <div className="mx-auto mt-6 max-w-[520px] text-center sm:mt-7">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#C8A35A]">
-                {nugget.scriptureRef} · {nugget.topic}
+              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#E28906]">
+                {nugget.scriptureRef} · {displayTopicName(nugget.topic)}
               </p>
 
-              <h1 className="mt-3 font-serif text-[34px] leading-[1.12] sm:text-[40px]">
+              <h1 className="bn-hero-title mt-3 font-serif text-[34px] leading-[1.12] sm:text-[40px]">
                 {nugget.title}
               </h1>
 
@@ -300,16 +326,11 @@ export default function FullAudioPlayer({
                 id="audio-progress"
                 type="range"
                 min={0}
-                max={duration || 100}
+                max={duration || 1}
+                disabled={!duration}
                 value={currentTime}
-                onChange={(event) => {
-                  const value = Number(event.target.value);
-                  setCurrentTime(value);
-                  if (audioRef.current) {
-                    audioRef.current.currentTime = value;
-                  }
-                }}
-                className="h-11 w-full cursor-pointer accent-[#C8A35A]"
+                onChange={(event) => seekTo(Number(event.target.value))}
+                className="h-11 w-full cursor-pointer accent-[#E28906]"
               />
 
               <div className="mt-1 flex justify-between text-[12px] text-white/40">
@@ -322,7 +343,10 @@ export default function FullAudioPlayer({
               <button
                 type="button"
                 aria-label="Shuffle"
-                className="flex h-11 w-11 items-center justify-center rounded-full text-white/45 transition hover:bg-white/[0.04] hover:text-white"
+                aria-pressed={Boolean(shuffledQueue)}
+                onClick={shuffleQueue}
+                disabled={queue.length < 2}
+                className={`flex h-11 w-11 items-center justify-center rounded-full transition disabled:opacity-30 ${shuffledQueue ? "text-[#E28906]" : "text-white/45"}`}
               >
                 <Shuffle size={18} />
               </button>
@@ -331,6 +355,7 @@ export default function FullAudioPlayer({
                 type="button"
                 onClick={() => seek(-10)}
                 aria-label="Back 10 seconds"
+                disabled={!duration}
                 className="flex h-11 w-11 items-center justify-center rounded-full text-white/60 transition hover:bg-white/[0.04] hover:text-white"
               >
                 <RotateCcw size={19} />
@@ -339,8 +364,9 @@ export default function FullAudioPlayer({
               <button
                 type="button"
                 onClick={togglePlay}
+                disabled={!audioSrc}
                 aria-label={playing ? "Pause" : "Play"}
-                className="flex h-14 w-14 items-center justify-center rounded-full bg-[#C8A35A] text-[#080808] transition hover:bg-[#E0C48A]"
+                className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E28906] text-[#080808] transition hover:bg-[#E28906]"
               >
                 {playing ? (
                   <Pause size={20} fill="currentColor" />
@@ -353,6 +379,7 @@ export default function FullAudioPlayer({
                 type="button"
                 onClick={() => seek(10)}
                 aria-label="Forward 10 seconds"
+                disabled={!duration}
                 className="flex h-11 w-11 items-center justify-center rounded-full text-white/60 transition hover:bg-white/[0.04] hover:text-white"
               >
                 <RotateCw size={19} />
@@ -361,8 +388,9 @@ export default function FullAudioPlayer({
               <button
                 type="button"
                 onClick={changeSpeed}
+                disabled={!audioSrc}
                 aria-label={`Playback speed ${speed} times`}
-                className="flex h-11 min-w-11 items-center justify-center rounded-lg border border-white/10 px-2 text-[12px] font-semibold text-[#C8A35A]"
+                className="flex h-11 min-w-11 items-center justify-center rounded-lg border border-white/10 px-2 text-[12px] font-semibold text-[#E28906]"
               >
                 {speed}x
               </button>
@@ -372,38 +400,25 @@ export default function FullAudioPlayer({
               <PlayerAction
                 label={saved ? "Saved" : "Save"}
                 onClick={toggleSave}
+                disabled={busy}
               >
                 {saved ? <Check size={18} /> : <Bookmark size={18} />}
               </PlayerAction>
 
-              <PlayerAction label="Playlist" onClick={openPlaylists}>
+              <PlayerAction label="Playlist" onClick={openPlaylists} disabled={busy}>
                 <ListMusic size={18} />
               </PlayerAction>
 
-              <PlayerAction label="Write Note" onClick={() => setNoteOpen(true)}>
+              <PlayerAction label="Write Note" onClick={() => { setMessage(""); setNoteOpen(true); }} disabled={busy}>
                 <NotebookPen size={18} />
               </PlayerAction>
 
-              {audioSrc ? (
-                <a
-                  href={audioSrc}
-                  download
-                  className="flex min-h-14 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 text-[14px] text-white/55 transition hover:border-[#C8A35A]/40 hover:text-[#C8A35A] sm:flex-col"
-                >
-                  <Download size={18} />
-                  Offline
-                </a>
-              ) : (
-                <span className="flex min-h-14 cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-white/[0.06] px-3 text-[14px] text-white/20 sm:flex-col">
-                  <Download size={18} />
-                  Offline
-                </span>
-              )}
+              <PlayerAction label="Offline" onClick={downloadAudio} disabled={!audioSrc || busy}><Download size={18} /></PlayerAction>
             </div>
 
-            {message && (
-              <p className="mt-5 text-center text-[14px] leading-6 text-[#C8A35A]">
-                {message}
+            {(message || audioError || !audioSrc) && (
+              <p role="status" className="mt-5 text-center text-[14px] leading-6 text-[#E28906]">
+                {message || audioError || "No audio file has been attached to this Nugget yet."}
               </p>
             )}
           </section>
@@ -414,7 +429,7 @@ export default function FullAudioPlayer({
 
               <Link
                 href={`/nugget/${nugget.slug}/reader`}
-                className="inline-flex min-h-11 items-center text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                className="bn-button inline-flex min-h-11 items-center text-[14px] font-medium text-[#E28906] transition hover:text-[#E28906]"
               >
                 Open Full Reader View
               </Link>
@@ -422,7 +437,7 @@ export default function FullAudioPlayer({
 
             <div className="mt-5 space-y-3 sm:mt-6">
               <QueueRow index={1} nugget={nugget} active />
-              {queue.map((item, index) => (
+              {playbackQueue.map((item, index) => (
                 <QueueRow
                   key={item.slug}
                   index={index + 2}
@@ -436,14 +451,16 @@ export default function FullAudioPlayer({
 
       {playlistOpen && (
         <Modal title="Add to Playlist" onClose={() => setPlaylistOpen(false)}>
+          {message && <p role="alert" className="mb-4 text-[14px] text-[#E28906]">{message}</p>}
           {playlists.length > 0 ? (
             <div className="space-y-2">
               {playlists.map((playlist) => (
                 <button
                   key={playlist.id}
                   type="button"
+                  disabled={busy}
                   onClick={() => addToPlaylist(playlist.id)}
-                  className="min-h-12 w-full rounded-lg border border-white/10 bg-[#111111] px-4 py-3 text-left text-[14px] transition hover:border-[#C8A35A]/50"
+                  className="min-h-12 w-full rounded-lg border border-white/10 bg-[#111111] px-4 py-3 text-left text-[14px] transition hover:border-[#E28906]/50"
                 >
                   {playlist.name}
                 </button>
@@ -451,7 +468,7 @@ export default function FullAudioPlayer({
             </div>
           ) : (
             <p className="text-[16px] leading-7 text-white/50">
-              You do not have any playlists yet.
+              You do not have any playlists yet. <Link href="/library/playlist/create" className="text-[#E28906] underline">Create a playlist</Link>.
             </p>
           )}
         </Modal>
@@ -459,18 +476,22 @@ export default function FullAudioPlayer({
 
       {noteOpen && (
         <Modal title="Write Note" onClose={() => setNoteOpen(false)}>
+          {message && <p role="alert" className="mb-4 text-[14px] text-[#E28906]">{message}</p>}
           <textarea
             value={note}
             onChange={(event) => setNote(event.target.value)}
             rows={6}
+            aria-label="Your note"
+            maxLength={10000}
             placeholder="Write your note..."
-            className="w-full resize-none rounded-lg border border-white/10 bg-[#111111] p-4 text-[16px] leading-7 outline-none focus:border-[#C8A35A]"
+            className="w-full resize-none rounded-lg border border-white/10 bg-[#111111] p-4 text-[16px] leading-7 outline-none focus:border-[#E28906]"
           />
 
           <button
             type="button"
             onClick={saveNote}
-            className="mt-4 min-h-12 rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+            disabled={!note.trim() || busy}
+            className="mt-4 min-h-12 rounded-lg bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
           >
             Save Note
           </button>
@@ -492,13 +513,13 @@ function QueueRow({
   return (
     <Link
       href={`/nugget/${nugget.slug}/audio`}
-      className={`grid min-h-16 grid-cols-[24px_minmax(0,1fr)_56px] items-center gap-3 rounded-lg border px-3 py-3 transition sm:grid-cols-[28px_minmax(0,1fr)_70px] sm:px-4 sm:py-4 ${
+      className={`bn-button ${`grid min-h-16 grid-cols-[24px_minmax(0,1fr)_56px] items-center gap-3 rounded-lg border px-3 py-3 transition sm:grid-cols-[28px_minmax(0,1fr)_70px] sm:px-4 sm:py-4 ${
         active
-          ? "border-[#C8A35A]/35 bg-[#111111]"
-          : "border-white/10 bg-[#111111] hover:border-[#C8A35A]/35"
-      }`}
+          ? "border-[#E28906]/35 bg-[#111111]"
+          : "border-white/10 bg-[#111111] hover:border-[#E28906]/35"
+      }`}`}
     >
-      <span className="font-serif text-[15px] text-[#C8A35A]">
+      <span className="font-serif text-[15px] text-[#E28906]">
         {String(index).padStart(2, "0")}
       </span>
 
@@ -522,7 +543,9 @@ function PlayerAction({
   children,
   label,
   onClick,
+  disabled = false,
 }: {
+  disabled?: boolean;
   children: React.ReactNode;
   label: string;
   onClick: () => void;
@@ -531,7 +554,8 @@ function PlayerAction({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-14 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 text-[14px] text-white/55 transition hover:border-[#C8A35A]/40 hover:text-[#C8A35A] sm:flex-col"
+      disabled={disabled}
+      className="flex min-h-14 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 text-[14px] text-white/55 transition hover:border-[#E28906]/40 hover:text-[#E28906] sm:flex-col"
     >
       {children}
       {label}
@@ -549,7 +573,7 @@ function Modal({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/75 px-4 sm:items-center sm:px-5">
+    <dialog ref={element => { if (element && !element.open) element.showModal(); }} onClose={onClose} aria-label={title} className="fixed z-[100] m-auto w-[calc(100%-32px)] max-w-[460px] border-0 bg-transparent p-0 text-[#f9f5ed] backdrop:bg-black/75">
       <div className="max-h-[88vh] w-full max-w-[460px] overflow-y-auto rounded-t-[20px] border border-white/10 bg-[#111111] p-5 sm:rounded-xl sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className="font-serif text-[28px]">{title}</h2>
@@ -566,6 +590,6 @@ function Modal({
 
         <div className="mt-5">{children}</div>
       </div>
-    </div>
+    </dialog>
   );
 }

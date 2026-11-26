@@ -19,7 +19,14 @@ import {
   Trash2,
 } from "lucide-react";
 
+import BulkActions from "@/components/admin/BulkActions";
+import { useBulkSelection } from "@/components/admin/useBulkSelection";
+import { adminApiFetch } from "@/lib/admin-api";
+import AdminImportDialog from "@/components/admin/AdminImportDialog";
 import AdminShell from "@/components/admin/AdminShell";
+import { displayTopicName } from "@/lib/topic-display";
+import R2BulkSongMatchDialog from "@/components/admin/R2BulkSongMatchDialog";
+import R2BulkMediaMatchDialog from "@/components/admin/R2BulkMediaMatchDialog";
 import { API_URL } from "@/lib/api";
 
 import type { Nugget } from "@/types/nugget";
@@ -49,6 +56,10 @@ type AdminNugget = Omit<
 const PAGE_SIZE = 8;
 
 export default function AdminNuggetsPage() {
+  const [importOpen, setImportOpen] = useState(false);
+  const [r2BulkMatchOpen, setR2BulkMatchOpen] = useState(false);
+  const [r2MediaMatchKind, setR2MediaMatchKind] = useState<"nuggets" | "images" | null>(null);
+  const [importSuccess, setImportSuccess] = useState("");
   const [nuggets, setNuggets] =
     useState<AdminNugget[]>([]);
 
@@ -407,6 +418,28 @@ export default function AdminNuggetsPage() {
       sortOrder,
     ]);
 
+  const selection = useBulkSelection(
+    JSON.stringify([searchQuery, topicFilter, statusFilter, activeTab]),
+    filteredNuggets.map((item) => item.id),
+  );
+  async function applyBulk(action: string, ids: string[]) {
+    setError("");
+    setImportSuccess("");
+    const response = await adminApiFetch("/nuggets/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, ids }),
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(Array.isArray(data?.message)
+        ? data.message.join("; ")
+        : data?.message || "Could not apply the bulk action. Please retry.");
+    }
+    setImportSuccess(`${data.affected} Nuggets updated (${action}).`);
+    await loadNuggets();
+  }
+
   /* =========================================
      PAGINATION
   ========================================= */
@@ -437,15 +470,32 @@ export default function AdminNuggetsPage() {
         PAGE_SIZE,
     );
 
-  useEffect(() => {
+
+  const pageIds = paginatedNuggets.map((nugget) => nugget.id);
+  const pageSelectedCount = pageIds.filter((id) => selection.selected.has(id)).length;
+  const allOnPageSelected = pageIds.length > 0 && pageSelectedCount === pageIds.length;
+
+  function changeSearchQuery(value: string) {
+    setSearchQuery(value);
     setCurrentPage(1);
-  }, [
-    searchQuery,
-    topicFilter,
-    statusFilter,
-    activeTab,
-    sortOrder,
-  ]);
+  }
+  function changeTopicFilter(value: string) {
+    setTopicFilter(value);
+    setCurrentPage(1);
+  }
+  function changeStatusFilter(value: string) {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  }
+  function changeSortOrder(value: "newest" | "oldest") {
+    setSortOrder(value);
+    setCurrentPage(1);
+  }
+  function changeActiveTab(value: "all" | "published" | "draft") {
+    setActiveTab(value);
+    setCurrentPage(1);
+  }
+
 
   return (
     <AdminShell>
@@ -469,16 +519,34 @@ export default function AdminNuggetsPage() {
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              disabled
-              title="Bulk import is not connected to the backend yet."
-              className="min-h-9 rounded-md border border-white/10 px-4 text-[9px] text-white/35 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => setImportOpen(true)}
+              className="min-h-9 rounded-md border border-[#E28906]/40 px-4 text-[13px] text-[#E28906] transition hover:bg-white/[0.08] active:translate-y-px focus-visible:outline-2 focus-visible:outline-[#E28906]"
             >
               Import
             </button>
 
+            <button
+              type="button"
+              onClick={() => setR2BulkMatchOpen(true)}
+              className="min-h-9 rounded-md border border-[#E28906]/40 px-4 text-[13px] text-[#E28906] transition hover:bg-white/[0.08]"
+            >
+              Auto-Match R2 Songs
+            </button>
+
+            <button type="button"
+              onClick={() => setR2MediaMatchKind("nuggets")}
+              className="min-h-9 rounded-md border border-[#E28906]/40 px-4 text-[13px] text-[#E28906] transition hover:bg-white/[0.08]">
+              Auto-Match R2 Nugget Audio
+            </button>
+            <button type="button"
+              onClick={() => setR2MediaMatchKind("images")}
+              className="min-h-9 rounded-md border border-[#E28906]/40 px-4 text-[13px] text-[#E28906] transition hover:bg-white/[0.08]">
+              Auto-Match R2 Images
+            </button>
+
             <Link
               href="/admin/nuggets/new"
-              className="inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+              className="bn-button inline-flex min-h-9 items-center gap-2 rounded-md bg-[#E28906] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
             >
               <Plus
                 size={12}
@@ -489,6 +557,23 @@ export default function AdminNuggetsPage() {
           </div>
         </section>
 
+        {r2BulkMatchOpen && (
+          <R2BulkSongMatchDialog
+            onClose={() => setR2BulkMatchOpen(false)}
+            onApplied={loadNuggets}
+          />
+        )}
+
+        {r2MediaMatchKind && (
+          <R2BulkMediaMatchDialog
+            key={r2MediaMatchKind}
+            kind={r2MediaMatchKind}
+            onClose={() => setR2MediaMatchKind(null)}
+            onApplied={loadNuggets}
+          />
+        )}
+
+        {importSuccess && <p role="status" className="mt-5 rounded border border-emerald-500/25 bg-emerald-500/5 p-4 text-sm text-emerald-300">{importSuccess}</p>}
         {/* ERROR */}
 
         {error && (
@@ -520,14 +605,14 @@ export default function AdminNuggetsPage() {
               onChange={(
                 event,
               ) =>
-                setSearchQuery(
+                changeSearchQuery(
                   event
                     .target
                     .value,
                 )
               }
               placeholder="Search nuggets..."
-              className="h-10 w-full rounded-md border border-white/10 bg-[#111111] pl-9 pr-4 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/40"
+              className="h-10 w-full rounded-md border border-white/10 bg-[#111111] pl-9 pr-4 text-[10px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/40"
             />
           </div>
 
@@ -540,7 +625,7 @@ export default function AdminNuggetsPage() {
             onChange={(
               event,
             ) =>
-              setTopicFilter(
+              changeTopicFilter(
                 event
                   .target
                   .value,
@@ -562,7 +647,7 @@ export default function AdminNuggetsPage() {
                     topic
                   }
                 >
-                  {topic}
+                  {displayTopicName(topic)}
                 </option>
               ),
             )}
@@ -577,7 +662,7 @@ export default function AdminNuggetsPage() {
             onChange={(
               event,
             ) =>
-              setStatusFilter(
+              changeStatusFilter(
                 event
                   .target
                   .value,
@@ -607,7 +692,7 @@ export default function AdminNuggetsPage() {
             onChange={(
               event,
             ) =>
-              setSortOrder(
+              changeSortOrder(
                 event
                   .target
                   .value as
@@ -639,7 +724,7 @@ export default function AdminNuggetsPage() {
               "all"
             }
             onClick={() =>
-              setActiveTab(
+              changeActiveTab(
                 "all",
               )
             }
@@ -652,7 +737,7 @@ export default function AdminNuggetsPage() {
               "published"
             }
             onClick={() =>
-              setActiveTab(
+              changeActiveTab(
                 "published",
               )
             }
@@ -665,7 +750,7 @@ export default function AdminNuggetsPage() {
               "draft"
             }
             onClick={() =>
-              setActiveTab(
+              changeActiveTab(
                 "draft",
               )
             }
@@ -676,11 +761,45 @@ export default function AdminNuggetsPage() {
             TABLE
         ================================= */}
 
+        <BulkActions
+          noun="Nuggets"
+          ids={selection.ids}
+          total={filteredNuggets.length}
+          all={selection.all}
+          toggleAll={selection.toggleAll}
+          clear={selection.clear}
+          names={filteredNuggets.filter(item => selection.selected.has(item.id)).map(item => item.title)}
+          actions={[
+            { value: "delete", label: "Delete selected" },
+            { value: "publish", label: "Publish selected" },
+            { value: "draft", label: "Move to drafts" },
+            { value: "gold", label: "Mark as Gold/Premium" },
+            { value: "free", label: "Make Free (remove Gold)" },
+            { value: "feature", label: "Feature selected" },
+            { value: "unfeature", label: "Remove featured" },
+          ]}
+          apply={applyBulk}
+        />
+        <p className="mt-2 text-[13px] text-white/45">The checkbox beside Title selects only the Nuggets on this page. Use Select all above for every filtered page.</p>
         <section className="mt-3 overflow-visible rounded-[10px] border border-white/10 bg-[#111111]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[850px] text-left">
               <thead>
                 <tr className="border-b border-white/[0.07] text-[7px] uppercase tracking-[0.07em] text-white/25">
+                  <th className="px-3 py-3">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select all ${pageIds.length} Nuggets on this page`}
+                      title="Select only this page"
+                      checked={allOnPageSelected}
+                      disabled={!pageIds.length}
+                      onChange={() => selection.toggleGroup(pageIds)}
+                      ref={(element) => {
+                        if (element) element.indeterminate = pageSelectedCount > 0 && !allOnPageSelected;
+                      }}
+                      className="h-4 w-4 accent-[#E28906]"
+                    />
+                  </th>
                   <th className="px-5 py-3 font-medium">
                     Title
                   </th>
@@ -722,7 +841,7 @@ export default function AdminNuggetsPage() {
                       >
                         <td
                           colSpan={
-                            6
+                            7
                           }
                           className="px-5 py-4"
                         >
@@ -743,12 +862,13 @@ export default function AdminNuggetsPage() {
                         }
                         className="border-b border-white/[0.05] last:border-0"
                       >
+                        <td className="px-3 py-4"><input type="checkbox" aria-label={`Select ${nugget.title}`} checked={selection.selected.has(nugget.id)} onChange={()=>selection.toggle(nugget.id)} className="h-4 w-4 accent-[#E28906]" /></td>
                         {/* TITLE */}
 
                         <td className="max-w-[310px] px-5 py-4">
                           <Link
                             href={`/admin/nuggets/${nugget.id}/edit`}
-                            className="block truncate text-[9px] text-white/70 transition hover:text-[#C8A35A]"
+                            className="block truncate text-[9px] text-white/70 transition hover:text-[#E28906]"
                           >
                             {
                               nugget.title
@@ -756,17 +876,18 @@ export default function AdminNuggetsPage() {
                           </Link>
 
                           {nugget.isGold && (
-                            <span className="mt-1 inline-block text-[7px] font-semibold uppercase tracking-[0.06em] text-[#C8A35A]">
+                            <span className="mt-1 inline-block text-[7px] font-semibold uppercase tracking-[0.06em] text-[#E28906]">
                               Gold
                             </span>
                           )}
+                          {nugget.isGold && <span className="mt-1 inline-block rounded bg-[#E28906]/15 px-2 py-1 text-[12px] font-semibold text-[#E28906]">Gold / Premium</span>}
                         </td>
 
                         {/* TOPIC */}
 
                         <td className="px-4 py-4 text-[8px] text-white/40">
                           {
-                            nugget.topic
+                            displayTopicName(nugget.topic)
                           }
                         </td>
 
@@ -828,7 +949,7 @@ export default function AdminNuggetsPage() {
                             <div className="absolute right-4 top-[45px] z-30 w-[150px] overflow-hidden rounded-md border border-white/10 bg-[#181818] shadow-2xl">
                               <Link
                                 href={`/admin/nuggets/${nugget.id}/edit`}
-                                className="flex items-center gap-3 px-4 py-3 text-[9px] text-white/60 transition hover:bg-white/[0.04] hover:text-white"
+                                className="bn-button flex items-center gap-3 px-4 py-3 text-[9px] text-white/60 transition hover:bg-white/[0.04] hover:text-white"
                               >
                                 <Pencil
                                   size={
@@ -842,7 +963,7 @@ export default function AdminNuggetsPage() {
                               <Link
                                 href={`/nugget/${nugget.slug}`}
                                 target="_blank"
-                                className="flex items-center gap-3 px-4 py-3 text-[9px] text-white/60 transition hover:bg-white/[0.04] hover:text-white"
+                                className="bn-button flex items-center gap-3 px-4 py-3 text-[9px] text-white/60 transition hover:bg-white/[0.04] hover:text-white"
                               >
                                 <Eye
                                   size={
@@ -941,7 +1062,7 @@ export default function AdminNuggetsPage() {
                       ),
                   )
                 }
-                className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 text-white/35 transition hover:border-[#C8A35A]/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-25"
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 text-white/35 transition hover:border-[#E28906]/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-25"
               >
                 <ChevronLeft
                   size={12}
@@ -976,7 +1097,7 @@ export default function AdminNuggetsPage() {
                         className={`flex h-7 min-w-7 items-center justify-center rounded-md border px-2 text-[8px] transition ${
                           safePage ===
                           page
-                            ? "border-[#C8A35A]/40 bg-[#C8A35A]/15 text-[#E0C48A]"
+                            ? "border-[#E28906]/40 bg-[#E28906]/15 text-[#E28906]"
                             : "border-white/10 text-white/35 hover:text-white"
                         }`}
                       >
@@ -1004,7 +1125,7 @@ export default function AdminNuggetsPage() {
                       ),
                   )
                 }
-                className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 text-white/35 transition hover:border-[#C8A35A]/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-25"
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 text-white/35 transition hover:border-[#E28906]/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-25"
               >
                 <ChevronRight
                   size={12}
@@ -1013,6 +1134,10 @@ export default function AdminNuggetsPage() {
             </div>
           </div>
         </section>
+        {importOpen && <AdminImportDialog initialKind="nuggets" close={() => setImportOpen(false)} completed={async (message, kind) => {
+          setImportSuccess(message);
+          if (kind === "nuggets") await loadNuggets();
+        }} />}
       </main>
     </AdminShell>
   );
@@ -1037,14 +1162,14 @@ function TabButton({
       onClick={onClick}
       className={`relative shrink-0 pb-3 text-[9px] transition ${
         active
-          ? "text-[#C8A35A]"
+          ? "text-[#E28906]"
           : "text-white/35 hover:text-white"
       }`}
     >
       {label}
 
       {active && (
-        <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#C8A35A]" />
+        <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#E28906]" />
       )}
     </button>
   );
@@ -1073,7 +1198,7 @@ function StatusBadge({
   }
 
   return (
-    <span className="inline-flex rounded-full border border-[#C8A35A]/20 bg-[#C8A35A]/10 px-2.5 py-1 text-[7px] font-medium text-[#E0C48A]">
+    <span className="inline-flex rounded-full border border-[#E28906]/20 bg-[#E28906]/10 px-2.5 py-1 text-[7px] font-medium text-[#E28906]">
       Draft
     </span>
   );

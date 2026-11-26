@@ -1,0 +1,73 @@
+
+steps:
+  # Build NestJS API
+  - id: build-api
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - backend/Dockerfile
+      - -t
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/business-nuggets/api:$BUILD_ID
+      - backend
+
+  # Push API image
+  - id: push-api
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/business-nuggets/api:$BUILD_ID
+
+  # Build Next.js frontend
+  - id: build-web
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --build-arg
+      - NEXT_PUBLIC_API_URL=${_API_URL}
+      - -t
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/business-nuggets/web:$BUILD_ID
+      - .
+
+  # Push frontend image
+  - id: push-web
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/business-nuggets/web:$BUILD_ID
+
+  # Deploy NestJS API
+  - id: deploy-api
+    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:stable
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - business-nuggets-api
+      - --image=europe-west1-docker.pkg.dev/$PROJECT_ID/business-nuggets/api:$BUILD_ID
+      - --region=europe-west1
+      - --project=$PROJECT_ID
+      - --quiet
+
+  # Deploy Next.js frontend
+  - id: deploy-web
+    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:stable
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - business-nuggets-web
+      - --image=europe-west1-docker.pkg.dev/$PROJECT_ID/business-nuggets/web:$BUILD_ID
+      - --region=europe-west1
+      - --project=$PROJECT_ID
+      - --quiet
+
+substitutions:
+  _API_URL: https://business-nuggets-api-r2625lsipq-ew.a.run.app
+
+serviceAccount: projects/business-nuggets-prod-2026/serviceAccounts/bn-deployer@business-nuggets-prod-2026.iam.gserviceaccount.com
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 1800s

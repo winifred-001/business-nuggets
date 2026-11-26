@@ -1,3 +1,20 @@
+import { ScriptureVersesService } from "../scripture/scripture-verses.service";
+import { CollectionsService } from "../collections/collections.service";
+import { SaveCollectionDto } from "../collections/collections.dto";
+import { readImportFile } from "../imports/import-file";
+import { importHierarchy } from "../imports/hierarchy-import";
+import { IMPORT_LIMIT } from "../imports/import-limits";
+import { ImportTicketDto, issueImportTicket } from "../imports/import-ticket";
+import { BulkContentDto } from "./dto/bulk-content.dto";
+import { bulkContent } from "./bulk-content";
+import { BadRequestException, ParseIntPipe, UploadedFile } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { CreateTopicDto, UpdateTopicDto, CreateCategoryDto, UpdateCategoryDto } from "../topics/topics.dto";
+import { ReorderTopicsDto } from "./dto/admin-write.dto";
+import { UpdateBrandingDto } from "../app-settings/branding.dto";
+import { UpdateGeneralSettingsDto, UpdateSecuritySettingsDto, UpdateMaintenanceModeDto } from "./dto/admin-write.dto";
+import { LegalPagesService } from "../app-settings/legal-pages.service";
+import { CreateSitePageDto, UpdateLegalPageDto } from "../app-settings/legal-pages.dto";
 import {
   Body,
   Controller,
@@ -28,6 +45,8 @@ import { ScriptureService } from "../scripture/scripture.service";
 import { ScheduleService } from "../schedule/schedule.service";
 import { UsersService } from "../users/users.service";
 import { SubscriptionsService } from "../subscriptions/subscriptions.service";
+import { TopUpsService } from "../topups/topups.service";
+import { CreateTopUpBundleDto, UpdateTopUpBundleDto } from "../topups/topups.dto";
 import { ModerationService } from "../moderation/moderation.service";
 import { AnalyticsService } from "../analytics/analytics.service";
 import { MobileAppService } from "../mobile-app/mobile-app.service";
@@ -52,12 +71,15 @@ import {AdminIpAllowListGuard,} from "./admin-ip-allow-list.guard";
 )
 export class AdminController {
   constructor(
+    private readonly collectionsService: CollectionsService,
     private readonly nuggetsService: NuggetsService,
     private readonly topicsService: TopicsService,
     private readonly scriptureService: ScriptureService,
+    private readonly scriptureVerses: ScriptureVersesService,
     private readonly scheduleService: ScheduleService,
     private readonly usersService: UsersService,
     private readonly subscriptionsService: SubscriptionsService,
+    private readonly topupsService: TopUpsService,
     private readonly moderationService: ModerationService,
     private readonly analyticsService: AnalyticsService,
     private readonly mobileAppService: MobileAppService,
@@ -65,8 +87,22 @@ export class AdminController {
     private readonly rolesAccessService: RolesAccessService,
     private readonly auditLogsService: AuditLogsService,
     private readonly appSettingsService: AppSettingsService,
+    private readonly legalPagesService: LegalPagesService,
     private readonly emailService: EmailService,
   ) {}
+
+  @Get("collections")
+  @RequireAdminPermission("manageNuggets")
+  listCollections() { return this.collectionsService.list(); }
+  @Post("collections")
+  @RequireAdminPermission("manageNuggets")
+  createCollection(@Body() body: SaveCollectionDto) { return this.collectionsService.save(body); }
+  @Patch("collections/:id")
+  @RequireAdminPermission("manageNuggets")
+  updateCollection(@Param("id") id: string, @Body() body: SaveCollectionDto) { return this.collectionsService.save(body, id); }
+  @Delete("collections/:id")
+  @RequireAdminPermission("manageNuggets")
+  deleteCollection(@Param("id") id: string) { return this.collectionsService.remove(id); }
 
   /* =========================================
      ADMIN TEST
@@ -155,67 +191,77 @@ export class AdminController {
      TOPICS
   ========================================= */
 
+  @Post("imports/ticket")
+  @RequireAdminPermission("manageNuggets")
+  createImportTicket(@Body() input:ImportTicketDto,@Request() request:any) {return issueImportTicket(input,request.user);}
+
+  @Post("nuggets/bulk")
+  @RequireAdminPermission("manageNuggets")
+  bulkNuggets(@Body() input:BulkContentDto) {return bulkContent("nuggets",input);}
+
+  @Post("topics/bulk")
+  @RequireAdminPermission("manageNuggets")
+  bulkTopics(@Body() input:BulkContentDto) {return bulkContent("topics",input);}
+
+  @Post("categories/bulk")
+  @RequireAdminPermission("manageNuggets")
+  bulkCategories(@Body() input:BulkContentDto) {return bulkContent("categories",input);}
+
+  @Post("nuggets/import/preview")
+  @RequireAdminPermission("manageNuggets")
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: IMPORT_LIMIT, files: 1 } }))
+  async previewNuggetsImport(@UploadedFile() file: Express.Multer.File) { return importHierarchy(await readImportFile(file), true, "nuggets", this.topicsService); }
+
+  @Post("nuggets/import")
+  @RequireAdminPermission("manageNuggets")
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: IMPORT_LIMIT, files: 1 } }))
+  async commitNuggetsImport(@UploadedFile() file: Express.Multer.File) { return importHierarchy(await readImportFile(file), false, "nuggets", this.topicsService); }
+
   @Get("topics")
-  @RequireAdminPermission(
-    "manageNuggets",
-  )
-  getTopics() {
-    return this.topicsService.getAllTopics();
-  }
+  @RequireAdminPermission("manageNuggets")
+  getTopics() { return this.topicsService.getAllTopics(); }
 
   @Post("topics")
-  @RequireAdminPermission(
-    "manageNuggets",
-  )
-  createTopic(
-    @Body()
-    body: {
-      name: string;
-      description?: string;
-      visible?: boolean;
-    },
-  ) {
-    return this.topicsService.createTopic(
-      body,
-    );
-  }
+  @RequireAdminPermission("manageNuggets")
+  createTopic(@Body() body: CreateTopicDto) { return this.topicsService.createTopic(body); }
 
   @Patch("topics/reorder")
-  @RequireAdminPermission(
-    "manageNuggets",
-  )
-  reorderTopics(
-    @Body()
-    body: {
-      ids: number[];
-    },
-  ) {
-    return this.topicsService.reorderTopics(
-      body.ids,
-    );
-  }
+  @RequireAdminPermission("manageNuggets")
+  reorderTopics(@Body() body: ReorderTopicsDto) { return this.topicsService.reorderTopics(body.ids); }
+
+  @Post("topics/import/preview")
+  @RequireAdminPermission("manageNuggets")
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: IMPORT_LIMIT, files: 1 } }))
+  async previewTopicsCsv(@UploadedFile() file: Express.Multer.File) { return importHierarchy(await readImportFile(file), true, "topics", this.topicsService); }
+
+  @Post("topics/import")
+  @RequireAdminPermission("manageNuggets")
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: IMPORT_LIMIT, files: 1 } }))
+  async importTopicsCsv(@UploadedFile() file: Express.Multer.File) { return importHierarchy(await readImportFile(file), false, "topics", this.topicsService); }
 
   @Patch("topics/:id")
-  @RequireAdminPermission(
-    "manageNuggets",
-  )
-  updateTopic(
-    @Param("id")
-    id: string,
+  @RequireAdminPermission("manageNuggets")
+  updateTopic(@Param("id", ParseIntPipe) id: number, @Body() body: UpdateTopicDto) { return this.topicsService.updateTopic(id, body); }
 
-    @Body()
-    body: {
-      name?: string;
-      description?: string;
-      visible?: boolean;
-      displayOrder?: number;
-    },
-  ) {
-    return this.topicsService.updateTopic(
-      Number(id),
-      body,
-    );
-  }
+  @Delete("topics/:id")
+  @RequireAdminPermission("manageNuggets")
+  deleteTopic(@Param("id", ParseIntPipe) id: number) { return this.topicsService.deleteTopic(id); }
+
+  @Get("categories")
+  @RequireAdminPermission("manageNuggets")
+  getCategories() { return this.topicsService.getCategories(); }
+
+  @Post("categories")
+  @RequireAdminPermission("manageNuggets")
+  createCategory(@Body() body: CreateCategoryDto) { return this.topicsService.createCategory(body); }
+
+  @Patch("categories/:id")
+  @RequireAdminPermission("manageNuggets")
+  updateCategory(@Param("id", ParseIntPipe) id: number, @Body() body: UpdateCategoryDto) { return this.topicsService.updateCategory(id, body); }
+
+  @Delete("categories/:id")
+  @RequireAdminPermission("manageNuggets")
+  deleteCategory(@Param("id", ParseIntPipe) id: number) { return this.topicsService.deleteCategory(id); }
 
   /* =========================================
      SCRIPTURE
@@ -227,6 +273,12 @@ export class AdminController {
   )
   getScriptureIndex() {
     return this.scriptureService.getIndex();
+  }
+
+  @Get("scripture/verses")
+  @RequireAdminPermission("manageNuggets")
+  getScriptureVerses(@Query("book") book?: string, @Query("page") page?: string) {
+    return this.scriptureVerses.list(book, page);
   }
 
   @Post("scripture/books")
@@ -421,6 +473,9 @@ export class AdminController {
       currency?: string;
       billingCycle: string;
       features?: string[];
+      maxNuggets?: number;
+      accessDurationHours?: number;
+      quotaWindowHours?: number;
     },
   ) {
     return this.subscriptionsService.createPlan(
@@ -446,6 +501,9 @@ export class AdminController {
       billingCycle?: string;
       features?: string[];
       active?: boolean;
+      maxNuggets?: number;
+      accessDurationHours?: number;
+      quotaWindowHours?: number;
     },
   ) {
     return this.subscriptionsService.updatePlan(
@@ -457,6 +515,22 @@ export class AdminController {
   /* =========================================
      MODERATION
   ========================================= */
+
+  @Get("subscriptions/topups")
+  @RequireAdminPermission("billing")
+  listTopUpBundles() { return this.topupsService.listBundles(true); }
+
+  @Post("subscriptions/topups")
+  @RequireAdminPermission("billing")
+  createTopUpBundle(@Body() input: CreateTopUpBundleDto) {
+    return this.topupsService.createBundle(input);
+  }
+
+  @Patch("subscriptions/topups/:slug")
+  @RequireAdminPermission("billing")
+  updateTopUpBundle(@Param("slug") slug: string, @Body() input: UpdateTopUpBundleDto) {
+    return this.topupsService.updateBundle(slug, input);
+  }
 
   @Get("moderation")
   @RequireAdminPermission(
@@ -753,6 +827,48 @@ async createAdminAccount(
      SETTINGS
   ========================================= */
 
+  @Get("settings/site-pages")
+  @RequireAdminPermission("settings")
+  listCreatedSitePages() {
+    return this.legalPagesService.listCustomPages();
+  }
+
+  @Post("settings/site-pages")
+  @RequireAdminPermission("settings")
+  createSitePage(@Body() body: CreateSitePageDto) {
+    return this.legalPagesService.createPage(body);
+  }
+
+  @Delete("settings/site-pages/:slug")
+  @RequireAdminPermission("settings")
+  deleteSitePage(@Param("slug") slug: string) {
+    return this.legalPagesService.deleteCustomPage(slug);
+  }
+
+  @Get(["settings/legal/:slug", "settings/pages/:slug"])
+  @RequireAdminPermission("settings")
+  async getLegalPage(@Param("slug") slug: string) {
+    return { document: await this.legalPagesService.getPageForAdmin(slug) };
+  }
+
+  @Patch(["settings/legal/:slug", "settings/pages/:slug"])
+  @RequireAdminPermission("settings")
+  updateLegalPage(@Param("slug") slug: string, @Body() body: UpdateLegalPageDto) {
+    return this.legalPagesService.updatePage(slug, body);
+  }
+
+  @Get("settings/branding")
+  @RequireAdminPermission("settings")
+  getBranding() { return this.appSettingsService.getBranding(); }
+
+  @Patch("settings/branding")
+  @RequireAdminPermission("settings")
+  updateBranding(@Body() body: UpdateBrandingDto) { return this.appSettingsService.updateBranding(body); }
+
+  @Get("settings/connections")
+  @RequireAdminPermission("settings")
+  getConnections() { return this.appSettingsService.getConnections(); }
+
   @Get("settings")
   @RequireAdminPermission(
     "settings",
@@ -769,14 +885,7 @@ async createAdminAccount(
   )
   updateGeneralSettings(
     @Body()
-    body: {
-      siteName?: string;
-      tagline?: string;
-      supportEmail?: string;
-      timezone?: string;
-      defaultLanguage?: string;
-      dailyPublishTime?: string;
-    },
+    body: UpdateGeneralSettingsDto,
   ) {
     return this.appSettingsService.updateGeneral(
       body,
@@ -791,12 +900,7 @@ async createAdminAccount(
   )
   updateSecuritySettings(
     @Body()
-    body: {
-      twoFactorAdmins?: boolean;
-      sessionTimeoutMinutes?: number;
-      ipAllowListEnabled?: boolean;
-      ipAllowList?: string[];
-    },
+    body: UpdateSecuritySettingsDto,
   ) {
     return this.appSettingsService.updateSecurity(
       body,
@@ -811,9 +915,7 @@ async createAdminAccount(
   )
   updateMaintenanceMode(
     @Body()
-    body: {
-      enabled: boolean;
-    },
+    body: UpdateMaintenanceModeDto,
   ) {
     return this.appSettingsService.setMaintenanceMode(
       body.enabled,

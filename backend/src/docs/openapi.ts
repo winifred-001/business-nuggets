@@ -59,7 +59,7 @@ export const docsHtml = `<!doctype html>
       .swagger-ui .topbar-wrapper img { display: none; }
       .swagger-ui .topbar-wrapper::before {
         content: "BUSINESS NUGGETS API";
-        color: #e0c48a;
+        color: #E28906;
         font: 700 15px/1.2 Arial, sans-serif;
         letter-spacing: .08em;
       }
@@ -990,7 +990,7 @@ export function createOpenApiDocument() {
           requestBody: jsonBody({ $ref: "#/components/schemas/NuggetInput" }),
           responses: {
             "201": { description: "Nugget created" },
-            "400": { description: "Validation or free-Nugget limit error" },
+            "400": { description: "Validation error" },
             "401": { description: "Unauthorized" },
             "403": { description: "Forbidden" },
           },

@@ -110,10 +110,7 @@ async function bootstrap() {
 
   const allowedOrigins = new Set([
     "http://localhost:3000",
-    "https://business-nuggets-theta.vercel.app",
-    "https://business-nuggets-chioms.vercel.app",
-    "https://business-nuggets-git-main-chioms.vercel.app",
-    "https://business-nuggets-api.onrender.com",
+    "api.businessnuggets.com.ng",
     ...configuredOrigins,
     ...apiOrigins,
   ]);

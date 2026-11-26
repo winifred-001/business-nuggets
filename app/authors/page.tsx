@@ -9,12 +9,27 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
 
 import {
-  authors,
+  authors as originalAuthors,
 } from "@/lib/authors";
 
-export default function AuthorsPage() {
+import { getSitePage } from "@/lib/site-pages";
+import { SitePageBlock, SiteSectionExtras } from "@/components/SitePageBlock";
+
+export default async function AuthorsPage() {
+  const page = await getSitePage("authors");
+  const authors = page.sections.map(section => {
+    const original = originalAuthors.find(author => author.slug === section.id);
+    return {
+      slug: section.id,
+      name: section.title,
+      description: section.body,
+      sourceSection: section,
+      roleLabel: original?.roleLabel ?? "Contributor",
+      works: original?.works ?? [],
+    };
+  });
   return (
-    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+    <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
       <Navbar />
 
       <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
@@ -22,7 +37,7 @@ export default function AuthorsPage() {
 
         <Link
           href="/"
-          className="text-[10px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+          className="text-[10px] font-medium text-[#E28906] transition hover:text-[#E28906]"
         >
           ← Home
         </Link>
@@ -30,15 +45,12 @@ export default function AuthorsPage() {
         {/* HEADER */}
 
         <section className="mt-3">
-          <h1 className="font-serif text-[40px] leading-tight">
-            Authors &amp; Creators
+          <h1 className="bn-hero-title font-serif text-[40px] leading-tight">
+            {page.title}
           </h1>
 
           <p className="mt-3 text-[13px] leading-6 text-white/40">
-            Discover the named
-            creators behind the
-            platform&apos;s cinematic
-            wisdom works.
+            {page.introduction}
           </p>
         </section>
 
@@ -46,7 +58,9 @@ export default function AuthorsPage() {
 
         <section className="mt-8 grid gap-5 lg:grid-cols-2">
           {authors.map(
-            (author) => (
+            (author) => author.sourceSection.kind && author.sourceSection.kind !== "author" ? (
+              <div key={author.slug} className="lg:col-span-2"><SitePageBlock section={author.sourceSection} /></div>
+            ) : (
               <article
                 key={
                   author.slug
@@ -59,7 +73,7 @@ export default function AuthorsPage() {
                   }
                 </h2>
 
-                <p className="mt-4 text-[8px] font-semibold uppercase tracking-[0.08em] text-[#C8A35A]">
+                <p className="mt-4 text-[8px] font-semibold uppercase tracking-[0.08em] text-[#E28906]">
                   {
                     author.roleLabel
                   }
@@ -70,6 +84,8 @@ export default function AuthorsPage() {
                     author.description
                   }
                 </p>
+
+                <SiteSectionExtras section={author.sourceSection} />
 
                 {/* WORKS */}
 
@@ -90,9 +106,9 @@ export default function AuthorsPage() {
                           href={
                             work.href
                           }
-                          className="group flex items-center gap-4 rounded-[8px] border border-white/10 bg-[#0C0C0C] p-3 transition hover:border-[#C8A35A]/35"
+                          className="group flex items-center gap-4 rounded-[8px] border border-white/10 bg-[#0C0C0C] p-3 transition hover:border-[#E28906]/35"
                         >
-                          <div className="flex h-[52px] w-[62px] shrink-0 items-center justify-center rounded-md border border-white/[0.06] bg-[#181818] text-[#C8A35A]">
+                          <div className="flex h-[52px] w-[62px] shrink-0 items-center justify-center rounded-md border border-white/[0.06] bg-[#181818] text-[#E28906]">
                             <Music2
                               size={
                                 19
@@ -114,7 +130,7 @@ export default function AuthorsPage() {
                             </p>
                           </div>
 
-                          <span className="hidden shrink-0 text-[8px] text-[#C8A35A] sm:block">
+                          <span className="hidden shrink-0 text-[8px] text-[#E28906] sm:block">
                             {
                               work.type
                             }{" "}
@@ -127,7 +143,7 @@ export default function AuthorsPage() {
 
                 <Link
                   href={`/authors/${author.slug}`}
-                  className="mt-5 inline-flex min-h-9 items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                  className="bn-button mt-5 inline-flex min-h-9 items-center gap-2 rounded-md bg-[#E28906] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
                 >
                   View{" "}
                   {author.name}
@@ -165,7 +181,7 @@ export default function AuthorsPage() {
           <div className="mt-5 flex flex-wrap gap-5">
             <Link
               href="/musicals"
-              className="text-[9px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="text-[9px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Explore Wisdom
               Musicals →
@@ -177,7 +193,7 @@ export default function AuthorsPage() {
 
             <Link
               href="/philosophy"
-              className="text-[9px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="text-[9px] font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Our Philosophy →
             </Link>

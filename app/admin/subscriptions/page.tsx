@@ -13,6 +13,8 @@ import {
 
 import AdminShell from "@/components/admin/AdminShell";
 import { API_URL } from "@/lib/api";
+import { subscriptionPlanSlug } from "@/lib/subscription-plan-slug";
+import TopUpBundlesAdmin from "@/components/admin/TopUpBundlesAdmin";
 
 type SubscriptionPlan = {
   id: number;
@@ -33,6 +35,9 @@ type SubscriptionPlan = {
   displayOrder: number;
 
   subscriberCount: number;
+  maxNuggets: number;
+  accessDurationHours: number;
+  quotaWindowHours: number;
 };
 
 type BillingTransaction = {
@@ -54,7 +59,17 @@ type BillingTransaction = {
   createdAt: string;
 };
 
+type SubscriptionSummary = {
+  activeSubscribers: number;
+  expiringSoon: number;
+  graceMembers: number;
+  monthlyTopUpSales: number;
+  verifiedPayments: number;
+  monthlyRevenueByCurrency: { currency: string; amountCents: number }[];
+};
+
 type SubscriptionResponse = {
+  summary?: SubscriptionSummary;
   plans:
     SubscriptionPlan[];
 
@@ -63,6 +78,8 @@ type SubscriptionResponse = {
 };
 
 export default function AdminSubscriptionsPage() {
+  const [section, setSection] = useState<"overview" | "plans" | "topups" | "payments">("overview");
+  const [summary, setSummary] = useState<SubscriptionSummary | null>(null);
   const [
     plans,
     setPlans,
@@ -107,8 +124,8 @@ export default function AdminSubscriptionsPage() {
   const [name, setName] =
     useState("");
 
-  const [slug, setSlug] =
-    useState("");
+  const slug = editingPlan?.slug ?? subscriptionPlanSlug(name);
+  const [modalError, setModalError] = useState("");
 
   const [price, setPrice] =
     useState("");
@@ -130,6 +147,8 @@ export default function AdminSubscriptionsPage() {
 
   const [active, setActive] =
     useState(true);
+
+  const [maxNuggets, setMaxNuggets] = useState("5");
 
   function getToken() {
     return (
@@ -177,6 +196,7 @@ export default function AdminSubscriptionsPage() {
         );
       }
 
+      setSummary(data.summary || null);
       setPlans(
         data.plans || [],
       );
@@ -202,7 +222,8 @@ export default function AdminSubscriptionsPage() {
     setEditingPlan(null);
 
     setName("");
-    setSlug("");
+    setError("");
+    setModalError("");
     setPrice("");
     setCurrency("USD");
     setBillingCycle(
@@ -210,6 +231,7 @@ export default function AdminSubscriptionsPage() {
     );
     setFeatures("");
     setActive(true);
+    setMaxNuggets("5");
 
     setModalOpen(true);
   }
@@ -225,9 +247,8 @@ export default function AdminSubscriptionsPage() {
       plan.name,
     );
 
-    setSlug(
-      plan.slug,
-    );
+    setModalError("");
+    setError("");
 
     setPrice(
       String(
@@ -253,159 +274,70 @@ export default function AdminSubscriptionsPage() {
     setActive(
       plan.active,
     );
+    setMaxNuggets(String(plan.maxNuggets ?? (plan.billingCycle === "free" ? 1 : 5)));
 
     setModalOpen(true);
   }
 
   async function savePlan() {
-    if (!name.trim()) {
-      setError(
-        "Plan name is required.",
-      );
-
+    setModalError("");
+    if (!name.trim()) { setModalError("Plan name is required."); return; }
+    if (!editingPlan && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+      setModalError("Enter a valid plan name so its URL slug can be generated.");
       return;
     }
 
-    if (
-      !editingPlan &&
-      !slug.trim()
-    ) {
-      setError(
-        "Plan slug is required.",
-      );
-
+    const parsedPrice = Number(price || 0);
+    const parsedMaxNuggets = Number(maxNuggets);
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 0 || Math.round(parsedPrice * 100) > 1000000000) {
+      setModalError("Enter a valid non-negative price."); return;
+    }
+    if (!maxNuggets.trim() || !Number.isInteger(parsedMaxNuggets) || parsedMaxNuggets < 1 || parsedMaxNuggets > 10000) {
+      setModalError("Monthly Nuggets allowed must be a whole number between 1 and 10,000.");
       return;
     }
+    const token = getToken();
+    if (!token) { setModalError("Your admin session has expired. Please log in again."); return; }
 
-    const token =
-      getToken();
-
-    if (!token) return;
-
-    const parsedPrice =
-      Number(price || 0);
-
-    if (
-      Number.isNaN(
-        parsedPrice,
-      ) ||
-      parsedPrice < 0
-    ) {
-      setError(
-        "Enter a valid price.",
-      );
-
-      return;
-    }
-
+    const featureList = features.split("\n").map(feature => feature.trim()).filter(Boolean);
     setSaving(true);
-    setError("");
     setSuccess("");
-
-    const featureList =
-      features
-        .split("\n")
-        .map(
-          (feature) =>
-            feature.trim(),
-        )
-        .filter(Boolean);
-
     try {
-      const response =
-        await fetch(
-          editingPlan
-            ? `${API_URL}/admin/subscriptions/plans/${editingPlan.id}`
-            : `${API_URL}/admin/subscriptions/plans`,
-          {
-            method:
-              editingPlan
-                ? "PATCH"
-                : "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              Authorization:
-                `Bearer ${token}`,
-            },
-
-            body:
-              JSON.stringify(
-                editingPlan
-                  ? {
-                      name:
-                        name.trim(),
-
-                      priceCents:
-                        Math.round(
-                          parsedPrice *
-                            100,
-                        ),
-
-                      currency,
-
-                      billingCycle,
-
-                      features:
-                        featureList,
-
-                      active,
-                    }
-                  : {
-                      name:
-                        name.trim(),
-
-                      slug:
-                        slug
-                          .trim()
-                          .toLowerCase(),
-
-                      priceCents:
-                        Math.round(
-                          parsedPrice *
-                            100,
-                        ),
-
-                      currency,
-
-                      billingCycle,
-
-                      features:
-                        featureList,
-                    },
-              ),
-          },
-        );
-
-      const data =
-        await response
-          .json()
-          .catch(() => ({}));
-
+      const response = await fetch(
+        editingPlan
+          ? API_URL + "/admin/subscriptions/plans/" + editingPlan.id
+          : API_URL + "/admin/subscriptions/plans",
+        {
+          method: editingPlan ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+          body: JSON.stringify({
+            name: name.trim(),
+            ...(!editingPlan ? { slug } : {}),
+            priceCents: Math.round(parsedPrice * 100),
+            currency: currency.trim().toUpperCase(),
+            billingCycle,
+            features: featureList,
+            maxNuggets: parsedMaxNuggets,
+            ...(editingPlan ? { active } : {}),
+          }),
+        },
+      );
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setError(
-          data.message ||
-            "Could not save plan.",
+        const detail = data?.message;
+        setModalError(
+          Array.isArray(detail) ? detail.join("; ")
+          : typeof detail === "string" ? detail
+          : "Could not save plan (HTTP " + response.status + ").",
         );
-
         return;
       }
-
       setModalOpen(false);
-
-      setSuccess(
-        editingPlan
-          ? "Plan updated."
-          : "Plan created.",
-      );
-
+      setModalError("");
+      setSuccess(editingPlan ? "Plan updated." : "Plan created.");
       await loadSubscriptions();
     } catch {
-      setError(
-        "Could not connect to the server.",
-      );
+      setModalError("Could not connect to the server. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -421,28 +353,26 @@ export default function AdminSubscriptionsPage() {
             </h1>
 
             <p className="mt-2 text-[10px] text-white/35">
-              Plans, pricing and
-              billing for premium
-              members.
+              Plans, monthly allowances, rollover Top-ups and verified payments.
             </p>
           </div>
 
-          <button
+          {section === "plans" && <button
             type="button"
             onClick={
               openCreate
             }
-            className="inline-flex h-9 w-fit items-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+            className="inline-flex h-9 w-fit items-center gap-2 rounded-md bg-[#E28906] px-4 text-[9px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
           >
             <Plus
               size={12}
             />
 
             New Plan
-          </button>
+          </button>}
         </section>
 
-        {error && (
+        {error && !modalOpen && (
           <div className="mt-5 rounded-md border border-red-500/20 bg-red-500/[0.05] px-4 py-3 text-[10px] text-red-400">
             {error}
           </div>
@@ -461,7 +391,57 @@ export default function AdminSubscriptionsPage() {
           </div>
         )}
 
+
+        <nav aria-label="Subscription management sections" className="mt-6 flex flex-wrap gap-2 border-b border-white/10 pb-3">
+          {([
+            ["overview", "Overview"],
+            ["plans", "Plans"],
+            ["topups", "Top-ups"],
+            ["payments", "Payments"],
+          ] as const).map(([key, label]) => (
+            <button key={key} type="button" onClick={() => setSection(key)}
+              aria-current={section === key ? "page" : undefined}
+              className={"min-h-10 rounded-md px-4 text-sm font-medium transition " +
+                (section === key ? "bg-[#E28906] text-black" : "border border-white/10 text-white/60 hover:text-white")}>
+              {label}
+            </button>
+          ))}
+        </nav>
+
+        {section === "overview" && (
+          <section className="mt-6">
+            <h2 className="font-serif text-2xl">Subscription Overview</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                ["Active subscribers", String(summary?.activeSubscribers ?? "—")],
+                ["This month's revenue", summary?.monthlyRevenueByCurrency.length
+                  ? summary.monthlyRevenueByCurrency.map(row => formatMoney(row.amountCents, row.currency)).join(" · ")
+                  : "—"],
+                ["Top-up sales this month", String(summary?.monthlyTopUpSales ?? "—")],
+                ["Expiring in 7 days", String(summary?.expiringSoon ?? "—")],
+              ].map(([title, value]) => (
+                <article key={title} className="rounded-xl border border-white/10 bg-[#111] p-5">
+                  <p className="text-sm text-white/50">{title}</p>
+                  <p className="mt-3 font-serif text-3xl text-[#E28906]">{loading ? "—" : value}</p>
+                </article>
+              ))}
+            </div>
+            <p className="mt-4 text-xs leading-5 text-white/45">
+              {summary ? `${summary.graceMembers} paid members currently in their 3-day reading grace.` : "Loading billing summary."}
+              {" "}Monthly revenue uses verified paid transactions, with currencies kept separate.
+            </p>
+            <p className="mt-2 text-xs leading-5 text-white/45">
+              Subscription billing and monthly Nugget allowances are separate.
+              Annual subscribers receive fresh monthly allowances. Top-up credits roll over until used.
+              Paid readers retain previously opened Nuggets for three days after subscription expiry.
+            </p>
+          </section>
+        )}
+
+        {section === "topups" && <TopUpBundlesAdmin />}
+
         {/* PLAN CARDS */}
+        {section === "plans" && (
 
         <section className="mt-6 grid gap-4 lg:grid-cols-3">
           {loading
@@ -502,17 +482,31 @@ export default function AdminSubscriptionsPage() {
                       )}
                     </div>
 
-                    <p className="mt-5 font-serif text-[26px] text-[#C8A35A]">
+                    <p className="mt-5 font-serif text-[26px] text-[#E28906]">
                       {formatMoney(
                         plan.priceCents,
                         plan.currency,
                       )}
                     </p>
 
-                    <p className="mt-3 text-[8px] text-white/30">
-                      {plan.subscriberCount.toLocaleString()}{" "}
-                      subscribers
+                    <p className="mt-2 text-sm text-white/60">
+                      {plan.billingCycle === "annual" ? "Billed annually" :
+                       plan.billingCycle === "monthly" ? "Billed monthly" : "Free access"}
                     </p>
+                    <p className="mt-3 text-xs text-white/50">
+                      {plan.subscriberCount.toLocaleString()} subscribers
+                    </p>
+
+                    <div className="mt-4 grid grid-cols-2 gap-2 border-y border-white/[0.06] py-3">
+                      <div>
+                        <p className="text-[15px] font-serif text-white/80">{plan.maxNuggets ?? "—"}</p>
+                        <p className="mt-1 text-[10px] text-white/40">Nuggets per month</p>
+                      </div>
+                      <div>
+                        <p className="text-[15px] font-serif text-white/80">Monthly</p>
+                        <p className="mt-1 text-[10px] text-white/40">Allowance resets monthly</p>
+                      </div>
+                    </div>
 
                     <div className="mt-5 space-y-2">
                       {plan.features.map(
@@ -541,7 +535,7 @@ export default function AdminSubscriptionsPage() {
                           plan,
                         )
                       }
-                      className="mt-5 text-[8px] text-[#C8A35A] transition hover:text-[#E0C48A]"
+                      className="mt-5 text-[8px] text-[#E28906] transition hover:text-[#E28906]"
                     >
                       Edit Plan
                     </button>
@@ -550,7 +544,10 @@ export default function AdminSubscriptionsPage() {
               )}
         </section>
 
+        )}
+
         {/* TRANSACTIONS */}
+        {section === "payments" && (
 
         <section className="mt-5 overflow-hidden rounded-[10px] border border-white/10 bg-[#111111]">
           <div className="border-b border-white/[0.07] px-5 py-4">
@@ -612,7 +609,9 @@ export default function AdminSubscriptionsPage() {
 
                       <td className="px-4 py-4 text-[8px] text-white/40">
                         {
-                          transaction.planSlug
+                          transaction.planSlug.startsWith("topup:")
+                            ? "Top-up · " + transaction.planSlug.slice(6)
+                            : transaction.planSlug
                         }
                       </td>
 
@@ -655,215 +654,101 @@ export default function AdminSubscriptionsPage() {
                 </p>
 
                 <p className="mt-2 text-[8px] text-white/20">
-                  Transactions will
-                  appear here once a
-                  payment provider
-                  is connected.
+                  Payments for plans and Top-up bundles appear here after checkout.
                 </p>
               </div>
             )}
         </section>
 
-        {/* PLAN MODAL */}
+        )}
 
+        {/* COMPACT PLAN MODAL */}
         {modalOpen && (
-          <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 px-5">
-            <div className="w-full max-w-[470px] rounded-[10px] border border-white/10 bg-[#111111] p-6">
-              <div className="flex items-start justify-between">
+          <div className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-black/80 p-3 sm:p-5">
+            <div role="dialog" aria-modal="true" aria-labelledby="subscription-plan-modal-title"
+              className="flex max-h-[calc(100dvh-2rem)] w-full max-w-[510px] flex-col overflow-hidden rounded-xl border border-white/15 bg-[#111111] shadow-2xl">
+              <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-5 py-3.5">
                 <div>
-                  <h2 className="font-serif text-[24px]">
-                    {editingPlan
-                      ? "Edit Plan"
-                      : "New Plan"}
+                  <h2 id="subscription-plan-modal-title" className="font-serif text-[22px]">
+                    {editingPlan ? "Edit Plan" : "New Plan"}
                   </h2>
-
-                  <p className="mt-2 text-[8px] text-white/25">
-                    Configure
-                    subscription
-                    access and
-                    pricing.
-                  </p>
+                  <p className="mt-1 text-[11px] text-white/50">Pricing and monthly Nugget allowance</p>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setModalOpen(
-                      false,
-                    )
-                  }
-                  className="text-white/30 hover:text-white"
-                >
-                  <X size={16} />
+                <button type="button" disabled={saving} aria-label="Close plan editor"
+                  onClick={() => setModalOpen(false)}
+                  className="rounded-md p-2 text-white/50 hover:bg-white/10 hover:text-white">
+                  <X size={17} />
                 </button>
               </div>
 
-              <div className="mt-6 space-y-4">
-                <Field
-                  label="Plan Name"
-                  value={
-                    name
-                  }
-                  onChange={
-                    setName
-                  }
-                />
-
-                {!editingPlan && (
-                  <Field
-                    label="Slug"
-                    value={
-                      slug
-                    }
-                    onChange={
-                      setSlug
-                    }
-                  />
-                )}
+              <div className="min-h-0 space-y-3 overflow-y-auto px-5 py-4">
+                <Field label="Plan name" value={name} onChange={value => { setName(value); setModalError(""); }} />
+                <div className="rounded-md border border-white/10 bg-[#080808] px-3 py-2">
+                  <p className="text-[10px] text-white/45">Slug (generated automatically)</p>
+                  <p className="mt-1 break-all font-mono text-[12px] text-[#E28906]">
+                    {slug || "generated-from-plan-name"}
+                  </p>
+                </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <Field
-                    label="Price"
-                    type="number"
-                    value={
-                      price
-                    }
-                    onChange={
-                      setPrice
-                    }
-                  />
-
-                  <Field
-                    label="Currency"
-                    value={
-                      currency
-                    }
-                    onChange={
-                      setCurrency
-                    }
-                  />
+                  <Field label="Price" type="number" value={price} onChange={setPrice} />
+                  <Field label="Currency" value={currency} onChange={setCurrency} />
                 </div>
 
-                <div>
-                  <label className="block text-[8px] text-white/35">
-                    Billing Cycle
-                  </label>
-
-                  <select
-                    value={
-                      billingCycle
-                    }
-                    onChange={(
-                      event,
-                    ) =>
-                      setBillingCycle(
-                        event
-                          .target
-                          .value,
-                      )
-                    }
-                    className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[9px] text-white/65 outline-none"
-                  >
-                    <option value="free">
-                      Free
-                    </option>
-
-                    <option value="monthly">
-                      Monthly
-                    </option>
-
-                    <option value="annual">
-                      Annual
-                    </option>
-                  </select>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="plan-billing-cycle" className="block text-[11px] text-white/65">Billing cycle</label>
+                    <select id="plan-billing-cycle" value={billingCycle}
+                      onChange={event => setBillingCycle(event.target.value)}
+                      className="mt-1 h-9 w-full rounded-md border border-white/15 bg-[#080808] px-3 text-[12px] text-white outline-none focus:border-[#E28906]">
+                      <option value="free">Free</option>
+                      <option value="monthly">Monthly</option>
+                      <option value="annual">Annual</option>
+                    </select>
+                  </div>
+                  <Field label="Nuggets per month" type="number" value={maxNuggets} onChange={setMaxNuggets} />
                 </div>
 
+                <p className="text-[11px] leading-5 text-white/50">
+                  Members can read and reread their chosen Nuggets throughout their monthly allowance.
+                  A new allowance starts one calendar month after their first selection.
+                  Paid access still requires an active subscription.
+                </p>
+
                 <div>
-                  <label className="block text-[8px] text-white/35">
-                    Features
-                  </label>
-
-                  <textarea
-                    rows={5}
-                    value={
-                      features
-                    }
-                    onChange={(
-                      event,
-                    ) =>
-                      setFeatures(
-                        event
-                          .target
-                          .value,
-                      )
-                    }
-                    placeholder={
-                      "Full archive\nWisdom studies\nOffline mobile"
-                    }
-                    className="mt-2 w-full resize-none rounded-md border border-white/10 bg-[#080808] px-3 py-3 text-[9px] leading-5 text-white outline-none placeholder:text-white/20"
-                  />
-
-                  <p className="mt-1 text-[7px] text-white/20">
-                    One feature per
-                    line.
-                  </p>
+                  <label htmlFor="plan-features" className="block text-[11px] text-white/65">Features (one per line)</label>
+                  <textarea id="plan-features" rows={3} value={features}
+                    onChange={event => setFeatures(event.target.value)}
+                    placeholder={"Full archive\nWisdom studies\nOffline mobile"}
+                    className="mt-1 w-full resize-y rounded-md border border-white/15 bg-[#080808] px-3 py-2 text-[12px] leading-5 text-white outline-none focus:border-[#E28906] placeholder:text-white/30" />
                 </div>
 
                 {editingPlan && (
-                  <label className="flex items-center justify-between rounded-md border border-white/[0.07] bg-[#080808] px-4 py-3">
-                    <span className="text-[9px] text-white/50">
-                      Active Plan
-                    </span>
-
-                    <input
-                      type="checkbox"
-                      checked={
-                        active
-                      }
-                      onChange={(
-                        event,
-                      ) =>
-                        setActive(
-                          event
-                            .target
-                            .checked,
-                        )
-                      }
-                      className="h-4 w-4 accent-[#C8A35A]"
-                    />
+                  <label className="flex items-center justify-between rounded-md border border-white/10 bg-[#080808] px-3 py-2">
+                    <span className="text-[12px] text-white/70">Active plan</span>
+                    <input type="checkbox" checked={active}
+                      onChange={event => setActive(event.target.checked)}
+                      className="h-4 w-4 accent-[#E28906]" />
                   </label>
                 )}
               </div>
 
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setModalOpen(
-                      false,
-                    )
-                  }
-                  className="h-9 rounded-md border border-white/10 px-4 text-[9px] text-white/40"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="button"
-                  disabled={
-                    saving
-                  }
-                  onClick={
-                    savePlan
-                  }
-                  className="h-9 rounded-md bg-[#C8A35A] px-5 text-[9px] font-semibold text-[#080808] disabled:opacity-50"
-                >
-                  {saving
-                    ? "Saving..."
-                    : editingPlan
-                      ? "Save Changes"
-                      : "Create Plan"}
-                </button>
+              <div className="shrink-0 border-t border-white/10 px-5 py-3">
+                {modalError && (
+                  <p role="alert" className="mb-3 max-h-24 overflow-y-auto rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-[12px] leading-5 text-red-300">
+                    {modalError}
+                  </p>
+                )}
+                <div className="flex justify-end gap-3">
+                  <button type="button" disabled={saving} onClick={() => setModalOpen(false)}
+                    className="h-9 rounded-md border border-white/15 px-4 text-[12px] text-white/65 disabled:opacity-50">
+                    Cancel
+                  </button>
+                  <button type="button" disabled={saving} onClick={() => void savePlan()}
+                    className="h-9 rounded-md bg-[#E28906] px-5 text-[12px] font-semibold text-[#080808] disabled:opacity-50">
+                    {saving ? "Saving…" : editingPlan ? "Save Changes" : "Create Plan"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -891,7 +776,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[8px] text-white/35">
+      <label className="block text-[11px] text-white/65">
         {label}
       </label>
 
@@ -906,7 +791,7 @@ function Field({
               .value,
           )
         }
-        className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#080808] px-3 text-[9px] text-white outline-none focus:border-[#C8A35A]/35"
+        className="mt-1 h-9 w-full rounded-md border border-white/15 bg-[#080808] px-3 text-[12px] text-white outline-none focus:border-[#E28906]"
       />
     </div>
   );

@@ -1,8 +1,8 @@
 "use client";
 
+import { postAuthDestination } from "@/lib/auth-return";
+import AuthContinueLink from "@/components/AuthContinueLink";
 import { useState } from "react";
-import Navbar from "@/components/navbar";
-import Footer from "@/components/Footer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
@@ -55,7 +55,7 @@ export default function LoginPage() {
       localStorage.setItem("user", JSON.stringify(data.user));
       window.dispatchEvent(new Event("auth-change"));
 
-      router.push("/home");
+      router.push(postAuthDestination());
     } catch {
       setError("Could not connect to the server");
     } finally {
@@ -65,20 +65,19 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
-      <Navbar />
 
       <main className="flex flex-1 items-center justify-center px-5 py-10 sm:px-6 sm:py-14 md:px-8 lg:px-10 lg:py-16">
         <section className="w-full max-w-[520px] rounded-2xl border border-white/10 bg-[#111111] p-5 sm:p-8 md:p-10">
           <div className="mb-7 flex flex-col items-center text-center sm:mb-8">
-            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-[#C8A35A] font-serif text-[20px] font-bold text-[#080808]">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-[#E28906] font-serif text-[20px] font-bold text-[#080808]">
               B
             </div>
 
-            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#C8A35A]">
+            <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#E28906]">
               Business Nuggets
             </p>
 
-            <h1 className="font-serif text-[40px] font-semibold leading-tight text-[#FAF9F6]">
+            <h1 className="bn-hero-title font-serif text-[45px]! font-semibold leading-tight text-[#FAF9F6]">
               Welcome Back
             </h1>
 
@@ -104,7 +103,7 @@ export default function LoginPage() {
                 placeholder="e.g. solomon@kingdomventures.com"
                 required
                 autoComplete="email"
-                className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
+                className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#E28906]"
               />
             </div>
 
@@ -125,14 +124,15 @@ export default function LoginPage() {
                   placeholder="Enter your password"
                   required
                   autoComplete="current-password"
-                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 pr-12 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#C8A35A]"
+                  className="h-12 w-full rounded-lg border border-white/10 bg-[#080808] px-4 pr-12 text-[16px] text-[#FAF9F6] outline-none placeholder:text-[#8A8781] focus:border-[#E28906]"
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-white/45 transition hover:text-[#E0C48A]"
+                  aria-pressed={showPassword}
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-white/45 transition hover:text-[#E28906]"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -152,7 +152,7 @@ export default function LoginPage() {
 
               <Link
                 href="/forgot-password"
-                className="inline-flex min-h-11 items-center font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+                className="bn-button inline-flex min-h-11 items-center font-medium text-[#E28906] transition hover:text-[#E28906]"
               >
                 Forgot password?
               </Link>
@@ -167,7 +167,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="min-h-12 w-full rounded-lg bg-[#C8A35A] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-12 w-full rounded-lg bg-[#E28906] px-5 text-[15px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
@@ -175,17 +175,16 @@ export default function LoginPage() {
 
           <p className="mt-7 text-center text-[14px] leading-6 text-white/50">
             New to the platform?{" "}
-            <Link
+            <AuthContinueLink
               href="/register"
-              className="font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+              className="font-medium text-[#E28906] transition hover:text-[#E28906]"
             >
               Create an account
-            </Link>
+            </AuthContinueLink>
           </p>
         </section>
       </main>
 
-      <Footer />
     </div>
   );
 }

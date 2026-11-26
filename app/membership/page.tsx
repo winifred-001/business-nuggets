@@ -1,5 +1,6 @@
 "use client";
 
+import { displayTopicName } from "@/lib/topic-display";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -16,10 +17,9 @@ import {
 
 import Navbar from "@/components/navbar";
 import Footer from "@/components/Footer";
-import AuthRouteGuard from "@/components/AuthRouteGuard";
 import PremiumCheckout from "@/components/PremiumCheckout";
+import TopUpBundles from "@/components/TopUpBundles";
 
-import { API_URL } from "@/lib/api";
 import { getPublishedNuggets } from "@/lib/nuggets-api";
 
 import type { Nugget } from "@/types/nugget";
@@ -50,44 +50,13 @@ export default function MembershipPage() {
 
   useEffect(() => {
     async function loadMembership() {
-      const token =
-        localStorage.getItem("token");
-
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        const [userResponse, nuggets] =
-          await Promise.all([
-            fetch(
-              `${API_URL}/users/me`,
-              {
-                headers: {
-                  Authorization:
-                    `Bearer ${token}`,
-                },
-              },
-            ),
-            getPublishedNuggets(token),
-          ]);
-
-        const userData =
-          await userResponse
-            .json()
-            .catch(() => ({}));
-
-        if (!userResponse.ok) {
-          setError(
-            userData.message ||
-              "Could not load membership information.",
-          );
-          return;
-        }
-
-        setUser(userData);
-
+        const response = await fetch("/api/member/auth/session", { cache: "no-store" });
+        if (response.status === 401) return;
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !data?.user) throw new Error("Could not load your membership details. You can still view the available plans below.");
+        setUser(data.user);
+        const nuggets = await getPublishedNuggets(localStorage.getItem("token")).catch(() => []);
         setGoldNuggets(
           nuggets
             .filter(
@@ -98,7 +67,7 @@ export default function MembershipPage() {
         );
       } catch {
         setError(
-          "Could not connect to the server.",
+          "Could not load membership details. Please refresh to retry.",
         );
       } finally {
         setLoading(false);
@@ -108,26 +77,30 @@ export default function MembershipPage() {
     void loadMembership();
   }, []);
 
-  const isPremium =
-    user?.membershipTier
-      ?.toLowerCase() ===
-    "premium";
+  const expiry = Date.parse(user?.subscriptionExpiresAt || "");
+  const hasPaidPlan = user?.membershipTier?.toLowerCase() === "premium" &&
+    user?.subscriptionPlan !== "free" &&
+    user?.subscriptionStatus !== "cancelled" &&
+    user?.subscriptionStatus !== "revoked";
+  const isPremium = Boolean(hasPaidPlan && Number.isFinite(expiry) &&
+    Date.now() < expiry + 72 * 60 * 60 * 1000);
+  const inGrace = isPremium && Date.now() >= expiry;
 
   return (
-    <AuthRouteGuard type="protected">
-      <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
+    <>
+      <div className="flex min-h-screen flex-col bn-cream-page bg-[#F5F0E8] text-[#211E19]">
         <Navbar />
 
         <main className="mx-auto w-full max-w-[1280px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
           <Link
             href="/workspace"
-            className="text-[12px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
+            className="text-[12px] font-medium text-[#E28906] transition hover:text-[#E28906]"
           >
             ← My Wisdom Workspace
           </Link>
 
           <section className="mt-4">
-            <h1 className="font-serif text-[44px] leading-tight">
+            <h1 className="bn-hero-title font-serif text-[44px] leading-tight">
               Your BNB Premium Membership
             </h1>
 
@@ -145,26 +118,28 @@ export default function MembershipPage() {
           )}
 
           {!loading &&
-            !error && (
-              <section className="mt-8 rounded-[12px] border border-[#C8A35A]/55 bg-[#111111] p-5 sm:p-6">
+            !error && user && (
+              <section className="mt-8 rounded-[12px] border border-[#E28906]/55 bg-[#111111] p-5 sm:p-6">
                 <h2 className="font-serif text-[28px]">
                   {user?.name ||
                     "BNB Member"}
                 </h2>
 
                 <div className="mt-4">
-                  <span className="inline-flex items-center gap-2 rounded-sm bg-[#C8A35A]/15 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+                  <span className="inline-flex items-center gap-2 rounded-sm bg-[#E28906]/15 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
                     <Crown size={14} />
-                    {isPremium
+                    {inGrace ? "Paid Reading • 3-day Grace Period" : isPremium
                       ? "BNB Premium • Current Membership"
                       : "Free Access • Current Membership"}
                   </span>
                 </div>
 
                 <p className="mt-5 max-w-[850px] text-[16px] leading-7 text-white/55">
-                  {isPremium
-                    ? "Your account has full access to every published Business Nugget, including Reader, Audio and Musical experiences."
-                    : "Your account currently has Free Access. You can open the 10 free Nuggets selected by the admin and upgrade to unlock the complete library."}
+                  {inGrace
+                    ? "Your plan has expired. For three days you can reread Nuggets you already opened. Renew your paid plan to resume new monthly selections and spend Top-up credits."
+                    : isPremium
+                    ? "Your paid subscription includes a monthly Nugget selection allowance. Previously opened Nuggets remain available according to your paid access and reading history."
+                    : "Your account currently has Free Access. Upgrade to unlock paid Nugget selections and Top-up bundles."}
                 </p>
 
                 {isPremium && (
@@ -188,14 +163,14 @@ export default function MembershipPage() {
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href="/library/account"
-                    className="inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/75 transition hover:border-[#C8A35A]/35 hover:text-white"
+                    className="bn-button inline-flex min-h-11 items-center justify-center rounded-md border border-white/10 bg-[#080808] px-4 text-[14px] font-medium text-white/75 transition hover:border-[#E28906]/35 hover:text-white"
                   >
                     Billing &amp; Membership Help →
                   </Link>
 
                   <a
                     href="mailto:support@businessnuggets.example"
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#C8A35A] px-4 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E0C48A]"
+                    className="bn-button inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#E28906] px-4 text-[14px] font-semibold text-[#080808] transition hover:bg-[#E28906]"
                   >
                     <Mail size={15} />
                     Contact Support →
@@ -215,49 +190,7 @@ export default function MembershipPage() {
             />
           )}
 
-          <section className="mt-10 grid gap-5 lg:grid-cols-2">
-            <article className="rounded-[12px] border border-white/10 bg-[#111111] p-5 sm:p-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md border border-white/10 bg-[#181818] text-white/50">
-                <Library size={18} />
-              </div>
-
-              <h2 className="mt-5 font-serif text-[28px]">
-                Free Access
-              </h2>
-
-              <p className="mt-4 text-[16px] leading-7 text-white/55">
-                The admin selects up to 10 published Nuggets that Free members can open. The rest of the library remains visible but locked for Free accounts.
-              </p>
-
-              <Link
-                href="/library"
-                className="mt-5 inline-block text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
-              >
-                Browse All Nuggets →
-              </Link>
-            </article>
-
-            <article className="rounded-[12px] border border-[#C8A35A]/45 bg-[#111111] p-5 sm:p-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md border border-[#C8A35A]/25 bg-[#C8A35A]/[0.06] text-[#C8A35A]">
-                <Crown size={18} />
-              </div>
-
-              <h2 className="mt-5 font-serif text-[28px]">
-                BNB Premium Access
-              </h2>
-
-              <p className="mt-4 text-[16px] leading-7 text-white/55">
-                Premium unlocks the complete published library. Once payment is verified, all Nuggets open normally without Gold lock messaging.
-              </p>
-
-              <Link
-                href="/library"
-                className="mt-5 inline-block text-[14px] font-medium text-[#C8A35A] transition hover:text-[#E0C48A]"
-              >
-                Explore Full Library →
-              </Link>
-            </article>
-          </section>
+          <TopUpBundles />
 
           {!isPremium && (
             <section className="mt-12">
@@ -296,7 +229,7 @@ export default function MembershipPage() {
                       <Link
                         key={nugget.id}
                         href={`/nugget/${nugget.slug}`}
-                        className="group flex items-center gap-4 rounded-[10px] border border-white/10 bg-[#111111] p-4 transition hover:border-[#C8A35A]/40"
+                        className="group flex items-center gap-4 rounded-[10px] border border-white/10 bg-[#111111] p-4 transition hover:border-[#E28906]/40"
                       >
                         <div className="relative h-[64px] w-[80px] shrink-0 overflow-hidden rounded-md bg-[#181818]">
                           <Image
@@ -310,11 +243,11 @@ export default function MembershipPage() {
 
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="font-serif text-[22px] leading-6 text-white/90 transition group-hover:text-[#C8A35A]">
+                            <h3 className="font-serif text-[22px] leading-6 text-white/90 transition group-hover:text-[#E28906]">
                               {nugget.title}
                             </h3>
 
-                            <span className="rounded-sm bg-[#C8A35A]/15 px-2 py-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#C8A35A]">
+                            <span className="rounded-sm bg-[#E28906]/15 px-2 py-1 text-[12px] font-semibold uppercase tracking-[0.05em] text-[#E28906]">
                               Gold
                             </span>
                           </div>
@@ -322,13 +255,13 @@ export default function MembershipPage() {
                           <p className="mt-1 text-[14px] text-white/40">
                             {nugget.scriptureRef}
                             {nugget.topic &&
-                              ` • ${nugget.topic}`}
+                              ` • ${displayTopicName(nugget.topic)}`}
                             {nugget.duration &&
                               ` • ${nugget.duration}`}
                           </p>
                         </div>
 
-                        <span className="hidden shrink-0 text-[14px] font-medium text-[#C8A35A] sm:block">
+                        <span className="hidden shrink-0 text-[14px] font-medium text-[#E28906] sm:block">
                           Unlock →
                         </span>
                       </Link>
@@ -338,8 +271,8 @@ export default function MembershipPage() {
             </section>
           )}
 
-          <section className="mt-10 rounded-[10px] border border-[#C8A35A]/20 bg-[#C8A35A]/[0.14] px-5 py-4">
-            <p className="text-[15px] font-semibold text-[#E0C48A]">
+          <section className="mt-10 rounded-[10px] border border-[#E28906]/20 bg-[#E28906]/[0.14] px-5 py-4">
+            <p className="text-[15px] font-semibold text-[#E28906]">
               Membership questions?
             </p>
 
@@ -351,6 +284,6 @@ export default function MembershipPage() {
 
         <Footer />
       </div>
-    </AuthRouteGuard>
+    </>
   );
 }

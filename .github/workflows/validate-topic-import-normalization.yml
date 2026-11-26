@@ -1,0 +1,36 @@
+name: Validate bulk Topic import normalization
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/src/imports/topic-name-normalization.ts"
+      - "backend/src/imports/nugget-import.ts"
+      - "backend/src/imports/hierarchy-import.ts"
+      - "backend/src/topics/topics-csv.ts"
+      - "backend/src/topics/topics.spec.ts"
+      - ".github/workflows/validate-topic-import-normalization.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Check import and Topic regression tests
+        run: npm test -- --runInBand src/topics/topics.spec.ts src/imports/nugget-sections.spec.ts
+      - name: Build NestJS
+        run: npm run build

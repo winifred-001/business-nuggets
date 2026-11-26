@@ -1,0 +1,98 @@
+{
+  "about": {
+    "title": "Our Philosophy",
+    "introduction": "Timeless Biblical Wisdom for Today's Marketplace.",
+    "notice": "Wisdom Before Action",
+    "sections": [
+      {
+        "id": "vision",
+        "title": "Ancient principles. Thoughtful decisions. Responsible business.",
+        "body": "Business Nuggets from the Bible connects biblical teaching with the questions executives face: how to lead, steward resources, plan wisely and act with character. The aim is reflection that informs responsible action—not a shortcut to success."
+      },
+      {
+        "id": "scripture",
+        "title": "Proverbs 11:1",
+        "body": "“A false balance is an abomination to the Lord, but a just weight is his delight.”"
+      },
+      {
+        "id": "principle-1",
+        "title": "Read Scripture in Context",
+        "body": "Begin with the passage, its setting and its meaning. Business application should remain distinguishable from the biblical text."
+      },
+      {
+        "id": "principle-2",
+        "title": "Steward Resources Responsibly",
+        "body": "Treat capital, time and entrusted work as responsibilities. Consider risks, obligations and the people affected by each decision."
+      },
+      {
+        "id": "principle-3",
+        "title": "Lead with Integrity",
+        "body": "Honest measures and transparent terms matter. Seek fairness in agreements, accountability in leadership and respect in relationships."
+      },
+      {
+        "id": "discernment",
+        "title": "Apply with Discernment",
+        "body": "Commentary and cinematic musicals offer ways to explore a principle. They do not replace Scripture, professional advice or your responsibility to evaluate a decision. Consult qualified legal, financial or other advisers where appropriate, and do not interpret a teaching as a promise of commercial results."
+      }
+    ]
+  },
+  "contact": {
+    "title": "Contact Us",
+    "introduction": "Questions about Business Nuggets, your account or the library? Get in touch with our support team.",
+    "notice": "",
+    "sections": [
+      {
+        "id": "support",
+        "title": "Email support",
+        "body": "This opens your email app. Include the page or feature you need help with. Never send your password or verification codes."
+      },
+      {
+        "id": "answers",
+        "title": "Find an answer",
+        "body": "Our frequently asked questions cover the library, accounts and your personal workspace."
+      }
+    ]
+  },
+  "faqs": {
+    "title": "Frequently Asked Questions",
+    "introduction": "A few answers to help you find your way around Business Nuggets.",
+    "notice": "",
+    "sections": [
+      {
+        "id": "question-1",
+        "title": "What is Business Nuggets?",
+        "body": "Business Nuggets from the Bible brings together biblical principles and practical business commentary for personal study and reflection."
+      },
+      {
+        "id": "question-2",
+        "title": "How do I find a nugget?",
+        "body": "Open The Library to browse nuggets, topics, challenges, Scripture Index and collections. Use the search and filters to find a subject or passage."
+      },
+      {
+        "id": "question-3",
+        "title": "Why should I create an account?",
+        "body": "An account gives you access to your personal workspace, where you can organize saved nuggets, playlists and notes."
+      },
+      {
+        "id": "question-4",
+        "title": "How do I reset my password?",
+        "body": "Choose Forgot password on the Login page and follow the instructions sent to your email address."
+      },
+      {
+        "id": "question-5",
+        "title": "Where do I manage my profile?",
+        "body": "Sign in and open Account Settings from the account menu to manage your profile and available account preferences."
+      },
+      {
+        "id": "question-6",
+        "title": "Is all content free?",
+        "body": "Some content may require a membership. Check the access requirements and current plan details before subscribing."
+      },
+      {
+        "id": "question-7",
+        "title": "Where can I read the privacy policy and terms?",
+        "body": "Use the Privacy Policy and Terms of Use links in the footer. These pages explain the platform’s published policies."
+      }
+    ]
+  }
+}

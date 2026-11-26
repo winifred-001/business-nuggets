@@ -1,0 +1,64 @@
+name: Validate site page builder
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/admin/pages/**"
+      - "app/pages/**"
+      - "app/api/site-pages/**"
+      - "app/about/**"
+      - "app/philosophy/**"
+      - "app/contact/**"
+      - "app/faqs/**"
+      - "app/authors/**"
+      - "app/privacy-policy/**"
+      - "app/terms-of-use/**"
+      - "components/**"
+      - "lib/legal-pages.ts"
+      - "lib/site-pages.ts"
+      - "backend/src/app-settings/**"
+      - "backend/src/admin/admin.controller.ts"
+      - ".github/workflows/validate-site-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: Generate Next.js route types
+        run: npx next typegen
+      - name: Typecheck Next.js
+        run: npx tsc --noEmit
+      - name: Build Next.js
+        run: npm run build
+
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Test site pages
+        run: npm test -- --runInBand src/app-settings/legal-pages.spec.ts src/app-settings/site-page-builder.spec.ts
+      - name: Build NestJS
+        run: npm run build

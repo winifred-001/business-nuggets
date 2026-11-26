@@ -1,5 +1,6 @@
 "use client";
 
+import BrandMark from "@/components/BrandMark";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
@@ -198,28 +199,21 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#FAF9F6]">
+    <div className="flex min-h-screen flex-col bg-[#080808] text-[#FAF9F6]">
       <header className="border-b border-white/[0.07] bg-[#111111]">
-        <div className="flex h-[72px] items-center px-6 lg:px-10">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-[#C8A35A] font-serif text-[14px] font-bold text-[#080808]">
-              B
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.05em] text-white">
-                Business Nuggets
-              </p>
-              <p className="mt-0.5 text-[8px] text-[#C8A35A]">
-                Admin Console
-              </p>
-            </div>
+        <div className="flex items-center px-6 lg:px-10">
+          <Link href="/" aria-label="Business Nuggets home" className="flex min-w-0 flex-col items-center py-px [&_img]:py-0">
+            <BrandMark />
+            <span className="text-[12px] leading-none text-[#E28906]">
+              Admin Console
+            </span>
           </Link>
         </div>
       </header>
 
-      <main className="flex min-h-[calc(100vh-72px)] items-start justify-center px-5 py-16 sm:py-20">
+      <main className="flex flex-1 items-start justify-center px-5 py-16 sm:py-20">
         <section className="w-full max-w-[440px] rounded-[10px] border border-white/10 bg-[#111111] p-6 sm:p-8">
-          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md bg-[#C8A35A] text-[#080808]">
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md bg-[#E28906] text-[#080808]">
             <ShieldCheck size={20} />
           </div>
 
@@ -248,7 +242,7 @@ export default function AdminLoginPage() {
                   setError("");
                 }}
                 placeholder="admin@businessnuggets.com"
-                className="h-11 w-full rounded-md border border-white/10 bg-[#0D0D0D] px-4 text-[11px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/50"
+                className="h-11 w-full rounded-md border border-white/10 bg-[#0D0D0D] px-4 text-[11px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/50"
               />
             </div>
 
@@ -270,12 +264,13 @@ export default function AdminLoginPage() {
                     setError("");
                   }}
                   placeholder="Enter your password"
-                  className="h-11 w-full rounded-md border border-white/10 bg-[#0D0D0D] px-4 pr-11 text-[11px] text-white outline-none placeholder:text-white/20 focus:border-[#C8A35A]/50"
+                  className="h-11 w-full rounded-md border border-white/10 bg-[#0D0D0D] px-4 pr-11 text-[11px] text-white outline-none placeholder:text-white/20 focus:border-[#E28906]/50"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((current) => !current)}
-                  aria-label="Toggle password visibility"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-white/25 transition hover:text-white/60"
                 >
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -289,7 +284,7 @@ export default function AdminLoginPage() {
                   type="checkbox"
                   checked={keepSignedIn}
                   onChange={(event) => setKeepSignedIn(event.target.checked)}
-                  className="h-3.5 w-3.5 accent-[#C8A35A]"
+                  className="h-3.5 w-3.5 accent-[#E28906]"
                 />
                 <span className="text-[9px] text-white/35">
                   Keep me signed in
@@ -298,7 +293,7 @@ export default function AdminLoginPage() {
 
               <Link
                 href="/forgot-password"
-                className="text-[9px] text-[#C8A35A] transition hover:text-[#E0C48A]"
+                className="text-[9px] text-[#E28906] transition hover:text-[#E28906]"
               >
                 Forgot password?
               </Link>
@@ -313,7 +308,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-6 flex min-h-10 w-full items-center justify-center rounded-md bg-[#C8A35A] px-4 text-[10px] font-semibold text-[#080808] transition hover:bg-[#E0C48A] disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-6 flex min-h-10 w-full items-center justify-center rounded-md bg-[#E28906] px-4 text-[10px] font-semibold text-[#080808] transition hover:bg-[#E28906] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Signing in..." : "Continue Secure Sign In"}
             </button>
